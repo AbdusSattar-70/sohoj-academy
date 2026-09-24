@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/constants";
 import Logo from "@/components/shared/logo";
 
 export default function SignInPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,16 +18,18 @@ export default function SignInPage() {
     setError("");
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (error) {
-      setError(error.message);
+    if (error || !data.session) {
+      setError(error?.message ?? "A session could not be created.");
       setLoading(false);
       return;
     }
 
-    router.replace(ROUTES.DASHBOARD);
-    router.refresh();
+    window.location.assign(ROUTES.DASHBOARD);
   };
 
   return (
