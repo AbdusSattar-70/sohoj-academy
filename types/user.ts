@@ -1,7 +1,12 @@
-import { z } from "zod";
-import { userSchema } from "@/lib/zod-schemas/user";
+import type { AppRole } from "@/lib/constants";
 
-export type User = z.infer<typeof userSchema>;
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: AppRole;
+  avatar?: string | null;
+};
 
 export type UserStore = {
   user: User | null;
