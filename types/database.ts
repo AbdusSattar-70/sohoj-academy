@@ -1091,6 +1091,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_admission: {
+        Args: { p_enrollment: Json; p_guardian: Json; p_student: Json }
+        Returns: Json
+      }
       current_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
