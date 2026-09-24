@@ -10,18 +10,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useClerk } from "@clerk/nextjs";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/constants";
 
 export function SignOutAlert({ children }: { children: ReactNode }) {
-  const { signOut } = useClerk();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut({ redirectUrl: ROUTES.AUTH });
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+      return;
+    }
+
     toast.success("Signed out successfully");
+    router.replace(ROUTES.AUTH);
+    router.refresh();
   };
 
   return (
@@ -30,17 +43,14 @@ export function SignOutAlert({ children }: { children: ReactNode }) {
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Confirm Sign Out</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to sign out?
-          </DialogDescription>
+          <DialogDescription>Are you sure you want to sign out?</DialogDescription>
         </DialogHeader>
-
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" disabled={loading}>Cancel</Button>
           </DialogClose>
-          <Button variant="outline" onClick={handleSignOut}>
-            Sign Out
+          <Button variant="outline" onClick={handleSignOut} disabled={loading}>
+            {loading ? "Signing out..." : "Sign Out"}
           </Button>
         </DialogFooter>
       </DialogContent>
