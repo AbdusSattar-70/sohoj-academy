@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Sheet,
   SheetTrigger,
@@ -9,7 +11,6 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { ReactNode } from "react";
-import { UserProfile } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
 export function UserProfileSheet({ children }: { children: ReactNode }) {
@@ -18,18 +19,27 @@ export function UserProfileSheet({ children }: { children: ReactNode }) {
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent
         side="bottom"
-        className="h-full w-full max-w-full bg-[#00002e] rounded-none p-0 [&>button.absolute]:hidden"
+        className="h-full w-full max-w-full rounded-none p-0"
       >
-        <SheetHeader className="sr-only">
+        <SheetHeader className="border-b p-6">
           <SheetTitle>Account Management</SheetTitle>
           <SheetDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
+            Sohoj Academy account settings are being migrated to Supabase.
           </SheetDescription>
         </SheetHeader>
-        <div className="p-4 h-full scrollable">
-          <UserProfile />
+
+        <div className="p-6">
+          <div className="max-w-xl rounded-lg border p-5">
+            <p className="font-medium">Profile settings</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your account is now authenticated by Supabase. Profile editing and
+              password management will be available here in the next account
+              settings step.
+            </p>
+          </div>
         </div>
-        <SheetFooter>
+
+        <SheetFooter className="border-t p-4">
           <SheetClose asChild>
             <Button variant="outline" size="sm">
               Close
