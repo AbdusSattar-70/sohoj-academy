@@ -1,95 +1,15 @@
 export const cards = [
-  {
-    id:1,
-    title: "Transaction Ledger",
-    description:
-      "Every financial event becomes a permanent transaction.",
-    accent: "#06B6D4",
-    photo: "/images/photo1.jpg"
-  },
-  {
-    id:2,
-    title: "Approval Workflow",
-    description:
-      "Treasurer, Committee and President approvals.",
-    accent: "#0EA5E9",
-  },
-  {
-    id:3,
-    title: "Financial Oversight",
-    description:
-      "Monitor funds, projects and accounts from one place.",
-    accent: "#2563EB",
-    photo: "/images/photo2.jpg"
-  },
-
-  {
-    id:4,
-    title: "Fund Management",
-    description: "Separate and manage every fund.",
-    accent: "#06B6D4",
-  },
-  {
-    id:5,
-    title: "Audit Trail",
-    description: "No delete. Every change is recorded.",
-    accent: "#8B5CF6",
-    photo: "/images/photo3.jpg"
-
-  },
-  {
-    id:6,
-    title: "Community Voting",
-    description: "Transparent organizational decisions.",
-    accent: "#EC4899",
-  },
-  {
-    id:7,
-    title: "Financial Reports",
-    description: "Real-time insights and summaries.",
-    accent: "#F59E0B",
-    photo: "/images/photo4.jpg"
-  },
-
-  {
-    id:8,
-    title: "Project Tracking",
-    description: "Monitor budgets and project expenses.",
-    accent: "#10B981",
-  },
-  {
-    id:9,
-    title: "Households",
-    description: "Manage members and contributions.",
-    accent: "#14B8A6",
-    photo: "/images/photo5.jpg"
-  },
-  {
-    id:10,
-    title: "Multi-Mosque Ready",
-    description: "Scale from one mosque to thousands.",
-    accent: "#2563EB",
-  },
-
-  {
-    id:11,
-    title: "Accounts",
-    description: "Cash, Bank, bKash, Nagad.",
-    accent: "#0EA5E9",
-    photo: "/images/photo6.jpg"
-  },
-  {
-    id:12,
-    title: "Public Dashboard",
-    description: "Increase community transparency.",
-    accent: "#6366F1",
-  },
-  {
-    id:13,
-    title: "Everything is a Transaction",
-    description:
-      "The philosophy powering every workflow in M-Ledger.",
-    accent: "#06B6D4",
-    photo: "/images/photo7.jpg"
-  },
+  { id:1, title:"Small Batch Learning", description:"Maximum 12 students per batch for focused attention.", accent:"#06B6D4", photo:"/images/photo1.jpg" },
+  { id:2, title:"Personal Attention", description:"Teachers can identify each student's learning gaps.", accent:"#0EA5E9" },
+  { id:3, title:"Continuous Assessment", description:"Weekly, monthly and model tests turn learning into measurable progress.", accent:"#2563EB", photo:"/images/photo2.jpg" },
+  { id:4, title:"Student Master", description:"One reliable academic record from admission onward.", accent:"#06B6D4" },
+  { id:5, title:"Attendance", description:"Track class attendance and identify patterns early.", accent:"#8B5CF6", photo:"/images/photo3.jpg" },
+  { id:6, title:"Guardian Connection", description:"Keep guardians informed about learning and follow-up.", accent:"#EC4899" },
+  { id:7, title:"Progress Reports", description:"Clear weekly and monthly progress for every student.", accent:"#F59E0B", photo:"/images/photo4.jpg" },
+  { id:8, title:"Exam Readiness", description:"Find syllabus gaps and focus practice where it matters.", accent:"#10B981" },
+  { id:9, title:"Fees & Receipts", description:"Reliable fee collection history and printable receipts.", accent:"#14B8A6", photo:"/images/photo5.jpg" },
+  { id:10, title:"Class Routine", description:"Organize batches, subjects, teachers and classrooms.", accent:"#2563EB" },
+  { id:11, title:"Teacher Workspace", description:"Attendance, assessments and student monitoring in one place.", accent:"#0EA5E9", photo:"/images/photo6.jpg" },
+  { id:12, title:"Student & Guardian Portal", description:"See routine, attendance, results, progress, fees and notices.", accent:"#6366F1" },
+  { id:13, title:"Sohoj Learning Method", description:"বুঝি → অনুশীলন করি → পরীক্ষা দিই → বিশ্লেষণ করি → দক্ষতা অর্জন করি।", accent:"#06B6D4", photo:"/images/photo7.jpg" },
 ];
