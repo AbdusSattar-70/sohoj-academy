@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,8 +8,7 @@ import {
 import { TeamSwitcher } from "./team-switcher";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { ClerkLoadingButton } from "@/components/shared/clerk-loading-button";
-import { User } from "@/types/user";
+import type { User } from "@/types/user";
 
 export function AppSidebar({ user, ...props }: { user: User }) {
   return (
@@ -22,9 +20,7 @@ export function AppSidebar({ user, ...props }: { user: User }) {
         <NavMain />
       </SidebarContent>
       <SidebarFooter>
-        <ClerkLoadingButton>
-          <NavUser user={user} />
-        </ClerkLoadingButton>
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
