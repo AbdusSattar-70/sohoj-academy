@@ -37,7 +37,7 @@ export const publicInterestSchema = z.object({
     .optional(),
   referralNote: z.string().trim().max(240).optional(),
   notes: z.string().trim().max(500).optional(),
-  consentToContact: z.literal(true, {
+  consentToContact: z.boolean().refine((value) => value, {
     message: "Please allow Sohoj Academy to contact you about this interest request.",
   }),
   website: z.string().max(0).optional(),
