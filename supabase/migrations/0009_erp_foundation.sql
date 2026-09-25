@@ -4,7 +4,7 @@
 
 create table public.schools (
   id uuid primary key default gen_random_uuid(),
-  name text not null,
+  name text not null check (btrim(name) <> ''),
   name_bn text,
   area text,
   district text,
@@ -212,7 +212,11 @@ begin
   order by version desc
   limit 1;
 
-  if v_max is not null and new.capacity > v_max then
+  if v_max is null then
+    raise exception 'No active batch-capacity policy is configured.';
+  end if;
+
+  if new.capacity > v_max then
     raise exception 'Batch capacity % exceeds the active academy maximum of %.', new.capacity, v_max;
   end if;
 
