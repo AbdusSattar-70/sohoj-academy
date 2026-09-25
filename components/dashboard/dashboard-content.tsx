@@ -113,15 +113,17 @@ export default async function DashboardContent({user,section="dashboard",student
    s.from("staff_subject_assignments").select("staff_id,subject_id,effective_to").is("effective_to",null)
   ]);
 
-  const roleById=new Map((roleCatalogQ.data??[]).map(role=>[role.id,role]));
-  const primaryRoleByStaff=new Map<string,(typeof roleCatalogQ.data extends (infer R)[]|null ? R : never)>();
+  type StaffRoleRow={id:string;code:string;name:string;name_bn:string|null;is_teaching_role:boolean};
+  type StaffEmploymentRow={staff_id:string;employment_type:string;status:string;starts_on:string;ends_on:string|null};
+  const roleById=new Map<string,StaffRoleRow>((roleCatalogQ.data??[]).map(role=>[role.id,role]));
+  const primaryRoleByStaff=new Map<string,StaffRoleRow>();
   for(const assignment of roleAssignmentsQ.data??[]){
    if(!assignment.is_primary||primaryRoleByStaff.has(assignment.staff_id)) continue;
    const role=roleById.get(assignment.role_id);
    if(role) primaryRoleByStaff.set(assignment.staff_id,role);
   }
 
-  const employmentByStaff=new Map<string,(typeof employmentsQ.data extends (infer R)[]|null ? R : never)>();
+  const employmentByStaff=new Map<string,StaffEmploymentRow>();
   for(const employment of employmentsQ.data??[]){
    if(!employmentByStaff.has(employment.staff_id)) employmentByStaff.set(employment.staff_id,employment);
   }
