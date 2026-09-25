@@ -36,14 +36,25 @@ function revalidateWorkflow(workflowType: string) {
   revalidatePath("/dashboard");
 }
 
-async function getAuthenticatedContext() {
+type AuthenticatedContext =
+  | {
+      ok: true;
+      supabase: Awaited<ReturnType<typeof createClient>>;
+      user: NonNullable<
+        Awaited<ReturnType<Awaited<ReturnType<typeof createClient>>["auth"]["getUser"]>>["data"]["user"]
+      >;
+      role: "ADMIN" | "OPERATOR" | "TEACHER" | "GUARDIAN" | "STUDENT";
+    }
+  | { ok: false; error: string };
+
+async function getAuthenticatedContext(): Promise<AuthenticatedContext> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "You must sign in." as const };
+    return { ok: false, error: "You must sign in." };
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -53,10 +64,10 @@ async function getAuthenticatedContext() {
     .maybeSingle();
 
   if (profileError || !profile) {
-    return { error: "Your academy role could not be verified." as const };
+    return { ok: false, error: "Your academy role could not be verified." };
   }
 
-  return { supabase, user, role: profile.role };
+  return { ok: true, supabase, user, role: profile.role };
 }
 
 export async function submitForApproval(
@@ -68,7 +79,7 @@ export async function submitForApproval(
   }
 
   const context = await getAuthenticatedContext();
-  if ("error" in context) return { ok: false, error: context.error };
+  if (!context.ok) return { ok: false, error: context.error };
 
   if (!["ADMIN", "OPERATOR", "TEACHER"].includes(context.role)) {
     return { ok: false, error: "You are not authorised to submit this workflow." };
@@ -104,7 +115,7 @@ export async function decideApproval(
   }
 
   const context = await getAuthenticatedContext();
-  if ("error" in context) return { ok: false, error: context.error };
+  if (!context.ok) return { ok: false, error: context.error };
 
   if (context.role !== "ADMIN") {
     return { ok: false, error: "Administrator approval is required." };
