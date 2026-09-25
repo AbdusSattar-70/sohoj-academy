@@ -1099,7 +1099,16 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      generate_receipt_no: { Args: never; Returns: string }
       generate_student_no: { Args: never; Returns: string }
+      save_assessment_results: {
+        Args: { p_assessment_id: string; p_entries: Json }
+        Returns: number
+      }
+      save_attendance: {
+        Args: { p_entries: Json; p_session_id: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "ADMIN" | "OPERATOR" | "TEACHER" | "GUARDIAN" | "STUDENT"
