@@ -15,7 +15,8 @@ const sectionKeys: Record<string, TranslationKey> = {
   payments: "feeCollection",
   parents: "parentCommunication",
   notices: "notices",
-  teachers: "teachers",
+  staff: "staff",
+  teachers: "staff",
   settings: "settings",
 };
 
