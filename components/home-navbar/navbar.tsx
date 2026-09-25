@@ -22,10 +22,10 @@ export default function Navbar() {
 
       <nav
         aria-label="Primary navigation"
-        className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-5 sm:px-6 lg:px-8"
+        className="mx-auto flex h-24 max-w-7xl items-center justify-between gap-4 px-5 sm:px-6 lg:px-8"
       >
         <Link href="/" aria-label="Sohoj Academy home" className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-4">
-          <Logo />
+          <Logo size={82} priority />
         </Link>
 
         <div className="hidden items-center gap-1 lg:flex">
