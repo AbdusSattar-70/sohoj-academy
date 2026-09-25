@@ -93,15 +93,16 @@ export default async function DashboardContent({user,section="dashboard",student
   const {data}=await s.from("guardians").select("id,name,mobile,alternate_mobile,address").order("created_at",{ascending:false}).limit(200);
   body=<Table title="Guardians" headers={["Name","Mobile","Alternate","Address"]} rows={(data??[]).map(x=>[x.name,x.mobile,x.alternate_mobile??"—",x.address??"—"])}/>;
  } else if(section==="attendance"){
-  const [sessionsQ,enrollmentsQ,attendanceQ]=await Promise.all([
+  const [sessionsQ,enrollmentsQ,attendanceQ,approvalsQ]=await Promise.all([
    s.from("class_sessions").select("id,batch_id,session_date,starts_at,ends_at,subjects(name)").order("session_date",{ascending:false}).limit(100),
    s.from("enrollments").select("student_id,batch_id,students(id,student_no,name)").eq("is_active",true),
-   s.from("attendance").select("session_id,student_id,status,remarks").order("marked_at",{ascending:false}).limit(1000)
+   s.from("attendance").select("session_id,student_id,status,remarks").order("marked_at",{ascending:false}).limit(1000),
+   s.from("approval_requests").select("id,entity_id,status,requested_by,requested_at,decision_note").eq("workflow_type","ATTENDANCE_FINALIZATION").eq("entity_type","CLASS_SESSION").order("requested_at",{ascending:false}).limit(500)
   ]);
   const attendanceBatches=batches.map(x=>({id:x.id,name:x.name}));
   const sessions=(sessionsQ.data??[]).map(x=>({id:x.id,batch_id:x.batch_id,session_date:x.session_date,starts_at:x.starts_at,ends_at:x.ends_at,subject_name:x.subjects?.name??null}));
   const attendanceStudents=(enrollmentsQ.data??[]).flatMap(x=>x.students?[{id:x.students.id,student_no:x.students.student_no,name:x.students.name,batch_id:x.batch_id}]:[]);
-  body=<AttendanceManager batches={attendanceBatches} sessions={sessions} students={attendanceStudents} existing={attendanceQ.data??[]}/>;
+  body=<AttendanceManager batches={attendanceBatches} sessions={sessions} students={attendanceStudents} existing={attendanceQ.data??[]} approvals={approvalsQ.data??[]} role={user.role}/>;
  } else if(section==="teachers"){
   const {data}=await s.from("teachers").select("id,name,mobile,is_active").order("name");
   body=user.role==="ADMIN"?<TeacherManager teachers={data??[]}/>:<Table title="Teachers" headers={["Name","Mobile"]} rows={(data??[]).map(x=>[x.name,x.mobile??"—"])}/>;
@@ -112,14 +113,15 @@ export default async function DashboardContent({user,section="dashboard",student
   const [studentsQ,paymentsQ]=await Promise.all([s.from("students").select("id,student_no,name,enrollments(id)").eq("status","ACTIVE").order("name"),s.from("payments").select("id,receipt_no,amount,payment_date,students(name,student_no)").order("created_at",{ascending:false}).limit(100)]);
   body=<PaymentManager students={studentsQ.data??[]} payments={paymentsQ.data??[]}/>;
  } else if(section==="assessments"){
-  const [assessmentsQ,enrollmentsQ,resultsQ]=await Promise.all([
+  const [assessmentsQ,enrollmentsQ,resultsQ,approvalsQ]=await Promise.all([
    s.from("assessments").select("id,title,batch_id,held_on,total_marks").order("held_on",{ascending:false}).limit(100),
    s.from("enrollments").select("student_id,batch_id,students(id,student_no,name)").eq("is_active",true),
-   s.from("assessment_results").select("assessment_id,student_id,marks,remarks").limit(2000)
+   s.from("assessment_results").select("assessment_id,student_id,marks,remarks").limit(2000),
+   s.from("approval_requests").select("id,entity_id,status,requested_by,requested_at,decision_note").eq("workflow_type","ASSESSMENT_RESULTS_FINALIZATION").eq("entity_type","ASSESSMENT").order("requested_at",{ascending:false}).limit(500)
   ]);
   const assessmentData=assessmentsQ.data??[];
   const resultStudents=(enrollmentsQ.data??[]).flatMap(x=>x.students?[{id:x.students.id,student_no:x.students.student_no,name:x.students.name,batch_id:x.batch_id}]:[]);
-  body=<><AssessmentManager years={years} batches={batches} subjects={subjects} assessments={assessmentData}/><AssessmentResultsManager assessments={assessmentData} students={resultStudents} results={resultsQ.data??[]}/></>;
+  body=<><AssessmentManager years={years} batches={batches} subjects={subjects} assessments={assessmentData}/><AssessmentResultsManager assessments={assessmentData} students={resultStudents} results={resultsQ.data??[]} approvals={approvalsQ.data??[]} role={user.role}/></>;
  } else if(section==="progress"){
   const [studentsQ,recordsQ]=await Promise.all([
    s.from("students").select("id,student_no,name").eq("status","ACTIVE").order("name"),
