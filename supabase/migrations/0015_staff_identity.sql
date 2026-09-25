@@ -402,7 +402,7 @@ create or replace function public.enforce_staff_subject_teacher_role()
 returns trigger
 language plpgsql
 set search_path = public
-as $
+as $$
 begin
   if not exists (
     select 1
@@ -417,7 +417,7 @@ begin
 
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists enforce_staff_subject_teacher_role_trigger
 on public.staff_subject_assignments;
