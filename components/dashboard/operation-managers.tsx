@@ -24,8 +24,8 @@ export function NoticeManager({notices}:{notices:{id:string;title:string;audienc
 function Box({title,children}:{title:string;children:React.ReactNode}){return <section className="rounded-xl border bg-card p-5"><h2 className="mb-4 text-lg font-semibold">{title}</h2>{children}</section>}
 function Rows({rows}:{rows:string[][]}){return <div className="mt-5 divide-y">{rows.length?rows.map((r,i)=><div key={i} className="flex justify-between gap-4 py-2 text-sm"><b>{r[0]}</b><span className="text-right text-muted-foreground">{r[1]}</span></div>):<p className="text-sm text-muted-foreground">No records yet.</p>}</div>}
 
-async function createTeacherAction(fd: FormData) { "use server"; await createTeacher(fd); }
-async function createFeeStructureAction(fd: FormData) { "use server"; await createFeeStructure(fd); }
-async function recordPaymentAction(fd: FormData) { "use server"; await recordPayment(fd); }
-async function createAssessmentAction(fd: FormData) { "use server"; await createAssessment(fd); }
-async function createNoticeAction(fd: FormData) { "use server"; await createNotice(fd); }
+async function createTeacherAction(fd: FormData): Promise<void> { "use server"; await createTeacher(fd); }
+async function createFeeStructureAction(fd: FormData): Promise<void> { "use server"; await createFeeStructure(fd); }
+async function recordPaymentAction(fd: FormData): Promise<void> { "use server"; await recordPayment(fd); }
+async function createAssessmentAction(fd: FormData): Promise<void> { "use server"; await createAssessment(fd); }
+async function createNoticeAction(fd: FormData): Promise<void> { "use server"; await createNotice(fd); }
