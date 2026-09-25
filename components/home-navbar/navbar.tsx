@@ -7,6 +7,7 @@ const links = [
   ["Learning Method", "#method"],
   ["Why Sohoj", "#why-sohoj"],
   ["Digital Campus", "#digital-campus"],
+  ["Register Interest", "/interest"],
 ] as const;
 
 export default function Navbar() {
