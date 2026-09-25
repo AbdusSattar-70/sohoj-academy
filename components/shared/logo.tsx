@@ -4,24 +4,33 @@ import Image from "next/image";
 
 interface LogoProps {
   size?: number;
-  showText?: boolean;
-  compact?: boolean;
-  inverse?: boolean;
   priority?: boolean;
   className?: string;
+  variant?: "full" | "mark";
 }
 
 export default function Logo({
   size = 88,
   priority = false,
   className = "",
+  variant = "full",
 }: LogoProps) {
+  const isMark = variant === "mark";
+
   return (
     <Image
-      src="/branding/sohoj-academy-logo.webp"
-      alt="সহজ একাডেমি — SOHOJ ACADEMY — Learning made easy & fun"
-      width={192}
-      height={192}
+      src={
+        isMark
+          ? "/branding/sohoj-academy-mark.webp"
+          : "/branding/sohoj-academy-logo.webp"
+      }
+      alt={
+        isMark
+          ? "Sohoj Academy"
+          : "সহজ একাডেমি — SOHOJ ACADEMY — Learning made easy & fun"
+      }
+      width={isMark ? 512 : 192}
+      height={isMark ? 512 : 192}
       priority={priority}
       sizes={`${size}px`}
       style={{ width: size, height: "auto" }}
