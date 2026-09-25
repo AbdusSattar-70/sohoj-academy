@@ -13,12 +13,10 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/server";
 import type { AppRole } from "@/lib/constants";
-import { LocalizedText } from "@/components/shared/localized-text";
 import type { User } from "@/types/user";
 import { StaffManager, type StaffDirectoryRow, type StaffRoleOption } from "@/modules/staff/components/staff-manager";
 
 const modules:Record<string,string>={admissions:"Admission Entry",students:"Student Master",guardians:"Guardians",attendance:"Attendance",assessments:"Assessments & Results",progress:"Progress Reports",fees:"Fee Structure",payments:"Fee Collection",parents:"Parent Communication",notices:"Notices",staff:"Staff",settings:"Settings"};
-const modulesBn:Record<string,string>={admissions:"ভর্তি",students:"শিক্ষার্থী মাস্টার",guardians:"অভিভাবক",attendance:"উপস্থিতি",assessments:"মূল্যায়ন ও ফলাফল",progress:"অগ্রগতি প্রতিবেদন",fees:"ফি কাঠামো",payments:"ফি সংগ্রহ",parents:"অভিভাবক যোগাযোগ",notices:"নোটিশ",staff:"কর্মীবৃন্দ",settings:"সেটিংস"};
 const moduleRoles:Record<string,AppRole[]>={
  admissions:["ADMIN","OPERATOR"],
  students:["ADMIN","OPERATOR","TEACHER"],
@@ -55,12 +53,12 @@ export default async function DashboardContent({user,section="dashboard",student
   ]);
   const total=(paymentSum.data??[]).reduce((a,x)=>a+Number(x.amount),0);
   const stats=[
-   [<LocalizedText key="active" en="Active Students" bn="সক্রিয় শিক্ষার্থী"/>,studentCount.count??0],
-   [<LocalizedText key="attendance" en="Attendance Marked Today" bn="আজ উপস্থিতি নেয়া হয়েছে"/>,todayAttendance.count??0],
-   [<LocalizedText key="fees" en="Fees Collected" bn="সংগৃহীত ফি"/>,`৳${total.toLocaleString()}`],
-   [<LocalizedText key="tests" en="Upcoming Tests" bn="আসন্ন পরীক্ষা"/>,testCount.count??0]
+   ["Active Students",studentCount.count??0],
+   ["Attendance Marked Today",todayAttendance.count??0],
+   ["Fees Collected",`৳${total.toLocaleString()}`],
+   ["Upcoming Tests",testCount.count??0]
   ];
-  body=<><div><h1 className="text-2xl font-bold"><LocalizedText en="Digital Campus" bn="ডিজিটাল ক্যাম্পাস"/></h1><p className="text-muted-foreground">শিক্ষা হোক সহজ ও আনন্দময়</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([a,b],i)=><Card key={i}><CardHeader className="pb-2"><CardTitle className="text-sm">{a}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{b}</div></CardContent></Card>)}</div><Card><CardHeader><CardTitle><LocalizedText en="Operations" bn="অপারেশনসমূহ"/></CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-3">{Object.entries(modules).filter(([k])=>moduleRoles[k]?.includes(user.role)).map(([k,v])=><Link key={k} href={"/dashboard/"+k} className="rounded-lg border p-4 hover:bg-muted"><p className="font-medium"><LocalizedText en={v} bn={modulesBn[k]??v}/></p><p className="text-sm text-muted-foreground"><LocalizedText en="Open module" bn="মডিউল খুলুন"/></p></Link>)}</CardContent></Card></>;
+  body=<><div><h1 className="text-2xl font-bold">Digital Campus</h1><p className="text-muted-foreground">Sohoj Academy operational workspace</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([a,b],i)=><Card key={i}><CardHeader className="pb-2"><CardTitle className="text-sm">{a}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{b}</div></CardContent></Card>)}</div><Card><CardHeader><CardTitle>Operations</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-3">{Object.entries(modules).filter(([k])=>moduleRoles[k]?.includes(user.role)).map(([k,v])=><Link key={k} href={"/dashboard/"+k} className="rounded-lg border p-4 hover:bg-muted"><p className="font-medium">{v}</p><p className="text-sm text-muted-foreground">Open module</p></Link>)}</CardContent></Card></>;
  } else if(section==="admissions"&&(user.role==="ADMIN"||user.role==="OPERATOR")){
   const [activeEnrollmentsQ,schoolsQ]=await Promise.all([
    s.from("enrollments").select("batch_id").eq("is_active",true).not("batch_id","is",null),
