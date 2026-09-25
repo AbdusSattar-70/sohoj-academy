@@ -824,6 +824,42 @@ export type Database = {
           },
         ]
       }
+      payment_posting_keys: {
+        Row: {
+          created_at: string
+          idempotency_key: string
+          payment_id: string | null
+          requested_by: string
+        }
+        Insert: {
+          created_at?: string
+          idempotency_key: string
+          payment_id?: string | null
+          requested_by: string
+        }
+        Update: {
+          created_at?: string
+          idempotency_key?: string
+          payment_id?: string | null
+          requested_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_posting_keys_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: true
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_posting_keys_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
