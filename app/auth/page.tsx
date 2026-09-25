@@ -43,7 +43,7 @@ export default function AuthHomePage() {
           />
 
           <div className="relative">
-            <Logo inverse />
+            <Logo size={112} priority />
           </div>
 
           <div className="relative my-auto max-w-2xl py-16">
@@ -78,7 +78,7 @@ export default function AuthHomePage() {
         <section className="flex min-h-screen flex-col bg-white">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-8 lg:border-0 lg:px-10 xl:px-14">
             <div className="lg:hidden">
-              <Logo size={38} />
+              <Logo size={76} priority />
             </div>
             <Link
               href="/"
