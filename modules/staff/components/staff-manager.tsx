@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { BriefcaseBusiness, CheckCircle2, UserRoundPlus } from "lucide-react";
 import { createStaffMember } from "@/modules/staff/actions";
 import type {
@@ -58,6 +59,7 @@ export function StaffManager({
   subjects: SubjectOption[];
   viewerRole: AppRole;
 }) {
+  const router = useRouter();
   const { locale } = useLanguage();
   const bn = locale === "bn";
   const tr = (en: string, bnText: string) => (bn ? bnText : en);
@@ -107,6 +109,7 @@ export function StaffManager({
             `কর্মী সফলভাবে তৈরি হয়েছে। Staff ID: ${result.staffNo}।`
           ),
         });
+        router.refresh();
       } else {
         setMessage({ ok: false, text: result.error });
       }
