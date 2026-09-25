@@ -219,6 +219,7 @@ declare
   v_class_id uuid;
   v_school_id uuid;
   v_source_id uuid;
+  v_source_code text := upper(btrim(coalesce(p_payload->>'source_code','')));
   v_program_id uuid;
   v_subject_id uuid;
   v_student_name text := btrim(coalesce(p_payload->>'student_name',''));
@@ -255,9 +256,12 @@ begin
     end if;
   end if;
 
-  if nullif(p_payload->>'source_id','') is not null then
-    v_source_id := (p_payload->>'source_id')::uuid;
-    if not exists(select 1 from public.lead_sources where id=v_source_id and is_active) then
+  if v_source_code <> '' then
+    select id into v_source_id
+    from public.lead_sources
+    where code=v_source_code and is_active;
+
+    if v_source_id is null then
       raise exception 'Selected source is not available.';
     end if;
   end if;
