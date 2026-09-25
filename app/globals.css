@@ -127,3 +127,34 @@
     @apply font-sans;
     }
 }
+
+
+/* Language-aware typography */
+[data-locale="en"] {
+  font-family: var(--font-en), system-ui, sans-serif;
+}
+
+[data-locale="bn"] {
+  font-family: var(--font-bn), system-ui, sans-serif;
+}
+
+[data-locale="bn"] .font-brand-latin {
+  font-family: var(--font-en), system-ui, sans-serif;
+}
+
+/* Keep theme changes polished without animating layout-sensitive properties. */
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  [data-slot="sidebar"],
+  [data-slot="card"],
+  header,
+  nav,
+  main,
+  section,
+  footer {
+    transition:
+      background-color 160ms ease,
+      color 160ms ease,
+      border-color 160ms ease;
+  }
+}

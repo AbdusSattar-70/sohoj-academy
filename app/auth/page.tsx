@@ -8,31 +8,42 @@ import {
   UsersRound,
 } from "lucide-react";
 import Logo from "@/components/shared/logo";
+import { PreferenceControls } from "@/components/shared/preference-controls";
+import { LocalizedText } from "@/components/shared/localized-text";
 import { ROUTES } from "@/lib/constants";
 
 const workspaceFeatures = [
   {
-    title: "Academic records",
-    description: "Attendance, assessments and student progress in one connected workspace.",
+    title: ["Academic records", "একাডেমিক রেকর্ড"],
+    description: [
+      "Attendance, assessments and student progress in one connected workspace.",
+      "উপস্থিতি, মূল্যায়ন ও শিক্ষার্থীর অগ্রগতি—একটি সংযুক্ত কর্মপরিসরে।",
+    ],
     icon: BookOpenCheck,
   },
   {
-    title: "Role-based access",
-    description: "Each user sees the tools and records appropriate to their role.",
+    title: ["Role-based access", "ভূমিকাভিত্তিক প্রবেশাধিকার"],
+    description: [
+      "Each user sees the tools and records appropriate to their role.",
+      "প্রত্যেক ব্যবহারকারী তার ভূমিকা অনুযায়ী প্রয়োজনীয় টুল ও রেকর্ড দেখবেন।",
+    ],
     icon: UsersRound,
   },
   {
-    title: "Traceable operations",
-    description: "Important academy actions are designed to remain reviewable and accountable.",
+    title: ["Traceable operations", "ট্রেসযোগ্য কার্যক্রম"],
+    description: [
+      "Important academy actions are designed to remain reviewable and accountable.",
+      "গুরুত্বপূর্ণ একাডেমি কার্যক্রম যেন পরবর্তীতে যাচাই ও জবাবদিহির জন্য দেখা যায়—সেভাবেই ডিজাইন করা।",
+    ],
     icon: ClipboardCheck,
   },
 ] as const;
 
 export default function AuthHomePage() {
   return (
-    <main className="min-h-screen bg-[#f7f9fc] text-slate-950">
+    <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto grid min-h-screen max-w-[96rem] lg:grid-cols-[1.05fr_.95fr]">
-        <section className="relative hidden overflow-hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col xl:p-14">
+        <section className="relative hidden overflow-hidden bg-slate-950 p-10 text-white dark:bg-black lg:flex lg:flex-col xl:p-14">
           <div
             className="pointer-events-none absolute inset-0"
             aria-hidden="true"
@@ -43,29 +54,39 @@ export default function AuthHomePage() {
           />
 
           <div className="relative">
-            <Logo inverse />
+            <Logo size={112} priority />
           </div>
 
           <div className="relative my-auto max-w-2xl py-16">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">
-              Sohoj Academy Digital Campus
+              <LocalizedText en="Sohoj Academy Digital Campus" bn="সহজ একাডেমি ডিজিটাল ক্যাম্পাস" />
             </p>
             <h1 className="mt-5 text-4xl font-bold tracking-[-0.04em] xl:text-5xl">
-              Academy operations and learning records, connected with clarity.
+              <LocalizedText
+                en="Academy operations and learning records, connected with clarity."
+                bn="একাডেমির কার্যক্রম ও শিক্ষার রেকর্ড—স্পষ্টভাবে এক জায়গায় সংযুক্ত।"
+              />
             </h1>
             <p className="mt-5 max-w-xl text-base leading-8 text-slate-300">
-              A secure workspace for authorised academy users to manage and follow the academic journey without losing important operational history.
+              <LocalizedText
+                en="A secure workspace for authorised academy users to manage and follow the academic journey without losing important operational history."
+                bn="অনুমোদিত ব্যবহারকারীদের জন্য একটি নিরাপদ কর্মপরিসর—যেখানে গুরুত্বপূর্ণ কার্যক্রমের ইতিহাস অক্ষুণ্ণ রেখে একাডেমিক যাত্রা পরিচালনা ও অনুসরণ করা যায়।"
+              />
             </p>
 
             <div className="mt-10 grid gap-3">
               {workspaceFeatures.map((item) => (
-                <div key={item.title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+                <div key={item.title[0]} className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-400/10 text-blue-200">
                     <item.icon className="size-5" aria-hidden="true" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-white">{item.title}</h2>
-                    <p className="mt-1 text-sm leading-6 text-slate-400">{item.description}</p>
+                    <h2 className="text-sm font-semibold text-white">
+                      <LocalizedText en={item.title[0]} bn={item.title[1]} />
+                    </h2>
+                    <p className="mt-1 text-sm leading-6 text-slate-400">
+                      <LocalizedText en={item.description[0]} bn={item.description[1]} />
+                    </p>
                   </div>
                 </div>
               ))}
@@ -75,50 +96,64 @@ export default function AuthHomePage() {
           <p className="relative text-xs text-slate-500">শিক্ষা হোক সহজ ও আনন্দময়</p>
         </section>
 
-        <section className="flex min-h-screen flex-col bg-white">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-8 lg:border-0 lg:px-10 xl:px-14">
+        <section className="flex min-h-screen flex-col bg-background">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4 sm:px-8 lg:border-0 lg:px-10 xl:px-14">
             <div className="lg:hidden">
-              <Logo size={38} />
+              <Logo size={76} priority />
             </div>
-            <Link
-              href="/"
-              className="ml-auto inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-            >
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              Back to website
-            </Link>
+            <div className="ml-auto flex items-center gap-2">
+              <PreferenceControls compact />
+              <Link
+                href="/"
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ArrowLeft className="size-4" aria-hidden="true" />
+                <LocalizedText en="Back to website" bn="ওয়েবসাইটে ফিরুন" />
+              </Link>
+            </div>
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8 lg:px-10 xl:px-14">
             <div className="w-full max-w-md">
-              <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+              <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
                 <ShieldCheck className="size-6" aria-hidden="true" />
               </div>
 
-              <h1 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-slate-950">
-                Welcome to Digital Campus
+              <h1 className="mt-6 text-3xl font-bold tracking-[-0.03em]">
+                <LocalizedText en="Welcome to Digital Campus" bn="ডিজিটাল ক্যাম্পাসে স্বাগতম" />
               </h1>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Sign in with your authorised Sohoj Academy account. Your available tools are determined by your assigned role.
+              <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                <LocalizedText
+                  en="Sign in with your authorised Sohoj Academy account. Your available tools are determined by your assigned role."
+                  bn="আপনার অনুমোদিত সহজ একাডেমি অ্যাকাউন্ট দিয়ে সাইন ইন করুন। আপনার ভূমিকা অনুযায়ী প্রয়োজনীয় টুলগুলো দেখানো হবে।"
+                />
               </p>
 
-              <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">Who can sign in?</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Admin, Operator, Teacher, Guardian and Student accounts that have been created or linked by Sohoj Academy.
+              <div className="mt-8 rounded-2xl border border-border bg-muted/50 p-4">
+                <p className="text-sm font-semibold">
+                  <LocalizedText en="Who can sign in?" bn="কারা সাইন ইন করতে পারবেন?" />
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  <LocalizedText
+                    en="Admin, Operator, Teacher, Guardian and Student accounts that have been created or linked by Sohoj Academy."
+                    bn="সহজ একাডেমি কর্তৃক তৈরি বা সংযুক্ত Admin, Operator, Teacher, Guardian এবং Student অ্যাকাউন্ট।"
+                  />
                 </p>
               </div>
 
               <Link
                 href={ROUTES.SIGN_IN}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_30px_-12px_rgba(29,78,216,.65)] transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                Continue to Sign In
+                <LocalizedText en="Continue to Sign In" bn="সাইন ইন করতে এগিয়ে যান" />
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
 
-              <p className="mt-5 text-center text-xs leading-5 text-slate-500">
-                Access is for authorised users. Public admission-interest registration will be provided separately from account sign-in.
+              <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
+                <LocalizedText
+                  en="Access is for authorised users. Public interest registration is separate from account sign-in."
+                  bn="এটি অনুমোদিত ব্যবহারকারীদের জন্য। সাধারণ শিক্ষার্থী আগ্রহ নিবন্ধন অ্যাকাউন্ট সাইন-ইন থেকে আলাদা।"
+                />
               </p>
             </div>
           </div>
