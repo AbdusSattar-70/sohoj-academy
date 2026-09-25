@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { CheckCircle2, Send } from "lucide-react";
 import { submitPublicInterest } from "@/app/actions/public-interest";
@@ -498,7 +498,7 @@ function Field({
   label: string;
   hint?: string;
   required?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const hintId = hint ? `${id}-hint` : undefined;
 
