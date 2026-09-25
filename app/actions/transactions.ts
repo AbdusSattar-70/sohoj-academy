@@ -62,3 +62,23 @@ export async function saveAssessmentResults(formData: FormData) {
  revalidatePath("/dashboard/assessments");revalidatePath("/dashboard/progress");
  return{ok:true,count:Number(data??0)};
 }
+
+
+export async function saveWeeklyMonitoring(formData:FormData){
+ const c=await staff(["ADMIN","OPERATOR","TEACHER"]);if("error" in c)return{ok:false,error:c.error};
+ const student_id=String(formData.get("student_id")??""),week_start=String(formData.get("week_start")??"");
+ const score=(name:string)=>{const raw=String(formData.get(name)??"");return raw===""?null:Number(raw)};
+ const homework_score=score("homework_score"),participation_score=score("participation_score"),test_score=score("test_score");
+ if(!student_id||!week_start)return{ok:false,error:"Student and week are required."};
+ if([homework_score,participation_score,test_score].some(x=>x!==null&&(x<0||x>100)))return{ok:false,error:"Scores must be between 0 and 100."};
+ const {error}=await c.supabase.from("weekly_monitoring").upsert({student_id,week_start,homework_score,participation_score,test_score,remarks:String(formData.get("remarks")??"")||null,recorded_by:c.user.id},{onConflict:"student_id,week_start"});
+ if(error)return{ok:false,error:error.message};revalidatePath("/dashboard/progress");revalidatePath("/dashboard/students/"+student_id);return{ok:true};
+}
+export async function recordParentCommunication(formData:FormData){
+ const c=await staff(["ADMIN","OPERATOR","TEACHER"]);if("error" in c)return{ok:false,error:c.error};
+ const student_id=String(formData.get("student_id")??""),notes=String(formData.get("notes")??"").trim();
+ if(!student_id||!notes)return{ok:false,error:"Student and notes are required."};
+ const guardian=String(formData.get("guardian_id")??"")||null,follow=String(formData.get("next_follow_up")??"")||null;
+ const {error}=await c.supabase.from("parent_communications").insert({student_id,guardian_id:guardian,communication_type:String(formData.get("communication_type")??"CALL"),notes,next_follow_up:follow,recorded_by:c.user.id});
+ if(error)return{ok:false,error:error.message};revalidatePath("/dashboard/parents");revalidatePath("/dashboard/students/"+student_id);return{ok:true};
+}
