@@ -6,13 +6,14 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
 export type AppLocale = "en" | "bn";
 
 const STORAGE_KEY = "sohoj-locale";
+const CHANGE_EVENT = "sohoj-locale-change";
 
 const dictionary = {
   en: {
@@ -32,6 +33,29 @@ const dictionary = {
     skipToContent: "Skip to main content",
     dashboard: "Dashboard",
     sohojDigitalCampus: "Sohoj Academy Digital Campus",
+    academic: "Academic",
+    finance: "Finance",
+    communication: "Communication",
+    management: "Management",
+    settingsGroup: "System",
+    admissions: "Admissions",
+    students: "Students",
+    guardians: "Guardians",
+    attendance: "Attendance",
+    assessments: "Assessments",
+    progress: "Progress",
+    feeStructure: "Fee Structure",
+    feeCollection: "Fee Collection",
+    parentCommunication: "Parent Communication",
+    notices: "Notices",
+    teachers: "Teachers",
+    settings: "Settings",
+    openModule: "Open module",
+    activeStudents: "Active Students",
+    attendanceToday: "Attendance Marked Today",
+    feesCollected: "Fees Collected",
+    upcomingTests: "Upcoming Tests",
+    operations: "Operations",
   },
   bn: {
     language: "ভাষা",
@@ -50,10 +74,33 @@ const dictionary = {
     skipToContent: "মূল কনটেন্টে যান",
     dashboard: "ড্যাশবোর্ড",
     sohojDigitalCampus: "সহজ একাডেমি ডিজিটাল ক্যাম্পাস",
+    academic: "একাডেমিক",
+    finance: "ফাইন্যান্স",
+    communication: "যোগাযোগ",
+    management: "ম্যানেজমেন্ট",
+    settingsGroup: "সিস্টেম",
+    admissions: "ভর্তি",
+    students: "শিক্ষার্থী",
+    guardians: "অভিভাবক",
+    attendance: "উপস্থিতি",
+    assessments: "মূল্যায়ন",
+    progress: "অগ্রগতি",
+    feeStructure: "ফি কাঠামো",
+    feeCollection: "ফি সংগ্রহ",
+    parentCommunication: "অভিভাবক যোগাযোগ",
+    notices: "নোটিশ",
+    teachers: "শিক্ষক",
+    settings: "সেটিংস",
+    openModule: "মডিউল খুলুন",
+    activeStudents: "সক্রিয় শিক্ষার্থী",
+    attendanceToday: "আজ উপস্থিতি নেয়া হয়েছে",
+    feesCollected: "সংগৃহীত ফি",
+    upcomingTests: "আসন্ন পরীক্ষা",
+    operations: "অপারেশনসমূহ",
   },
 } as const;
 
-type TranslationKey = keyof typeof dictionary.en;
+export type TranslationKey = keyof typeof dictionary.en;
 
 type LanguageContextValue = {
   locale: AppLocale;
@@ -64,26 +111,36 @@ type LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-function getInitialLocale(): AppLocale {
+function getStoredLocale(): AppLocale {
   if (typeof window === "undefined") return "en";
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === "bn" || stored === "en") return stored;
   return navigator.language.toLowerCase().startsWith("bn") ? "bn" : "en";
 }
 
+function subscribe(callback: () => void) {
+  window.addEventListener(CHANGE_EVENT, callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+function getServerSnapshot(): AppLocale {
+  return "en";
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<AppLocale>("en");
+  const locale = useSyncExternalStore(subscribe, getStoredLocale, getServerSnapshot);
 
   useEffect(() => {
-    const initial = getInitialLocale();
-    setLocaleState(initial);
-    document.documentElement.lang = initial === "bn" ? "bn-BD" : "en";
-  }, []);
+    document.documentElement.lang = locale === "bn" ? "bn-BD" : "en";
+  }, [locale]);
 
   const setLocale = useCallback((next: AppLocale) => {
-    setLocaleState(next);
     window.localStorage.setItem(STORAGE_KEY, next);
-    document.documentElement.lang = next === "bn" ? "bn-BD" : "en";
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
   const toggleLocale = useCallback(() => {
