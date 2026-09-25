@@ -102,7 +102,7 @@ export default async function InterestPage() {
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-5 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <Logo size={34} compact />
+          <Logo size={76} />
           <p className="text-xs text-slate-500">শিক্ষা হোক সহজ ও আনন্দময়</p>
         </div>
       </footer>
