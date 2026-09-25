@@ -17,7 +17,7 @@ export function AppSidebar({ user, ...props }: { user: User }) {
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain />
+        <NavMain role={user.role} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
