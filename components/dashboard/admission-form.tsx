@@ -149,7 +149,7 @@ export function AdmissionForm({
               Student Information
             </h3>
             <p className="text-sm text-muted-foreground">
-              Use the student's official/current information. These details become part of the permanent student record.
+              Use the student&apos;s official/current information. These details become part of the permanent student record.
             </p>
           </div>
 
