@@ -34,6 +34,13 @@ export const metadata: Metadata = {
       },
     ],
     shortcut: ["/favicons/favicon.ico"],
+    apple: [
+      {
+        url: "/branding/sohoj-academy-icon-192.webp",
+        sizes: "192x192",
+        type: "image/webp",
+      },
+    ],
   },
   manifest: "/favicons/site.webmanifest",
   openGraph: {
