@@ -18,9 +18,6 @@
 .env.production.local
 .env*
 
-# Allow example env file
-!.env.example
-
 # Vercel
 .vercel
 
