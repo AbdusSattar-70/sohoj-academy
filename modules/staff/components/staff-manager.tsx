@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField, FormStatus } from "@/components/shared/form-field";
 import { WorkflowHelp } from "@/components/shared/workflow-help";
-import { useLanguage } from "@/components/providers/language-provider";
 import type { AppRole } from "@/lib/constants";
 
 export type StaffDirectoryRow = {
@@ -60,9 +59,10 @@ export function StaffManager({
   viewerRole: AppRole;
 }) {
   const router = useRouter();
-  const { locale } = useLanguage();
-  const bn = locale === "bn";
-  const tr = (en: string, bnText: string) => (bn ? bnText : en);
+  const tr = (en: string, alternate: string) => {
+    void alternate;
+    return en;
+  };
   const [selectedRole, setSelectedRole] = useState("TEACHER");
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Feedback>(null);
@@ -269,7 +269,7 @@ export function StaffManager({
                 >
                   {roleOptions.map((role) => (
                     <option key={role.code} value={role.code}>
-                      {bn && role.nameBn ? role.nameBn : role.name}
+                      {role.name}
                     </option>
                   ))}
                 </select>
@@ -405,9 +405,7 @@ export function StaffManager({
                     )}
                   </td>
                   <td className="p-3">
-                    {bn && row.roleNameBn
-                      ? row.roleNameBn
-                      : row.roleName ?? row.roleCode ?? "—"}
+                    {row.roleName ?? row.roleCode ?? "—"}
                   </td>
                   <td className="p-3">
                     <p>{row.employmentType?.replaceAll("_", " ") ?? "—"}</p>
