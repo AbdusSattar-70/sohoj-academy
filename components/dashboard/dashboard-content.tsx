@@ -37,7 +37,17 @@ export default async function DashboardContent({user,section="dashboard",student
   const stats=[["Active Students",studentCount.count??0],["Attendance Marked Today",todayAttendance.count??0],["Fees Collected",`৳${total.toLocaleString()}`],["Upcoming Tests",testCount.count??0]];
   body=<><div><h1 className="text-2xl font-bold">Digital Campus</h1><p className="text-muted-foreground">শিক্ষা হোক সহজ ও আনন্দময়</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([a,b])=><Card key={a}><CardHeader className="pb-2"><CardTitle className="text-sm">{a}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{b}</div></CardContent></Card>)}</div><Card><CardHeader><CardTitle>Operations</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-3">{Object.entries(modules).map(([k,v])=><a key={k} href={"/dashboard/"+k} className="rounded-lg border p-4 hover:bg-muted"><p className="font-medium">{v}</p><p className="text-sm text-muted-foreground">Open module</p></a>)}</CardContent></Card></>;
  } else if(section==="admissions"&&(user.role==="ADMIN"||user.role==="OPERATOR")){
-  body=<Card><CardHeader><CardTitle>New Student Admission</CardTitle></CardHeader><CardContent><AdmissionForm academicYears={years} classes={classes} programs={programs} batches={batches}/></CardContent></Card>;
+  const [activeEnrollmentsQ,schoolNamesQ]=await Promise.all([
+   s.from("enrollments").select("batch_id").eq("is_active",true).not("batch_id","is",null),
+   s.from("students").select("school_name").not("school_name","is",null).limit(500)
+  ]);
+  const enrolledByBatch=new Map<string,number>();
+  for(const row of activeEnrollmentsQ.data??[]){
+   if(row.batch_id) enrolledByBatch.set(row.batch_id,(enrolledByBatch.get(row.batch_id)??0)+1);
+  }
+  const admissionBatches=batches.map(batch=>({...batch,enrolled:enrolledByBatch.get(batch.id)??0}));
+  const schoolSuggestions=Array.from(new Set((schoolNamesQ.data??[]).map(row=>row.school_name).filter((name):name is string=>Boolean(name)))).sort((a,b)=>a.localeCompare(b));
+  body=<Card><CardHeader><CardTitle>New Student Admission</CardTitle></CardHeader><CardContent><AdmissionForm academicYears={years} classes={classes} programs={programs} batches={admissionBatches} schoolSuggestions={schoolSuggestions}/></CardContent></Card>;
  } else if(section==="settings"&&user.role==="ADMIN"){
   body=<SettingsManager years={years} classes={classes} programs={programs} subjects={subjects} batches={batches}/>;
  } else if(section==="students"){
