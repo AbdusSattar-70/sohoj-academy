@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/components/providers/language-provider";
 
 export type SmartSelectOption = {
   id: string;
@@ -26,6 +27,7 @@ export function SmartSelect({
   required?: boolean;
   placeholder?: string;
 }) {
+  const { locale } = useLanguage();
   const id = useId();
   const listId = `${id}-options`;
   const hintId = hint ? `${id}-hint` : undefined;
@@ -43,7 +45,7 @@ export function SmartSelect({
     <div>
       <div className="mb-2 flex items-center justify-between gap-3">
         <Label htmlFor={id}>{label}</Label>
-        <span className="text-xs text-muted-foreground">{required ? "Required" : "Optional"}</span>
+        <span className="text-xs text-muted-foreground">{required ? (locale === "bn" ? "আবশ্যক" : "Required") : (locale === "bn" ? "ঐচ্ছিক" : "Optional")}</span>
       </div>
       <Input
         id={id}
