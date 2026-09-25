@@ -285,6 +285,38 @@ on public.class_sessions
 for each row
 execute function public.sync_class_session_staff_identity();
 
+-- A teaching-subject assignment is valid only while the staff member has an
+-- open Teacher role assignment.
+create or replace function public.enforce_staff_subject_teacher_role()
+returns trigger
+language plpgsql
+set search_path = public
+as $
+begin
+  if not exists (
+    select 1
+    from public.staff_role_assignments ra
+    join public.staff_role_catalog rc on rc.id = ra.role_id
+    where ra.staff_id = new.staff_id
+      and rc.code = 'TEACHER'
+      and ra.effective_to is null
+  ) then
+    raise exception 'Teaching subjects can only be assigned to staff with an active Teacher role.';
+  end if;
+
+  return new;
+end;
+$;
+
+drop trigger if exists enforce_staff_subject_teacher_role_trigger
+on public.staff_subject_assignments;
+
+create trigger enforce_staff_subject_teacher_role_trigger
+before insert or update of staff_id, subject_id, effective_to
+on public.staff_subject_assignments
+for each row
+execute function public.enforce_staff_subject_teacher_role();
+
 -- ---------------------------------------------------------------------------
 -- Staff creation is transactional and creates the legacy Teacher bridge only
 -- when the chosen business role is TEACHER.
