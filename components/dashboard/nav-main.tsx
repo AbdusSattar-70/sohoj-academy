@@ -23,17 +23,16 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useLanguage, type TranslationKey } from "@/components/providers/language-provider";
 import type { AppRole } from "@/lib/constants";
 
 type NavLeaf = {
-  titleKey: TranslationKey;
+  title: string;
   url: string;
   roles: AppRole[];
 };
 
 type NavGroup = {
-  titleKey: TranslationKey;
+  title: string;
   url?: string;
   icon: ComponentType<{ className?: string }>;
   roles: AppRole[];
@@ -46,54 +45,54 @@ const financeRoles: AppRole[] = ["ADMIN", "OPERATOR"];
 
 const groups: NavGroup[] = [
   {
-    titleKey: "dashboard",
+    title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
     roles: allRoles,
     items: [],
   },
   {
-    titleKey: "academic",
+    title: "Academic",
     icon: GraduationCap,
     roles: staffRoles,
     items: [
-      { titleKey: "admissions", url: "/dashboard/admissions", roles: ["ADMIN", "OPERATOR"] },
-      { titleKey: "students", url: "/dashboard/students", roles: staffRoles },
-      { titleKey: "guardians", url: "/dashboard/guardians", roles: staffRoles },
-      { titleKey: "attendance", url: "/dashboard/attendance", roles: staffRoles },
-      { titleKey: "assessments", url: "/dashboard/assessments", roles: staffRoles },
-      { titleKey: "progress", url: "/dashboard/progress", roles: staffRoles },
+      { title: "Admissions", url: "/dashboard/admissions", roles: ["ADMIN", "OPERATOR"] },
+      { title: "Students", url: "/dashboard/students", roles: staffRoles },
+      { title: "Guardians", url: "/dashboard/guardians", roles: staffRoles },
+      { title: "Attendance", url: "/dashboard/attendance", roles: staffRoles },
+      { title: "Assessments", url: "/dashboard/assessments", roles: staffRoles },
+      { title: "Progress", url: "/dashboard/progress", roles: staffRoles },
     ],
   },
   {
-    titleKey: "finance",
+    title: "Finance",
     icon: CircleDollarSign,
     roles: financeRoles,
     items: [
-      { titleKey: "feeStructure", url: "/dashboard/fees", roles: financeRoles },
-      { titleKey: "feeCollection", url: "/dashboard/payments", roles: financeRoles },
+      { title: "Fee Structure", url: "/dashboard/fees", roles: financeRoles },
+      { title: "Fee Collection", url: "/dashboard/payments", roles: financeRoles },
     ],
   },
   {
-    titleKey: "communication",
+    title: "Communication",
     icon: Users,
     roles: staffRoles,
     items: [
-      { titleKey: "parentCommunication", url: "/dashboard/parents", roles: staffRoles },
-      { titleKey: "notices", url: "/dashboard/notices", roles: ["ADMIN", "OPERATOR"] },
+      { title: "Parent Communication", url: "/dashboard/parents", roles: staffRoles },
+      { title: "Notices", url: "/dashboard/notices", roles: ["ADMIN", "OPERATOR"] },
     ],
   },
   {
-    titleKey: "management",
+    title: "Management",
     icon: CalendarDays,
     roles: staffRoles,
-    items: [{ titleKey: "staff", url: "/dashboard/staff", roles: staffRoles }],
+    items: [{ title: "Staff", url: "/dashboard/staff", roles: staffRoles }],
   },
   {
-    titleKey: "settingsGroup",
+    title: "System",
     icon: Settings2,
     roles: ["ADMIN"],
-    items: [{ titleKey: "settings", url: "/dashboard/settings", roles: ["ADMIN"] }],
+    items: [{ title: "Settings", url: "/dashboard/settings", roles: ["ADMIN"] }],
   },
 ];
 
@@ -104,8 +103,6 @@ function isCurrent(pathname: string, url: string) {
 
 export function NavMain({ role }: { role: AppRole }) {
   const pathname = usePathname();
-  const { t } = useLanguage();
-
   const visibleGroups = groups
     .filter((group) => group.roles.includes(role))
     .map((group) => ({
@@ -119,12 +116,12 @@ export function NavMain({ role }: { role: AppRole }) {
       <SidebarGroupLabel>Sohoj Academy</SidebarGroupLabel>
       <SidebarMenu>
         {visibleGroups.map((group) => {
-          const groupTitle = t(group.titleKey);
+          const groupTitle = group.title;
 
           if (group.items.length === 0 && group.url) {
             const active = isCurrent(pathname, group.url);
             return (
-              <SidebarMenuItem key={group.titleKey}>
+              <SidebarMenuItem key={group.title}>
                 <SidebarMenuButton asChild tooltip={groupTitle} isActive={active}>
                   <Link href={group.url} aria-current={active ? "page" : undefined}>
                     <group.icon />
@@ -139,9 +136,9 @@ export function NavMain({ role }: { role: AppRole }) {
 
           return (
             <Collapsible
-              key={group.titleKey}
+              key={group.title}
               asChild
-              defaultOpen={groupActive || group.titleKey === "academic"}
+              defaultOpen={groupActive || group.title === "Academic"}
               className="group/collapsible"
             >
               <SidebarMenuItem>
@@ -159,7 +156,7 @@ export function NavMain({ role }: { role: AppRole }) {
                   <SidebarMenuSub>
                     {group.items.map((item) => {
                       const active = isCurrent(pathname, item.url);
-                      const itemTitle = t(item.titleKey);
+                      const itemTitle = item.title;
 
                       return (
                         <SidebarMenuSubItem key={item.url}>
