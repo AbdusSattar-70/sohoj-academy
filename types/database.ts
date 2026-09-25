@@ -1668,10 +1668,7 @@ export type Database = {
         }
         Returns: Json
       }
-      post_payment_request: {
-        Args: { p_input: Json }
-        Returns: Json
-      }
+      post_payment_request: { Args: { p_input: Json }; Returns: Json }
       record_audit_event: {
         Args: {
           p_action: string
