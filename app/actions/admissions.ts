@@ -7,7 +7,12 @@ import { admissionSchema, type AdmissionInput } from "@/lib/academy/admission-sc
 export async function createAdmission(input: AdmissionInput) {
   const parsed = admissionSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: "Please check the admission information." };
+    const issue = parsed.error.issues[0];
+    return {
+      ok: false,
+      error: issue?.message ?? "Please check the admission information.",
+      field: issue?.path?.[0]?.toString() ?? null,
+    };
   }
 
   const supabase = await createClient();
@@ -67,6 +72,7 @@ export async function createAdmission(input: AdmissionInput) {
 
   return {
     ok: true,
+    studentId: result?.student_id ?? null,
     studentNo: result?.student_no ?? null,
   };
 }
