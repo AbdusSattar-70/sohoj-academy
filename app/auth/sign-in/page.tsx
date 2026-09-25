@@ -39,7 +39,7 @@ export default function SignInPage() {
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col">
         <header className="flex items-center justify-between">
           <Link href="/" aria-label="Sohoj Academy home">
-            <Logo size={40} />
+            <Logo size={78} priority />
           </Link>
           <Link
             href={ROUTES.AUTH}
