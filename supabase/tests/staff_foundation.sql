@@ -27,7 +27,7 @@ $$;
 
 -- Every staff-side authenticated profile must resolve to one canonical Staff
 -- identity. Guardian and Student profiles are intentionally excluded.
-do $
+do $$
 begin
   if exists (
     select 1
@@ -42,7 +42,7 @@ begin
     raise exception 'A staff-side profile does not resolve to exactly one Staff identity.';
   end if;
 end;
-$;
+$$;
 
 -- Every legacy Teacher must have exactly one canonical Staff identity using the
 -- same UUID so historical class_session teacher references remain stable.
