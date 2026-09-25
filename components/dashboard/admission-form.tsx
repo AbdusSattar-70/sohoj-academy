@@ -109,14 +109,19 @@ export function AdmissionForm({
 
     startTransition(async () => {
       const result = await createAdmission(input);
-      setMessage({
-        ok: result.ok,
-        text: result.ok
-          ? `Admission saved successfully. Permanent Student ID: ${result.studentNo ?? "created"}.`
-          : result.error ?? "Admission could not be saved.",
-        studentId: result.studentId,
-        studentNo: result.studentNo,
-      });
+      if (result.ok) {
+        setMessage({
+          ok: true,
+          text: `Admission saved successfully. Permanent Student ID: ${result.studentNo ?? "created"}.`,
+          studentId: result.studentId,
+          studentNo: result.studentNo,
+        });
+      } else {
+        setMessage({
+          ok: false,
+          text: result.error || "Admission could not be saved.",
+        });
+      }
     });
   }
 
@@ -400,7 +405,7 @@ export function AdmissionForm({
             Review the student, guardian, batch and fee terms before creating the permanent record.
           </p>
           <Button type="submit" size="lg" className="min-h-11" disabled={isPending}>
-            {isPending ? "Creating admission…" : "Review & Create Admission"}
+            {isPending ? "Creating admission…" : "Create Admission"}
           </Button>
         </div>
       </form>
