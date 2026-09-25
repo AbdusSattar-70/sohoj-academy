@@ -1335,6 +1335,18 @@ export type Database = {
       }
       generate_receipt_no: { Args: never; Returns: string }
       generate_student_no: { Args: never; Returns: string }
+      post_payment: {
+        Args: {
+          p_amount: number
+          p_enrollment_id: string | null
+          p_idempotency_key: string
+          p_method: string
+          p_notes: string | null
+          p_payment_date: string
+          p_student_id: string
+        }
+        Returns: Json
+      }
       record_audit_event: {
         Args: {
           p_action: string
