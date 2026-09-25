@@ -731,6 +731,44 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_sources: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_sources_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notices: {
         Row: {
           audience: string
@@ -1005,6 +1043,252 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      prospect_followups: {
+        Row: {
+          created_at: string
+          followup_type: string
+          id: string
+          next_follow_up: string | null
+          notes: string
+          occurred_at: string
+          outcome: string | null
+          prospect_id: string
+          recorded_by: string
+        }
+        Insert: {
+          created_at?: string
+          followup_type: string
+          id?: string
+          next_follow_up?: string | null
+          notes: string
+          occurred_at?: string
+          outcome?: string | null
+          prospect_id: string
+          recorded_by: string
+        }
+        Update: {
+          created_at?: string
+          followup_type?: string
+          id?: string
+          next_follow_up?: string | null
+          notes?: string
+          occurred_at?: string
+          outcome?: string | null
+          prospect_id?: string
+          recorded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_followups_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospect_followups_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospect_program_interests: {
+        Row: {
+          created_at: string
+          program_id: string
+          prospect_id: string
+        }
+        Insert: {
+          created_at?: string
+          program_id: string
+          prospect_id: string
+        }
+        Update: {
+          created_at?: string
+          program_id?: string
+          prospect_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_program_interests_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospect_program_interests_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospect_subject_interests: {
+        Row: {
+          created_at: string
+          prospect_id: string
+          subject_id: string
+        }
+        Insert: {
+          created_at?: string
+          prospect_id: string
+          subject_id: string
+        }
+        Update: {
+          created_at?: string
+          prospect_id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_subject_interests_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospect_subject_interests_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospects: {
+        Row: {
+          alternate_mobile: string | null
+          area: string | null
+          assigned_to: string | null
+          consent_to_contact: boolean
+          converted_at: string | null
+          converted_student_id: string | null
+          created_at: string
+          current_class_id: string | null
+          guardian_name: string
+          guardian_relationship: string | null
+          id: string
+          lost_reason: string | null
+          mobile: string
+          next_follow_up: string | null
+          notes: string | null
+          preferred_days: string | null
+          preferred_schedule: string | null
+          prospect_no: string
+          referral_note: string | null
+          school_id: string | null
+          school_name_snapshot: string | null
+          source_id: string | null
+          status: Database["public"]["Enums"]["prospect_status"]
+          student_name: string
+          student_name_bn: string | null
+          submitted_via: string
+          trial_interest: boolean
+          updated_at: string
+        }
+        Insert: {
+          alternate_mobile?: string | null
+          area?: string | null
+          assigned_to?: string | null
+          consent_to_contact?: boolean
+          converted_at?: string | null
+          converted_student_id?: string | null
+          created_at?: string
+          current_class_id?: string | null
+          guardian_name: string
+          guardian_relationship?: string | null
+          id?: string
+          lost_reason?: string | null
+          mobile: string
+          next_follow_up?: string | null
+          notes?: string | null
+          preferred_days?: string | null
+          preferred_schedule?: string | null
+          prospect_no?: string
+          referral_note?: string | null
+          school_id?: string | null
+          school_name_snapshot?: string | null
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"]
+          student_name: string
+          student_name_bn?: string | null
+          submitted_via?: string
+          trial_interest?: boolean
+          updated_at?: string
+        }
+        Update: {
+          alternate_mobile?: string | null
+          area?: string | null
+          assigned_to?: string | null
+          consent_to_contact?: boolean
+          converted_at?: string | null
+          converted_student_id?: string | null
+          created_at?: string
+          current_class_id?: string | null
+          guardian_name?: string
+          guardian_relationship?: string | null
+          id?: string
+          lost_reason?: string | null
+          mobile?: string
+          next_follow_up?: string | null
+          notes?: string | null
+          preferred_days?: string | null
+          preferred_schedule?: string | null
+          prospect_no?: string
+          referral_note?: string | null
+          school_id?: string | null
+          school_name_snapshot?: string | null
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"]
+          student_name?: string
+          student_name_bn?: string | null
+          submitted_via?: string
+          trial_interest?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_converted_student_id_fkey"
+            columns: ["converted_student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_current_class_id_fkey"
+            columns: ["current_class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "lead_sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recovery_logs: {
         Row: {
@@ -1369,6 +1653,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      generate_prospect_no: { Args: never; Returns: string }
       generate_receipt_no: { Args: never; Returns: string }
       generate_student_no: { Args: never; Returns: string }
       post_payment: {
@@ -1408,12 +1693,23 @@ export type Database = {
         Args: { p_entries: Json; p_session_id: string }
         Returns: number
       }
+      submit_public_interest: { Args: { p_payload: Json }; Returns: Json }
     }
     Enums: {
       app_role: "ADMIN" | "OPERATOR" | "TEACHER" | "GUARDIAN" | "STUDENT"
       approval_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"
       attendance_status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"
       payment_status: "POSTED" | "VOID"
+      prospect_status:
+        | "NEW"
+        | "CONTACTED"
+        | "COUNSELLING"
+        | "TRIAL_SCHEDULED"
+        | "TRIAL_ATTENDED"
+        | "REGISTERED"
+        | "CONVERTED"
+        | "FUTURE_FOLLOW_UP"
+        | "LOST"
       student_status: "ACTIVE" | "INACTIVE" | "GRADUATED" | "WITHDRAWN"
     }
     CompositeTypes: {
@@ -1546,6 +1842,17 @@ export const Constants = {
       approval_status: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
       attendance_status: ["PRESENT", "ABSENT", "LATE", "EXCUSED"],
       payment_status: ["POSTED", "VOID"],
+      prospect_status: [
+        "NEW",
+        "CONTACTED",
+        "COUNSELLING",
+        "TRIAL_SCHEDULED",
+        "TRIAL_ATTENDED",
+        "REGISTERED",
+        "CONVERTED",
+        "FUTURE_FOLLOW_UP",
+        "LOST",
+      ],
       student_status: ["ACTIVE", "INACTIVE", "GRADUATED", "WITHDRAWN"],
     },
   },
