@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { AdmissionForm } from "@/components/dashboard/admission-form";
 import { SettingsManager } from "@/components/dashboard/settings-manager";
 import { AssessmentManager, FeeManager, NoticeManager, PaymentManager, TeacherManager } from "@/components/dashboard/operation-managers";
@@ -11,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/server";
 import type { AppRole } from "@/lib/constants";
+import { LocalizedText } from "@/components/shared/localized-text";
 import type { User } from "@/types/user";
 
 const modules:Record<string,string>={admissions:"Admission Entry",students:"Student Master",guardians:"Guardians",attendance:"Attendance",assessments:"Assessments & Results",progress:"Progress Reports",fees:"Fee Structure",payments:"Fee Collection",parents:"Parent Communication",notices:"Notices",teachers:"Teachers",settings:"Settings"};
@@ -49,8 +52,13 @@ export default async function DashboardContent({user,section="dashboard",student
    s.from("assessments").select("*",{count:"exact",head:true}).gte("held_on",new Date().toISOString().slice(0,10))
   ]);
   const total=(paymentSum.data??[]).reduce((a,x)=>a+Number(x.amount),0);
-  const stats=[["Active Students",studentCount.count??0],["Attendance Marked Today",todayAttendance.count??0],["Fees Collected",`৳${total.toLocaleString()}`],["Upcoming Tests",testCount.count??0]];
-  body=<><div><h1 className="text-2xl font-bold">Digital Campus</h1><p className="text-muted-foreground">শিক্ষা হোক সহজ ও আনন্দময়</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([a,b])=><Card key={a}><CardHeader className="pb-2"><CardTitle className="text-sm">{a}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{b}</div></CardContent></Card>)}</div><Card><CardHeader><CardTitle>Operations</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-3">{Object.entries(modules).filter(([k])=>moduleRoles[k]?.includes(user.role)).map(([k,v])=><a key={k} href={"/dashboard/"+k} className="rounded-lg border p-4 hover:bg-muted"><p className="font-medium">{v}</p><p className="text-sm text-muted-foreground">Open module</p></a>)}</CardContent></Card></>;
+  const stats=[
+   [<LocalizedText key="active" en="Active Students" bn="সক্রিয় শিক্ষার্থী"/>,studentCount.count??0],
+   [<LocalizedText key="attendance" en="Attendance Marked Today" bn="আজ উপস্থিতি নেয়া হয়েছে"/>,todayAttendance.count??0],
+   [<LocalizedText key="fees" en="Fees Collected" bn="সংগৃহীত ফি"/>,`৳${total.toLocaleString()}`],
+   [<LocalizedText key="tests" en="Upcoming Tests" bn="আসন্ন পরীক্ষা"/>,testCount.count??0]
+  ];
+  body=<><div><h1 className="text-2xl font-bold"><LocalizedText en="Digital Campus" bn="ডিজিটাল ক্যাম্পাস"/></h1><p className="text-muted-foreground">শিক্ষা হোক সহজ ও আনন্দময়</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([a,b],i)=><Card key={i}><CardHeader className="pb-2"><CardTitle className="text-sm">{a}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{b}</div></CardContent></Card>)}</div><Card><CardHeader><CardTitle><LocalizedText en="Operations" bn="অপারেশনসমূহ"/></CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-3">{Object.entries(modules).filter(([k])=>moduleRoles[k]?.includes(user.role)).map(([k,v])=><Link key={k} href={"/dashboard/"+k} className="rounded-lg border p-4 hover:bg-muted"><p className="font-medium">{v}</p><p className="text-sm text-muted-foreground"><LocalizedText en="Open module" bn="মডিউল খুলুন"/></p></Link>)}</CardContent></Card></>;
  } else if(section==="admissions"&&(user.role==="ADMIN"||user.role==="OPERATOR")){
   const [activeEnrollmentsQ,schoolNamesQ]=await Promise.all([
    s.from("enrollments").select("batch_id").eq("is_active",true).not("batch_id","is",null),
@@ -129,9 +137,9 @@ export default async function DashboardContent({user,section="dashboard",student
  } else {
   body=<Card><CardHeader><CardTitle>{title}</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">This workflow is being connected to the live academy records.</p></CardContent></Card>;
  }
- return <SidebarProvider><AppSidebar user={user}/><SidebarInset><header className="flex h-16 items-center gap-3 border-b px-4"><SidebarTrigger/><Separator orientation="vertical" className="h-4"/><div><p className="font-semibold">{title}</p><p className="text-xs text-muted-foreground">Sohoj Academy Digital Campus</p></div></header><main className="flex-1 space-y-6 p-4 md:p-6">{body}</main></SidebarInset></SidebarProvider>;
+ return <SidebarProvider><AppSidebar user={user}/><SidebarInset><header className="flex min-h-16 items-center gap-3 border-b px-4 py-2"><SidebarTrigger/><Separator orientation="vertical" className="h-4"/><DashboardHeader section={section}/></header><main className="flex-1 space-y-6 p-4 md:p-6">{body}</main></SidebarInset></SidebarProvider>;
 }
 
-function StudentDirectory({rows}:{rows:{id:string;student_no:string;name:string;school:string;status:string}[]}){return <Card><CardHeader><CardTitle>Student Master</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-3">ID</th><th className="p-3">Student</th><th className="p-3">School</th><th className="p-3">Status</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} className="border-b"><td className="p-3"><a className="font-medium underline-offset-4 hover:underline" href={"/dashboard/students/"+r.id}>{r.student_no}</a></td><td className="p-3"><a className="font-medium underline-offset-4 hover:underline" href={"/dashboard/students/"+r.id}>{r.name}</a></td><td className="p-3">{r.school}</td><td className="p-3">{r.status}</td></tr>)}</tbody></table>{!rows.length&&<p className="py-8 text-center text-muted-foreground">No records yet.</p>}</div></CardContent></Card>}
+function StudentDirectory({rows}:{rows:{id:string;student_no:string;name:string;school:string;status:string}[]}){return <Card><CardHeader><CardTitle>Student Master</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-3">ID</th><th className="p-3">Student</th><th className="p-3">School</th><th className="p-3">Status</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} className="border-b"><td className="p-3"><Link className="font-medium underline-offset-4 hover:underline" href={"/dashboard/students/"+r.id}>{r.student_no}</Link></td><td className="p-3"><Link className="font-medium underline-offset-4 hover:underline" href={"/dashboard/students/"+r.id}>{r.name}</Link></td><td className="p-3">{r.school}</td><td className="p-3">{r.status}</td></tr>)}</tbody></table>{!rows.length&&<p className="py-8 text-center text-muted-foreground">No records yet.</p>}</div></CardContent></Card>}
 
 function Table({title,headers,rows}:{title:string;headers:string[];rows:(string|number)[][]}){return <Card><CardHeader><CardTitle>{title}</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left">{headers.map(h=><th key={h} className="p-3">{h}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i} className="border-b">{r.map((v,j)=><td key={j} className="p-3">{v}</td>)}</tr>)}</tbody></table>{!rows.length&&<p className="py-8 text-center text-muted-foreground">No records yet.</p>}</div></CardContent></Card>}
