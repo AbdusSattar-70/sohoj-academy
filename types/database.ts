@@ -470,6 +470,7 @@ export type Database = {
           notes: string | null
           session_date: string
           session_type: string
+          staff_id: string | null
           starts_at: string
           subject_id: string | null
           teacher_id: string | null
@@ -482,6 +483,7 @@ export type Database = {
           notes?: string | null
           session_date: string
           session_type?: string
+          staff_id?: string | null
           starts_at: string
           subject_id?: string | null
           teacher_id?: string | null
@@ -494,6 +496,7 @@ export type Database = {
           notes?: string | null
           session_date?: string
           session_type?: string
+          staff_id?: string | null
           starts_at?: string
           subject_id?: string | null
           teacher_id?: string | null
@@ -511,6 +514,13 @@ export type Database = {
             columns: ["classroom_id"]
             isOneToOne: false
             referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sessions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
             referencedColumns: ["id"]
           },
           {
@@ -1372,6 +1382,266 @@ export type Database = {
           },
         ]
       }
+      staff: {
+        Row: {
+          address: string | null
+          alternate_mobile: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          full_name: string
+          id: string
+          mobile: string | null
+          name_bn: string | null
+          notes: string | null
+          profile_id: string | null
+          staff_no: string
+          status: Database["public"]["Enums"]["staff_status"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          alternate_mobile?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          mobile?: string | null
+          name_bn?: string | null
+          notes?: string | null
+          profile_id?: string | null
+          staff_no?: string
+          status?: Database["public"]["Enums"]["staff_status"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          alternate_mobile?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          mobile?: string | null
+          name_bn?: string | null
+          notes?: string | null
+          profile_id?: string | null
+          staff_no?: string
+          status?: Database["public"]["Enums"]["staff_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_employments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          employment_type: Database["public"]["Enums"]["staff_employment_type"]
+          ends_on: string | null
+          id: string
+          notes: string | null
+          staff_id: string
+          starts_on: string
+          status: Database["public"]["Enums"]["staff_employment_status"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          employment_type?: Database["public"]["Enums"]["staff_employment_type"]
+          ends_on?: string | null
+          id?: string
+          notes?: string | null
+          staff_id: string
+          starts_on?: string
+          status?: Database["public"]["Enums"]["staff_employment_status"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          employment_type?: Database["public"]["Enums"]["staff_employment_type"]
+          ends_on?: string | null
+          id?: string
+          notes?: string | null
+          staff_id?: string
+          starts_on?: string
+          status?: Database["public"]["Enums"]["staff_employment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_employments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_employments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_role_assignments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_to: string | null
+          id: string
+          is_primary: boolean
+          role_id: string
+          staff_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          role_id: string
+          staff_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          role_id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_role_assignments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_role_assignments_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "staff_role_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_role_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_role_catalog: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_teaching_role: boolean
+          name: string
+          name_bn: string | null
+          system_managed: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_teaching_role?: boolean
+          name: string
+          name_bn?: string | null
+          system_managed?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_teaching_role?: boolean
+          name?: string
+          name_bn?: string | null
+          system_managed?: boolean
+        }
+        Relationships: []
+      }
+      staff_subject_assignments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_to: string | null
+          id: string
+          is_primary: boolean
+          staff_id: string
+          subject_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          staff_id: string
+          subject_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          staff_id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_subject_assignments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_subject_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_subject_assignments_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_fee_assignments: {
         Row: {
           amount: number
@@ -1565,6 +1835,7 @@ export type Database = {
           mobile: string | null
           name: string
           profile_id: string | null
+          staff_id: string
         }
         Insert: {
           created_at?: string
@@ -1573,6 +1844,7 @@ export type Database = {
           mobile?: string | null
           name: string
           profile_id?: string | null
+          staff_id: string
         }
         Update: {
           created_at?: string
@@ -1581,8 +1853,16 @@ export type Database = {
           mobile?: string | null
           name?: string
           profile_id?: string | null
+          staff_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "teachers_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: true
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "teachers_profile_id_fkey"
             columns: ["profile_id"]
@@ -1649,12 +1929,14 @@ export type Database = {
         Args: { p_enrollment: Json; p_guardian: Json; p_student: Json }
         Returns: Json
       }
+      create_staff_member: { Args: { p_input: Json }; Returns: Json }
       current_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
       generate_prospect_no: { Args: never; Returns: string }
       generate_receipt_no: { Args: never; Returns: string }
+      generate_staff_no: { Args: never; Returns: string }
       generate_student_no: { Args: never; Returns: string }
       post_payment: {
         Args: {
@@ -1707,6 +1989,14 @@ export type Database = {
         | "CONVERTED"
         | "FUTURE_FOLLOW_UP"
         | "LOST"
+      staff_employment_status: "ACTIVE" | "ON_LEAVE" | "ENDED"
+      staff_employment_type:
+        | "FULL_TIME"
+        | "PART_TIME"
+        | "CONTRACT"
+        | "VISITING"
+        | "OTHER"
+      staff_status: "ACTIVE" | "INACTIVE"
       student_status: "ACTIVE" | "INACTIVE" | "GRADUATED" | "WITHDRAWN"
     }
     CompositeTypes: {
@@ -1850,6 +2140,15 @@ export const Constants = {
         "FUTURE_FOLLOW_UP",
         "LOST",
       ],
+      staff_employment_status: ["ACTIVE", "ON_LEAVE", "ENDED"],
+      staff_employment_type: [
+        "FULL_TIME",
+        "PART_TIME",
+        "CONTRACT",
+        "VISITING",
+        "OTHER",
+      ],
+      staff_status: ["ACTIVE", "INACTIVE"],
       student_status: ["ACTIVE", "INACTIVE", "GRADUATED", "WITHDRAWN"],
     },
   },
