@@ -287,14 +287,12 @@ where p.role in ('ADMIN','OPERATOR','TEACHER')
 -- the temporary compatibility bridge used by class_sessions.teacher_id.
 insert into public.teachers (
   id,
-  staff_id,
   profile_id,
   name,
   mobile,
   is_active
 )
 select
-  s.id,
   s.id,
   s.profile_id,
   s.full_name,
@@ -306,7 +304,7 @@ where p.role = 'TEACHER'
   and not exists (
     select 1
     from public.teachers t
-    where t.staff_id = s.id
+    where t.id = s.id
        or t.profile_id = s.profile_id
   );
 
