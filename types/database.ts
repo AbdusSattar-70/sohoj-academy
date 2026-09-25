@@ -1338,13 +1338,17 @@ export type Database = {
       post_payment: {
         Args: {
           p_amount: number
-          p_enrollment_id: string | null
+          p_enrollment_id: string
           p_idempotency_key: string
           p_method: string
-          p_notes: string | null
+          p_notes: string
           p_payment_date: string
           p_student_id: string
         }
+        Returns: Json
+      }
+      post_payment_request: {
+        Args: { p_input: Json }
         Returns: Json
       }
       record_audit_event: {
