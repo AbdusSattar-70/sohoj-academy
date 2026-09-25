@@ -3,6 +3,7 @@ import { AdmissionForm } from "@/components/dashboard/admission-form";
 import { SettingsManager } from "@/components/dashboard/settings-manager";
 import { AssessmentManager, FeeManager, NoticeManager, PaymentManager, TeacherManager } from "@/components/dashboard/operation-managers";
 import { AttendanceManager } from "@/components/dashboard/attendance-manager";
+import { AssessmentResultsManager } from "@/components/dashboard/assessment-results-manager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -63,8 +64,14 @@ export default async function DashboardContent({user,section="dashboard"}:{user:
   const [studentsQ,paymentsQ]=await Promise.all([s.from("students").select("id,student_no,name,enrollments(id)").eq("status","ACTIVE").order("name"),s.from("payments").select("id,receipt_no,amount,payment_date,students(name,student_no)").order("created_at",{ascending:false}).limit(100)]);
   body=<PaymentManager students={studentsQ.data??[]} payments={paymentsQ.data??[]}/>;
  } else if(section==="assessments"){
-  const {data}=await s.from("assessments").select("id,title,held_on,total_marks").order("held_on",{ascending:false}).limit(100);
-  body=<AssessmentManager years={years} batches={batches} subjects={subjects} assessments={data??[]}/>;
+  const [assessmentsQ,enrollmentsQ,resultsQ]=await Promise.all([
+   s.from("assessments").select("id,title,batch_id,held_on,total_marks").order("held_on",{ascending:false}).limit(100),
+   s.from("enrollments").select("student_id,batch_id,students(id,student_no,name)").eq("is_active",true),
+   s.from("assessment_results").select("assessment_id,student_id,marks,remarks").limit(2000)
+  ]);
+  const assessmentData=assessmentsQ.data??[];
+  const resultStudents=(enrollmentsQ.data??[]).flatMap(x=>x.students?[{id:x.students.id,student_no:x.students.student_no,name:x.students.name,batch_id:x.batch_id}]:[]);
+  body=<><AssessmentManager years={years} batches={batches} subjects={subjects} assessments={assessmentData}/><AssessmentResultsManager assessments={assessmentData} students={resultStudents} results={resultsQ.data??[]}/></>;
  } else if(section==="notices"){
   const {data}=await s.from("notices").select("id,title,audience,published_at").order("created_at",{ascending:false}).limit(100);
   body=<NoticeManager notices={data??[]}/>;
