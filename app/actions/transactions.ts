@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
 async function staff(roles:string[]) {
@@ -9,14 +10,56 @@ async function staff(roles:string[]) {
  if(!p||!roles.includes(p.role))return{error:"Not authorized." as const};
  return{supabase,user};
 }
+const paymentSchema = z.object({
+ student_id: z.string().uuid("Select a student."),
+ enrollment_id: z.string().uuid().nullable().optional(),
+ amount: z.coerce.number().positive("Payment amount must be greater than zero."),
+ payment_date: z.string().min(1, "Payment date is required."),
+ method: z.enum(["CASH","BANK","MOBILE BANKING"]),
+ notes: z.string().trim().max(500).optional(),
+ idempotency_key: z.string().uuid("Payment operation identity is invalid."),
+});
+
 export async function recordPayment(formData:FormData){
  const c=await staff(["ADMIN","OPERATOR"]); if("error" in c)return{ok:false,error:c.error};
- const student_id=String(formData.get("student_id")??""), enrollment_id=String(formData.get("enrollment_id")??"")||null, amount=Number(formData.get("amount")??0);
- if(!student_id||amount<=0)return{ok:false,error:"Student and a valid amount are required."};
- const {data:receipt,error:receiptError}=await c.supabase.rpc("generate_receipt_no");
- if(receiptError)return{ok:false,error:receiptError.message};
- const {error}=await c.supabase.from("payments").insert({receipt_no:receipt,student_id,enrollment_id,amount,payment_date:String(formData.get("payment_date")??""),method:String(formData.get("method")??"CASH"),notes:String(formData.get("notes")??"")||null,collected_by:c.user.id});
- if(error)return{ok:false,error:error.message}; revalidatePath("/dashboard/payments");revalidatePath("/dashboard");return{ok:true,receipt};
+
+ const parsed=paymentSchema.safeParse({
+  student_id:String(formData.get("student_id")??""),
+  enrollment_id:String(formData.get("enrollment_id")??"")||null,
+  amount:formData.get("amount"),
+  payment_date:String(formData.get("payment_date")??""),
+  method:String(formData.get("method")??"CASH"),
+  notes:String(formData.get("notes")??""),
+  idempotency_key:String(formData.get("idempotency_key")??""),
+ });
+
+ if(!parsed.success){
+  return{ok:false,error:parsed.error.issues[0]?.message??"Please check the payment information."};
+ }
+
+ const d=parsed.data;
+ const {data,error}=await c.supabase.rpc("post_payment",{
+  p_student_id:d.student_id,
+  p_enrollment_id:d.enrollment_id??null,
+  p_amount:d.amount,
+  p_payment_date:d.payment_date,
+  p_method:d.method,
+  p_notes:d.notes||null,
+  p_idempotency_key:d.idempotency_key,
+ });
+
+ if(error)return{ok:false,error:error.message};
+
+ const result=data as {payment_id?:string;receipt_no?:string;status?:string;idempotent_replay?:boolean}|null;
+ revalidatePath("/dashboard/payments");
+ revalidatePath("/dashboard");
+
+ return{
+  ok:true,
+  receipt:result?.receipt_no??null,
+  paymentId:result?.payment_id??null,
+  replay:Boolean(result?.idempotent_replay),
+ };
 }
 export async function createAssessment(formData:FormData){
  const c=await staff(["ADMIN","OPERATOR","TEACHER"]);if("error" in c)return{ok:false,error:c.error};
