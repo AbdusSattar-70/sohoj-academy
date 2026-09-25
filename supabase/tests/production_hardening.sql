@@ -13,7 +13,11 @@ begin
   end if;
 
   if to_regprocedure('public.post_payment(uuid,uuid,numeric,date,text,text,uuid)') is null then
-    raise exception 'Missing post_payment idempotent financial RPC.';
+    raise exception 'Missing internal post_payment financial RPC.';
+  end if;
+
+  if to_regprocedure('public.post_payment_request(jsonb)') is null then
+    raise exception 'Missing public JSON payment request RPC.';
   end if;
 
   if to_regclass('public.payment_posting_keys') is null then
@@ -43,8 +47,24 @@ begin
      or has_table_privilege('authenticated', 'public.payments', 'DELETE') then
     raise exception 'authenticated still has direct payment write privilege.';
   end if;
+
+  if has_function_privilege(
+       'authenticated',
+       'public.post_payment(uuid,uuid,numeric,date,text,text,uuid)',
+       'EXECUTE'
+     ) then
+    raise exception 'authenticated can still execute the lower-level payment RPC.';
+  end if;
+
+  if not has_function_privilege(
+       'authenticated',
+       'public.post_payment_request(jsonb)',
+       'EXECUTE'
+     ) then
+    raise exception 'authenticated cannot execute the public payment request RPC.';
+  end if;
 end;
-$$;
+$;
 
 -- No active batch may exceed its configured capacity.
 do $$
