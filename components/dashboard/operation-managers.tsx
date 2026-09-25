@@ -6,10 +6,7 @@ import {
   createNotice,
   recordPayment,
 } from "@/app/actions/transactions";
-import {
-  createFeeStructure,
-  createTeacher,
-} from "@/app/actions/operations";
+import { createFeeStructure } from "@/app/actions/operations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField, FormStatus } from "@/components/shared/form-field";
@@ -27,121 +24,6 @@ function useCopy() {
   const bn = locale === "bn";
   const tr = (en: string, bnText: string) => (bn ? bnText : en);
   return { bn, tr };
-}
-
-export function TeacherManager({
-  teachers,
-}: {
-  teachers: {
-    id: string;
-    name: string;
-    mobile: string | null;
-    is_active: boolean;
-  }[];
-}) {
-  const { tr } = useCopy();
-  const [pending, startTransition] = useTransition();
-  const [message, setMessage] = useState<Feedback>(null);
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    setMessage(null);
-
-    startTransition(async () => {
-      const result = await createTeacher(formData);
-      if (result.ok) {
-        form.reset();
-        setMessage({
-          ok: true,
-          text: tr("Teacher added successfully.", "শিক্ষক সফলভাবে যোগ করা হয়েছে।"),
-        });
-      } else {
-        setMessage({
-          ok: false,
-          text:
-            result.error ??
-            tr("Teacher could not be added.", "শিক্ষক যোগ করা যায়নি।"),
-        });
-      }
-    });
-  }
-
-  return (
-    <Box title={tr("Teachers", "শিক্ষক")}>
-      <WorkflowHelp
-        title={tr("How to use this page", "এই পেজ কীভাবে ব্যবহার করবেন")}
-        steps={[
-          tr(
-            "Add the teacher's official academy name and reliable mobile number.",
-            "শিক্ষকের অফিসিয়াল একাডেমি নাম ও নির্ভরযোগ্য মোবাইল নম্বর দিন।"
-          ),
-          tr(
-            "Subject, workload, staff identity and compensation assignments will be managed through the staff domain as it is introduced.",
-            "Subject, workload, staff identity ও compensation ভবিষ্যৎ Staff module থেকে পরিচালিত হবে।"
-          ),
-        ]}
-      />
-
-      <form onSubmit={submit} className="mt-5 grid gap-4 md:grid-cols-2">
-        <FormField
-          id="teacher-name"
-          label={tr("Teacher Name", "শিক্ষকের নাম")}
-          required
-          hint={tr(
-            "Use the name Sohoj Academy should display in schedules and records.",
-            "রুটিন ও একাডেমির রেকর্ডে যে নাম দেখানো হবে সেটি লিখুন।"
-          )}
-        >
-          <Input
-            id="teacher-name"
-            name="name"
-            className="min-h-11"
-            autoComplete="name"
-            required
-          />
-        </FormField>
-
-        <FormField
-          id="teacher-mobile"
-          label={tr("Mobile Number", "মোবাইল নম্বর")}
-          hint={tr(
-            "Use a number the academy can reliably contact.",
-            "একাডেমি নির্ভরযোগ্যভাবে যোগাযোগ করতে পারে এমন নম্বর দিন।"
-          )}
-        >
-          <Input
-            id="teacher-mobile"
-            name="mobile"
-            className="min-h-11"
-            inputMode="tel"
-            autoComplete="tel"
-          />
-        </FormField>
-
-        <div className="md:col-span-2">
-          <FormStatus message={message} />
-        </div>
-
-        <div className="md:col-span-2 flex justify-end">
-          <Button type="submit" disabled={pending} className="min-h-11">
-            {pending
-              ? tr("Adding…", "যোগ করা হচ্ছে…")
-              : tr("Add Teacher", "শিক্ষক যোগ করুন")}
-          </Button>
-        </div>
-      </form>
-
-      <RecordRows
-        emptyText={tr("No teachers recorded yet.", "এখনও কোনো শিক্ষক যোগ করা হয়নি।")}
-        rows={teachers.map((teacher) => [
-          teacher.name,
-          teacher.mobile ?? "—",
-        ])}
-      />
-    </Box>
-  );
 }
 
 export function FeeManager({
