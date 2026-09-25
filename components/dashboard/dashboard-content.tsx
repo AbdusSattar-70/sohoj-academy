@@ -4,6 +4,7 @@ import { SettingsManager } from "@/components/dashboard/settings-manager";
 import { AssessmentManager, FeeManager, NoticeManager, PaymentManager, TeacherManager } from "@/components/dashboard/operation-managers";
 import { AttendanceManager } from "@/components/dashboard/attendance-manager";
 import { AssessmentResultsManager } from "@/components/dashboard/assessment-results-manager";
+import { StudentProfile } from "@/components/dashboard/student-profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -12,7 +13,7 @@ import type { User } from "@/types/user";
 
 const modules:Record<string,string>={admissions:"Admission Entry",students:"Student Master",guardians:"Guardians",attendance:"Attendance",assessments:"Assessments & Results",progress:"Progress Reports",fees:"Fee Structure",payments:"Fee Collection",parents:"Parent Communication",notices:"Notices",teachers:"Teachers",routine:"Routine",print:"Print Center",settings:"Settings",audit:"Audit & Recovery"};
 
-export default async function DashboardContent({user,section="dashboard"}:{user:User;section?:string}){
+export default async function DashboardContent({user,section="dashboard",studentId}:{user:User;section?:string;studentId?:string}){
  const title=section==="dashboard"?"Dashboard":modules[section]??"Dashboard"; const s=await createClient();
  const [yearsQ,classesQ,programsQ,batchesQ,subjectsQ]=await Promise.all([
   s.from("academic_years").select("id,name,starts_on,ends_on,is_active").order("starts_on",{ascending:false}),
@@ -39,8 +40,20 @@ export default async function DashboardContent({user,section="dashboard"}:{user:
  } else if(section==="settings"&&user.role==="ADMIN"){
   body=<SettingsManager years={years} classes={classes} programs={programs} subjects={subjects} batches={batches}/>;
  } else if(section==="students"){
-  const {data}=await s.from("students").select("id,student_no,name,status,school_name,enrollments(class_id,batch_id,monthly_fee,discount)").order("created_at",{ascending:false}).limit(200);
-  body=<Table title="Student Master" headers={["ID","Student","School","Status"]} rows={(data??[]).map(x=>[x.student_no,x.name,x.school_name??"—",x.status])}/>;
+  if(studentId){
+   const [studentQ,enrollmentsQ,guardiansQ,attendanceQ,resultsQ,paymentsQ]=await Promise.all([
+    s.from("students").select("id,student_no,name,name_bn,gender,date_of_birth,school_name,school_roll,status,created_at").eq("id",studentId).maybeSingle(),
+    s.from("enrollments").select("id,admission_date,monthly_fee,discount,effective_fee,is_active,classes(name),batches(name),programs(name),academic_years(name)").eq("student_id",studentId).order("admission_date",{ascending:false}),
+    s.from("student_guardians").select("relationship,is_primary,guardians(name,mobile,alternate_mobile,address)").eq("student_id",studentId),
+    s.from("attendance").select("status,marked_at,class_sessions(session_date,subjects(name))").eq("student_id",studentId).order("marked_at",{ascending:false}).limit(100),
+    s.from("assessment_results").select("marks,remarks,assessments(title,total_marks,held_on,subjects(name))").eq("student_id",studentId).limit(100),
+    s.from("payments").select("receipt_no,amount,payment_date,method,status").eq("student_id",studentId).order("payment_date",{ascending:false}).limit(100)
+   ]);
+   body=studentQ.data?<StudentProfile student={studentQ.data} enrollments={enrollmentsQ.data??[]} guardians={guardiansQ.data??[]} attendance={attendanceQ.data??[]} results={resultsQ.data??[]} payments={paymentsQ.data??[]}/>:<Card><CardContent className="p-6">Student not found.</CardContent></Card>;
+  }else{
+   const {data}=await s.from("students").select("id,student_no,name,status,school_name,enrollments(class_id,batch_id,monthly_fee,discount)").order("created_at",{ascending:false}).limit(200);
+   body=<StudentDirectory rows={(data??[]).map(x=>({id:x.id,student_no:x.student_no,name:x.name,school:x.school_name??"—",status:x.status}))}/>;
+  }
  } else if(section==="guardians"){
   const {data}=await s.from("guardians").select("id,name,mobile,alternate_mobile,address").order("created_at",{ascending:false}).limit(200);
   body=<Table title="Guardians" headers={["Name","Mobile","Alternate","Address"]} rows={(data??[]).map(x=>[x.name,x.mobile,x.alternate_mobile??"—",x.address??"—"])}/>;
@@ -80,5 +93,7 @@ export default async function DashboardContent({user,section="dashboard"}:{user:
  }
  return <SidebarProvider><AppSidebar user={user}/><SidebarInset><header className="flex h-16 items-center gap-3 border-b px-4"><SidebarTrigger/><Separator orientation="vertical" className="h-4"/><div><p className="font-semibold">{title}</p><p className="text-xs text-muted-foreground">Sohoj Academy Digital Campus</p></div></header><main className="flex-1 space-y-6 p-4 md:p-6">{body}</main></SidebarInset></SidebarProvider>;
 }
+
+function StudentDirectory({rows}:{rows:{id:string;student_no:string;name:string;school:string;status:string}[]}){return <Card><CardHeader><CardTitle>Student Master</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-3">ID</th><th className="p-3">Student</th><th className="p-3">School</th><th className="p-3">Status</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} className="border-b"><td className="p-3"><a className="font-medium underline-offset-4 hover:underline" href={"/dashboard/students/"+r.id}>{r.student_no}</a></td><td className="p-3"><a className="font-medium underline-offset-4 hover:underline" href={"/dashboard/students/"+r.id}>{r.name}</a></td><td className="p-3">{r.school}</td><td className="p-3">{r.status}</td></tr>)}</tbody></table>{!rows.length&&<p className="py-8 text-center text-muted-foreground">No records yet.</p>}</div></CardContent></Card>}
 
 function Table({title,headers,rows}:{title:string;headers:string[];rows:(string|number)[][]}){return <Card><CardHeader><CardTitle>{title}</CardTitle></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left">{headers.map(h=><th key={h} className="p-3">{h}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i} className="border-b">{r.map((v,j)=><td key={j} className="p-3">{v}</td>)}</tr>)}</tbody></table>{!rows.length&&<p className="py-8 text-center text-muted-foreground">No records yet.</p>}</div></CardContent></Card>}
