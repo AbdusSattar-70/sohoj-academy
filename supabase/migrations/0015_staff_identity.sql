@@ -151,6 +151,27 @@ select
 from public.teachers t
 on conflict (id) do nothing;
 
+-- Backfill any staff-side authenticated profile that did not already arrive
+-- through the legacy Teacher table. Guardian/Student profiles are not Staff.
+insert into public.staff (
+  profile_id,
+  full_name,
+  status,
+  created_at
+)
+select
+  p.id,
+  p.full_name,
+  'ACTIVE'::public.staff_status,
+  p.created_at
+from public.profiles p
+where p.role in ('ADMIN','OPERATOR','TEACHER')
+  and not exists (
+    select 1
+    from public.staff s
+    where s.profile_id = p.id
+  );
+
 insert into public.staff_employments (
   staff_id,
   employment_type,
@@ -174,6 +195,32 @@ where not exists (
   where e.staff_id = t.id
 );
 
+
+-- Ensure every migrated staff-side profile has an employment record. We do not
+-- invent historical salary/contract terms; unknown legacy employment type is
+-- represented as OTHER until management explicitly classifies it.
+insert into public.staff_employments (
+  staff_id,
+  employment_type,
+  starts_on,
+  status,
+  created_at
+)
+select
+  s.id,
+  'OTHER'::public.staff_employment_type,
+  p.created_at::date,
+  'ACTIVE'::public.staff_employment_status,
+  p.created_at
+from public.staff s
+join public.profiles p on p.id = s.profile_id
+where p.role in ('ADMIN','OPERATOR','TEACHER')
+  and not exists (
+    select 1
+    from public.staff_employments e
+    where e.staff_id = s.id
+  );
+
 insert into public.staff_role_assignments (
   staff_id,
   role_id,
@@ -196,6 +243,72 @@ where not exists (
     and ra.role_id = rc.id
     and ra.effective_to is null
 );
+
+-- Map existing coarse application roles onto business Staff roles without
+-- replacing any primary role already established from legacy Teacher data.
+insert into public.staff_role_assignments (
+  staff_id,
+  role_id,
+  effective_from,
+  is_primary,
+  created_at
+)
+select
+  s.id,
+  rc.id,
+  p.created_at::date,
+  not exists (
+    select 1
+    from public.staff_role_assignments existing_primary
+    where existing_primary.staff_id = s.id
+      and existing_primary.is_primary
+      and existing_primary.effective_to is null
+  ),
+  p.created_at
+from public.staff s
+join public.profiles p on p.id = s.profile_id
+join public.staff_role_catalog rc
+  on rc.code = case p.role
+    when 'ADMIN' then 'ADMINISTRATOR'
+    when 'OPERATOR' then 'OPERATOR'
+    when 'TEACHER' then 'TEACHER'
+    else null
+  end
+where p.role in ('ADMIN','OPERATOR','TEACHER')
+  and not exists (
+    select 1
+    from public.staff_role_assignments ra
+    where ra.staff_id = s.id
+      and ra.role_id = rc.id
+      and ra.effective_to is null
+  );
+
+-- A Teacher application profile without a historical teachers row still needs
+-- the temporary compatibility bridge used by class_sessions.teacher_id.
+insert into public.teachers (
+  id,
+  staff_id,
+  profile_id,
+  name,
+  mobile,
+  is_active
+)
+select
+  s.id,
+  s.id,
+  s.profile_id,
+  s.full_name,
+  s.mobile,
+  true
+from public.staff s
+join public.profiles p on p.id = s.profile_id
+where p.role = 'TEACHER'
+  and not exists (
+    select 1
+    from public.teachers t
+    where t.staff_id = s.id
+       or t.profile_id = s.profile_id
+  );
 
 insert into public.staff_subject_assignments (
   staff_id,
