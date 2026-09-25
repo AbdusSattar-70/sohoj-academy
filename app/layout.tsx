@@ -24,7 +24,16 @@ const notoBengali = Noto_Sans_Bengali({
   fallback: ["system-ui", "sans-serif"],
 });
 
+const publicSiteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(publicSiteUrl),
   title: { default: "Sohoj Academy", template: "%s | Sohoj Academy" },
   description:
     "Sohoj Academy Digital Campus for students, guardians, teachers and academy operations. Learning made easy & fun.",
