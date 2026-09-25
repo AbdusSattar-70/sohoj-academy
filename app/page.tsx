@@ -364,7 +364,7 @@ export default function HomePage() {
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <Logo size={36} compact />
+          <Logo size={76} />
           <p className="text-xs leading-5 text-slate-500">
             © Sohoj Academy. Academic support and Digital Campus.
           </p>
