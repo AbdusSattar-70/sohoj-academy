@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Logo from "@/components/shared/logo";
+import { useLanguage } from "@/components/providers/language-provider";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -9,6 +10,8 @@ import {
 } from "@/components/ui/sidebar";
 
 export function TeamSwitcher() {
+  const { locale } = useLanguage();
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -19,7 +22,7 @@ export function TeamSwitcher() {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">Sohoj Academy</span>
-              <span className="truncate text-xs">Digital Campus</span>
+              <span className="truncate text-xs">{locale === "bn" ? "ডিজিটাল ক্যাম্পাস" : "Digital Campus"}</span>
             </div>
           </Link>
         </SidebarMenuButton>
