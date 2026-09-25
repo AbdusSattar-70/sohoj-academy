@@ -41,7 +41,8 @@ export async function createAdmission(input: AdmissionInput): Promise<AdmissionA
       name_bn: d.nameBn ?? "",
       gender: d.gender ?? "",
       date_of_birth: d.dateOfBirth ?? "",
-      school_name: d.schoolName ?? "",
+      school_id: d.schoolId ?? "",
+      school_name_snapshot: d.schoolNameSnapshot ?? "",
       school_roll: d.schoolRoll ?? "",
     },
     p_guardian: {
