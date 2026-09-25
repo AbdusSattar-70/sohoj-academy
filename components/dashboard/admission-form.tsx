@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { createAdmission } from "@/app/actions/admissions";
 import { WorkflowHelp } from "@/components/shared/workflow-help";
+import { SmartSelect, type SmartSelectOption } from "@/components/shared/smart-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,13 +39,13 @@ export function AdmissionForm({
   classes,
   programs,
   batches,
-  schoolSuggestions,
+  schools,
 }: {
   academicYears: YearOption[];
   classes: Option[];
   programs: Option[];
   batches: BatchOption[];
-  schoolSuggestions: string[];
+  schools: SmartSelectOption[];
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const defaultYearId =
@@ -91,7 +92,8 @@ export function AdmissionForm({
       nameBn: String(formData.get("nameBn") ?? ""),
       gender: String(formData.get("gender") ?? ""),
       dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
-      schoolName: String(formData.get("schoolName") ?? ""),
+      schoolId: String(formData.get("schoolId") ?? "") || undefined,
+      schoolNameSnapshot: String(formData.get("schoolNameSnapshot") ?? ""),
       schoolRoll: String(formData.get("schoolRoll") ?? ""),
       guardianName: String(formData.get("guardianName") ?? ""),
       relationship: String(formData.get("relationship") ?? ""),
@@ -175,14 +177,14 @@ export function AdmissionForm({
               <Input id="student-dob" name="dateOfBirth" type="date" className="h-10" />
             </Field>
 
-            <Field id="student-school" label="Current School" hint="Use the school's official name. Existing names are suggested as you type.">
-              <Input id="student-school" name="schoolName" list="school-suggestions" className="h-10" autoComplete="off" />
-              <datalist id="school-suggestions">
-                {schoolSuggestions.map((school) => (
-                  <option key={school} value={school} />
-                ))}
-              </datalist>
-            </Field>
+            <SmartSelect
+              name="schoolId"
+              snapshotName="schoolNameSnapshot"
+              label="Current School"
+              options={schools}
+              placeholder="Start typing the official school name"
+              hint="Select an existing school when available. If the school is new, type its official name once; the system will create one canonical School record for future reuse."
+            />
 
             <Field id="student-school-roll" label="School Roll" hint="The student's roll at the current school, if applicable.">
               <Input id="student-school-roll" name="schoolRoll" className="h-10" inputMode="numeric" />
