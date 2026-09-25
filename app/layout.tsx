@@ -33,6 +33,7 @@ export const metadata: Metadata = {
         sizes: "16x16",
       },
     ],
+    shortcut: ["/favicons/favicon.ico"],
   },
   manifest: "/favicons/site.webmanifest",
   openGraph: {
