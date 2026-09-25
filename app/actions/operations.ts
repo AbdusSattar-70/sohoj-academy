@@ -55,13 +55,6 @@ export async function createBatch(formData: FormData): Promise<Result> {
   const {error}=await ctx.supabase.from("batches").insert({name,academic_year_id,class_id,program_id:program||null,capacity:Number(formData.get("capacity")??12),is_active:true});
   return error?{ok:false,error:error.message}:done();
 }
-export async function createTeacher(formData: FormData): Promise<Result> {
-  const ctx=await adminClient(); if("error" in ctx)return{ok:false,error:ctx.error};
-  const name=String(formData.get("name")??"").trim(); if(!name)return{ok:false,error:"Teacher name is required."};
-  const mobile=String(formData.get("mobile")??"").trim()||null;
-  const {error}=await ctx.supabase.from("teachers").insert({name,mobile,is_active:true});
-  return error?{ok:false,error:error.message}:done("/dashboard/teachers");
-}
 export async function createFeeStructure(formData: FormData): Promise<Result> {
   const ctx=await adminClient(); if("error" in ctx)return{ok:false,error:ctx.error};
   const title=String(formData.get("title")??"").trim(), academic_year_id=String(formData.get("academic_year_id")??""), effective_from=String(formData.get("effective_from")??"");
