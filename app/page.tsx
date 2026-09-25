@@ -110,17 +110,17 @@ export default function HomePage() {
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="#programs"
+                  href="/interest"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_30px_-12px_rgba(29,78,216,0.65)] transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 >
-                  Explore Programs
+                  Register Interest
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
                 <Link
-                  href="/auth"
+                  href="#programs"
                   className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                 >
-                  Open Digital Campus
+                  Explore Programs
                 </Link>
               </div>
 
@@ -352,10 +352,10 @@ export default function HomePage() {
                 View Programs
               </Link>
               <Link
-                href="/auth"
+                href="/interest"
                 className="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
               >
-                Digital Campus
+                Register Interest
               </Link>
             </div>
           </div>
