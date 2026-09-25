@@ -1,16 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import { Montserrat, Noto_Sans_Bengali } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfflineBanner } from "@/components/shared/OfflineBanner";
+import { LanguageProvider } from "@/components/providers/language-provider";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   display: "swap",
   weight: ["200", "300", "400", "700"],
+  variable: "--font-en",
+  fallback: ["system-ui", "sans-serif"],
+});
+
+const notoBengali = Noto_Sans_Bengali({
+  subsets: ["bengali"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-bn",
   fallback: ["system-ui", "sans-serif"],
 });
 
@@ -68,15 +78,17 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${montserrat.className} antialiased`}>
+      <body className={`${montserrat.variable} ${notoBengali.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
-          <OfflineBanner />
+          <LanguageProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+            <OfflineBanner />
+          </LanguageProvider>
         </ThemeProvider>
         <ToastContainer position="bottom-right" autoClose={3000} />
       </body>
