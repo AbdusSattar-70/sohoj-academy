@@ -1,4 +1,4 @@
-import { BookOpenCheck, CalendarDays, CircleDollarSign, GraduationCap, LayoutDashboard, Settings2, Users } from "lucide-react";
+import { CalendarDays, CircleDollarSign, GraduationCap, LayoutDashboard, Settings2, Users } from "lucide-react";
 
 export const academyNavigation = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
