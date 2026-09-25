@@ -12,10 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField, FormStatus } from "@/components/shared/form-field";
 import { WorkflowHelp } from "@/components/shared/workflow-help";
-import { useLanguage } from "@/components/providers/language-provider";
 
 type Opt = { id: string; name: string };
 type Feedback = { ok: boolean; text: string } | null;
+
+function tr(en: string, alternate: string) {
+  void alternate;
+  return en;
+}
 
 const selectClass =
   "min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
@@ -37,8 +41,6 @@ export function SettingsManager({
   subjects: (Opt & { code: string | null })[];
   batches: (Opt & { capacity: number })[];
 }) {
-  const { locale } = useLanguage();
-  const tr = (en: string, bn: string) => (locale === "bn" ? bn : en);
 
   return (
     <div className="space-y-6">
@@ -85,8 +87,6 @@ function AcademicYearPanel({
     is_active: boolean;
   })[];
 }) {
-  const { locale } = useLanguage();
-  const tr = (en: string, bn: string) => (locale === "bn" ? bn : en);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Feedback>(null);
 
@@ -196,8 +196,6 @@ function ClassPanel({
 }: {
   classes: (Opt & { sort_order: number })[];
 }) {
-  const { locale } = useLanguage();
-  const tr = (en: string, bn: string) => (locale === "bn" ? bn : en);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Feedback>(null);
 
@@ -273,8 +271,6 @@ function ProgramPanel({
 }: {
   programs: (Opt & { code: string | null })[];
 }) {
-  const { locale } = useLanguage();
-  const tr = (en: string, bn: string) => (locale === "bn" ? bn : en);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Feedback>(null);
 
@@ -352,8 +348,6 @@ function SubjectPanel({
 }: {
   subjects: (Opt & { code: string | null })[];
 }) {
-  const { locale } = useLanguage();
-  const tr = (en: string, bn: string) => (locale === "bn" ? bn : en);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Feedback>(null);
 
@@ -434,8 +428,6 @@ function BatchPanel({
   classes: Opt[];
   programs: Opt[];
 }) {
-  const { locale } = useLanguage();
-  const tr = (en: string, bn: string) => (locale === "bn" ? bn : en);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Feedback>(null);
 
