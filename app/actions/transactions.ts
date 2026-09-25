@@ -38,14 +38,16 @@ export async function recordPayment(formData:FormData){
  }
 
  const d=parsed.data;
- const {data,error}=await c.supabase.rpc("post_payment",{
-  p_student_id:d.student_id,
-  p_enrollment_id:d.enrollment_id??null,
-  p_amount:d.amount,
-  p_payment_date:d.payment_date,
-  p_method:d.method,
-  p_notes:d.notes||null,
-  p_idempotency_key:d.idempotency_key,
+ const {data,error}=await c.supabase.rpc("post_payment_request",{
+  p_input:{
+   student_id:d.student_id,
+   enrollment_id:d.enrollment_id??null,
+   amount:d.amount,
+   payment_date:d.payment_date,
+   method:d.method,
+   notes:d.notes||null,
+   idempotency_key:d.idempotency_key,
+  },
  });
 
  if(error)return{ok:false,error:error.message};
