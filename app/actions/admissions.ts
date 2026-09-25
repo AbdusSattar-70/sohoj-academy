@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { admissionSchema, type AdmissionInput } from "@/lib/academy/admission-schema";
 
-export async function createAdmission(input: AdmissionInput) {
+export type AdmissionActionResult =
+  | { ok: true; studentId: string | null; studentNo: string | null }
+  | { ok: false; error: string; field?: string | null };
+
+export async function createAdmission(input: AdmissionInput): Promise<AdmissionActionResult> {
   const parsed = admissionSchema.safeParse(input);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
