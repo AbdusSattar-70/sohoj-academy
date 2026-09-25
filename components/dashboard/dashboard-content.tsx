@@ -5,6 +5,7 @@ import { AssessmentManager, FeeManager, NoticeManager, PaymentManager, TeacherMa
 import { AttendanceManager } from "@/components/dashboard/attendance-manager";
 import { AssessmentResultsManager } from "@/components/dashboard/assessment-results-manager";
 import { StudentProfile } from "@/components/dashboard/student-profile";
+import { ParentCommunicationManager, ProgressManager } from "@/components/dashboard/progress-parent-managers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -85,6 +86,18 @@ export default async function DashboardContent({user,section="dashboard",student
   const assessmentData=assessmentsQ.data??[];
   const resultStudents=(enrollmentsQ.data??[]).flatMap(x=>x.students?[{id:x.students.id,student_no:x.students.student_no,name:x.students.name,batch_id:x.batch_id}]:[]);
   body=<><AssessmentManager years={years} batches={batches} subjects={subjects} assessments={assessmentData}/><AssessmentResultsManager assessments={assessmentData} students={resultStudents} results={resultsQ.data??[]}/></>;
+ } else if(section==="progress"){
+  const [studentsQ,recordsQ]=await Promise.all([
+   s.from("students").select("id,student_no,name").eq("status","ACTIVE").order("name"),
+   s.from("weekly_monitoring").select("id,student_id,week_start,homework_score,participation_score,test_score,remarks,students(name,student_no)").order("week_start",{ascending:false}).limit(300)
+  ]);
+  body=<ProgressManager students={studentsQ.data??[]} records={recordsQ.data??[]}/>;
+ } else if(section==="parents"){
+  const [studentsQ,recordsQ]=await Promise.all([
+   s.from("students").select("id,student_no,name").eq("status","ACTIVE").order("name"),
+   s.from("parent_communications").select("id,student_id,communication_type,occurred_at,notes,next_follow_up,students(name,student_no),guardians(name)").order("occurred_at",{ascending:false}).limit(300)
+  ]);
+  body=<ParentCommunicationManager students={studentsQ.data??[]} records={recordsQ.data??[]}/>;
  } else if(section==="notices"){
   const {data}=await s.from("notices").select("id,title,audience,published_at").order("created_at",{ascending:false}).limit(100);
   body=<NoticeManager notices={data??[]}/>;
