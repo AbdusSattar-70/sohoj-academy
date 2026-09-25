@@ -87,7 +87,7 @@ const groups: NavGroup[] = [
     titleKey: "management",
     icon: CalendarDays,
     roles: staffRoles,
-    items: [{ titleKey: "teachers", url: "/dashboard/teachers", roles: staffRoles }],
+    items: [{ titleKey: "staff", url: "/dashboard/staff", roles: staffRoles }],
   },
   {
     titleKey: "settingsGroup",
