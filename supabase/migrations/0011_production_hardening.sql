@@ -655,3 +655,86 @@ for each row execute function public.audit_critical_business_row();
 
 comment on table public.audit_logs is
   'Legacy row-audit stream retained for compatibility. New business audit/reporting should use public.audit_events.';
+
+
+-- ---------------------------------------------------------------------------
+-- 6. Enforce maker-checker and concurrency-sensitive integrity in Postgres.
+-- ---------------------------------------------------------------------------
+
+create or replace function public.enforce_maker_checker_approval()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if old.status = 'PENDING'
+     and new.status = 'APPROVED'
+     and old.requested_by = auth.uid() then
+    raise exception 'The same user cannot submit and approve the same workflow.';
+  end if;
+
+  if old.status <> 'PENDING'
+     and new.status is distinct from old.status then
+    raise exception 'A decided approval request cannot be decided again.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists enforce_maker_checker_approval_trigger
+on public.approval_requests;
+
+create trigger enforce_maker_checker_approval_trigger
+before update of status on public.approval_requests
+for each row
+execute function public.enforce_maker_checker_approval();
+
+-- Serialize enrollment changes for the selected batch before counting occupied
+-- seats. This closes the race where two simultaneous admissions could both see
+-- the final available seat.
+create or replace function public.enforce_enrollment_batch_integrity()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  v_batch public.batches;
+  v_active_count integer;
+begin
+  if not new.is_active or new.batch_id is null then
+    return new;
+  end if;
+
+  select *
+    into v_batch
+  from public.batches
+  where id = new.batch_id
+  for update;
+
+  if v_batch.id is null then
+    raise exception 'Selected batch does not exist.';
+  end if;
+
+  if new.academic_year_id <> v_batch.academic_year_id
+     or new.class_id <> v_batch.class_id
+     or (v_batch.program_id is not null
+         and new.program_id is distinct from v_batch.program_id) then
+    raise exception 'Enrollment academic year/class/program does not match the selected batch.';
+  end if;
+
+  select count(*)
+    into v_active_count
+  from public.enrollments e
+  where e.batch_id = new.batch_id
+    and e.is_active
+    and e.id <> new.id;
+
+  if v_active_count >= v_batch.capacity then
+    raise exception 'Selected batch is full (%/%).', v_active_count, v_batch.capacity;
+  end if;
+
+  return new;
+end;
+$$;
