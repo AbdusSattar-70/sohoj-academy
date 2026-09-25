@@ -48,3 +48,17 @@ export async function saveAttendance(formData: FormData) {
  revalidatePath("/dashboard/attendance");revalidatePath("/dashboard");
  return{ok:true,count:Number(data??0)};
 }
+
+
+export async function saveAssessmentResults(formData: FormData) {
+ const c=await staff(["ADMIN","OPERATOR","TEACHER"]); if("error" in c)return{ok:false,error:c.error};
+ const assessment_id=String(formData.get("assessment_id")??"");
+ if(!assessment_id)return{ok:false,error:"Assessment is required."};
+ let entries: unknown;
+ try { entries=JSON.parse(String(formData.get("entries")??"[]")); } catch { return {ok:false,error:"Invalid result data."}; }
+ if(!Array.isArray(entries))return{ok:false,error:"Invalid result data."};
+ const {data,error}=await c.supabase.rpc("save_assessment_results",{p_assessment_id:assessment_id,p_entries:entries});
+ if(error)return{ok:false,error:error.message};
+ revalidatePath("/dashboard/assessments");revalidatePath("/dashboard/progress");
+ return{ok:true,count:Number(data??0)};
+}
