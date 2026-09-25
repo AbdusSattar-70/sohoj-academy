@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type FormEvent, type ReactNode } from "react";
+import { useRef, useState, useTransition, type FormEvent, type ReactNode } from "react";
 import {
   createAssessment,
   createNotice,
@@ -336,16 +336,20 @@ export function PaymentManager({
   const { tr } = useCopy();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<Feedback>(null);
+  const operationKey = useRef<string | null>(null);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
+    if (!operationKey.current) operationKey.current = crypto.randomUUID();
+    formData.set("idempotency_key", operationKey.current);
     setMessage(null);
 
     startTransition(async () => {
       const result = await recordPayment(formData);
       if (result.ok) {
+        operationKey.current = null;
         form.reset();
         setMessage({
           ok: true,
