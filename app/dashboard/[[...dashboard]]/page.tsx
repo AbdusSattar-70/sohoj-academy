@@ -50,6 +50,7 @@ export default async function DashboardPage({
     <DashboardContent
       user={user}
       section={dashboard[0] ?? "dashboard"}
+      studentId={dashboard[0] === "students" ? dashboard[1] : undefined}
     />
   );
 }
