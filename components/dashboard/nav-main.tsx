@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarDays, ChevronRight, CircleDollarSign, GraduationCap, LayoutDashboard, Settings2, Users } from "lucide-react";
@@ -25,7 +26,7 @@ type NavLeaf = {
 type NavGroup = {
   title: string;
   url?: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   roles: AppRole[];
   items: NavLeaf[];
 };
