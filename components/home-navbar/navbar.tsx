@@ -1,48 +1,77 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "@/components/ui/navigation-menu";
-import Logo from "../shared/logo";
-import MobileMenu from "./mobile-menu";
+import { ArrowUpRight, Menu } from "lucide-react";
+import Logo from "@/components/shared/logo";
 
 const links = [
-  ["Programs", "#learning"],
-  ["Learning Method", "#learning"],
-  ["Progress", "#learning"],
-  ["About", "#learning"],
+  ["Programs", "#programs"],
+  ["Learning Method", "#method"],
+  ["Why Sohoj", "#why-sohoj"],
+  ["Digital Campus", "#digital-campus"],
 ] as const;
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <nav className={"fixed top-0 left-0 right-0 z-50 transition-all duration-300 " + (isScrolled ? "bg-white border-b border-gray-100 shadow-sm" : "bg-transparent")}>
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between h-20">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+      <a
+        href="#main-content"
+        className="sr-only z-[60] rounded-md bg-slate-950 px-4 py-2 text-white focus:not-sr-only focus:absolute focus:left-4 focus:top-3"
+      >
+        Skip to main content
+      </a>
+
+      <nav
+        aria-label="Primary navigation"
+        className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-5 sm:px-6 lg:px-8"
+      >
+        <Link href="/" aria-label="Sohoj Academy home" className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-4">
           <Logo />
-          <NavigationMenu className="hidden md:flex">
-            <NavigationMenuList className="gap-8 text-base">
-              {links.map(([label, href]) => (
-                <NavigationMenuItem key={label}>
-                  <NavigationMenuLink asChild>
-                    <Link href={href} className={"font-medium transition-colors " + (isScrolled ? "text-gray-900 hover:text-black" : "text-white hover:text-white")}>{label}</Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
-          <Link href="/auth" className="hidden md:inline-flex px-5 py-2.5 text-lg font-medium text-white bg-blue-800 border border-blue-700 rounded-lg hover:bg-transparent hover:text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-500 dark:border-blue-500">
-            Digital Campus
-          </Link>
-          <MobileMenu />
+        </Link>
+
+        <div className="hidden items-center gap-1 lg:flex">
+          {links.map(([label, href]) => (
+            <Link
+              key={label}
+              href={href}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            >
+              {label}
+            </Link>
+          ))}
         </div>
-      </div>
-    </nav>
+
+        <div className="hidden items-center gap-3 sm:flex">
+          <Link
+            href="/auth"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+          >
+            Digital Campus
+            <ArrowUpRight className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
+
+        <details className="group relative sm:hidden">
+          <summary className="flex size-11 cursor-pointer list-none items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+            <Menu className="size-5" aria-hidden="true" />
+            <span className="sr-only">Open navigation menu</span>
+          </summary>
+          <div className="absolute right-0 top-14 w-[min(20rem,calc(100vw-2.5rem))] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl">
+            <div className="grid gap-1">
+              {links.map(([label, href]) => (
+                <Link key={label} href={href} className="rounded-xl px-3 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  {label}
+                </Link>
+              ))}
+              <Link
+                href="/auth"
+                className="mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white"
+              >
+                Open Digital Campus
+                <ArrowUpRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </details>
+      </nav>
+    </header>
   );
 }
