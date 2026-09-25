@@ -3,7 +3,7 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { AdmissionForm } from "@/components/dashboard/admission-form";
 import { SettingsManager } from "@/components/dashboard/settings-manager";
-import { AssessmentManager, FeeManager, NoticeManager, PaymentManager, TeacherManager } from "@/components/dashboard/operation-managers";
+import { AssessmentManager, FeeManager, NoticeManager, PaymentManager } from "@/components/dashboard/operation-managers";
 import { AttendanceManager } from "@/components/dashboard/attendance-manager";
 import { AssessmentResultsManager } from "@/components/dashboard/assessment-results-manager";
 import { StudentProfile } from "@/components/dashboard/student-profile";
@@ -15,9 +15,10 @@ import { createClient } from "@/lib/supabase/server";
 import type { AppRole } from "@/lib/constants";
 import { LocalizedText } from "@/components/shared/localized-text";
 import type { User } from "@/types/user";
+import { StaffManager, type StaffDirectoryRow, type StaffRoleOption } from "@/modules/staff/components/staff-manager";
 
-const modules:Record<string,string>={admissions:"Admission Entry",students:"Student Master",guardians:"Guardians",attendance:"Attendance",assessments:"Assessments & Results",progress:"Progress Reports",fees:"Fee Structure",payments:"Fee Collection",parents:"Parent Communication",notices:"Notices",teachers:"Teachers",settings:"Settings"};
-const modulesBn:Record<string,string>={admissions:"ভর্তি",students:"শিক্ষার্থী মাস্টার",guardians:"অভিভাবক",attendance:"উপস্থিতি",assessments:"মূল্যায়ন ও ফলাফল",progress:"অগ্রগতি প্রতিবেদন",fees:"ফি কাঠামো",payments:"ফি সংগ্রহ",parents:"অভিভাবক যোগাযোগ",notices:"নোটিশ",teachers:"শিক্ষক",settings:"সেটিংস"};
+const modules:Record<string,string>={admissions:"Admission Entry",students:"Student Master",guardians:"Guardians",attendance:"Attendance",assessments:"Assessments & Results",progress:"Progress Reports",fees:"Fee Structure",payments:"Fee Collection",parents:"Parent Communication",notices:"Notices",staff:"Staff",settings:"Settings"};
+const modulesBn:Record<string,string>={admissions:"ভর্তি",students:"শিক্ষার্থী মাস্টার",guardians:"অভিভাবক",attendance:"উপস্থিতি",assessments:"মূল্যায়ন ও ফলাফল",progress:"অগ্রগতি প্রতিবেদন",fees:"ফি কাঠামো",payments:"ফি সংগ্রহ",parents:"অভিভাবক যোগাযোগ",notices:"নোটিশ",staff:"কর্মীবৃন্দ",settings:"সেটিংস"};
 const moduleRoles:Record<string,AppRole[]>={
  admissions:["ADMIN","OPERATOR"],
  students:["ADMIN","OPERATOR","TEACHER"],
@@ -29,7 +30,7 @@ const moduleRoles:Record<string,AppRole[]>={
  payments:["ADMIN","OPERATOR"],
  parents:["ADMIN","OPERATOR","TEACHER"],
  notices:["ADMIN","OPERATOR"],
- teachers:["ADMIN","OPERATOR","TEACHER"],
+ staff:["ADMIN","OPERATOR","TEACHER"],
  settings:["ADMIN"]
 };
 
@@ -103,9 +104,67 @@ export default async function DashboardContent({user,section="dashboard",student
   const sessions=(sessionsQ.data??[]).map(x=>({id:x.id,batch_id:x.batch_id,session_date:x.session_date,starts_at:x.starts_at,ends_at:x.ends_at,subject_name:x.subjects?.name??null}));
   const attendanceStudents=(enrollmentsQ.data??[]).flatMap(x=>x.students?[{id:x.students.id,student_no:x.students.student_no,name:x.students.name,batch_id:x.batch_id}]:[]);
   body=<AttendanceManager batches={attendanceBatches} sessions={sessions} students={attendanceStudents} existing={attendanceQ.data??[]} approvals={approvalsQ.data??[]} role={user.role}/>;
- } else if(section==="teachers"){
-  const {data}=await s.from("teachers").select("id,name,mobile,is_active").order("name");
-  body=user.role==="ADMIN"?<TeacherManager teachers={data??[]}/>:<Table title="Teachers" headers={["Name","Mobile"]} rows={(data??[]).map(x=>[x.name,x.mobile??"—"])}/>;
+ } else if(section==="staff"||section==="teachers"){
+  const [staffQ,roleCatalogQ,roleAssignmentsQ,employmentsQ,subjectAssignmentsQ]=await Promise.all([
+   s.from("staff").select("id,staff_no,full_name,name_bn,mobile,email,status").order("full_name"),
+   s.from("staff_role_catalog").select("id,code,name,name_bn,is_teaching_role").eq("is_active",true).order("name"),
+   s.from("staff_role_assignments").select("staff_id,role_id,is_primary,effective_from,effective_to").is("effective_to",null).order("effective_from",{ascending:false}),
+   s.from("staff_employments").select("staff_id,employment_type,status,starts_on,ends_on").in("status",["ACTIVE","ON_LEAVE"]).order("starts_on",{ascending:false}),
+   s.from("staff_subject_assignments").select("staff_id,subject_id,effective_to").is("effective_to",null)
+  ]);
+
+  const roleById=new Map((roleCatalogQ.data??[]).map(role=>[role.id,role]));
+  const primaryRoleByStaff=new Map<string,(typeof roleCatalogQ.data extends (infer R)[]|null ? R : never)>();
+  for(const assignment of roleAssignmentsQ.data??[]){
+   if(!assignment.is_primary||primaryRoleByStaff.has(assignment.staff_id)) continue;
+   const role=roleById.get(assignment.role_id);
+   if(role) primaryRoleByStaff.set(assignment.staff_id,role);
+  }
+
+  const employmentByStaff=new Map<string,(typeof employmentsQ.data extends (infer R)[]|null ? R : never)>();
+  for(const employment of employmentsQ.data??[]){
+   if(!employmentByStaff.has(employment.staff_id)) employmentByStaff.set(employment.staff_id,employment);
+  }
+
+  const subjectNameById=new Map(subjects.map(subject=>[subject.id,subject.name]));
+  const subjectsByStaff=new Map<string,string[]>();
+  for(const assignment of subjectAssignmentsQ.data??[]){
+   const subjectName=subjectNameById.get(assignment.subject_id);
+   if(!subjectName) continue;
+   const list=subjectsByStaff.get(assignment.staff_id)??[];
+   list.push(subjectName);
+   subjectsByStaff.set(assignment.staff_id,list);
+  }
+
+  const staffRows:StaffDirectoryRow[]=(staffQ.data??[]).map(member=>{
+   const primaryRole=primaryRoleByStaff.get(member.id);
+   const employment=employmentByStaff.get(member.id);
+   return{
+    id:member.id,
+    staffNo:member.staff_no,
+    fullName:member.full_name,
+    nameBn:member.name_bn,
+    mobile:member.mobile,
+    email:member.email,
+    status:member.status,
+    roleCode:primaryRole?.code??null,
+    roleName:primaryRole?.name??null,
+    roleNameBn:primaryRole?.name_bn??null,
+    employmentType:employment?.employment_type??null,
+    employmentStatus:employment?.status??null,
+    startsOn:employment?.starts_on??null,
+    subjects:(subjectsByStaff.get(member.id)??[]).sort((a,b)=>a.localeCompare(b))
+   };
+  });
+
+  const roleOptions:StaffRoleOption[]=(roleCatalogQ.data??[]).map(role=>({
+   code:role.code,
+   name:role.name,
+   nameBn:role.name_bn,
+   isTeachingRole:role.is_teaching_role
+  }));
+
+  body=<StaffManager rows={staffRows} roleOptions={roleOptions} subjects={subjects.map(subject=>({id:subject.id,name:subject.name}))} viewerRole={user.role}/>;
  } else if(section==="fees"){
   const {data}=await s.from("fee_structures").select("id,title,amount,frequency").order("effective_from",{ascending:false});
   body=<FeeManager years={years} classes={classes} programs={programs} fees={data??[]}/>;
