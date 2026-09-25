@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField, FormStatus } from "@/components/shared/form-field";
 import { WorkflowHelp } from "@/components/shared/workflow-help";
-import { useLanguage } from "@/components/providers/language-provider";
 
 type Option = { id: string; name: string };
 type Feedback = { ok: boolean; text: string } | null;
@@ -20,10 +19,11 @@ const selectClass =
   "min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
 
 function useCopy() {
-  const { locale } = useLanguage();
-  const bn = locale === "bn";
-  const tr = (en: string, bnText: string) => (bn ? bnText : en);
-  return { bn, tr };
+  const tr = (en: string, alternate: string) => {
+    void alternate;
+    return en;
+  };
+  return { tr };
 }
 
 export function FeeManager({
