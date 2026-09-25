@@ -1,26 +1,162 @@
 "use client";
-import { BookOpenCheck, CalendarDays, ChevronRight, CircleDollarSign, GraduationCap, LayoutDashboard, Settings2, Users } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
 
-const groups = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, items: [] },
-  { title: "Academic", icon: GraduationCap, items: [["Admissions","/dashboard/admissions"],["Students","/dashboard/students"],["Guardians","/dashboard/guardians"],["Attendance","/dashboard/attendance"],["Assessments","/dashboard/assessments"],["Progress","/dashboard/progress"]] },
-  { title: "Finance", icon: CircleDollarSign, items: [["Fees","/dashboard/fees"],["Payments","/dashboard/payments"]] },
-  { title: "Communication", icon: Users, items: [["Parents","/dashboard/parents"],["Notices","/dashboard/notices"]] },
-  { title: "Management", icon: CalendarDays, items: [["Teachers","/dashboard/teachers"],["Routine","/dashboard/routine"]] },
-  { title: "System", icon: Settings2, items: [["Print Center","/dashboard/print"],["Settings","/dashboard/settings"],["Audit & Recovery","/dashboard/audit"]] },
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { CalendarDays, ChevronRight, CircleDollarSign, GraduationCap, LayoutDashboard, Settings2, Users } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import type { AppRole } from "@/lib/constants";
+
+type NavLeaf = {
+  title: string;
+  url: string;
+  roles: AppRole[];
+};
+
+type NavGroup = {
+  title: string;
+  url?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles: AppRole[];
+  items: NavLeaf[];
+};
+
+const allRoles: AppRole[] = ["ADMIN", "OPERATOR", "TEACHER", "GUARDIAN", "STUDENT"];
+const staffRoles: AppRole[] = ["ADMIN", "OPERATOR", "TEACHER"];
+const financeRoles: AppRole[] = ["ADMIN", "OPERATOR"];
+
+const groups: NavGroup[] = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: allRoles, items: [] },
+  {
+    title: "Academic",
+    icon: GraduationCap,
+    roles: staffRoles,
+    items: [
+      { title: "Admissions", url: "/dashboard/admissions", roles: ["ADMIN", "OPERATOR"] },
+      { title: "Students", url: "/dashboard/students", roles: staffRoles },
+      { title: "Guardians", url: "/dashboard/guardians", roles: staffRoles },
+      { title: "Attendance", url: "/dashboard/attendance", roles: staffRoles },
+      { title: "Assessments", url: "/dashboard/assessments", roles: staffRoles },
+      { title: "Progress", url: "/dashboard/progress", roles: staffRoles },
+    ],
+  },
+  {
+    title: "Finance",
+    icon: CircleDollarSign,
+    roles: financeRoles,
+    items: [
+      { title: "Fee Structure", url: "/dashboard/fees", roles: financeRoles },
+      { title: "Fee Collection", url: "/dashboard/payments", roles: financeRoles },
+    ],
+  },
+  {
+    title: "Communication",
+    icon: Users,
+    roles: staffRoles,
+    items: [
+      { title: "Parent Communication", url: "/dashboard/parents", roles: staffRoles },
+      { title: "Notices", url: "/dashboard/notices", roles: ["ADMIN", "OPERATOR"] },
+    ],
+  },
+  {
+    title: "Management",
+    icon: CalendarDays,
+    roles: staffRoles,
+    items: [{ title: "Teachers", url: "/dashboard/teachers", roles: staffRoles }],
+  },
+  {
+    title: "System",
+    icon: Settings2,
+    roles: ["ADMIN"],
+    items: [{ title: "Settings", url: "/dashboard/settings", roles: ["ADMIN"] }],
+  },
 ];
 
-export function NavMain() {
-  return <SidebarGroup><SidebarGroupLabel>Sohoj Academy</SidebarGroupLabel><SidebarMenu>
-    {groups.map((item) => item.items.length === 0 ? (
-      <SidebarMenuItem key={item.title}><SidebarMenuButton asChild tooltip={item.title}><a href={item.url}><item.icon /><span>{item.title}</span></a></SidebarMenuButton></SidebarMenuItem>
-    ) : (
-      <Collapsible key={item.title} asChild defaultOpen className="group/collapsible"><SidebarMenuItem>
-        <CollapsibleTrigger asChild><SidebarMenuButton tooltip={item.title}><item.icon /><span>{item.title}</span><ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" /></SidebarMenuButton></CollapsibleTrigger>
-        <CollapsibleContent><SidebarMenuSub>{item.items.map(([title,url]) => <SidebarMenuSubItem key={url}><SidebarMenuSubButton asChild><a href={url}><span>{title}</span></a></SidebarMenuSubButton></SidebarMenuSubItem>)}</SidebarMenuSub></CollapsibleContent>
-      </SidebarMenuItem></Collapsible>
-    ))}
-  </SidebarMenu></SidebarGroup>;
+function isCurrent(pathname: string, url: string) {
+  if (url === "/dashboard") return pathname === url;
+  return pathname === url || pathname.startsWith(`${url}/`);
+}
+
+export function NavMain({ role }: { role: AppRole }) {
+  const pathname = usePathname();
+
+  const visibleGroups = groups
+    .filter((group) => group.roles.includes(role))
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.roles.includes(role)),
+    }))
+    .filter((group) => group.url || group.items.length > 0);
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Sohoj Academy</SidebarGroupLabel>
+      <SidebarMenu>
+        {visibleGroups.map((group) => {
+          if (group.items.length === 0 && group.url) {
+            const active = isCurrent(pathname, group.url);
+            return (
+              <SidebarMenuItem key={group.title}>
+                <SidebarMenuButton asChild tooltip={group.title} isActive={active}>
+                  <Link href={group.url} aria-current={active ? "page" : undefined}>
+                    <group.icon />
+                    <span>{group.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          }
+
+          const groupActive = group.items.some((item) => isCurrent(pathname, item.url));
+
+          return (
+            <Collapsible
+              key={group.title}
+              asChild
+              defaultOpen={groupActive || group.title === "Academic"}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip={group.title} isActive={groupActive}>
+                    <group.icon />
+                    <span>{group.title}</span>
+                    <ChevronRight
+                      className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90"
+                      aria-hidden="true"
+                    />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {group.items.map((item) => {
+                      const active = isCurrent(pathname, item.url);
+                      return (
+                        <SidebarMenuSubItem key={item.url}>
+                          <SidebarMenuSubButton asChild isActive={active}>
+                            <Link href={item.url} aria-current={active ? "page" : undefined}>
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      );
+                    })}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
+  );
 }
