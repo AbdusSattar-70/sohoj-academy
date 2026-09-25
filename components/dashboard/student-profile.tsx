@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {Card,CardContent,CardHeader,CardTitle} from "@/components/ui/card";
 
 type Student={id:string;student_no:string;name:string;name_bn:string|null;gender:string|null;date_of_birth:string|null;school_name:string|null;school_roll:string|null;status:string;created_at:string};
@@ -18,7 +19,7 @@ export function StudentProfile({student,enrollments,guardians,attendance,results
  const primary=guardians.find(x=>x.is_primary)??guardians[0];
 
  return <div className="space-y-6">
-  <div className="flex flex-wrap items-start justify-between gap-4"><div><a href="/dashboard/students" className="text-sm text-muted-foreground hover:underline">← Student Master</a><h1 className="mt-2 text-2xl font-bold">{student.name}</h1><p className="text-muted-foreground">{student.student_no}{student.name_bn?` • ${student.name_bn}`:""}</p></div><span className="rounded-full border px-3 py-1 text-sm">{student.status}</span></div>
+  <div className="flex flex-wrap items-start justify-between gap-4"><div><Link href="/dashboard/students" className="text-sm text-muted-foreground hover:underline">← Student Master</Link><h1 className="mt-2 text-2xl font-bold">{student.name}</h1><p className="text-muted-foreground">{student.student_no}{student.name_bn?` • ${student.name_bn}`:""}</p></div><span className="rounded-full border px-3 py-1 text-sm">{student.status}</span></div>
   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
    <Metric label="Attendance" value={attendanceRate===null?"—":attendanceRate+"%"} note={attendance.length+` records`}/>
    <Metric label="Academic Average" value={academicAvg===null?"—":academicAvg+"%"} note={results.length+` results`}/>
