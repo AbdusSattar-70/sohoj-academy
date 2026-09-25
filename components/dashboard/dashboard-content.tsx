@@ -10,9 +10,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/server";
+import type { AppRole } from "@/lib/constants";
 import type { User } from "@/types/user";
 
-const modules:Record<string,string>={admissions:"Admission Entry",students:"Student Master",guardians:"Guardians",attendance:"Attendance",assessments:"Assessments & Results",progress:"Progress Reports",fees:"Fee Structure",payments:"Fee Collection",parents:"Parent Communication",notices:"Notices",teachers:"Teachers",routine:"Routine",print:"Print Center",settings:"Settings",audit:"Audit & Recovery"};
+const modules:Record<string,string>={admissions:"Admission Entry",students:"Student Master",guardians:"Guardians",attendance:"Attendance",assessments:"Assessments & Results",progress:"Progress Reports",fees:"Fee Structure",payments:"Fee Collection",parents:"Parent Communication",notices:"Notices",teachers:"Teachers",settings:"Settings"};
+const moduleRoles:Record<string,AppRole[]>={
+ admissions:["ADMIN","OPERATOR"],
+ students:["ADMIN","OPERATOR","TEACHER"],
+ guardians:["ADMIN","OPERATOR","TEACHER"],
+ attendance:["ADMIN","OPERATOR","TEACHER"],
+ assessments:["ADMIN","OPERATOR","TEACHER"],
+ progress:["ADMIN","OPERATOR","TEACHER"],
+ fees:["ADMIN","OPERATOR"],
+ payments:["ADMIN","OPERATOR"],
+ parents:["ADMIN","OPERATOR","TEACHER"],
+ notices:["ADMIN","OPERATOR"],
+ teachers:["ADMIN","OPERATOR","TEACHER"],
+ settings:["ADMIN"]
+};
 
 export default async function DashboardContent({user,section="dashboard",studentId}:{user:User;section?:string;studentId?:string}){
  const title=section==="dashboard"?"Dashboard":modules[section]??"Dashboard"; const s=await createClient();
@@ -35,7 +50,7 @@ export default async function DashboardContent({user,section="dashboard",student
   ]);
   const total=(paymentSum.data??[]).reduce((a,x)=>a+Number(x.amount),0);
   const stats=[["Active Students",studentCount.count??0],["Attendance Marked Today",todayAttendance.count??0],["Fees Collected",`৳${total.toLocaleString()}`],["Upcoming Tests",testCount.count??0]];
-  body=<><div><h1 className="text-2xl font-bold">Digital Campus</h1><p className="text-muted-foreground">শিক্ষা হোক সহজ ও আনন্দময়</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([a,b])=><Card key={a}><CardHeader className="pb-2"><CardTitle className="text-sm">{a}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{b}</div></CardContent></Card>)}</div><Card><CardHeader><CardTitle>Operations</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-3">{Object.entries(modules).map(([k,v])=><a key={k} href={"/dashboard/"+k} className="rounded-lg border p-4 hover:bg-muted"><p className="font-medium">{v}</p><p className="text-sm text-muted-foreground">Open module</p></a>)}</CardContent></Card></>;
+  body=<><div><h1 className="text-2xl font-bold">Digital Campus</h1><p className="text-muted-foreground">শিক্ষা হোক সহজ ও আনন্দময়</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([a,b])=><Card key={a}><CardHeader className="pb-2"><CardTitle className="text-sm">{a}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{b}</div></CardContent></Card>)}</div><Card><CardHeader><CardTitle>Operations</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-3">{Object.entries(modules).filter(([k])=>moduleRoles[k]?.includes(user.role)).map(([k,v])=><a key={k} href={"/dashboard/"+k} className="rounded-lg border p-4 hover:bg-muted"><p className="font-medium">{v}</p><p className="text-sm text-muted-foreground">Open module</p></a>)}</CardContent></Card></>;
  } else if(section==="admissions"&&(user.role==="ADMIN"||user.role==="OPERATOR")){
   const [activeEnrollmentsQ,schoolNamesQ]=await Promise.all([
    s.from("enrollments").select("batch_id").eq("is_active",true).not("batch_id","is",null),
