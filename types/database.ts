@@ -41,6 +41,72 @@ export type Database = {
         }
         Relationships: []
       }
+      approval_requests: {
+        Row: {
+          correlation_id: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          payload_snapshot: Json | null
+          request_note: string | null
+          requested_action: string
+          requested_at: string
+          requested_by: string
+          status: Database["public"]["Enums"]["approval_status"]
+          workflow_type: string
+        }
+        Insert: {
+          correlation_id?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          payload_snapshot?: Json | null
+          request_note?: string | null
+          requested_action: string
+          requested_at?: string
+          requested_by: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          workflow_type: string
+        }
+        Update: {
+          correlation_id?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          payload_snapshot?: Json | null
+          request_note?: string | null
+          requested_action?: string
+          requested_at?: string
+          requested_by?: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          workflow_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_requests_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_results: {
         Row: {
           assessment_id: string
@@ -197,6 +263,59 @@ export type Database = {
           },
         ]
       }
+      audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_role: Database["public"]["Enums"]["app_role"] | null
+          after_data: Json | null
+          before_data: Json | null
+          correlation_id: string
+          entity_id: string
+          entity_type: string
+          id: number
+          metadata: Json
+          occurred_at: string
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_role?: Database["public"]["Enums"]["app_role"] | null
+          after_data?: Json | null
+          before_data?: Json | null
+          correlation_id?: string
+          entity_id: string
+          entity_type: string
+          id?: never
+          metadata?: Json
+          occurred_at?: string
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_role?: Database["public"]["Enums"]["app_role"] | null
+          after_data?: Json | null
+          before_data?: Json | null
+          correlation_id?: string
+          entity_id?: string
+          entity_type?: string
+          id?: never
+          metadata?: Json
+          occurred_at?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -278,6 +397,66 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_rule_versions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_to: string | null
+          id: string
+          notes: string | null
+          rule_key: string
+          status: string
+          value: Json
+          version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          notes?: string | null
+          rule_key: string
+          status?: string
+          value: Json
+          version: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          notes?: string | null
+          rule_key?: string
+          status?: string
+          value?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_rule_versions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_rule_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -829,6 +1008,50 @@ export type Database = {
           },
         ]
       }
+      schools: {
+        Row: {
+          area: string | null
+          created_at: string
+          created_by: string | null
+          district: string | null
+          id: string
+          is_active: boolean
+          name: string
+          name_bn: string | null
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          created_at?: string
+          created_by?: string | null
+          district?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          name_bn?: string | null
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          created_at?: string
+          created_by?: string | null
+          district?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_bn?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schools_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_fee_assignments: {
         Row: {
           amount: number
@@ -918,6 +1141,7 @@ export type Database = {
           id: string
           name: string
           name_bn: string | null
+          school_id: string | null
           school_name: string | null
           school_roll: string | null
           status: Database["public"]["Enums"]["student_status"]
@@ -931,6 +1155,7 @@ export type Database = {
           id?: string
           name: string
           name_bn?: string | null
+          school_id?: string | null
           school_name?: string | null
           school_roll?: string | null
           status?: Database["public"]["Enums"]["student_status"]
@@ -944,13 +1169,22 @@ export type Database = {
           id?: string
           name?: string
           name_bn?: string | null
+          school_id?: string | null
           school_name?: string | null
           school_roll?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           student_no?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "students_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subjects: {
         Row: {
@@ -1101,6 +1335,19 @@ export type Database = {
       }
       generate_receipt_no: { Args: never; Returns: string }
       generate_student_no: { Args: never; Returns: string }
+      record_audit_event: {
+        Args: {
+          p_action: string
+          p_after_data?: Json
+          p_before_data?: Json
+          p_correlation_id?: string
+          p_entity_id: string
+          p_entity_type: string
+          p_metadata?: Json
+          p_reason?: string
+        }
+        Returns: number
+      }
       save_assessment_results: {
         Args: { p_assessment_id: string; p_entries: Json }
         Returns: number
@@ -1112,6 +1359,7 @@ export type Database = {
     }
     Enums: {
       app_role: "ADMIN" | "OPERATOR" | "TEACHER" | "GUARDIAN" | "STUDENT"
+      approval_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"
       attendance_status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"
       payment_status: "POSTED" | "VOID"
       student_status: "ACTIVE" | "INACTIVE" | "GRADUATED" | "WITHDRAWN"
@@ -1243,6 +1491,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["ADMIN", "OPERATOR", "TEACHER", "GUARDIAN", "STUDENT"],
+      approval_status: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
       attendance_status: ["PRESENT", "ABSENT", "LATE", "EXCUSED"],
       payment_status: ["POSTED", "VOID"],
       student_status: ["ACTIVE", "INACTIVE", "GRADUATED", "WITHDRAWN"],
