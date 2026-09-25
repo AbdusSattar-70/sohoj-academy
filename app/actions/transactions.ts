@@ -33,3 +33,18 @@ export async function createNotice(formData:FormData){
  const {error}=await c.supabase.from("notices").insert({title,body,audience:String(formData.get("audience")??"ALL"),published_at:publish?new Date().toISOString():null,created_by:c.user.id});
  if(error)return{ok:false,error:error.message};revalidatePath("/dashboard/notices");return{ok:true};
 }
+
+
+export async function saveAttendance(formData: FormData) {
+ const c=await staff(["ADMIN","OPERATOR","TEACHER"]); if("error" in c)return{ok:false,error:c.error};
+ const session_id=String(formData.get("session_id")??"");
+ if(!session_id)return{ok:false,error:"Class session is required."};
+ const entriesRaw=String(formData.get("entries")??"[]");
+ let entries: unknown;
+ try { entries=JSON.parse(entriesRaw); } catch { return {ok:false,error:"Invalid attendance data."}; }
+ if(!Array.isArray(entries))return{ok:false,error:"Invalid attendance data."};
+ const {data,error}=await c.supabase.rpc("save_attendance",{p_session_id:session_id,p_entries:entries});
+ if(error)return{ok:false,error:error.message};
+ revalidatePath("/dashboard/attendance");revalidatePath("/dashboard");
+ return{ok:true,count:Number(data??0)};
+}
