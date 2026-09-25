@@ -24,7 +24,7 @@ begin
     raise exception 'Missing payment_posting_keys table.';
   end if;
 end;
-$$;
+$$$;
 
 -- Official attendance/results/payments must not be directly writable by the
 -- authenticated API role. Controlled security-definer workflows own writes.
@@ -64,7 +64,7 @@ begin
     raise exception 'authenticated cannot execute the public payment request RPC.';
   end if;
 end;
-$;
+$$;
 
 -- No active batch may exceed its configured capacity.
 do $$
@@ -83,7 +83,7 @@ begin
     raise exception 'At least one batch is currently over capacity.';
   end if;
 end;
-$$;
+$$$;
 
 -- Attendance must only exist for students actively enrolled in the session batch.
 do $$
@@ -103,7 +103,7 @@ begin
     raise exception 'Attendance contains a student outside the active session roster.';
   end if;
 end;
-$$;
+$$$;
 
 -- Assessment results must only exist for active students in the assessment batch.
 do $$
@@ -123,7 +123,7 @@ begin
     raise exception 'Assessment results contain a student outside the active assessment roster.';
   end if;
 end;
-$$;
+$$$;
 
 -- Maker-checker: an approved request cannot be approved by its submitter.
 do $$
@@ -137,7 +137,7 @@ begin
     raise exception 'Maker-checker violation: submitter also approved a request.';
   end if;
 end;
-$$;
+$$$;
 
 -- Pending academic finalisation requests must snapshot a complete roster.
 do $$
@@ -155,7 +155,7 @@ begin
     raise exception 'A pending academic approval is missing its immutable submission snapshot.';
   end if;
 end;
-$$;
+$$$;
 
 -- Human-friendly identities must remain unique.
 do $$
@@ -187,7 +187,7 @@ begin
     raise exception 'Duplicate payment receipt detected.';
   end if;
 end;
-$$;
+$$$;
 
 select
   'PASS' as production_hardening_status,
