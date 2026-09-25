@@ -1099,6 +1099,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      generate_receipt_no: { Args: never; Returns: string }
       generate_student_no: { Args: never; Returns: string }
     }
     Enums: {
