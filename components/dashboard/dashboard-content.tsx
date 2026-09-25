@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { AdmissionForm } from "@/components/dashboard/admission-form";
 import { SettingsManager } from "@/components/dashboard/settings-manager";
 import { AssessmentManager, FeeManager, NoticeManager, PaymentManager, TeacherManager } from "@/components/dashboard/operation-managers";
+import { AttendanceManager } from "@/components/dashboard/attendance-manager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -42,6 +43,16 @@ export default async function DashboardContent({user,section="dashboard"}:{user:
  } else if(section==="guardians"){
   const {data}=await s.from("guardians").select("id,name,mobile,alternate_mobile,address").order("created_at",{ascending:false}).limit(200);
   body=<Table title="Guardians" headers={["Name","Mobile","Alternate","Address"]} rows={(data??[]).map(x=>[x.name,x.mobile,x.alternate_mobile??"—",x.address??"—"])}/>;
+ } else if(section==="attendance"){
+  const [sessionsQ,enrollmentsQ,attendanceQ]=await Promise.all([
+   s.from("class_sessions").select("id,batch_id,session_date,starts_at,ends_at,subjects(name)").order("session_date",{ascending:false}).limit(100),
+   s.from("enrollments").select("student_id,batch_id,students(id,student_no,name)").eq("is_active",true),
+   s.from("attendance").select("session_id,student_id,status,remarks").order("marked_at",{ascending:false}).limit(1000)
+  ]);
+  const attendanceBatches=batches.map(x=>({id:x.id,name:x.name}));
+  const sessions=(sessionsQ.data??[]).map(x=>({id:x.id,batch_id:x.batch_id,session_date:x.session_date,starts_at:x.starts_at,ends_at:x.ends_at,subject_name:x.subjects?.name??null}));
+  const attendanceStudents=(enrollmentsQ.data??[]).flatMap(x=>x.students?[{id:x.students.id,student_no:x.students.student_no,name:x.students.name,batch_id:x.batch_id}]:[]);
+  body=<AttendanceManager batches={attendanceBatches} sessions={sessions} students={attendanceStudents} existing={attendanceQ.data??[]}/>;
  } else if(section==="teachers"){
   const {data}=await s.from("teachers").select("id,name,mobile,is_active").order("name");
   body=user.role==="ADMIN"?<TeacherManager teachers={data??[]}/>:<Table title="Teachers" headers={["Name","Mobile"]} rows={(data??[]).map(x=>[x.name,x.mobile??"—"])}/>;
