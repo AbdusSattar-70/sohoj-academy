@@ -1,6 +1,6 @@
 # Sohoj Academy ERP v2 — Clean Rebuild Contract
 
-This branch is the clean ERP rebuild based on **Sohoj Academy ERP — Product Constitution & Master Blueprint v1.0**.
+This implementation follows **Sohoj Academy ERP — Product Constitution & Master Blueprint v1.1**.
 
 ## Scope boundary
 
@@ -13,63 +13,107 @@ Preserve:
 
 Rebuild:
 - Supabase public business schema
-- ERP dashboard
-- ERP navigation
-- ERP permissions and access context
+- ERP dashboard/navigation
+- Permission/scope model
+- Settings / Control Center
 - CRM / Student Bank
-- Student and guardian lifecycle
-- Admissions
+- Student/guardian/admission lifecycle
+- Programme Offering / Fee Plan / Billing foundation
 - Academic operations
-- Finance
-- Staff and compensation
-- Assets / procurement
-- Accounting
-- Portals / PWA / intelligence layers
+- Finance/accounting
+- Staff/compensation
+- Assets/procurement
+- Portals/PWA/intelligence layers
 
 ## Non-negotiable product constitution
 
 1. One source of truth for every important business fact.
-2. Every important action is traceable through an immutable audit event.
+2. Every important action is traceable through immutable audit events.
 3. No destructive operational deletion.
-4. Sensitive workflows use explicit approval / maker-checker where applicable.
+4. Sensitive workflows use explicit maker-checker approval where policy requires it.
 5. Business rules live in domain/database layers, not React components.
 6. Critical integrity is enforced in Postgres as well as application validation.
 7. Canonical master data replaces repeated free-text values.
-8. Financial corrections use reversal / void / adjustment rather than deletion.
+8. Financial corrections use reversal/void/adjustment rather than deletion.
 9. Plan and actual academic execution are separate records.
 10. Staff is the canonical person identity; Teacher is a role/assignment.
-11. Dashboard ERP is English-only. Public Home, Interest and Auth/Sign-in support English/Bangla.
-12. Light / Dark / System appearance is supported everywhere.
+11. Dashboard ERP is English-only. Public Home, Interest and Auth support English/Bangla.
+12. Light/Dark/System appearance is supported everywhere.
 13. WCAG 2.2 AA is the accessibility baseline.
 14. Mobile-first layouts and PWA-safe architecture are first-class requirements.
-15. Mock-data and database verification are mandatory before a module is operationally complete.
-16. Operational values are configurable policies, not hard-coded constants. Seeded values are defaults only.
-17. Settings changes are versioned, effective-dated, reasoned and audited; historical transactions retain the policy version that governed them.
-18. Access is permission-based. Admin can assign roles/permissions without changing application code; the bootstrap ADMIN role itself remains a protected recovery authority.
-19. Forms validate continuously while the user types. Required-field readiness, field errors and cross-field conflicts are visible before submission.
-20. Submit is disabled until the form is valid, changed and not already processing.
-21. Mutations expose local pending state (button/section/row) rather than blocking or reloading the whole ERP shell.
-22. Posted/finalized finance and academic records use state transitions, reversals or superseding revisions rather than in-place historical rewrites.
-23. Admission identity, enrollment activation, billing and payment are separate business facts. A payment receipt is never generated when no money was received; unpaid obligations use invoices/charges/receivables.
-24. Default admission activation policy requires an accepted admission plus posted initial billing. Whether payment/deposit is required before ACTIVE enrollment is a configurable policy.
+15. Mock-data and database verification are mandatory.
+16. Operational values are configurable policies, never hidden hard-coded constants.
+17. Seeded values are initial defaults only.
+18. Policies/settings are versioned, effective-dated, reasoned and audited.
+19. Historical transactions retain the exact rule/Fee Plan version that governed them.
+20. Access is permission-driven; scope is explicit as the product grows.
+21. Forms validate continuously while the user works.
+22. Submit is disabled until valid, changed and not processing.
+23. Loading/mutation state is localized to the affected section/row/button.
+24. Admission, Enrollment, Billing and Payment are separate business facts.
+25. A receipt is generated only for actual posted payment.
+26. Unpaid obligations are invoices/charges/receivables, not “due receipts”.
+27. Idempotency, locking and duplicate prevention are required for critical writes.
 
 ## Configuration and Settings Control Center
 
-The ERP must expose a dedicated Settings / Control Center grouped by domain:
-
+The Control Center covers:
 - Organization & branches
-- Academic years, classes, programs, subjects and master data
-- Admission activation and enrollment policies
+- Academic/master data
+- Programme Offerings and Fee Plans
+- Admission activation policies
 - Batch capacity and scheduling policies
-- Billing, due dates, discounts, scholarships and payment methods
-- Teacher compensation, revenue sharing, retention/acquisition bonuses and advances
-- Staff roles, user roles, permission matrix and branch scope
-- Approval workflows and maker-checker thresholds
-- CRM sources, statuses, follow-up defaults and ownership rules
-- Document/numbering preferences and communication templates
-- Security, session and operational controls
+- CRM ownership/follow-up policies
+- Billing/due/discount/scholarship/payment settings
+- Staff/teacher compensation and advance policies
+- Approval thresholds and maker-checker rules
+- Roles/permissions/scope
+- Documents/numbering/templates
+- Security/operations/observability/integrations
 
-Settings are not unrestricted free-form edits. Each setting has a type, validation contract, scope, effective date and audit history. Policies that affect historical calculations are versioned rather than overwritten.
+Configuration is typed and validated. Historical-impact settings are versioned rather than overwritten.
+
+## Programme / Offering / Fee Plan model
+
+```text
+Programme
+→ Programme Offering
+  → Academic Year
+  → Eligible Class/Group
+  → Branch
+  → Batch availability
+→ Fee Plan Version
+  → Tuition
+  → Admission/exam/material charges
+  → Billing cycle / due rules
+```
+
+During Admission the operator selects context; normal fee terms auto-load. The operator does not retype standard tuition/charges.
+
+Special student terms are represented as approved Discount / Scholarship / Fee Exception records, not by overwriting the standard Fee Plan.
+
+## Admission lifecycle
+
+```text
+PROSPECT
+→ ADMISSION_DRAFT
+→ ADMISSION_READY
+→ ADMISSION_ACCEPTED
+→ INITIAL_BILLING_POSTED
+→ PENDING_PAYMENT      (only if active policy requires payment/deposit)
+→ ACTIVE_ENROLLMENT
+```
+
+The activation policy is configurable.
+
+Default policy:
+- accepted admission required;
+- validated student/guardian/academic placement required;
+- Fee Plan/Fee Assignment required;
+- initial billing must be posted;
+- actual payment is not required unless the active policy says so;
+- unpaid balance remains receivable;
+- Active Student counts use ACTIVE enrollment only.
 
 ## Engineering shape
 
@@ -80,8 +124,12 @@ modules/
     permissions/
     audit/
     approvals/
+    navigation/
     master-data/
+    settings/
     rules/
+  dashboard/
+  action-center/
   crm/
   students/
   admissions/
@@ -94,6 +142,7 @@ modules/
     assessments/
     coverage/
   finance/
+    fee-plans/
     billing/
     payments/
     advances/
@@ -107,70 +156,74 @@ modules/
   procurement/
 ```
 
-Business workflow rule:
+Business workflow:
 
 ```text
 UI with on-change validation
 → local readiness state
-→ permission check
+→ permission + scope check
 → domain service / transactional RPC
-→ database invariant + idempotency/concurrency guard
-→ approval where policy requires it
-→ audit event / policy-version reference
+→ database invariant
+→ idempotency/concurrency protection
+→ approval when policy requires it
+→ audit event + governing policy/version reference
 → targeted cache invalidation
-→ local success/error update
+→ local success/error state
 ```
 
 ## Delivery order
 
-### Phase 0 — Platform foundation
-- Organization / branch-ready identity
-- Profiles
-- Permission-based RBAC
-- Staff identity foundation
-- Universal audit events
-- Approval engine
-- Versioned business rules
-- Canonical master-data infrastructure
-- CI / database verification
+### Phase 0 — Platform + Dashboard Initialization
+- organization/branch-ready identity
+- profile + Staff identity
+- permission-driven RBAC
+- Settings / Control Center
+- universal audit events
+- approval engine
+- versioned business rules
+- canonical master data
+- explicit dashboard route registry
+- local loading/error boundaries
+- shared live-validation form primitives
+- CI/database verification
 
-### Phase 1 — CRM + Student Core
-- Prospects / Student Bank
-- Follow-up timeline
-- Schools, areas, sources
-- Students, guardians, relationships
-- Enrollments
-- Prospect → Admission conversion
+### Phase 1 — CRM + Student/Admission Core
+- Prospect / Student Bank
+- follow-up timeline and Action Center
+- Schools/Areas/Sources
+- Students/Guardians
+- Programme Offering + Fee Plan foundation
+- Admission Case state machine
+- Student conversion
+- initial Billing
+- Enrollment activation policy
 
 ### Phase 2 — Academic Operations
-- Curriculum / syllabus structure
-- Routine templates and real sessions
-- Session plan vs actual coverage
-- Attendance approval workflow
-- Homework
-- Assessments / result approval
-- Leave, substitution and recovery gaps
+- curriculum/syllabus structure
+- routine templates and real sessions
+- plan vs actual coverage
+- attendance approval
+- homework
+- assessments/results approval
+- leave/substitution/recovery gaps
 
 ### Phase 3 — Finance
-- Fee plans / assignments
-- Billing periods / charges
-- Payments / allocations
-- Receipts
-- Discounts / approvals
-- Reversals / refunds
-- Staff / vendor advances
+- billing periods/charges/invoices
+- payment allocation/receipts
+- dues/aging
+- discounts/scholarships/exceptions
+- reversals/refunds/credits
+- staff/vendor advances
 
 ### Phase 4 onward
-Follow the Master Blueprint roadmap.
+Follow Master Blueprint v1.1.
 
 ## Reset policy
 
-The linked development database must not be reset until the v2 migration baseline on this branch replaces the legacy migration chain. Running a reset against the old migration set would simply recreate the legacy schema.
-
-For a throwaway linked **development/staging** project, once the v2 migration baseline is ready:
+A destructive reset is allowed only for disposable development/staging environments and only after confirming the migration chain represents the intended v2 architecture.
 
 ```bash
 pnpm exec supabase db reset --linked --no-seed
 ```
 
-This is destructive and must never be run against production.
+Never run this against production.
