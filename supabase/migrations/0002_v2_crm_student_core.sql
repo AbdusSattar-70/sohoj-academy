@@ -396,7 +396,7 @@ begin
       and p.current_class_id=v_class.id
       and p.created_at > now() - interval '10 minutes'
   ) then
-    raise exception 'A similar interest request was submitted recently.';
+    raise exception 'A similar interest request was submitted recently. Please wait before submitting again.';
   end if;
 
   v_school_name := nullif(btrim(coalesce(p_payload->>'school_name_snapshot','')), '');
@@ -463,7 +463,10 @@ begin
     select * into v_relationship
     from public.guardian_relationships
     where organization_id=v_org.id
-      and upper(code)=upper(v_relationship_text)
+      and (
+        upper(code)=upper(replace(v_relationship_text,' ','_'))
+        or lower(name)=lower(v_relationship_text)
+      )
       and is_active
     limit 1;
   end if;
