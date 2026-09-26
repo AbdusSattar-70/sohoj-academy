@@ -393,6 +393,10 @@ export type Database = {
         Returns: boolean;
       };
       my_erp_context: { Args: never; Returns: Json };
+      record_prospect_followup: {
+        Args: { p_input: Json };
+        Returns: Json;
+      };
       submit_public_interest: {
         Args: { p_payload: Json };
         Returns: Json;
