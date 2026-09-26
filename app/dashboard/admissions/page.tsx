@@ -89,8 +89,18 @@ export default async function AdmissionsPage() {
                   {a.number} · {a.name}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {a.studentNo ?? "Student ID issued on acceptance"} ·{" "}
-                  {data.batches.find((b) => b.id === a.batchId)?.name}
+                  {a.studentId ? (
+                    <Link
+                      className="underline"
+                      href={`/dashboard/students/${a.studentId}`}
+                    >
+                      {a.studentNo}
+                      {a.existingStudent ? " · Existing student" : ""}
+                    </Link>
+                  ) : (
+                    "Student ID issued on acceptance"
+                  )}{" "}
+                  · {data.batches.find((b) => b.id === a.batchId)?.name}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -174,21 +184,23 @@ export default async function AdmissionsPage() {
                 </p>
               </section>
             )}
-            {manage && ["DRAFT", "READY"].includes(a.status) && (
-              <details className="print:hidden">
-                <summary className="cursor-pointer text-sm">
-                  Correct student / guardian details
-                </summary>
-                <AdmissionCommandForm
-                  action="EDIT_DRAFT"
-                  admissionId={a.id}
-                  data={data}
-                  identity={a}
-                  label="Save Draft Details"
-                  description="Changes return the case to Draft for a fresh review and remain in the audit history."
-                />
-              </details>
-            )}
+            {manage &&
+              !a.existingStudent &&
+              ["DRAFT", "READY"].includes(a.status) && (
+                <details className="print:hidden">
+                  <summary className="cursor-pointer text-sm">
+                    Correct student / guardian details
+                  </summary>
+                  <AdmissionCommandForm
+                    action="EDIT_DRAFT"
+                    admissionId={a.id}
+                    data={data}
+                    identity={a}
+                    label="Save Draft Details"
+                    description="Changes return the case to Draft for a fresh review and remain in the audit history."
+                  />
+                </details>
+              )}
             {manage && next && (
               <AdmissionCommandForm
                 key={`${a.id}-${a.status}`}

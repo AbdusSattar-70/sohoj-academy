@@ -120,6 +120,7 @@ export const workspaceSchema = z.object({
       ]),
       createdAt: z.string(),
       batchId: uuid,
+      existingStudent: z.boolean(),
       studentNo: z.string().nullable(),
       studentId: uuid.nullable(),
       name: z.string(),

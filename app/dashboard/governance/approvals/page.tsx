@@ -51,7 +51,19 @@ export default async function ApprovalsPage() {
                         {row.entity_id}
                       </p>
                     </td>
-                    <td className="px-4 py-3">{row.requested_action}</td>
+                    <td className="px-4 py-3">
+                      {row.requested_action}
+                      {["STUDENT_TRANSFER", "STUDENT_MERGE"].includes(
+                        row.workflow_type,
+                      ) && (
+                        <Link
+                          className="mt-2 block underline"
+                          href={`/dashboard/students/${row.entity_id}#reviews`}
+                        >
+                          Review student request
+                        </Link>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {new Date(row.requested_at).toLocaleString()}
                     </td>

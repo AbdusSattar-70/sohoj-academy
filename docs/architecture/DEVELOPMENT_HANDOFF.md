@@ -22,7 +22,7 @@ Repository architecture references:
 
 ## Active development branch
 
-`feature/dashboard_initialization`
+`feature/student-lifecycle` (branched from `feature/dashboard_initialization` at `d4b093a`, including the public Interest RPC receiver fix).
 
 Do not continue ERP work from the old MVP branch.
 
@@ -282,14 +282,36 @@ All commands enforce database permissions, reason/audit, idempotency and case lo
 
 Verification: all 11 SQL scripts pass in isolated PGlite/Postgres, including new `0013_v2_finance_workflows.sql` and `0014_v2_finance_terms_and_cancellation.sql`. Tests exercise request/approval/payout retries, self-approval denial, overlapping discounts/terms, stale previews, duplicate periods, recurring payments, refund reservations/limits, cancellation credits/retained debt, pre-billing discounts, draft restart, immutable history and unauthorized access. Typecheck, ESLint and production build pass. Real signed-in browser, live Supabase, and multi-connection concurrency verification remain unperformed in this workspace.
 
+## Student lifecycle implementation (2026-09-27)
+
+Active feature branch: `feature/student-lifecycle`.
+
+New migrations:
+- `0017_v2_student_lifecycle.sql`: repeated admissions for a permanent Student ID, immutable transfer/identity-merge records, permissioned student commands, independent review, removal of direct identity-table writes.
+- `0018_v2_existing_student_admission.sql`: integrates existing identity drafts into the normal Ready → Accept → Bill → Activate workflow; locks the student during transitions and rejects archived identities.
+- `0019_v2_student_profile_workspace.sql`: runtime-validated profile read model; financial amounts require `finance.view`.
+
+Open Students → Student ID (`/dashboard/students/[studentId]`) for identity, linked guardians, admission cases, enrollment/transfer history, invoice balances and lifecycle approvals.
+
+Implemented:
+- Existing-student enrollment creates a new Admission Case with the same permanent Student ID and primary guardian. Standard fees load from the selected active Fee Plan. It proceeds through the existing review, billing and activation policy; previous debts/discounts remain attached to their original case. New one-time charges remain visible for review. Student identity cannot be overwritten through an enrollment draft.
+- The existing database restriction of one active enrollment per student per academic year remains explicit. An open admission in that year must be resolved before readmission; a new year can use the same identity.
+- Batch transfers require an independent approver with `admissions.approve`, a different active batch in the same offering, and capacity revalidation. The old enrollment closes as WITHDRAWN with a linked transfer event; a new ACTIVE enrollment replaces it. Fee Plan, invoices and billing continuity remain unchanged. Cross-offering/commercial changes are not performed through transfers.
+- Duplicate candidates match normalized name or guardian mobile; matching is never proof of identity. Requester must confirm the same person and provide evidence in the reason. A different reviewer with `students.merge.approve` decides. Source must have no open admissions/active enrollment; target must be canonical in the same organization. Changed identity snapshots invalidate approval.
+- A merge archives the duplicate and links it to the canonical identity. Permanent numbers, guardians, prospects, invoices, payments and historical foreign keys are retained. Canonical profile aggregates linked historical records; new enrollment must use the canonical ID. No destructive merge or unmerge is exposed. Nested merge chains are rejected.
+- ADMIN receives the new merge-approval permission. Other operational roles can be granted it through Settings. Requests and decisions are audited and retry-safe; the Approval Register links to profile review.
+
+Verification: all 12 SQL scripts pass in isolated PGlite/Postgres with Supabase Auth fixtures. New test 0017 exercises readmission, duplicate-year prevention, self-approval denial, transfer capacity/stale-request checks, immutable financial identity through merging, canonical profile aggregation and finance permission redaction. Typecheck, ESLint and production build pass. Live Supabase/browser acceptance and multi-connection concurrency verification remain pending.
+
 ## Immediate next implementation direction
 
-1. Apply pending migrations through 0016 in the user's development Supabase project and regenerate linked database types.
-2. Exercise the complete admission, discount, cancellation, refund and recurring billing flows in the real UI using two authorized people for maker-checker decisions. See `docs/architecture/FINANCE_ACCEPTANCE.md`.
-3. Continue existing-student enrollment and duplicate review/merge, followed by broader Finance/Academic modules. Do not reintroduce the old MVP schema or defer the four implemented financial workflows as future placeholders.
+1. Apply pending migrations through 0019 in the user's development Supabase project; regenerate linked types after applying them.
+2. Run `docs/architecture/STUDENT_LIFECYCLE_ACCEPTANCE.md` with two authorized people, alongside the finance acceptance guide.
+3. Build academic operations: curriculum, routine/real sessions, then attendance/class logs and academic approval. Include the blueprint's teacher question-creation/review module with assessments; it remains untouched.
+4. Student contact/document editing, promotion/graduation, cross-offering transfers, multi-program enrollment policy, and richer global search are not included in this lifecycle slice. Preserve canonical identities and financial history when extending it.
 
 ## New-chat instruction
 
 In a fresh conversation, say:
 
-“Continue the Sohoj Academy ERP build from GitHub branch `feature/dashboard_initialization`. First read `docs/architecture/DEVELOPMENT_HANDOFF.md`, the repository architecture docs, and the Google Drive Master Blueprint v1.1. Use the existing blueprint-first architecture and continue from the Immediate next implementation direction. Do not revive the old MVP dashboard/schema.”
+“Continue the Sohoj Academy ERP build from GitHub branch `feature/student-lifecycle`. First read `docs/architecture/DEVELOPMENT_HANDOFF.md`, the repository architecture docs, and the Google Drive Master Blueprint v1.1. Use the existing blueprint-first architecture and continue from the Immediate next implementation direction. Do not revive the old MVP dashboard/schema.”

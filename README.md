@@ -38,6 +38,12 @@ The authoritative product reference is **Sohoj Academy ERP — Product Constitut
 - pnpm
 - Supabase SQL migrations and database verification scripts
 
+## Student profiles and lifecycle
+
+Branch `feature/student-lifecycle` includes migrations through 0019. Open **Students → Student ID** for the detailed profile, guardian contacts, enrollment history, finance-authorized balances and lifecycle requests.
+
+Create an enrollment draft with an existing Student ID; request a same-offering batch transfer; or submit a verified duplicate identity for independent review. History and permanent IDs are retained. See [Student lifecycle acceptance](docs/architecture/STUDENT_LIFECYCLE_ACCEPTANCE.md) for permissions, boundaries and testing.
+
 ## Billing, discounts, cancellations and refunds
 
 Open **Finance → Billing & Adjustments** after applying migrations through 0016.
