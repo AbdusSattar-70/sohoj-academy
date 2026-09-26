@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type FieldPath } from "react-hook-form";
+import { useForm, useWatch, type FieldPath } from "react-hook-form";
 import { PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
@@ -42,7 +42,7 @@ export function ProspectFollowupForm({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     reset,
     setError,
     formState: { errors, isDirty, isValid },
@@ -62,7 +62,7 @@ export function ProspectFollowupForm({
     },
   });
 
-  const newStatus = watch("newStatus");
+  const newStatus = useWatch({ control, name: "newStatus" });
 
   const submit = handleSubmit((input) => {
     setMessage(null);
