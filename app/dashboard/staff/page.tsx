@@ -2,12 +2,19 @@ import { UsersRound } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
-import { getStaffList } from "@/modules/staff/queries";
+import { CreateStaffForm } from "@/modules/staff/components/create-staff-form";
+import { getStaffFormOptions, getStaffList } from "@/modules/staff/queries";
+import { can } from "@/types/erp";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 
 export default async function StaffPage() {
-  await requirePermission("staff.view");
-  const rows = await getStaffList();
+  const context = await requirePermission("staff.view");
+  const [rows, formOptions] = await Promise.all([
+    getStaffList(),
+    can(context, "staff.manage")
+      ? getStaffFormOptions()
+      : Promise.resolve({ roles: [], subjects: [] }),
+  ]);
 
   return (
     <div className="space-y-7">
@@ -16,6 +23,13 @@ export default async function StaffPage() {
         title="Staff"
         description="Staff is the permanent person identity. Teacher, Academic Director, Operator and other responsibilities are assignments on that identity, not separate person records."
       />
+
+      {can(context, "staff.manage") && (
+        <CreateStaffForm
+          roles={formOptions.roles}
+          subjects={formOptions.subjects}
+        />
+      )}
 
       {rows.length ? (
         <section className="overflow-hidden rounded-2xl border bg-card">
