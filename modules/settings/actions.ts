@@ -170,7 +170,6 @@ export async function updateUserOperationalAccess(
     p_profile_id: parsed.data.profileId,
     p_role_codes: parsed.data.roleCodes,
     p_reason: parsed.data.reason,
-    p_branch_id: null,
   });
 
   if (error) return { ok: false, error: error.message };
