@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ClipboardCheck } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
@@ -17,6 +18,13 @@ export default async function ApprovalsPage() {
         description="Sensitive workflows remain traceable from request through decision. The requester cannot approve their own request."
       />
 
+      <Link
+        href="/dashboard/finance/billing"
+        className="inline-block text-sm underline"
+      >
+        Review discount, cancellation and refund requests in Billing &
+        Adjustments → Approvals
+      </Link>
       {rows.length ? (
         <section className="overflow-hidden rounded-2xl border bg-card">
           <div className="overflow-x-auto">
@@ -43,7 +51,27 @@ export default async function ApprovalsPage() {
                         {row.entity_id}
                       </p>
                     </td>
-                    <td className="px-4 py-3">{row.requested_action}</td>
+                    <td className="px-4 py-3">
+                      {row.requested_action}
+                      {row.workflow_type === "ATTENDANCE" && (
+                        <Link
+                          className="mt-2 block underline"
+                          href={`/dashboard/academics/sessions/${row.entity_id}`}
+                        >
+                          Review class attendance
+                        </Link>
+                      )}
+                      {["STUDENT_TRANSFER", "STUDENT_MERGE"].includes(
+                        row.workflow_type,
+                      ) && (
+                        <Link
+                          className="mt-2 block underline"
+                          href={`/dashboard/students/${row.entity_id}#reviews`}
+                        >
+                          Review student request
+                        </Link>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {new Date(row.requested_at).toLocaleString()}
                     </td>

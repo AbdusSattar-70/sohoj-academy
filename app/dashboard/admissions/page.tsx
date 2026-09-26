@@ -53,6 +53,9 @@ export default async function AdmissionsPage() {
         description="Draft → Review → Accept → Initial Billing → Enrollment. Payments and receipts are recorded separately when money is received."
       />
       <div className="flex flex-wrap gap-4 text-sm print:hidden">
+        <Link href="/dashboard/finance/billing" className="underline">
+          Billing, Discounts & Refunds
+        </Link>
         <Link href="/dashboard/crm/prospects" className="underline">
           Prospects
         </Link>
@@ -73,9 +76,7 @@ export default async function AdmissionsPage() {
       )}
       {data.cases.map((a) => {
         const next = nextAction[a.status];
-        const due = a.invoice
-          ? Number((a.invoice.total - a.invoice.paid).toFixed(2))
-          : null;
+        const due = a.invoice ? a.invoice.due : null;
         return (
           <article
             key={a.id}
@@ -88,8 +89,18 @@ export default async function AdmissionsPage() {
                   {a.number} · {a.name}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {a.studentNo ?? "Student ID issued on acceptance"} ·{" "}
-                  {data.batches.find((b) => b.id === a.batchId)?.name}
+                  {a.studentId ? (
+                    <Link
+                      className="underline"
+                      href={`/dashboard/students/${a.studentId}`}
+                    >
+                      {a.studentNo}
+                      {a.existingStudent ? " · Existing student" : ""}
+                    </Link>
+                  ) : (
+                    "Student ID issued on acceptance"
+                  )}{" "}
+                  · {data.batches.find((b) => b.id === a.batchId)?.name}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -166,26 +177,30 @@ export default async function AdmissionsPage() {
                   </p>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Due {a.invoice.dueOn}. This invoice records charges; it is not
-                  a payment receipt.
+                  Approved credits: BDT {a.invoice.credits.toFixed(2)} · Refunds
+                  paid: BDT {a.invoice.refunded.toFixed(2)} · Customer credit:
+                  BDT {a.invoice.credit.toFixed(2)}. Due {a.invoice.dueOn}. This
+                  invoice records charges; it is not a payment receipt.
                 </p>
               </section>
             )}
-            {manage && ["DRAFT", "READY"].includes(a.status) && (
-              <details className="print:hidden">
-                <summary className="cursor-pointer text-sm">
-                  Correct student / guardian details
-                </summary>
-                <AdmissionCommandForm
-                  action="EDIT_DRAFT"
-                  admissionId={a.id}
-                  data={data}
-                  identity={a}
-                  label="Save Draft Details"
-                  description="Changes return the case to Draft for a fresh review and remain in the audit history."
-                />
-              </details>
-            )}
+            {manage &&
+              !a.existingStudent &&
+              ["DRAFT", "READY"].includes(a.status) && (
+                <details className="print:hidden">
+                  <summary className="cursor-pointer text-sm">
+                    Correct student / guardian details
+                  </summary>
+                  <AdmissionCommandForm
+                    action="EDIT_DRAFT"
+                    admissionId={a.id}
+                    data={data}
+                    identity={a}
+                    label="Save Draft Details"
+                    description="Changes return the case to Draft for a fresh review and remain in the audit history."
+                  />
+                </details>
+              )}
             {manage && next && (
               <AdmissionCommandForm
                 key={`${a.id}-${a.status}`}
@@ -240,6 +255,11 @@ export default async function AdmissionsPage() {
                         {r.number} · Print
                       </Link>
                       <p>BDT {r.amount.toFixed(2)} received</p>
+                      {r.refunded > 0 && (
+                        <p className="text-sm">
+                          BDT {r.refunded.toFixed(2)} subsequently refunded.
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground">
                         {r.method} ·{" "}
                         {new Date(r.postedAt).toLocaleString("en-GB", {

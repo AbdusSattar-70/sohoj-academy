@@ -10,11 +10,6 @@ export type PublicInterestResult =
   | { ok: true; prospectNo: string | null }
   | { ok: false; error: string; field?: string | null };
 
-type RpcResult = {
-  data: { prospect_no?: string } | null;
-  error: { message: string } | null;
-};
-
 export async function submitPublicInterest(
   input: PublicInterestInput
 ): Promise<PublicInterestResult> {
@@ -37,12 +32,8 @@ export async function submitPublicInterest(
   }
 
   const supabase = await createClient();
-  const rpc = supabase.rpc as unknown as (
-    fn: "submit_public_interest",
-    args: { p_payload: Record<string, unknown> }
-  ) => Promise<RpcResult>;
-
-  const { data: result, error } = await rpc("submit_public_interest", {
+  // Keep the client receiver: Supabase rpc() reads this.rest internally.
+  const { data: result, error } = await supabase.rpc("submit_public_interest", {
     p_payload: {
       student_name: data.studentName,
       student_name_bn: data.studentNameBn || "",
@@ -91,6 +82,10 @@ export async function submitPublicInterest(
 
   return {
     ok: true,
-    prospectNo: result?.prospect_no ?? null,
+    prospectNo:
+      result && typeof result === "object" && !Array.isArray(result) &&
+      typeof result.prospect_no === "string"
+        ? result.prospect_no
+        : null,
   };
 }

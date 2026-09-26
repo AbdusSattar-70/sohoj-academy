@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
@@ -33,7 +34,14 @@ export default async function StudentsPage() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id} className="border-b hover:bg-muted/30">
-                    <td className="px-4 py-3 font-semibold">{row.studentNo}</td>
+                    <td className="px-4 py-3 font-semibold">
+                      <Link
+                        className="underline underline-offset-4"
+                        href={`/dashboard/students/${row.id}`}
+                      >
+                        {row.studentNo}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3">{row.fullName}</td>
                     <td className="px-4 py-3">{row.schoolName}</td>
                     <td className="px-4 py-3">
