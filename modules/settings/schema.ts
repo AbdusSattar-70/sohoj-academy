@@ -93,3 +93,12 @@ export const rolePermissionUpdateSchema = z.object({
 });
 
 export type RolePermissionUpdateInput = z.infer<typeof rolePermissionUpdateSchema>;
+
+
+export const userAccessUpdateSchema = z.object({
+  profileId: z.string().uuid(),
+  roleCodes: z.array(z.string().trim().min(1)).max(20),
+  reason: z.string().trim().min(5, "Explain why this user's access is changing.").max(500),
+});
+
+export type UserAccessUpdateInput = z.infer<typeof userAccessUpdateSchema>;
