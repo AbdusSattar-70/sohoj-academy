@@ -182,7 +182,7 @@ create table public.batches (
   program_id uuid references public.programs(id),
   code text not null,
   name text not null,
-  capacity integer not null default 12,
+  capacity integer not null,
   is_active boolean not null default true,
   created_by uuid references public.profiles(id),
   created_at timestamptz not null default now(),
@@ -245,7 +245,7 @@ as $$
 declare
   v_max integer;
 begin
-  select coalesce((payload->>'max_students')::integer, 12)
+  select (payload->>'max_students')::integer
     into v_max
   from public.business_rule_versions
   where domain='academics'
@@ -254,7 +254,9 @@ begin
   order by version desc
   limit 1;
 
-  v_max := coalesce(v_max, 12);
+  if v_max is null or v_max < 1 then
+    raise exception 'Active batch capacity policy is missing or invalid.';
+  end if;
 
   if new.capacity > v_max then
     raise exception 'Batch capacity exceeds the active academy policy maximum of %.', v_max;
