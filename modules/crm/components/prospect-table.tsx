@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { StatusBadge } from "@/components/erp/status-badge";
@@ -96,13 +97,23 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
             {filtered.map((row) => (
               <tr key={row.id} className="border-b align-top hover:bg-muted/30">
                 <td className="px-4 py-3">
-                  <p className="font-semibold">{row.prospectNo}</p>
+                  <Link
+                    href={`/dashboard/crm/prospects/${row.id}`}
+                    className="font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                  >
+                    {row.prospectNo}
+                  </Link>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {new Date(row.createdAt).toLocaleDateString()}
                   </p>
                 </td>
                 <td className="px-4 py-3">
-                  <p className="font-medium">{row.studentName}</p>
+                  <Link
+                    href={`/dashboard/crm/prospects/${row.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {row.studentName}
+                  </Link>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {row.guardianName} • {row.mobile}
                   </p>
