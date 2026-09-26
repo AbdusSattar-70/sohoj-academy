@@ -115,6 +115,16 @@ export type Database = {
         assigned_by: string | null;
         created_at: string;
       }>;
+      staff_subject_assignments: TableDef<{
+        id: string;
+        staff_id: string;
+        subject_id: string;
+        effective_from: string;
+        effective_to: string | null;
+        is_primary: boolean;
+        assigned_by: string | null;
+        created_at: string;
+      }>;
       audit_events: TableDef<{
         id: string;
         correlation_id: string;
@@ -369,6 +379,10 @@ export type Database = {
     Functions: {
       bootstrap_admin: {
         Args: { p_email: string; p_full_name?: string | null };
+        Returns: Json;
+      };
+      create_staff_member: {
+        Args: { p_input: Json };
         Returns: Json;
       };
       generate_prospect_no: { Args: never; Returns: string };
