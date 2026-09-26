@@ -47,7 +47,10 @@ export function UserAccessEditor({
   const selectedUser = users.find(
     (user) => user.profileId === selectedProfileId
   );
-  const currentRoleCodes = selectedUser?.operationalRoleCodes ?? [];
+  const currentRoleCodes = useMemo(
+    () => selectedUser?.operationalRoleCodes ?? [],
+    [selectedUser]
+  );
 
   const {
     register,
