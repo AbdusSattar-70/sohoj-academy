@@ -21,6 +21,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          organization_id: string
           starts_on: string
         }
         Insert: {
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          organization_id: string
           starts_on: string
         }
         Update: {
@@ -37,20 +39,30 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          organization_id?: string
           starts_on?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "academic_years_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       approval_requests: {
         Row: {
           correlation_id: string
+          created_at: string
           decided_at: string | null
           decided_by: string | null
           decision_note: string | null
           entity_id: string
           entity_type: string
           id: string
-          payload_snapshot: Json | null
+          payload_snapshot: Json
           request_note: string | null
           requested_action: string
           requested_at: string
@@ -60,13 +72,14 @@ export type Database = {
         }
         Insert: {
           correlation_id?: string
+          created_at?: string
           decided_at?: string | null
           decided_by?: string | null
           decision_note?: string | null
           entity_id: string
           entity_type: string
           id?: string
-          payload_snapshot?: Json | null
+          payload_snapshot?: Json
           request_note?: string | null
           requested_action: string
           requested_at?: string
@@ -76,13 +89,14 @@ export type Database = {
         }
         Update: {
           correlation_id?: string
+          created_at?: string
           decided_at?: string | null
           decided_by?: string | null
           decision_note?: string | null
           entity_id?: string
           entity_type?: string
           id?: string
-          payload_snapshot?: Json | null
+          payload_snapshot?: Json
           request_note?: string | null
           requested_action?: string
           requested_at?: string
@@ -107,158 +121,44 @@ export type Database = {
           },
         ]
       }
-      assessment_results: {
+      areas: {
         Row: {
-          assessment_id: string
-          marks: number
-          remarks: string | null
-          student_id: string
-        }
-        Insert: {
-          assessment_id: string
-          marks: number
-          remarks?: string | null
-          student_id: string
-        }
-        Update: {
-          assessment_id?: string
-          marks?: number
-          remarks?: string | null
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assessment_results_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_results_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      assessments: {
-        Row: {
-          academic_year_id: string
-          assessment_type: string
-          batch_id: string
           created_at: string
-          created_by: string | null
-          held_on: string
           id: string
-          subject_id: string | null
-          title: string
-          total_marks: number
+          is_active: boolean
+          name: string
+          organization_id: string
+          parent_id: string | null
         }
         Insert: {
-          academic_year_id: string
-          assessment_type: string
-          batch_id: string
           created_at?: string
-          created_by?: string | null
-          held_on: string
           id?: string
-          subject_id?: string | null
-          title: string
-          total_marks: number
+          is_active?: boolean
+          name: string
+          organization_id: string
+          parent_id?: string | null
         }
         Update: {
-          academic_year_id?: string
-          assessment_type?: string
-          batch_id?: string
           created_at?: string
-          created_by?: string | null
-          held_on?: string
           id?: string
-          subject_id?: string | null
-          title?: string
-          total_marks?: number
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          parent_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "assessments_academic_year_id_fkey"
-            columns: ["academic_year_id"]
+            foreignKeyName: "areas_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
-            referencedRelation: "academic_years"
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "assessments_batch_id_fkey"
-            columns: ["batch_id"]
+            foreignKeyName: "areas_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "batches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessments_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessments_subject_id_fkey"
-            columns: ["subject_id"]
-            isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      attendance: {
-        Row: {
-          id: string
-          marked_at: string
-          marked_by: string | null
-          remarks: string | null
-          session_id: string
-          status: Database["public"]["Enums"]["attendance_status"]
-          student_id: string
-        }
-        Insert: {
-          id?: string
-          marked_at?: string
-          marked_by?: string | null
-          remarks?: string | null
-          session_id: string
-          status: Database["public"]["Enums"]["attendance_status"]
-          student_id: string
-        }
-        Update: {
-          id?: string
-          marked_at?: string
-          marked_by?: string | null
-          remarks?: string | null
-          session_id?: string
-          status?: Database["public"]["Enums"]["attendance_status"]
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "attendance_marked_by_fkey"
-            columns: ["marked_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "attendance_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "class_sessions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "attendance_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
+            referencedRelation: "areas"
             referencedColumns: ["id"]
           },
         ]
@@ -266,116 +166,121 @@ export type Database = {
       audit_events: {
         Row: {
           action: string
-          actor_id: string | null
-          actor_role: Database["public"]["Enums"]["app_role"] | null
+          actor_profile_id: string | null
+          actor_role_code: string | null
+          actor_staff_id: string | null
           after_data: Json | null
           before_data: Json | null
+          branch_id: string | null
           correlation_id: string
           entity_id: string
           entity_type: string
-          id: number
+          id: string
           metadata: Json
           occurred_at: string
           reason: string | null
         }
         Insert: {
           action: string
-          actor_id?: string | null
-          actor_role?: Database["public"]["Enums"]["app_role"] | null
+          actor_profile_id?: string | null
+          actor_role_code?: string | null
+          actor_staff_id?: string | null
           after_data?: Json | null
           before_data?: Json | null
+          branch_id?: string | null
           correlation_id?: string
           entity_id: string
           entity_type: string
-          id?: never
+          id?: string
           metadata?: Json
           occurred_at?: string
           reason?: string | null
         }
         Update: {
           action?: string
-          actor_id?: string | null
-          actor_role?: Database["public"]["Enums"]["app_role"] | null
+          actor_profile_id?: string | null
+          actor_role_code?: string | null
+          actor_staff_id?: string | null
           after_data?: Json | null
           before_data?: Json | null
+          branch_id?: string | null
           correlation_id?: string
           entity_id?: string
           entity_type?: string
-          id?: never
+          id?: string
           metadata?: Json
           occurred_at?: string
           reason?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "audit_events_actor_id_fkey"
-            columns: ["actor_id"]
+            foreignKeyName: "audit_events_actor_profile_id_fkey"
+            columns: ["actor_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "audit_events_actor_staff_id_fkey"
+            columns: ["actor_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_events_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      audit_logs: {
-        Row: {
-          action: string
-          actor_id: string | null
-          created_at: string
-          id: number
-          new_data: Json | null
-          old_data: Json | null
-          record_id: string | null
-          table_name: string
-        }
-        Insert: {
-          action: string
-          actor_id?: string | null
-          created_at?: string
-          id?: never
-          new_data?: Json | null
-          old_data?: Json | null
-          record_id?: string | null
-          table_name: string
-        }
-        Update: {
-          action?: string
-          actor_id?: string | null
-          created_at?: string
-          id?: never
-          new_data?: Json | null
-          old_data?: Json | null
-          record_id?: string | null
-          table_name?: string
-        }
-        Relationships: []
       }
       batches: {
         Row: {
           academic_year_id: string
+          branch_id: string | null
           capacity: number
           class_id: string
+          code: string
+          created_at: string
+          created_by: string | null
           id: string
           is_active: boolean
           name: string
+          organization_id: string
           program_id: string | null
+          updated_at: string
         }
         Insert: {
           academic_year_id: string
-          capacity?: number
+          branch_id?: string | null
+          capacity: number
           class_id: string
+          code: string
+          created_at?: string
+          created_by?: string | null
           id?: string
           is_active?: boolean
           name: string
+          organization_id: string
           program_id?: string | null
+          updated_at?: string
         }
         Update: {
           academic_year_id?: string
+          branch_id?: string | null
           capacity?: number
           class_id?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          organization_id?: string
           program_id?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -386,10 +291,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "batches_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "batches_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -401,57 +327,91 @@ export type Database = {
           },
         ]
       }
-      business_rule_versions: {
+      branches: {
         Row: {
-          approved_at: string | null
-          approved_by: string | null
+          address: string | null
+          code: string
           created_at: string
-          created_by: string | null
-          effective_from: string
-          effective_to: string | null
           id: string
-          notes: string | null
-          rule_key: string
-          status: string
-          value: Json
-          version: number
+          is_active: boolean
+          name: string
+          organization_id: string
+          timezone: string
+          updated_at: string
         }
         Insert: {
-          approved_at?: string | null
-          approved_by?: string | null
+          address?: string | null
+          code: string
           created_at?: string
-          created_by?: string | null
-          effective_from?: string
-          effective_to?: string | null
           id?: string
-          notes?: string | null
-          rule_key: string
-          status?: string
-          value: Json
-          version: number
+          is_active?: boolean
+          name: string
+          organization_id: string
+          timezone?: string
+          updated_at?: string
         }
         Update: {
-          approved_at?: string | null
-          approved_by?: string | null
+          address?: string | null
+          code?: string
           created_at?: string
-          created_by?: string | null
-          effective_from?: string
-          effective_to?: string | null
           id?: string
-          notes?: string | null
-          rule_key?: string
-          status?: string
-          value?: Json
-          version?: number
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          timezone?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "business_rule_versions_approved_by_fkey"
-            columns: ["approved_by"]
+            foreignKeyName: "branches_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      business_rule_versions: {
+        Row: {
+          change_reason: string
+          created_at: string
+          created_by: string | null
+          domain: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          payload: Json
+          rule_key: string
+          status: Database["public"]["Enums"]["rule_status"]
+          version: number
+        }
+        Insert: {
+          change_reason: string
+          created_at?: string
+          created_by?: string | null
+          domain: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          payload: Json
+          rule_key: string
+          status?: Database["public"]["Enums"]["rule_status"]
+          version: number
+        }
+        Update: {
+          change_reason?: string
+          created_at?: string
+          created_by?: string | null
+          domain?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          payload?: Json
+          rule_key?: string
+          status?: Database["public"]["Enums"]["rule_status"]
+          version?: number
+        }
+        Relationships: [
           {
             foreignKeyName: "business_rule_versions_created_by_fkey"
             columns: ["created_by"]
@@ -461,152 +421,92 @@ export type Database = {
           },
         ]
       }
-      class_sessions: {
-        Row: {
-          batch_id: string
-          classroom_id: string | null
-          ends_at: string
-          id: string
-          notes: string | null
-          session_date: string
-          session_type: string
-          starts_at: string
-          subject_id: string | null
-          teacher_id: string | null
-        }
-        Insert: {
-          batch_id: string
-          classroom_id?: string | null
-          ends_at: string
-          id?: string
-          notes?: string | null
-          session_date: string
-          session_type?: string
-          starts_at: string
-          subject_id?: string | null
-          teacher_id?: string | null
-        }
-        Update: {
-          batch_id?: string
-          classroom_id?: string | null
-          ends_at?: string
-          id?: string
-          notes?: string | null
-          session_date?: string
-          session_type?: string
-          starts_at?: string
-          subject_id?: string | null
-          teacher_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "class_sessions_batch_id_fkey"
-            columns: ["batch_id"]
-            isOneToOne: false
-            referencedRelation: "batches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "class_sessions_classroom_id_fkey"
-            columns: ["classroom_id"]
-            isOneToOne: false
-            referencedRelation: "classrooms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "class_sessions_subject_id_fkey"
-            columns: ["subject_id"]
-            isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "class_sessions_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       classes: {
         Row: {
-          id: string
-          name: string
-          sort_order: number
-        }
-        Insert: {
-          id?: string
-          name: string
-          sort_order?: number
-        }
-        Update: {
-          id?: string
-          name?: string
-          sort_order?: number
-        }
-        Relationships: []
-      }
-      classrooms: {
-        Row: {
-          capacity: number | null
+          code: string
+          created_at: string
           id: string
           is_active: boolean
           name: string
+          organization_id: string
+          sort_order: number
         }
         Insert: {
-          capacity?: number | null
+          code: string
+          created_at?: string
           id?: string
           is_active?: boolean
           name: string
+          organization_id: string
+          sort_order?: number
         }
         Update: {
-          capacity?: number | null
+          code?: string
+          created_at?: string
           id?: string
           is_active?: boolean
           name?: string
+          organization_id?: string
+          sort_order?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "classes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enrollments: {
         Row: {
           academic_year_id: string
           admission_date: string
           batch_id: string | null
+          branch_id: string | null
           class_id: string
-          discount: number
-          effective_fee: number | null
+          created_at: string
+          created_by: string | null
+          ended_on: string | null
           id: string
-          is_active: boolean
-          monthly_fee: number
+          organization_id: string
           program_id: string | null
+          status: Database["public"]["Enums"]["enrollment_status"]
           student_id: string
+          updated_at: string
         }
         Insert: {
           academic_year_id: string
           admission_date?: string
           batch_id?: string | null
+          branch_id?: string | null
           class_id: string
-          discount?: number
-          effective_fee?: number | null
+          created_at?: string
+          created_by?: string | null
+          ended_on?: string | null
           id?: string
-          is_active?: boolean
-          monthly_fee?: number
+          organization_id: string
           program_id?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
           student_id: string
+          updated_at?: string
         }
         Update: {
           academic_year_id?: string
           admission_date?: string
           batch_id?: string | null
+          branch_id?: string | null
           class_id?: string
-          discount?: number
-          effective_fee?: number | null
+          created_at?: string
+          created_by?: string | null
+          ended_on?: string | null
           id?: string
-          is_active?: boolean
-          monthly_fee?: number
+          organization_id?: string
           program_id?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
           student_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -624,10 +524,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "enrollments_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "enrollments_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -646,60 +567,37 @@ export type Database = {
           },
         ]
       }
-      fee_structures: {
+      guardian_relationships: {
         Row: {
-          academic_year_id: string
-          amount: number
-          class_id: string | null
-          effective_from: string
-          effective_to: string | null
-          frequency: string
+          code: string
+          created_at: string
           id: string
-          program_id: string | null
-          title: string
+          is_active: boolean
+          name: string
+          organization_id: string
         }
         Insert: {
-          academic_year_id: string
-          amount: number
-          class_id?: string | null
-          effective_from: string
-          effective_to?: string | null
-          frequency?: string
+          code: string
+          created_at?: string
           id?: string
-          program_id?: string | null
-          title: string
+          is_active?: boolean
+          name: string
+          organization_id: string
         }
         Update: {
-          academic_year_id?: string
-          amount?: number
-          class_id?: string | null
-          effective_from?: string
-          effective_to?: string | null
-          frequency?: string
+          code?: string
+          created_at?: string
           id?: string
-          program_id?: string | null
-          title?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "fee_structures_academic_year_id_fkey"
-            columns: ["academic_year_id"]
+            foreignKeyName: "guardian_relationships_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
-            referencedRelation: "academic_years"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fee_structures_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fee_structures_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "programs"
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -709,340 +607,605 @@ export type Database = {
           address: string | null
           alternate_mobile: string | null
           created_at: string
+          created_by: string | null
+          email: string | null
+          full_name: string
           id: string
           mobile: string
-          name: string
+          organization_id: string
+          updated_at: string
         }
         Insert: {
           address?: string | null
           alternate_mobile?: string | null
           created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name: string
           id?: string
           mobile: string
-          name: string
+          organization_id: string
+          updated_at?: string
         }
         Update: {
           address?: string | null
           alternate_mobile?: string | null
           created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string
           id?: string
           mobile?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      notices: {
-        Row: {
-          audience: string
-          body: string
-          created_at: string
-          created_by: string | null
-          id: string
-          published_at: string | null
-          title: string
-        }
-        Insert: {
-          audience?: string
-          body: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          published_at?: string | null
-          title: string
-        }
-        Update: {
-          audience?: string
-          body?: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          published_at?: string | null
-          title?: string
+          organization_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "notices_created_by_fkey"
+            foreignKeyName: "guardians_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "guardians_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      parent_communications: {
+      lead_sources: {
         Row: {
-          communication_type: string
-          guardian_id: string | null
+          code: string
+          created_at: string
           id: string
-          next_follow_up: string | null
-          notes: string
-          occurred_at: string
-          recorded_by: string | null
-          student_id: string
+          is_active: boolean
+          name: string
+          organization_id: string
         }
         Insert: {
-          communication_type: string
-          guardian_id?: string | null
+          code: string
+          created_at?: string
           id?: string
-          next_follow_up?: string | null
-          notes: string
-          occurred_at?: string
-          recorded_by?: string | null
-          student_id: string
+          is_active?: boolean
+          name: string
+          organization_id: string
         }
         Update: {
-          communication_type?: string
-          guardian_id?: string | null
+          code?: string
+          created_at?: string
           id?: string
-          next_follow_up?: string | null
-          notes?: string
-          occurred_at?: string
-          recorded_by?: string | null
-          student_id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "parent_communications_guardian_id_fkey"
-            columns: ["guardian_id"]
+            foreignKeyName: "lead_sources_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
-            referencedRelation: "guardians"
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          code: string
+          created_at: string
+          currency_code: string
+          id: string
+          is_active: boolean
+          name: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          currency_code?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          currency_code?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_methods: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permissions: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          status: Database["public"]["Enums"]["profile_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          id: string
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      programs: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospect_followups: {
+        Row: {
+          created_at: string
+          followup_type: string
+          id: string
+          next_follow_up_at: string | null
+          notes: string
+          occurred_at: string
+          outcome: string | null
+          prospect_id: string
+          recorded_by: string
+        }
+        Insert: {
+          created_at?: string
+          followup_type: string
+          id?: string
+          next_follow_up_at?: string | null
+          notes: string
+          occurred_at?: string
+          outcome?: string | null
+          prospect_id: string
+          recorded_by: string
+        }
+        Update: {
+          created_at?: string
+          followup_type?: string
+          id?: string
+          next_follow_up_at?: string | null
+          notes?: string
+          occurred_at?: string
+          outcome?: string | null
+          prospect_id?: string
+          recorded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_followups_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "parent_communications_recorded_by_fkey"
+            foreignKeyName: "prospect_followups_recorded_by_fkey"
             columns: ["recorded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      prospect_program_interests: {
+        Row: {
+          created_at: string
+          program_id: string
+          prospect_id: string
+        }
+        Insert: {
+          created_at?: string
+          program_id: string
+          prospect_id: string
+        }
+        Update: {
+          created_at?: string
+          program_id?: string
+          prospect_id?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "parent_communications_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: "prospect_program_interests_program_id_fkey"
+            columns: ["program_id"]
             isOneToOne: false
-            referencedRelation: "students"
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospect_program_interests_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
             referencedColumns: ["id"]
           },
         ]
       }
-      payments: {
+      prospect_subject_interests: {
         Row: {
-          amount: number
-          collected_by: string | null
           created_at: string
-          enrollment_id: string | null
+          prospect_id: string
+          subject_id: string
+        }
+        Insert: {
+          created_at?: string
+          prospect_id: string
+          subject_id: string
+        }
+        Update: {
+          created_at?: string
+          prospect_id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_subject_interests_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospect_subject_interests_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospects: {
+        Row: {
+          alternate_mobile: string | null
+          area_id: string | null
+          area_snapshot: string | null
+          assigned_to_staff_id: string | null
+          branch_id: string | null
+          consent_to_contact: boolean
+          converted_at: string | null
+          converted_student_id: string | null
+          created_at: string
+          current_class_id: string | null
+          guardian_name: string
+          guardian_relationship_id: string | null
+          guardian_relationship_snapshot: string | null
           id: string
-          method: string
+          lost_reason: string | null
+          mobile: string
+          next_follow_up_at: string | null
           notes: string | null
-          payment_date: string
-          receipt_no: string
-          status: Database["public"]["Enums"]["payment_status"]
-          student_id: string
-          void_reason: string | null
-          voided_at: string | null
-          voided_by: string | null
+          organization_id: string
+          preferred_days: string[]
+          preferred_schedule: string | null
+          prospect_no: string
+          referral_note: string | null
+          school_id: string | null
+          school_name_snapshot: string | null
+          source_id: string | null
+          status: Database["public"]["Enums"]["prospect_status"]
+          student_name: string
+          student_name_bn: string | null
+          submitted_via: string
+          trial_interest: boolean
+          updated_at: string
         }
         Insert: {
-          amount: number
-          collected_by?: string | null
+          alternate_mobile?: string | null
+          area_id?: string | null
+          area_snapshot?: string | null
+          assigned_to_staff_id?: string | null
+          branch_id?: string | null
+          consent_to_contact?: boolean
+          converted_at?: string | null
+          converted_student_id?: string | null
           created_at?: string
-          enrollment_id?: string | null
+          current_class_id?: string | null
+          guardian_name: string
+          guardian_relationship_id?: string | null
+          guardian_relationship_snapshot?: string | null
           id?: string
-          method?: string
+          lost_reason?: string | null
+          mobile: string
+          next_follow_up_at?: string | null
           notes?: string | null
-          payment_date?: string
-          receipt_no: string
-          status?: Database["public"]["Enums"]["payment_status"]
-          student_id: string
-          void_reason?: string | null
-          voided_at?: string | null
-          voided_by?: string | null
+          organization_id: string
+          preferred_days?: string[]
+          preferred_schedule?: string | null
+          prospect_no?: string
+          referral_note?: string | null
+          school_id?: string | null
+          school_name_snapshot?: string | null
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"]
+          student_name: string
+          student_name_bn?: string | null
+          submitted_via?: string
+          trial_interest?: boolean
+          updated_at?: string
         }
         Update: {
-          amount?: number
-          collected_by?: string | null
+          alternate_mobile?: string | null
+          area_id?: string | null
+          area_snapshot?: string | null
+          assigned_to_staff_id?: string | null
+          branch_id?: string | null
+          consent_to_contact?: boolean
+          converted_at?: string | null
+          converted_student_id?: string | null
           created_at?: string
-          enrollment_id?: string | null
+          current_class_id?: string | null
+          guardian_name?: string
+          guardian_relationship_id?: string | null
+          guardian_relationship_snapshot?: string | null
           id?: string
-          method?: string
+          lost_reason?: string | null
+          mobile?: string
+          next_follow_up_at?: string | null
           notes?: string | null
-          payment_date?: string
-          receipt_no?: string
-          status?: Database["public"]["Enums"]["payment_status"]
-          student_id?: string
-          void_reason?: string | null
-          voided_at?: string | null
-          voided_by?: string | null
+          organization_id?: string
+          preferred_days?: string[]
+          preferred_schedule?: string | null
+          prospect_no?: string
+          referral_note?: string | null
+          school_id?: string | null
+          school_name_snapshot?: string | null
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"]
+          student_name?: string
+          student_name_bn?: string | null
+          submitted_via?: string
+          trial_interest?: boolean
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "payments_collected_by_fkey"
-            columns: ["collected_by"]
+            foreignKeyName: "prospects_area_id_fkey"
+            columns: ["area_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "areas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "payments_enrollment_id_fkey"
-            columns: ["enrollment_id"]
+            foreignKeyName: "prospects_assigned_to_staff_id_fkey"
+            columns: ["assigned_to_staff_id"]
             isOneToOne: false
-            referencedRelation: "enrollments"
+            referencedRelation: "staff"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "payments_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: "prospects_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_converted_student_fkey"
+            columns: ["converted_student_id"]
             isOneToOne: false
             referencedRelation: "students"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "payments_voided_by_fkey"
-            columns: ["voided_by"]
+            foreignKeyName: "prospects_current_class_id_fkey"
+            columns: ["current_class_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_guardian_relationship_id_fkey"
+            columns: ["guardian_relationship_id"]
+            isOneToOne: false
+            referencedRelation: "guardian_relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "lead_sources"
             referencedColumns: ["id"]
           },
         ]
       }
-      profiles: {
+      role_permissions: {
         Row: {
           created_at: string
-          full_name: string
-          guardian_id: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          student_id: string | null
+          permission_id: string
+          role_id: string
         }
         Insert: {
           created_at?: string
-          full_name: string
-          guardian_id?: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          student_id?: string | null
+          permission_id: string
+          role_id: string
         }
         Update: {
           created_at?: string
-          full_name?: string
-          guardian_id?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          student_id?: string | null
+          permission_id?: string
+          role_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_guardian_id_fkey"
-            columns: ["guardian_id"]
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
             isOneToOne: false
-            referencedRelation: "guardians"
+            referencedRelation: "permissions"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "profiles_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      programs: {
-        Row: {
-          code: string | null
-          created_at: string
-          id: string
-          is_active: boolean
-          name: string
-        }
-        Insert: {
-          code?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name: string
-        }
-        Update: {
-          code?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name?: string
-        }
-        Relationships: []
-      }
-      recovery_logs: {
-        Row: {
-          created_at: string
-          entity_id: string
-          entity_type: string
-          id: string
-          reason: string
-          recovered_by: string | null
-          snapshot: Json | null
-        }
-        Insert: {
-          created_at?: string
-          entity_id: string
-          entity_type: string
-          id?: string
-          reason: string
-          recovered_by?: string | null
-          snapshot?: Json | null
-        }
-        Update: {
-          created_at?: string
-          entity_id?: string
-          entity_type?: string
-          id?: string
-          reason?: string
-          recovered_by?: string | null
-          snapshot?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recovery_logs_recovered_by_fkey"
-            columns: ["recovered_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "system_roles"
             referencedColumns: ["id"]
           },
         ]
       }
       schools: {
         Row: {
-          area: string | null
+          area_id: string | null
           created_at: string
           created_by: string | null
-          district: string | null
           id: string
           is_active: boolean
+          is_verified: boolean
           name: string
-          name_bn: string | null
+          organization_id: string
           updated_at: string
         }
         Insert: {
-          area?: string | null
+          area_id?: string | null
           created_at?: string
           created_by?: string | null
-          district?: string | null
           id?: string
           is_active?: boolean
+          is_verified?: boolean
           name: string
-          name_bn?: string | null
+          organization_id: string
           updated_at?: string
         }
         Update: {
-          area?: string | null
+          area_id?: string | null
           created_at?: string
           created_by?: string | null
-          district?: string | null
           id?: string
           is_active?: boolean
+          is_verified?: boolean
           name?: string
-          name_bn?: string | null
+          organization_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "schools_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "schools_created_by_fkey"
             columns: ["created_by"]
@@ -1050,70 +1213,392 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "schools_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      student_fee_assignments: {
+      setting_definitions: {
         Row: {
-          amount: number
-          discount: number
-          effective_from: string
-          effective_to: string | null
-          enrollment_id: string
-          fee_structure_id: string | null
+          code: string
+          created_at: string
+          default_value: Json | null
+          description: string | null
+          group_code: string
           id: string
+          is_active: boolean
+          is_sensitive: boolean
+          name: string
+          sort_order: number
+          validation_contract: Json
+          value_type: string
         }
         Insert: {
-          amount: number
-          discount?: number
-          effective_from: string
-          effective_to?: string | null
-          enrollment_id: string
-          fee_structure_id?: string | null
+          code: string
+          created_at?: string
+          default_value?: Json | null
+          description?: string | null
+          group_code: string
           id?: string
+          is_active?: boolean
+          is_sensitive?: boolean
+          name: string
+          sort_order?: number
+          validation_contract?: Json
+          value_type: string
         }
         Update: {
-          amount?: number
-          discount?: number
+          code?: string
+          created_at?: string
+          default_value?: Json | null
+          description?: string | null
+          group_code?: string
+          id?: string
+          is_active?: boolean
+          is_sensitive?: boolean
+          name?: string
+          sort_order?: number
+          validation_contract?: Json
+          value_type?: string
+        }
+        Relationships: []
+      }
+      setting_versions: {
+        Row: {
+          branch_id: string | null
+          change_reason: string
+          created_at: string
+          created_by: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          organization_id: string
+          setting_definition_id: string
+          status: Database["public"]["Enums"]["rule_status"]
+          value: Json
+          version: number
+        }
+        Insert: {
+          branch_id?: string | null
+          change_reason: string
+          created_at?: string
+          created_by: string
           effective_from?: string
           effective_to?: string | null
-          enrollment_id?: string
-          fee_structure_id?: string | null
           id?: string
+          organization_id: string
+          setting_definition_id: string
+          status?: Database["public"]["Enums"]["rule_status"]
+          value: Json
+          version: number
+        }
+        Update: {
+          branch_id?: string | null
+          change_reason?: string
+          created_at?: string
+          created_by?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          organization_id?: string
+          setting_definition_id?: string
+          status?: Database["public"]["Enums"]["rule_status"]
+          value?: Json
+          version?: number
         }
         Relationships: [
           {
-            foreignKeyName: "student_fee_assignments_enrollment_id_fkey"
-            columns: ["enrollment_id"]
+            foreignKeyName: "setting_versions_branch_id_fkey"
+            columns: ["branch_id"]
             isOneToOne: false
-            referencedRelation: "enrollments"
+            referencedRelation: "branches"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "student_fee_assignments_fee_structure_id_fkey"
-            columns: ["fee_structure_id"]
+            foreignKeyName: "setting_versions_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "fee_structures"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setting_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setting_versions_setting_definition_id_fkey"
+            columns: ["setting_definition_id"]
+            isOneToOne: false
+            referencedRelation: "setting_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff: {
+        Row: {
+          address: string | null
+          alternate_mobile: string | null
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          emergency_contact_mobile: string | null
+          emergency_contact_name: string | null
+          full_name: string
+          id: string
+          joined_on: string | null
+          left_on: string | null
+          mobile: string | null
+          notes: string | null
+          profile_id: string | null
+          staff_no: string
+          status: Database["public"]["Enums"]["staff_status"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          alternate_mobile?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          emergency_contact_mobile?: string | null
+          emergency_contact_name?: string | null
+          full_name: string
+          id?: string
+          joined_on?: string | null
+          left_on?: string | null
+          mobile?: string | null
+          notes?: string | null
+          profile_id?: string | null
+          staff_no?: string
+          status?: Database["public"]["Enums"]["staff_status"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          alternate_mobile?: string | null
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          emergency_contact_mobile?: string | null
+          emergency_contact_name?: string | null
+          full_name?: string
+          id?: string
+          joined_on?: string | null
+          left_on?: string | null
+          mobile?: string | null
+          notes?: string | null
+          profile_id?: string | null
+          staff_no?: string
+          status?: Database["public"]["Enums"]["staff_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_role_assignments: {
+        Row: {
+          assigned_by: string | null
+          branch_id: string | null
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          is_primary: boolean
+          staff_id: string
+          staff_role_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          staff_id: string
+          staff_role_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          staff_id?: string
+          staff_role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_role_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_role_assignments_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_role_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_role_assignments_staff_role_id_fkey"
+            columns: ["staff_role_id"]
+            isOneToOne: false
+            referencedRelation: "staff_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_roles: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_teaching_role: boolean
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_teaching_role?: boolean
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_teaching_role?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      staff_subject_assignments: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          is_primary: boolean
+          staff_id: string
+          subject_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          staff_id: string
+          subject_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_primary?: boolean
+          staff_id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_subject_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_subject_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_subject_assignments_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
       }
       student_guardians: {
         Row: {
+          created_at: string
           guardian_id: string
+          id: string
           is_primary: boolean
-          relationship: string
+          relationship_id: string | null
+          relationship_snapshot: string | null
           student_id: string
         }
         Insert: {
+          created_at?: string
           guardian_id: string
+          id?: string
           is_primary?: boolean
-          relationship: string
+          relationship_id?: string | null
+          relationship_snapshot?: string | null
           student_id: string
         }
         Update: {
+          created_at?: string
           guardian_id?: string
+          id?: string
           is_primary?: boolean
-          relationship?: string
+          relationship_id?: string | null
+          relationship_snapshot?: string | null
           student_id?: string
         }
         Relationships: [
@@ -1122,6 +1607,13 @@ export type Database = {
             columns: ["guardian_id"]
             isOneToOne: false
             referencedRelation: "guardians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_guardians_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "guardian_relationships"
             referencedColumns: ["id"]
           },
           {
@@ -1135,48 +1627,88 @@ export type Database = {
       }
       students: {
         Row: {
+          branch_id: string | null
           created_at: string
+          created_by: string | null
+          created_from_prospect_id: string | null
           date_of_birth: string | null
+          full_name: string
           gender: string | null
           id: string
-          name: string
           name_bn: string | null
+          organization_id: string
           school_id: string | null
-          school_name: string | null
+          school_name_snapshot: string | null
           school_roll: string | null
           status: Database["public"]["Enums"]["student_status"]
           student_no: string
           updated_at: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
+          created_by?: string | null
+          created_from_prospect_id?: string | null
           date_of_birth?: string | null
+          full_name: string
           gender?: string | null
           id?: string
-          name: string
           name_bn?: string | null
+          organization_id: string
           school_id?: string | null
-          school_name?: string | null
+          school_name_snapshot?: string | null
           school_roll?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           student_no?: string
           updated_at?: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
+          created_by?: string | null
+          created_from_prospect_id?: string | null
           date_of_birth?: string | null
+          full_name?: string
           gender?: string | null
           id?: string
-          name?: string
           name_bn?: string | null
+          organization_id?: string
           school_id?: string | null
-          school_name?: string | null
+          school_name_snapshot?: string | null
           school_roll?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           student_no?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "students_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_created_from_prospect_id_fkey"
+            columns: ["created_from_prospect_id"]
+            isOneToOne: true
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "students_school_id_fkey"
             columns: ["school_id"]
@@ -1188,134 +1720,130 @@ export type Database = {
       }
       subjects: {
         Row: {
-          code: string | null
+          code: string
+          created_at: string
           id: string
           is_active: boolean
           name: string
+          organization_id: string
         }
         Insert: {
-          code?: string | null
+          code: string
+          created_at?: string
           id?: string
           is_active?: boolean
           name: string
+          organization_id: string
         }
         Update: {
-          code?: string | null
+          code?: string
+          created_at?: string
           id?: string
           is_active?: boolean
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_roles: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system: boolean
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
           name?: string
         }
         Relationships: []
       }
-      teacher_subjects: {
+      user_role_assignments: {
         Row: {
-          subject_id: string
-          teacher_id: string
-        }
-        Insert: {
-          subject_id: string
-          teacher_id: string
-        }
-        Update: {
-          subject_id?: string
-          teacher_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "teacher_subjects_subject_id_fkey"
-            columns: ["subject_id"]
-            isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "teacher_subjects_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      teachers: {
-        Row: {
+          assigned_by: string | null
+          branch_id: string | null
           created_at: string
+          effective_from: string
+          effective_to: string | null
           id: string
           is_active: boolean
-          mobile: string | null
-          name: string
-          profile_id: string | null
+          profile_id: string
+          role_id: string
         }
         Insert: {
+          assigned_by?: string | null
+          branch_id?: string | null
           created_at?: string
+          effective_from?: string
+          effective_to?: string | null
           id?: string
           is_active?: boolean
-          mobile?: string | null
-          name: string
-          profile_id?: string | null
+          profile_id: string
+          role_id: string
         }
         Update: {
+          assigned_by?: string | null
+          branch_id?: string | null
           created_at?: string
+          effective_from?: string
+          effective_to?: string | null
           id?: string
           is_active?: boolean
-          mobile?: string | null
-          name?: string
-          profile_id?: string | null
+          profile_id?: string
+          role_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "teachers_profile_id_fkey"
+            foreignKeyName: "user_role_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_role_assignments_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_role_assignments_profile_id_fkey"
             columns: ["profile_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      weekly_monitoring: {
-        Row: {
-          homework_score: number | null
-          id: string
-          participation_score: number | null
-          recorded_by: string | null
-          remarks: string | null
-          student_id: string
-          test_score: number | null
-          week_start: string
-        }
-        Insert: {
-          homework_score?: number | null
-          id?: string
-          participation_score?: number | null
-          recorded_by?: string | null
-          remarks?: string | null
-          student_id: string
-          test_score?: number | null
-          week_start: string
-        }
-        Update: {
-          homework_score?: number | null
-          id?: string
-          participation_score?: number | null
-          recorded_by?: string | null
-          remarks?: string | null
-          student_id?: string
-          test_score?: number | null
-          week_start?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "weekly_monitoring_recorded_by_fkey"
-            columns: ["recorded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "weekly_monitoring_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: "user_role_assignments_role_id_fkey"
+            columns: ["role_id"]
             isOneToOne: false
-            referencedRelation: "students"
+            referencedRelation: "system_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -1325,44 +1853,96 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_admission: {
-        Args: { p_enrollment: Json; p_guardian: Json; p_student: Json }
+      bootstrap_admin: {
+        Args: { p_email: string; p_full_name?: string }
         Returns: Json
       }
-      current_role: {
-        Args: never
-        Returns: Database["public"]["Enums"]["app_role"]
-      }
-      generate_receipt_no: { Args: never; Returns: string }
+      create_staff_member: { Args: { p_input: Json }; Returns: Json }
+      generate_prospect_no: { Args: never; Returns: string }
+      generate_staff_no: { Args: never; Returns: string }
       generate_student_no: { Args: never; Returns: string }
-      record_audit_event: {
+      has_permission: { Args: { p_permission_code: string }; Returns: boolean }
+      is_valid_prospect_transition: {
         Args: {
-          p_action: string
-          p_after_data?: Json
-          p_before_data?: Json
-          p_correlation_id?: string
-          p_entity_id: string
-          p_entity_type: string
-          p_metadata?: Json
-          p_reason?: string
+          p_from: Database["public"]["Enums"]["prospect_status"]
+          p_to: Database["public"]["Enums"]["prospect_status"]
         }
-        Returns: number
+        Returns: boolean
       }
-      save_assessment_results: {
-        Args: { p_assessment_id: string; p_entries: Json }
-        Returns: number
+      my_erp_context: { Args: never; Returns: Json }
+      publish_business_rule_version: {
+        Args: {
+          p_domain: string
+          p_payload: Json
+          p_reason: string
+          p_rule_key: string
+        }
+        Returns: Json
       }
-      save_attendance: {
-        Args: { p_entries: Json; p_session_id: string }
-        Returns: number
+      publish_setting_value: {
+        Args: {
+          p_branch_id?: string
+          p_reason: string
+          p_setting_code: string
+          p_value: Json
+        }
+        Returns: Json
+      }
+      record_prospect_followup: { Args: { p_input: Json }; Returns: Json }
+      set_role_permissions: {
+        Args: {
+          p_permission_codes: string[]
+          p_reason: string
+          p_role_code: string
+        }
+        Returns: Json
+      }
+      set_user_operational_roles: {
+        Args: {
+          p_branch_id?: string
+          p_profile_id: string
+          p_reason: string
+          p_role_codes: string[]
+        }
+        Returns: Json
+      }
+      submit_public_interest: { Args: { p_payload: Json }; Returns: Json }
+      validate_business_rule_payload: {
+        Args: { p_domain: string; p_payload: Json; p_rule_key: string }
+        Returns: boolean
+      }
+      validate_setting_value: {
+        Args: { p_value: Json; p_value_type: string }
+        Returns: boolean
       }
     }
     Enums: {
-      app_role: "ADMIN" | "OPERATOR" | "TEACHER" | "GUARDIAN" | "STUDENT"
       approval_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"
-      attendance_status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"
-      payment_status: "POSTED" | "VOID"
-      student_status: "ACTIVE" | "INACTIVE" | "GRADUATED" | "WITHDRAWN"
+      enrollment_status: "ACTIVE" | "COMPLETED" | "WITHDRAWN" | "CANCELLED"
+      profile_status: "ACTIVE" | "SUSPENDED" | "ARCHIVED"
+      prospect_status:
+        | "NEW"
+        | "CONTACTED"
+        | "COUNSELLING"
+        | "TRIAL_SCHEDULED"
+        | "TRIAL_ATTENDED"
+        | "REGISTERED"
+        | "CONVERTED"
+        | "FUTURE_FOLLOW_UP"
+        | "LOST"
+      rule_status: "DRAFT" | "ACTIVE" | "RETIRED"
+      staff_status:
+        | "ACTIVE"
+        | "ON_LEAVE"
+        | "RESIGNED"
+        | "TERMINATED"
+        | "ARCHIVED"
+      student_status:
+        | "ACTIVE"
+        | "INACTIVE"
+        | "WITHDRAWN"
+        | "GRADUATED"
+        | "ARCHIVED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1490,11 +2070,35 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["ADMIN", "OPERATOR", "TEACHER", "GUARDIAN", "STUDENT"],
       approval_status: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
-      attendance_status: ["PRESENT", "ABSENT", "LATE", "EXCUSED"],
-      payment_status: ["POSTED", "VOID"],
-      student_status: ["ACTIVE", "INACTIVE", "GRADUATED", "WITHDRAWN"],
+      enrollment_status: ["ACTIVE", "COMPLETED", "WITHDRAWN", "CANCELLED"],
+      profile_status: ["ACTIVE", "SUSPENDED", "ARCHIVED"],
+      prospect_status: [
+        "NEW",
+        "CONTACTED",
+        "COUNSELLING",
+        "TRIAL_SCHEDULED",
+        "TRIAL_ATTENDED",
+        "REGISTERED",
+        "CONVERTED",
+        "FUTURE_FOLLOW_UP",
+        "LOST",
+      ],
+      rule_status: ["DRAFT", "ACTIVE", "RETIRED"],
+      staff_status: [
+        "ACTIVE",
+        "ON_LEAVE",
+        "RESIGNED",
+        "TERMINATED",
+        "ARCHIVED",
+      ],
+      student_status: [
+        "ACTIVE",
+        "INACTIVE",
+        "WITHDRAWN",
+        "GRADUATED",
+        "ARCHIVED",
+      ],
     },
   },
 } as const

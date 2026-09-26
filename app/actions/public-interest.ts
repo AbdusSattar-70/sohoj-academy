@@ -68,7 +68,7 @@ export async function submitPublicInterest(
 
   if (error) {
     const knownMessages = [
-      "A similar interest request was submitted recently.",
+      "A similar interest request was submitted recently. Please wait before submitting again.",
       "Student name is required.",
       "Guardian name is required.",
       "A valid mobile number is required.",

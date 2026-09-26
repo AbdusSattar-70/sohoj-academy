@@ -11,9 +11,11 @@ const emptySubscribe = () => () => undefined;
 export function PreferenceControls({
   compact = false,
   className,
+  showLanguage = true,
 }: {
   compact?: boolean;
   className?: string;
+  showLanguage?: boolean;
 }) {
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
@@ -31,9 +33,9 @@ export function PreferenceControls({
     icon: LucideIcon;
     label: string;
   }> = [
-    { value: "light", icon: Sun, label: t("light") },
-    { value: "dark", icon: Moon, label: t("dark") },
-    { value: "system", icon: Monitor, label: t("system") },
+    { value: "light", icon: Sun, label: showLanguage ? t("light") : "Light" },
+    { value: "dark", icon: Moon, label: showLanguage ? t("dark") : "Dark" },
+    { value: "system", icon: Monitor, label: showLanguage ? t("system") : "System" },
   ];
 
   return (
@@ -42,8 +44,9 @@ export function PreferenceControls({
         "flex items-center gap-1 rounded-xl border border-border bg-background/90 p-1 shadow-sm backdrop-blur",
         className
       )}
-      aria-label={`${t("language")} / ${t("theme")}`}
+      aria-label={showLanguage ? `${t("language")} / ${t("theme")}` : "Theme"}
     >
+      {showLanguage && (
       <div className="flex items-center" aria-label={t("language")}>
         {!compact && (
           <span className="px-2 text-muted-foreground" aria-hidden="true">
@@ -79,10 +82,13 @@ export function PreferenceControls({
           বাংলা
         </button>
       </div>
+      )}
 
-      <span className="mx-0.5 h-6 w-px bg-border" aria-hidden="true" />
+      {showLanguage && (
+        <span className="mx-0.5 h-6 w-px bg-border" aria-hidden="true" />
+      )}
 
-      <div className="flex items-center" aria-label={t("theme")}>
+      <div className="flex items-center" aria-label={showLanguage ? t("theme") : "Theme"}>
         {themeOptions.map(({ value, icon: Icon, label }) => (
           <button
             key={value}
