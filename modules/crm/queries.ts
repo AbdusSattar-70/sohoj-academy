@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { ProspectStatus } from "@/modules/crm/prospect-status";
 
 export type ProspectListRow = {
   id: string;
@@ -10,7 +11,7 @@ export type ProspectListRow = {
   schoolName: string;
   sourceName: string;
   assignedTo: string;
-  status: string;
+  status: ProspectStatus;
   nextFollowUpAt: string | null;
   createdAt: string;
 };
@@ -89,7 +90,7 @@ export type ProspectDetail = {
   sourceName: string;
   referralNote: string | null;
   notes: string | null;
-  status: string;
+  status: ProspectStatus;
   assignedTo: string;
   nextFollowUpAt: string | null;
   lostReason: string | null;
