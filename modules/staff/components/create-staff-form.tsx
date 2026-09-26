@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type FieldPath } from "react-hook-form";
+import { useForm, useWatch, type FieldPath } from "react-hook-form";
 import { UserRoundPlus } from "lucide-react";
 import { createStaffMember } from "@/modules/staff/actions";
 import {
@@ -44,7 +44,7 @@ export function CreateStaffForm({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     reset,
     setValue,
     setError,
@@ -68,7 +68,7 @@ export function CreateStaffForm({
     },
   });
 
-  const roleCode = watch("staffRoleCode");
+  const roleCode = useWatch({ control, name: "staffRoleCode" });
   const teachingRole = useMemo(
     () =>
       roles.find((role) => role.code === roleCode)?.isTeachingRole ?? false,
