@@ -6,8 +6,10 @@ import { getErpContext } from "@/modules/platform/auth/erp-context";
 import {
   editablePolicySchema,
   rolePermissionUpdateSchema,
+  userAccessUpdateSchema,
   type EditablePolicyInput,
   type RolePermissionUpdateInput,
+  type UserAccessUpdateInput,
 } from "@/modules/settings/schema";
 
 export type SettingsMutationResult =
@@ -124,6 +126,51 @@ export async function updateRolePermissions(
     p_role_code: parsed.data.roleCode,
     p_permission_codes: parsed.data.permissionCodes,
     p_reason: parsed.data.reason,
+  });
+
+  if (error) return { ok: false, error: error.message };
+
+  const result = data as { correlation_id?: string } | null;
+
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard");
+
+  return { ok: true, correlationId: result?.correlation_id };
+}
+
+
+export async function updateUserOperationalAccess(
+  input: UserAccessUpdateInput
+): Promise<SettingsMutationResult> {
+  const parsed = userAccessUpdateSchema.safeParse(input);
+
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return {
+      ok: false,
+      error: issue?.message ?? "Please check the user access change.",
+      field: issue?.path?.[0]?.toString(),
+    };
+  }
+
+  if (parsed.data.roleCodes.includes("ADMIN")) {
+    return {
+      ok: false,
+      error: "ADMIN access is protected and cannot be assigned through this editor.",
+    };
+  }
+
+  const context = await getErpContext();
+  if (!context?.permissions.includes("system.users.manage")) {
+    return { ok: false, error: "You are not authorized to manage user access." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("set_user_operational_roles", {
+    p_profile_id: parsed.data.profileId,
+    p_role_codes: parsed.data.roleCodes,
+    p_reason: parsed.data.reason,
+    p_branch_id: null,
   });
 
   if (error) return { ok: false, error: error.message };
