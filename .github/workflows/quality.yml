@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feature/student-management
+      - rewrite/erp-blueprint-v2
   pull_request:
 
 permissions:
