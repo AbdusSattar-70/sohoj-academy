@@ -29,23 +29,24 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import type { ErpContext, ErpNavGroup } from "@/types/erp";
+import type { ErpContext, ErpNavGroup, ErpNavIcon } from "@/types/erp";
+import { routeMatches, erpRouteRegistry } from "@/modules/platform/navigation/erp-route-registry";
 
-const icons: Record<string, typeof LayoutDashboard> = {
-  Dashboard: LayoutDashboard,
-  "Action Center": ListChecks,
-  Prospects: UserRoundSearch,
-  Students: BookOpenCheck,
-  Staff: UsersRound,
-  Approvals: ClipboardCheck,
-  "Audit Trail": ScrollText,
-  "Business Rules": ShieldCheck,
-  Settings: Settings2,
+const icons: Record<ErpNavIcon, typeof LayoutDashboard> = {
+  dashboard: LayoutDashboard,
+  "action-center": ListChecks,
+  prospects: UserRoundSearch,
+  students: BookOpenCheck,
+  staff: UsersRound,
+  approvals: ClipboardCheck,
+  audit: ScrollText,
+  rules: ShieldCheck,
+  settings: Settings2,
 };
 
-function isActive(pathname: string, href: string) {
-  if (href === "/dashboard") return pathname === href;
-  return pathname === href || pathname.startsWith(`${href}/`);
+function isActive(pathname: string, id: string) {
+  const route = erpRouteRegistry.find((item) => item.id === id);
+  return route ? routeMatches(pathname, route) : false;
 }
 
 export function ErpSidebar({
@@ -81,8 +82,8 @@ export function ErpSidebar({
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
             <SidebarMenu>
               {group.items.map((item) => {
-                const Icon = icons[item.title] ?? Activity;
-                const active = isActive(pathname, item.href);
+                const Icon = icons[item.icon] ?? Activity;
+                const active = isActive(pathname, item.id);
 
                 return (
                   <SidebarMenuItem key={item.href}>
