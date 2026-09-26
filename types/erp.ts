@@ -10,10 +10,23 @@ export type ErpContext = {
   permissions: string[];
 };
 
+export type ErpNavIcon =
+  | "dashboard"
+  | "action-center"
+  | "prospects"
+  | "students"
+  | "staff"
+  | "approvals"
+  | "audit"
+  | "rules"
+  | "settings";
+
 export type ErpNavItem = {
+  id: string;
   title: string;
   href: string;
-  permission?: string;
+  permission: string;
+  icon: ErpNavIcon;
 };
 
 export type ErpNavGroup = {
