@@ -451,6 +451,15 @@ export type Database = {
         };
         Returns: Json;
       };
+      set_user_operational_roles: {
+        Args: {
+          p_profile_id: string;
+          p_role_codes: string[];
+          p_reason: string;
+          p_branch_id?: string | null;
+        };
+        Returns: Json;
+      };
       submit_public_interest: {
         Args: { p_payload: Json };
         Returns: Json;
