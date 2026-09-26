@@ -24,6 +24,15 @@ export type ErpRouteDefinition = {
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
   {
+    id: "billing",
+    title: "Billing & Adjustments",
+    eyebrow: "Finance",
+    href: "/dashboard/finance/billing",
+    navGroup: "Finance",
+    permission: "finance.view",
+    icon: "fee-plans",
+  },
+  {
     id: "dashboard",
     title: "Dashboard",
     eyebrow: "Workspace",
@@ -60,8 +69,24 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     permission: "students.view",
     icon: "students",
   },
-  { id: "admissions", title: "Admissions", eyebrow: "Student Lifecycle", href: "/dashboard/admissions", navGroup: "CRM & Students", permission: "admissions.view", icon: "students" },
-  { id: "batches", title: "Batches", eyebrow: "Academics", href: "/dashboard/academics/batches", navGroup: "Academics", permission: "academics.view", icon: "offerings" },
+  {
+    id: "admissions",
+    title: "Admissions",
+    eyebrow: "Student Lifecycle",
+    href: "/dashboard/admissions",
+    navGroup: "CRM & Students",
+    permission: "admissions.view",
+    icon: "students",
+  },
+  {
+    id: "batches",
+    title: "Batches",
+    eyebrow: "Academics",
+    href: "/dashboard/academics/batches",
+    navGroup: "Academics",
+    permission: "academics.view",
+    icon: "offerings",
+  },
   {
     id: "staff",
     title: "Staff",
@@ -133,7 +158,9 @@ export function routeMatches(pathname: string, route: ErpRouteDefinition) {
 }
 
 export function getErpRoute(pathname: string) {
-  return erpRouteRegistry
-    .filter((route) => routeMatches(pathname, route))
-    .sort((a, b) => b.href.length - a.href.length)[0] ?? erpRouteRegistry[0];
+  return (
+    erpRouteRegistry
+      .filter((route) => routeMatches(pathname, route))
+      .sort((a, b) => b.href.length - a.href.length)[0] ?? erpRouteRegistry[0]
+  );
 }

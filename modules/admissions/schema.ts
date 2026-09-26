@@ -116,6 +116,7 @@ export const workspaceSchema = z.object({
         "BILLING_POSTED",
         "PENDING_PAYMENT",
         "ACTIVE_ENROLLMENT",
+        "CANCELLED",
       ]),
       createdAt: z.string(),
       batchId: uuid,
@@ -141,6 +142,11 @@ export const workspaceSchema = z.object({
           total: z.number(),
           dueOn: z.string(),
           paid: z.number(),
+          credits: z.number(),
+          net: z.number(),
+          refunded: z.number(),
+          due: z.number(),
+          credit: z.number(),
         })
         .nullable(),
       receipts: z.array(
@@ -149,6 +155,7 @@ export const workspaceSchema = z.object({
           amount: z.number(),
           postedAt: z.string(),
           method: z.string(),
+          refunded: z.number(),
         }),
       ),
     }),

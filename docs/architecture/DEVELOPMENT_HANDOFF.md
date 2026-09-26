@@ -254,19 +254,39 @@ Programme Offering → Fee Plan → Batch → Prospect → Admission Draft → R
 
 Draft student/guardian identity can be corrected with reason and audit. Standard fees are read-only. Acceptance issues the permanent Student identity and pins the activation policy. Billing posts the first cycle and one-time components. Activation checks the current batch capacity and pins that capacity policy. Unpaid amounts remain receivables. Payment is separate; posting does not silently activate enrollment. The dashboard now counts Student identities with ACTIVE enrollment.
 
-Payment posting is currently confined to one admission invoice and rejects overpayment. No discounts, refunds, reversals, scheduled recurring billing, readmission of an existing student, student merging or cancellation workflow is exposed yet. Do not use raw table edits to compensate for these missing workflows. The initial invoice is due today for one-time/term plans; monthly plans use the later of today or this month's configured due day. Drafts do not reserve seats.
+Payment posting now supports initial and recurring invoices and rejects overpayment against the net balance. Discounts, cancellations, refunds and controlled recurring billing are implemented below. Existing-student readmission, merging and correction of an incorrectly recorded payment remain separate workflows; do not compensate with raw table edits. The initial invoice is due today for one-time/term plans; monthly plans use the later of today or this month's configured due day. Drafts do not reserve seats.
 
 Verification: the full migration chain and all SQL verification scripts, including `0010_v2_admission_end_to_end.sql`, passed in isolated PGlite/Postgres with a minimal Supabase Auth fixture. The harness omitted only the pgcrypto extension declaration because gen_random_uuid is built in. The test covers default credit activation, full-payment gating, policy pinning after later settings changes, idempotent retries, capacity, overpayment and unauthorized workspace access. This is not live Supabase/browser or multi-connection concurrency verification.
 
 `modules/admissions/queries.ts` contains a scoped RPC type extension until linked types are regenerated. Existing generated types remain unchanged.
 
+## Discounts, cancellations, refunds and recurring billing (2026-09-26)
+
+These are included in the current build, per the user's instruction; they are not deferred behind normal-flow acceptance.
+
+Migrations 0013–0016 add immutable adjustment records, billing terms/runs, controlled finance commands, admission integration, and the Finance workspace. Apply all pending migrations through 0016 together. Existing posted invoices/payments are preserved; the only data backfill assigns the existing initial invoices their billing month.
+
+Routes:
+- `/dashboard/finance/billing`: Student Accounts, Approvals, Recurring Billing.
+- `/dashboard/finance/billing/[invoiceId]/print`: printable current invoice statement, including original payments and subsequent payouts.
+
+Implemented behavior:
+- Percentage or fixed tuition discount with an explicit effective billing-date range. Independent approval credits existing eligible invoices and applies to subsequent eligible invoices. Fixed discounts cap at tuition. Overlapping approved periods are rejected; other charge components are not discounted.
+- Cancellation with independent approval: either preserve existing charges as debt or credit all remaining net charges. Withdraws active enrollment, updates active-student status and stops recurring billing. Posted history remains. A cancelled unaccepted draft can be restarted from its unconverted Prospect; accepted identities are not duplicated.
+- Refund request → independent approval/reservation → actual payout with refund number, method and reference. Only unreserved customer credit supported by the original payment is refundable. Approval alone records no cash movement. Payment receipts retain their original amounts and show subsequent refunds.
+- Monthly or named academic-term billing: explicit preview/review/post workflow. Uses pinned Fee Plans, PER_CYCLE components, eligible ACTIVE enrollment and applicable discounts. INITIAL bills the first cycle; recurring months must be later, or term starts must be later than initial issue date. ONE_TIME plans are excluded. Terms stay within the academic year and cannot overlap. Repeated periods cannot produce duplicate invoices. Changed previews are rejected. This is operator-run recurring invoicing, not an unattended scheduler or automatic payment collection.
+- Net balances separate original charges, credits, money received, actual refunds, dues, customer credit and reserved refund amounts. Enrollment activation uses the initial invoice's net charge and net actual payment.
+- Payment can settle an explicitly selected recurring invoice or retained debt on a cancelled admission. Overpayment is rejected.
+
+All commands enforce database permissions, reason/audit, idempotency and case locking. Sensitive approvals require a different authenticated profile even for ADMIN. Direct financial table writes and direct approval decisions are revoked. Scoped runtime-validated RPC contracts are in `modules/finance/operations`; regenerate linked types after applying migrations, rather than hand-editing generated types.
+
+Verification: all 11 SQL scripts pass in isolated PGlite/Postgres, including new `0013_v2_finance_workflows.sql` and `0014_v2_finance_terms_and_cancellation.sql`. Tests exercise request/approval/payout retries, self-approval denial, overlapping discounts/terms, stale previews, duplicate periods, recurring payments, refund reservations/limits, cancellation credits/retained debt, pre-billing discounts, draft restart, immutable history and unauthorized access. Typecheck, ESLint and production build pass. Real signed-in browser, live Supabase, and multi-connection concurrency verification remain unperformed in this workspace.
+
 ## Immediate next implementation direction
 
-1. Apply migrations 0010–0012 in the user's development Supabase project.
-2. Regenerate linked types and verify the complete normal admission/payment flow in the real UI.
-3. Add controlled cancellation, existing-student enrollment and duplicate review/merge.
-4. Add approved discounts/scholarships and payment reversal/refund workflows.
-5. Add recurring billing periods and broader Finance/Academic modules after the normal flow is accepted.
+1. Apply pending migrations through 0016 in the user's development Supabase project and regenerate linked database types.
+2. Exercise the complete admission, discount, cancellation, refund and recurring billing flows in the real UI using two authorized people for maker-checker decisions. See `docs/architecture/FINANCE_ACCEPTANCE.md`.
+3. Continue existing-student enrollment and duplicate review/merge, followed by broader Finance/Academic modules. Do not reintroduce the old MVP schema or defer the four implemented financial workflows as future placeholders.
 
 ## New-chat instruction
 

@@ -57,6 +57,12 @@ export default async function AdmissionDocument({
               BDT {receipt.amount.toFixed(2)}
             </p>
             <p className="mt-3 text-sm">Method: {receipt.method}</p>
+            {receipt.refunded > 0 && (
+              <p className="mt-2 text-sm">
+                Subsequently refunded: BDT {receipt.refunded.toFixed(2)}. This
+                receipt preserves the original payment.
+              </p>
+            )}
             <p className="text-sm">
               Posted:{" "}
               {new Date(receipt.postedAt).toLocaleString("en-GB", {
@@ -94,7 +100,7 @@ export default async function AdmissionDocument({
             </section>
             <p className="mt-5 text-sm">
               {a.invoice
-                ? `Invoice: ${a.invoice.number}. Billed BDT ${a.invoice.total.toFixed(2)}; paid BDT ${a.invoice.paid.toFixed(2)}; outstanding BDT ${(a.invoice.total - a.invoice.paid).toFixed(2)}.`
+                ? `Invoice: ${a.invoice.number}. Billed BDT ${a.invoice.total.toFixed(2)}; credits BDT ${a.invoice.credits.toFixed(2)}; paid BDT ${a.invoice.paid.toFixed(2)}; refunded BDT ${a.invoice.refunded.toFixed(2)}; customer credit BDT ${a.invoice.credit.toFixed(2)}; outstanding BDT ${a.invoice.due.toFixed(2)}.`
                 : "Initial billing has not been posted."}
             </p>
             <p className="mt-2 text-xs">

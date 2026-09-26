@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ClipboardCheck } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
@@ -17,6 +18,13 @@ export default async function ApprovalsPage() {
         description="Sensitive workflows remain traceable from request through decision. The requester cannot approve their own request."
       />
 
+      <Link
+        href="/dashboard/finance/billing"
+        className="inline-block text-sm underline"
+      >
+        Review discount, cancellation and refund requests in Billing &
+        Adjustments → Approvals
+      </Link>
       {rows.length ? (
         <section className="overflow-hidden rounded-2xl border bg-card">
           <div className="overflow-x-auto">

@@ -60,6 +60,7 @@ export async function runAdmissionCommand(
   const result = data as { status?: string; receipt_no?: string };
   for (const path of [
     "/dashboard/admissions",
+    "/dashboard/finance/billing",
     "/dashboard/academics/batches",
     "/dashboard/students",
     "/dashboard/crm/prospects",
