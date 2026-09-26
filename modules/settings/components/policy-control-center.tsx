@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch, type FieldPath } from "react-hook-form";
+import {
+  useForm,
+  useWatch,
+  type FieldPath,
+  type UseFormRegisterReturn,
+} from "react-hook-form";
 import { Save, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
@@ -564,7 +569,7 @@ function PolicyCard({
   description: string;
   version: number;
   className?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className={`rounded-2xl border bg-card p-5 sm:p-6 ${className ?? ""}`}>
@@ -594,9 +599,7 @@ function BooleanPolicyField({
 }: {
   label: string;
   description: string;
-  registration: ReturnType<
-    ReturnType<typeof useForm<AdmissionActivationPolicyInput>>["register"]
-  >;
+  registration: UseFormRegisterReturn;
 }) {
   return (
     <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3 hover:bg-muted/30">
@@ -620,7 +623,7 @@ function ReasonField({
   error,
   hint,
 }: {
-  register: ReturnType<ReturnType<typeof useForm<BatchCapacityPolicyInput>>["register"]>;
+  register: UseFormRegisterReturn;
   error?: string;
   hint: string;
 }) {
