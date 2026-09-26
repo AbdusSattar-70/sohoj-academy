@@ -43,6 +43,33 @@ Rebuild:
 13. WCAG 2.2 AA is the accessibility baseline.
 14. Mobile-first layouts and PWA-safe architecture are first-class requirements.
 15. Mock-data and database verification are mandatory before a module is operationally complete.
+16. Operational values are configurable policies, not hard-coded constants. Seeded values are defaults only.
+17. Settings changes are versioned, effective-dated, reasoned and audited; historical transactions retain the policy version that governed them.
+18. Access is permission-based. Admin can assign roles/permissions without changing application code; the bootstrap ADMIN role itself remains a protected recovery authority.
+19. Forms validate continuously while the user types. Required-field readiness, field errors and cross-field conflicts are visible before submission.
+20. Submit is disabled until the form is valid, changed and not already processing.
+21. Mutations expose local pending state (button/section/row) rather than blocking or reloading the whole ERP shell.
+22. Posted/finalized finance and academic records use state transitions, reversals or superseding revisions rather than in-place historical rewrites.
+23. Admission identity, enrollment activation, billing and payment are separate business facts. A payment receipt is never generated when no money was received; unpaid obligations use invoices/charges/receivables.
+24. Default admission activation policy requires an accepted admission plus posted initial billing. Whether payment/deposit is required before ACTIVE enrollment is a configurable policy.
+
+## Configuration and Settings Control Center
+
+The ERP must expose a dedicated Settings / Control Center grouped by domain:
+
+- Organization & branches
+- Academic years, classes, programs, subjects and master data
+- Admission activation and enrollment policies
+- Batch capacity and scheduling policies
+- Billing, due dates, discounts, scholarships and payment methods
+- Teacher compensation, revenue sharing, retention/acquisition bonuses and advances
+- Staff roles, user roles, permission matrix and branch scope
+- Approval workflows and maker-checker thresholds
+- CRM sources, statuses, follow-up defaults and ownership rules
+- Document/numbering preferences and communication templates
+- Security, session and operational controls
+
+Settings are not unrestricted free-form edits. Each setting has a type, validation contract, scope, effective date and audit history. Policies that affect historical calculations are versioned rather than overwritten.
 
 ## Engineering shape
 
@@ -83,12 +110,15 @@ modules/
 Business workflow rule:
 
 ```text
-UI
-→ schema validation
-→ authorisation
+UI with on-change validation
+→ local readiness state
+→ permission check
 → domain service / transactional RPC
-→ audit event
-→ revalidation
+→ database invariant + idempotency/concurrency guard
+→ approval where policy requires it
+→ audit event / policy-version reference
+→ targeted cache invalidation
+→ local success/error update
 ```
 
 ## Delivery order
