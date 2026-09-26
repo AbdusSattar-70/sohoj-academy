@@ -1,6 +1,6 @@
 # ERP v2 Interaction, Workflow and Configuration Standard
 
-This document is normative for every internal Sohoj Academy ERP module.
+This document is normative for every internal Sohoj Academy ERP module and aligns with Master Blueprint v1.1.
 
 ## 1. Configuration over hard-coded operations
 
@@ -8,157 +8,195 @@ Operational values must not be embedded in React components, server actions or S
 
 Examples:
 - Batch capacity
+- Tuition and other Fee Plan charges
 - Teacher teaching-pool percentage
-- Acquisition and retention bonus percentages
+- Acquisition/retention bonus percentages
 - Admission activation requirements
-- Payment/deposit requirements
+- Minimum payment/deposit rules
 - Due-day rules
 - Discount/scholarship thresholds
-- Approval requirements and thresholds
+- Approval requirements/thresholds
 - Role/permission bundles
 - Communication/document preferences
 
 Seed values are initial policy versions only. Changes are versioned, effective-dated, reasoned and audited.
 
 Structural integrity is not configurable:
-- Immutable audit history
-- Unique permanent identities
-- Receipt only for an actual posted payment
-- Posted financial corrections by reversal/adjustment rather than deletion
-- Maker-checker separation where the workflow requires approval
-- Database authorization and RLS
-- Accounting balance/integrity
-- Referential integrity
+- immutable audit history;
+- unique permanent identities;
+- receipt only for actual posted payment;
+- posted financial correction through reversal/adjustment;
+- maker-checker separation where required;
+- database authorization/RLS;
+- accounting balance/integrity;
+- referential integrity.
 
 ## 2. Form behavior
 
-Internal ERP forms use one shared standard:
-
 1. Persistent visible label for every control.
-2. Required / Optional state is explicit.
-3. Contextual helper text explains business meaning, not obvious UI mechanics.
-4. Zod is the shared validation contract; React Hook Form uses it client-side.
-5. Validation mode is onChange / onBlur as appropriate. Do not wait for submit to reveal known validation errors.
-6. Cross-field rules update immediately as dependent fields change.
-7. Async uniqueness/availability checks are debounced and field-scoped when needed.
-8. Submit is disabled until:
-   - required fields are satisfied,
-   - the form is valid,
-   - a meaningful change exists,
-   - no submission is already running.
-9. Server validation and database constraints repeat critical validation; client validation is never a trust boundary.
-10. On server rejection, return a field error when possible and focus/scroll to the first invalid field.
-11. Sensitive actions show impact, require a reason and, where appropriate, explicit confirmation.
+2. Required/Optional is explicit.
+3. Helper text explains business meaning.
+4. React Hook Form + shared Zod contract for client validation.
+5. Validation uses onChange/onBlur as appropriate.
+6. Cross-field rules update immediately.
+7. Async uniqueness/availability checks are debounced and field-scoped.
+8. Submit is disabled until required fields are satisfied, the form is valid, it is meaningfully changed and no submission is already running.
+9. Server/database repeat critical validation.
+10. Server errors map to a field/section where possible.
+11. Sensitive actions show impact and require reason/confirmation/approval as appropriate.
+12. Long workflows may support Draft + unsaved-change protection.
 
 ## 3. Loading and mutation feedback
 
-The ERP shell does not disappear during normal data loading.
-
-- Sidebar and header remain stable.
+- ERP shell stays mounted.
 - Route content uses section/table/card skeletons.
-- A mutation shows pending state on its button, row, dialog or affected panel.
-- Background refresh must not replace the entire screen with a loader.
-- Use targeted path/tag invalidation rather than refreshing unrelated modules.
-- Use optimistic/local updates only when rollback semantics are clear.
-- Long-running jobs become tracked jobs with progress/status rather than a blocking request.
+- Mutations show pending state on the affected button/row/dialog/panel.
+- Background refresh does not replace the whole screen.
+- Invalidation/revalidation is targeted.
+- Optimistic updates are used only where rollback semantics are clear.
+- Long-running work becomes a tracked job.
+- Financial posting remains server-authoritative.
 
-## 4. Admission lifecycle
+## 4. Programme Offering and Fee inheritance
 
-Prospect, Admission Case, Student identity, Enrollment, Billing and Payment are separate business facts.
+Programme, Programme Offering and Fee Plan are separate.
 
-Recommended default state machine:
+Normal Admission flow:
+
+```text
+Class
+→ eligible Programme Offering
+→ available Batch
+→ active Fee Plan Version
+→ automatic standard charges
+→ approved discount/scholarship/fee exception
+→ calculated net payable
+```
+
+Standard tuition/charges are read-only in normal Admission. A special student arrangement is represented explicitly; it does not overwrite the Programme Fee.
+
+Fee changes create a new version. Historical billing keeps the governing version.
+
+## 5. Admission lifecycle
 
 ```text
 PROSPECT
-  → ADMISSION_DRAFT
-  → ADMISSION_READY
-  → ADMISSION_ACCEPTED
-  → BILLING_POSTED
-  → PENDING_PAYMENT (only when policy requires payment/deposit)
-  → ACTIVE_ENROLLMENT
+→ ADMISSION_DRAFT
+→ ADMISSION_READY
+→ ADMISSION_ACCEPTED
+→ BILLING_POSTED
+→ PENDING_PAYMENT when active policy requires deposit/minimum payment
+→ ACTIVE_ENROLLMENT
 ```
 
-The activation policy is configurable.
+Default policy:
+- admission accepted;
+- student/guardian/academic placement valid;
+- Fee Plan assigned;
+- initial billing posted;
+- payment not inherently required unless configured;
+- unpaid balance remains receivable;
+- receipt only after real payment;
+- Active Student count = ACTIVE enrollment only.
 
-Default Sohoj policy:
-- admission must be accepted;
-- initial billing must be posted;
-- an invoice/charge/receivable must exist;
-- payment is not inherently required for activation unless management configures a deposit/minimum-payment rule;
-- if payment is not received, the amount remains due;
-- a receipt is generated only when money is actually posted;
-- dashboard Active Student counts use ACTIVE enrollment, never a draft/admission-only record.
+## 6. State machines instead of free-form status edits
 
-If management later configures "minimum 25% initial payment before activation", the Admission workflow uses that active policy version without changing code.
-
-## 5. State machines instead of free-form status edits
-
-Every important domain has explicit allowed transitions.
-
-Examples:
+Important domains use explicit allowed transitions:
 - Prospect
 - Admission
 - Enrollment
-- Invoice / charge
+- Invoice/charge
 - Payment
 - Approval
 - Attendance finalization
-- Assessment/result finalization
+- Result finalization
 - Staff employment
 - Leave/substitution
 - Advance settlement
 - Procurement
 - Asset lifecycle
 
-The UI shows only allowed actions; server and database recheck them.
+UI shows only allowed actions; server/database recheck.
 
-## 6. Policy-version pinning
+## 7. Policy-version pinning
 
-Any transaction whose result depends on a policy stores the policy/rule version used.
+Transactions affected by a rule store the governing version.
 
 Examples:
+- Fee Plan
 - Batch capacity decision
 - Admission activation
 - Discount approval
 - Teacher revenue share
-- Retention/acquisition bonus
+- Acquisition/retention bonus
 - Advance settlement
 
-Changing a policy tomorrow must not change the meaning of yesterday's finalized transaction.
+## 8. Concurrency, retries and duplicate prevention
 
-## 7. Concurrency and duplicate prevention
+- idempotency keys for retry-prone business writes;
+- row locking/equivalent for capacity, payment allocation and settlement;
+- unique constraints for permanent references;
+- duplicate student/prospect/guardian/master-data review/merge workflows;
+- double-click/retry must not duplicate payment/admission/posting events.
 
-Critical workflows require:
-- idempotency key/request identity where retries can duplicate business events;
-- row locking or equivalent concurrency protection for capacity, payment allocation and numbering;
-- unique constraints for permanent identity/reference numbers;
-- duplicate-person/prospect detection with explicit merge/review workflows.
+## 9. Settings / Control Center
 
-## 8. Settings / Control Center
-
-Admin Control Center groups settings by domain:
-- Organization & branches
+Admin Control Center groups settings by:
+- Organization/branches
 - Master data
+- Programmes/Offerings/Fee Plans
 - Admissions
 - Academics
 - CRM
 - Finance
-- Staff & compensation
+- Staff/compensation
 - Approvals
-- Roles & permissions
+- Roles/permissions/scope
 - Documents/numbering
 - Communication
 - Security/operations
 
-Permission changes and policy publications require a reason and audit event. The protected bootstrap ADMIN authority cannot be accidentally stripped of recovery access.
+Permission/policy changes require reason + audit event. Protected bootstrap ADMIN cannot be accidentally stripped of recovery access.
 
-## 9. Operational acceptance
+## 10. Authorization model
+
+Effective access is Role + Permission + Scope.
+
+Examples:
+- students.view
+- students.edit
+- payments.post
+- payments.reverse
+- attendance.record
+- attendance.approve
+- assessments.record
+- assessments.approve
+- compensation.view
+- compensation.manage
+- audit.view
+- settings.manage
+
+Scope may grow to OWN / ASSIGNED_BATCHES / BRANCH / ORGANIZATION.
+
+## 11. Errors and supportability
+
+Business errors are distinct from technical failures.
+
+Examples:
+- “Selected batch is full” is a business error.
+- “Unable to reach database” is a technical error.
+
+Technical failures expose a safe correlation/reference ID for support/log tracing without exposing sensitive implementation detail.
+
+## 12. Operational acceptance
 
 A workflow is not production-ready until:
-- new staff can understand it without verbal explanation;
-- management can trust the business meaning;
-- an auditor can reconstruct the change;
-- invalid actions are prevented at UI, server and database layers;
-- loading/errors are localized to the affected area;
-- keyboard/screen-reader use is viable;
-- mock-data and database verification pass.
+- new staff can understand it;
+- management trusts the business meaning;
+- audit can reconstruct the change and governing version;
+- invalid actions are prevented at UI/server/database;
+- operational values are configurable;
+- loading/errors are localized;
+- keyboard/screen-reader/touch use is viable;
+- concurrency/retry/duplicate risks are addressed;
+- mock/database/end-to-end verification passes.
