@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   ListChecks,
   ScrollText,
+  Settings2,
   ShieldCheck,
   UserRoundSearch,
   UsersRound,
@@ -40,6 +41,7 @@ const icons: Record<string, typeof LayoutDashboard> = {
   Approvals: ClipboardCheck,
   "Audit Trail": ScrollText,
   "Business Rules": ShieldCheck,
+  Settings: Settings2,
 };
 
 function isActive(pathname: string, href: string) {
