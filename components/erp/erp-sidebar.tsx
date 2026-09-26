@@ -38,6 +38,8 @@ const icons: Record<ErpNavIcon, typeof LayoutDashboard> = {
   prospects: UserRoundSearch,
   students: BookOpenCheck,
   staff: UsersRound,
+  offerings: BookOpenCheck,
+  "fee-plans": Settings2,
   approvals: ClipboardCheck,
   audit: ScrollText,
   rules: ShieldCheck,

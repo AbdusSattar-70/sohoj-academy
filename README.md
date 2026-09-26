@@ -40,6 +40,38 @@ The authoritative product reference is **Sohoj Academy ERP — Product Constitut
 
 ## Local setup
 
+### Preview the Programme Offering and Fee Plan screens
+
+In your existing checkout, first commit or stash any uncommitted work you want to keep. Then:
+
+```bash
+git switch feature/dashboard_initialization
+git pull --ff-only origin feature/dashboard_initialization
+pnpm install
+```
+
+Make sure `.env.local` points to your **development** Supabase project. In that project's linked checkout, inspect the pending migrations and apply them:
+
+```bash
+pnpm exec supabase migration list
+pnpm exec supabase db push
+```
+
+This applies pending migrations, including `0008` and `0009`, to the linked project. Do not run `db reset --linked` to preview these pages. After applying, run `supabase/tests/0008_v2_programme_fee_foundation.sql` in that project's SQL Editor and regenerate types when the linked CLI is available:
+
+```bash
+pnpm exec supabase gen types typescript --linked > types/database.tmp.ts \
+  && mv types/database.tmp.ts types/database.ts
+pnpm dev
+```
+
+Sign in as the bootstrapped ADMIN, then open:
+
+- `http://localhost:3000/dashboard/academics/offerings`
+- `http://localhost:3000/dashboard/finance/fee-plans`
+
+Create an offering, then publish its first Fee Plan. Publication is limited to today's organization-local date, and a second version cannot be published on that same date. Admission and billing are subsequent workflows; creating an offering or plan does not create a student or a charge.
+
 Create a local `.env.local` file containing the public Supabase project values used by this app:
 
 ```bash

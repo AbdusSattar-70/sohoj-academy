@@ -4,6 +4,8 @@ export type ErpRouteIcon =
   | "prospects"
   | "students"
   | "staff"
+  | "offerings"
+  | "fee-plans"
   | "approvals"
   | "audit"
   | "rules"
@@ -66,6 +68,24 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     navGroup: "People",
     permission: "staff.view",
     icon: "staff",
+  },
+  {
+    id: "programme-offerings",
+    title: "Programme Offerings",
+    eyebrow: "Academics",
+    href: "/dashboard/academics/offerings",
+    navGroup: "Academics",
+    permission: "academics.view",
+    icon: "offerings",
+  },
+  {
+    id: "fee-plans",
+    title: "Fee Plans",
+    eyebrow: "Finance / Control Center",
+    href: "/dashboard/finance/fee-plans",
+    navGroup: "Finance",
+    permission: "finance.view",
+    icon: "fee-plans",
   },
   {
     id: "approvals",

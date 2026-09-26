@@ -16,6 +16,8 @@ export type ErpNavIcon =
   | "prospects"
   | "students"
   | "staff"
+  | "offerings"
+  | "fee-plans"
   | "approvals"
   | "audit"
   | "rules"

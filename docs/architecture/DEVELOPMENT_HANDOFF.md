@@ -72,6 +72,7 @@ Typecheck intentionally clears stale Next route types and regenerates them befor
 - `0006_v2_control_center_editing.sql`
 - `0007_v2_user_access_control.sql`
 - `0008_v2_programme_offerings_fee_plans.sql` (repository migration; apply and verify in linked environment)
+- `0009_v2_fee_plan_local_date.sql` (publish date follows organization timezone)
 
 Verification tests:
 - `0001_v2_platform.sql`
@@ -90,6 +91,8 @@ Verification tests:
 - `/dashboard/crm/prospects`
 - `/dashboard/crm/prospects/[prospectId]`
 - `/dashboard/students`
+- `/dashboard/academics/offerings`
+- `/dashboard/finance/fee-plans`
 - `/dashboard/staff`
 - `/dashboard/governance/approvals`
 - `/dashboard/governance/audit`
@@ -213,9 +216,11 @@ Treat generated `types/database.ts` as authoritative. Regenerate it only after a
 
 ## Programme Offering / Fee Plan foundation (2026-09-26)
 
-Migration 0008 adds canonical academic groups, Programme Offerings, immutable published Fee Plan Versions and their charge components. Creation and publication use permission-checked, audited RPCs. Publishing serializes on the offering row, and authenticated clients cannot directly mutate these tables. A Fee Plan may be published effective today; future scheduling and same-day re-publication require a separate policy/workflow design. No fee amounts are seeded.
+Migration 0008 adds canonical academic groups, Programme Offerings, immutable published Fee Plan Versions and their charge components. Creation and publication use permission-checked, audited RPCs. Publishing serializes on the offering row, and authenticated clients cannot directly mutate these tables. Migration 0009 aligns the publication date with the organization timezone. A Fee Plan may be published effective today; future scheduling and same-day re-publication require a separate policy/workflow design. No fee amounts are seeded.
 
-The SQL was parsed, but this workspace has no linked Supabase credentials, local Postgres service, or signed-in ADMIN browser session. Migration 0008 and test 0008 have **not** been run against a database. Do not mark Settings real-UI verification complete. Apply the migration in a disposable development environment, run the SQL test, exercise both RPCs with an authorized ADMIN, and regenerate linked database types before wiring the Control Center forms and Admission.
+The ERP now has Programme Offering creation/list and Fee Plan publication/history screens. Forms use shared Zod contracts with React Hook Form. Until the linked migration is applied and types regenerated, `modules/offerings/database-contract.ts` provides a scoped typed contract for migration 0008 without modifying generated `types/database.ts`.
+
+This workspace has no linked Supabase credentials, local Postgres service, or signed-in ADMIN browser session. Migrations 0008/0009 and test 0008 have **not** been run against a database. Do not mark Settings or the new forms' real-UI verification complete. Apply the migrations in a development environment, run the SQL test, exercise both RPCs with an authorized ADMIN, and regenerate linked database types before Admission.
 
 After confirming the commit is pushed, the old stash created before switching from `rewrite/erp-blueprint-v2` can remain temporarily or be dropped deliberately later. Do not `git stash pop` it over this branch.
 
@@ -235,8 +240,8 @@ After confirming the commit is pushed, the old stash created before switching fr
 After ADMIN login and Settings are verified in the real UI:
 
 1. Finish Settings/Control Center verification in the real UI.
-2. Apply and verify migration 0008 for Programme Offering and versioned Fee Plan/Components; regenerate linked database types.
-3. Build Programme Offering and Fee Plan Control Center workflows against the verified RPCs.
+2. Apply and verify migrations 0008/0009 for Programme Offering and versioned Fee Plan/Components; regenerate linked database types.
+3. Verify the Programme Offering and Fee Plan screens and their audited RPCs in the real UI.
 4. Build Admission Case state machine.
 5. Auto-inherit Fee Plan during Admission.
 6. Add initial Billing/Receivable creation.
