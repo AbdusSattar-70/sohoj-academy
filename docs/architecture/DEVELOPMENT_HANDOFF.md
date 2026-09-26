@@ -303,12 +303,38 @@ Implemented:
 
 Verification: all 12 SQL scripts pass in isolated PGlite/Postgres with Supabase Auth fixtures. New test 0017 exercises readmission, duplicate-year prevention, self-approval denial, transfer capacity/stale-request checks, immutable financial identity through merging, canonical profile aggregation and finance permission redaction. Typecheck, ESLint and production build pass. Live Supabase/browser acceptance and multi-connection concurrency verification remain pending.
 
+## Academic operations implementation (2026-09-27)
+
+Branch remains `feature/student-lifecycle`, per the user's instruction to continue on it.
+
+Migrations 0020/0021 add academic rooms, immutable curriculum versions, effective-dated weekly routines, dated class sessions, attendance revisions and permission-scoped workspace RPCs.
+
+Routes:
+- `/dashboard/academics/operations`: Class Sessions, Routine Templates, Curriculum, Rooms; date-range filter for sessions.
+- `/dashboard/academics/sessions/[sessionId]`: pinned plan, session details, roster, attendance draft/submission/review and revision history.
+
+Implemented:
+- Room creation with branch and student capacity. Scheduling rejects a room smaller than the configured batch capacity.
+- Curriculum publication by batch/subject with chapter/topic/page descriptions and target dates inside the academic year. New publication adds a version; existing sessions keep their exact version. Planned targets are not completed coverage.
+- Weekly routines reserve teacher/batch/room slots over an effective date range. Teachers require a teaching Staff role and a subject qualification covering the entire range. Room and teacher branch eligibility are checked.
+- Generate real occurrences from routines (bounded to 94 days per synchronous request as a technical workload limit), or schedule a single class. Organization timezone governs local times. Repeated generation skips existing routine dates, including cancelled occurrences. Conflicts reject the entire request. A serialized database scheduling lock protects concurrent checks.
+- Retire a routine to stop further generation; existing sessions remain. Cancel an individual occurrence with reason, preserving its original schedule. A session with submitted or approved attendance cannot be cancelled. Rescheduling uses explicit cancellation and a new single occurrence; automated substitution/recovery is not implemented.
+- Teachers see their assigned sessions and rosters; session managers and attendance approvers can review all sessions. Attendance recording requires the record permission and an accessible session that has started.
+- Attendance uses explicit PRESENT/ABSENT/LATE/EXCUSED choices. First saved draft snapshots the roster and identity labels. Subsequent saves add revisions against an expected base ID, preventing lost updates. Submit sends the latest author's draft to the Approval Register/Action Center. A different authorized approver approves/rejects.
+- Latest APPROVED revision is official. A later pending/rejected correction does not replace it. Finalized evidence and earlier revisions remain immutable. No attendance approval is treated as proof of teaching/coverage completion.
+
+Roster boundary: current enrollment storage is date-based. First snapshot includes admission date and excludes ended_on (end-exclusive); same-day transfers therefore belong to the destination for a newly snapshotted roster. A previously saved roster is preserved. Exact within-day enrollment history needs a future effective-timestamp extension if required.
+
+Permissions reuse the existing `academics.view`, `academics.curriculum.manage`, `academics.sessions.manage`, `academics.attendance.record`, `academics.attendance.approve` codes. No service-role key or generated database type edits were introduced. Direct academic mutations are revoked; controlled RPCs enforce reasons, audit and idempotency.
+
+Verification: all 13 SQL tests pass in isolated PGlite/Postgres. New test 0020 covers curriculum pinning, routine/session overlap rejection, retry/duplicate protection, teacher scope, roster completeness, stale draft rejection, independent approval, correction history, cancellation and retirement preservation. Typecheck, ESLint and production build pass. Live Supabase/browser and true multi-connection concurrency acceptance remain pending.
+
 ## Immediate next implementation direction
 
-1. Apply pending migrations through 0019 in the user's development Supabase project; regenerate linked types after applying them.
-2. Run `docs/architecture/STUDENT_LIFECYCLE_ACCEPTANCE.md` with two authorized people, alongside the finance acceptance guide.
-3. Build academic operations: curriculum, routine/real sessions, then attendance/class logs and academic approval. Include the blueprint's teacher question-creation/review module with assessments; it remains untouched.
-4. Student contact/document editing, promotion/graduation, cross-offering transfers, multi-program enrollment policy, and richer global search are not included in this lifecycle slice. Preserve canonical identities and financial history when extending it.
+1. Apply pending migrations through 0021 and regenerate linked database types. Follow `docs/architecture/ACADEMIC_OPERATIONS_ACCEPTANCE.md` with separate teacher and reviewer accounts.
+2. Build actual class logs, homework and coverage-gap/recovery workflows on the pinned curriculum/session foundation.
+3. Build assessments/results and the teacher question-creation/review module. Question creation remains unimplemented; do not confuse curriculum text entry with a question bank or generation portal.
+4. Continue broader student lifecycle, finance/accounting and compensation per the blueprint. Preserve historical versions, independent approval and canonical identities.
 
 ## New-chat instruction
 

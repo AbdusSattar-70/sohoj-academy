@@ -53,6 +53,14 @@ export default async function ApprovalsPage() {
                     </td>
                     <td className="px-4 py-3">
                       {row.requested_action}
+                      {row.workflow_type === "ATTENDANCE" && (
+                        <Link
+                          className="mt-2 block underline"
+                          href={`/dashboard/academics/sessions/${row.entity_id}`}
+                        >
+                          Review class attendance
+                        </Link>
+                      )}
                       {["STUDENT_TRANSFER", "STUDENT_MERGE"].includes(
                         row.workflow_type,
                       ) && (

@@ -24,6 +24,16 @@ export type ErpRouteDefinition = {
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
   {
+    id: "academic-operations",
+    title: "Academic Operations",
+    eyebrow: "Academics",
+    href: "/dashboard/academics/operations",
+    navGroup: "Academics",
+    permission: "academics.view",
+    icon: "offerings",
+  },
+
+  {
     id: "billing",
     title: "Billing & Adjustments",
     eyebrow: "Finance",
@@ -153,6 +163,11 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
 ];
 
 export function routeMatches(pathname: string, route: ErpRouteDefinition) {
+  if (
+    route.id === "academic-operations" &&
+    pathname.startsWith("/dashboard/academics/sessions/")
+  )
+    return true;
   if (route.exact) return pathname === route.href;
   return pathname === route.href || pathname.startsWith(`${route.href}/`);
 }

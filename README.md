@@ -38,6 +38,12 @@ The authoritative product reference is **Sohoj Academy ERP — Product Constitut
 - pnpm
 - Supabase SQL migrations and database verification scripts
 
+## Academic operations
+
+On `feature/student-lifecycle`, apply migrations through 0021 and open **Academics → Academic Operations**. Configure rooms and curriculum, create weekly routine templates, generate dated classes, and record attendance for independent review. Assigned teachers see their own sessions; managers and attendance approvers can review the broader schedule.
+
+See [Academic operations acceptance](docs/architecture/ACADEMIC_OPERATIONS_ACCEPTANCE.md). Curriculum plans and attendance are separate from actual teaching coverage. Class logs, recovery, assessments and the question-creation module are not implemented by this slice.
+
 ## Student profiles and lifecycle
 
 Branch `feature/student-lifecycle` includes migrations through 0019. Open **Students → Student ID** for the detailed profile, guardian contacts, enrollment history, finance-authorized balances and lifecycle requests.
