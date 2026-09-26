@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import type { ErpContext } from "@/types/erp";
@@ -42,3 +43,24 @@ export const getErpContext = cache(async (): Promise<ErpContext | null> => {
     permissions: parsed.data.permissions,
   };
 });
+
+
+export async function requireErpContext() {
+  const context = await getErpContext();
+
+  if (!context) {
+    redirect("/auth/sign-in");
+  }
+
+  return context;
+}
+
+export async function requirePermission(permission: string) {
+  const context = await requireErpContext();
+
+  if (!context.permissions.includes(permission)) {
+    redirect("/dashboard?access=denied");
+  }
+
+  return context;
+}
