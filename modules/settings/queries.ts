@@ -31,11 +31,29 @@ export type SettingsPermissionRow = {
   description: string | null;
 };
 
+export type SettingsAccessUserRow = {
+  profileId: string;
+  displayName: string;
+  staffNo: string | null;
+  staffName: string | null;
+  protectedAdmin: boolean;
+  operationalRoleCodes: string[];
+};
+
 export async function getSettingsOverview() {
   const supabase = await createClient();
 
-  const [rulesQ, rolesQ, permissionsQ, rolePermissionsQ, definitionsQ, valuesQ] =
-    await Promise.all([
+  const [
+    rulesQ,
+    rolesQ,
+    permissionsQ,
+    rolePermissionsQ,
+    definitionsQ,
+    valuesQ,
+    profilesQ,
+    staffQ,
+    assignmentsQ,
+  ] = await Promise.all([
       supabase
         .from("business_rule_versions")
         .select(
@@ -68,6 +86,21 @@ export async function getSettingsOverview() {
           "setting_definition_id,version,status,value,branch_id,effective_from,change_reason"
         )
         .eq("status", "ACTIVE"),
+      supabase
+        .from("profiles")
+        .select("id,display_name,status")
+        .eq("status", "ACTIVE")
+        .order("display_name"),
+      supabase
+        .from("staff")
+        .select("profile_id,staff_no,full_name,status")
+        .in("status", ["ACTIVE", "ON_LEAVE"]),
+      supabase
+        .from("user_role_assignments")
+        .select("profile_id,role_id,branch_id,is_active,effective_to")
+        .eq("is_active", true)
+        .is("effective_to", null)
+        .is("branch_id", null),
     ]);
 
   const permissions: SettingsPermissionRow[] = (permissionsQ.data ?? []).map(
@@ -101,6 +134,47 @@ export async function getSettingsOverview() {
     (valuesQ.data ?? []).map((value) => [value.setting_definition_id, value])
   );
 
+  const staffByProfile = new Map(
+    (staffQ.data ?? [])
+      .filter((row) => row.profile_id)
+      .map((row) => [
+        row.profile_id as string,
+        { staffNo: row.staff_no, staffName: row.full_name },
+      ])
+  );
+
+  const roleCodeById = new Map(
+    (rolesQ.data ?? []).map((role) => [role.id, role.code])
+  );
+  const assignmentCodesByProfile = new Map<string, string[]>();
+
+  for (const assignment of assignmentsQ.data ?? []) {
+    const roleCode = roleCodeById.get(assignment.role_id);
+    if (!roleCode) continue;
+
+    const list = assignmentCodesByProfile.get(assignment.profile_id) ?? [];
+    list.push(roleCode);
+    assignmentCodesByProfile.set(assignment.profile_id, list);
+  }
+
+  const accessUsers: SettingsAccessUserRow[] = (profilesQ.data ?? []).map(
+    (profile) => {
+      const staff = staffByProfile.get(profile.id);
+      const roleCodes = assignmentCodesByProfile.get(profile.id) ?? [];
+
+      return {
+        profileId: profile.id,
+        displayName: profile.display_name,
+        staffNo: staff?.staffNo ?? null,
+        staffName: staff?.staffName ?? null,
+        protectedAdmin: roleCodes.includes("ADMIN"),
+        operationalRoleCodes: roleCodes
+          .filter((code) => code !== "ADMIN")
+          .sort(),
+      };
+    }
+  );
+
   return {
     rules: (rulesQ.data ?? []).map(
       (rule): SettingsPolicyRow => ({
@@ -127,6 +201,7 @@ export async function getSettingsOverview() {
       })
     ),
     permissions,
+    accessUsers,
     settings: (definitionsQ.data ?? []).map((definition) => ({
       ...definition,
       activeValue: settingValueByDefinition.get(definition.id) ?? null,
