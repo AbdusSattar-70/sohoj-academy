@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -92,17 +92,14 @@ export function RolePermissionEditor({
     },
   });
 
-  useEffect(() => {
-    reset({
-      roleCode: selectedRoleCode,
-      permissionCodes: currentPermissionCodes,
-      reason: "",
-    });
-    setMessage(null);
-  }, [currentPermissionCodes, reset, selectedRoleCode]);
-
-  const watchedPermissions =
-    useWatch({ control, name: "permissionCodes" }) ?? [];
+  const watchedPermissionsValue = useWatch({
+    control,
+    name: "permissionCodes",
+  });
+  const watchedPermissions = useMemo(
+    () => watchedPermissionsValue ?? [],
+    [watchedPermissionsValue]
+  );
   const reason = useWatch({ control, name: "reason" }) ?? "";
 
   const normalizedCurrent = useMemo(
@@ -216,7 +213,23 @@ export function RolePermissionEditor({
               <select
                 id={id}
                 value={selectedRoleCode}
-                onChange={(event) => setSelectedRoleCode(event.target.value)}
+                onChange={(event) => {
+                  const nextCode = event.target.value;
+                  const nextRole = editableRoles.find(
+                    (role) => role.code === nextCode
+                  );
+                  const nextPermissions =
+                    nextRole?.permissions.map((permission) => permission.code) ??
+                    [];
+
+                  setSelectedRoleCode(nextCode);
+                  reset({
+                    roleCode: nextCode,
+                    permissionCodes: nextPermissions,
+                    reason: "",
+                  });
+                  setMessage(null);
+                }}
                 aria-describedby={describedBy}
                 aria-invalid={invalid}
                 className={inputClass}
