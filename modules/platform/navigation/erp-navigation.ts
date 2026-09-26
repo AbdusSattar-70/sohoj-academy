@@ -55,6 +55,11 @@ const groups: ErpNavGroup[] = [
         href: "/dashboard/governance/rules",
         permission: "system.rules.view",
       },
+      {
+        title: "Settings",
+        href: "/dashboard/settings",
+        permission: "system.settings.view",
+      },
     ],
   },
 ];
