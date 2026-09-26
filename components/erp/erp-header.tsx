@@ -35,6 +35,10 @@ const titles: Record<string, { title: string; eyebrow: string }> = {
     title: "Business Rules",
     eyebrow: "Governance",
   },
+  "/dashboard/settings": {
+    title: "Settings",
+    eyebrow: "Control Center",
+  },
 };
 
 export function ErpHeader() {
