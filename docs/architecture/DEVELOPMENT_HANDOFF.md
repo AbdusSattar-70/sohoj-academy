@@ -235,19 +235,38 @@ After confirming the commit is pushed, the old stash created before switching fr
 6. Confirm Dashboard and Settings load.
 7. Confirm Settings → user access / role permission controls are visible to ADMIN.
 
+## Admission workflow implementation (2026-09-26)
+
+The user confirmed migrations 0008/0009 were applied and ADMIN sign-in works.
+
+New pending migrations:
+- `0010_v2_admission_workflow.sql`: offering-linked batch creation, Admission Cases, immutable initial invoices and lines, idempotent state transitions, identity/guardian creation, policy pinning and enrollment.
+- `0011_v2_admission_payments.sql`: actual payment, allocation, receipt identity, outstanding balance and payment-backed activation.
+- `0012_v2_admission_workspace.sql`: permission-scoped workspace read model.
+
+New routes:
+- `/dashboard/academics/batches`
+- `/dashboard/admissions`
+- `/dashboard/admissions/[admissionId]/print` (admission form; `?receipt=RCT-...` prints an actual posted receipt)
+
+Testable normal flow:
+Programme Offering → Fee Plan → Batch → Prospect → Admission Draft → Ready → Accepted → Initial Billing → Active Enrollment (or Pending Payment) → Payment / Receipt → recheck activation if needed.
+
+Draft student/guardian identity can be corrected with reason and audit. Standard fees are read-only. Acceptance issues the permanent Student identity and pins the activation policy. Billing posts the first cycle and one-time components. Activation checks the current batch capacity and pins that capacity policy. Unpaid amounts remain receivables. Payment is separate; posting does not silently activate enrollment. The dashboard now counts Student identities with ACTIVE enrollment.
+
+Payment posting is currently confined to one admission invoice and rejects overpayment. No discounts, refunds, reversals, scheduled recurring billing, readmission of an existing student, student merging or cancellation workflow is exposed yet. Do not use raw table edits to compensate for these missing workflows. The initial invoice is due today for one-time/term plans; monthly plans use the later of today or this month's configured due day. Drafts do not reserve seats.
+
+Verification: the full migration chain and all SQL verification scripts, including `0010_v2_admission_end_to_end.sql`, passed in isolated PGlite/Postgres with a minimal Supabase Auth fixture. The harness omitted only the pgcrypto extension declaration because gen_random_uuid is built in. The test covers default credit activation, full-payment gating, policy pinning after later settings changes, idempotent retries, capacity, overpayment and unauthorized workspace access. This is not live Supabase/browser or multi-connection concurrency verification.
+
+`modules/admissions/queries.ts` contains a scoped RPC type extension until linked types are regenerated. Existing generated types remain unchanged.
+
 ## Immediate next implementation direction
 
-After ADMIN login and Settings are verified in the real UI:
-
-1. Finish Settings/Control Center verification in the real UI.
-2. Apply and verify migrations 0008/0009 for Programme Offering and versioned Fee Plan/Components; regenerate linked database types.
-3. Verify the Programme Offering and Fee Plan screens and their audited RPCs in the real UI.
-4. Build Admission Case state machine.
-5. Auto-inherit Fee Plan during Admission.
-6. Add initial Billing/Receivable creation.
-7. Evaluate configurable Enrollment Activation policy.
-8. Add real Payment → Allocation → Receipt workflow.
-9. Only then build downstream Academic/Finance modules that depend on trustworthy enrollment/billing.
+1. Apply migrations 0010–0012 in the user's development Supabase project.
+2. Regenerate linked types and verify the complete normal admission/payment flow in the real UI.
+3. Add controlled cancellation, existing-student enrollment and duplicate review/merge.
+4. Add approved discounts/scholarships and payment reversal/refund workflows.
+5. Add recurring billing periods and broader Finance/Academic modules after the normal flow is accepted.
 
 ## New-chat instruction
 

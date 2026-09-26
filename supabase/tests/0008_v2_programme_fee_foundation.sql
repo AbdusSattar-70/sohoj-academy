@@ -14,7 +14,7 @@ begin
   end if;
 
   if not exists (
-    select 1 from public.pg_policies
+    select 1 from pg_catalog.pg_policies
     where schemaname='public' and tablename='fee_plan_versions'
   ) then
     raise exception 'Fee Plan versions have no RLS read policy.';

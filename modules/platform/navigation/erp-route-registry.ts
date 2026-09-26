@@ -60,6 +60,8 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     permission: "students.view",
     icon: "students",
   },
+  { id: "admissions", title: "Admissions", eyebrow: "Student Lifecycle", href: "/dashboard/admissions", navGroup: "CRM & Students", permission: "admissions.view", icon: "students" },
+  { id: "batches", title: "Batches", eyebrow: "Academics", href: "/dashboard/academics/batches", navGroup: "Academics", permission: "academics.view", icon: "offerings" },
   {
     id: "staff",
     title: "Staff",

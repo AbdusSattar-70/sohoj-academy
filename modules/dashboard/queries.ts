@@ -70,8 +70,8 @@ export async function getDashboardOverview(
   if (can(context, "students.view")) {
     const { count } = await supabase
       .from("students")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "ACTIVE");
+      .select("id,enrollments!inner(id)", { count: "exact", head: true })
+      .eq("enrollments.status", "ACTIVE");
 
     activeStudents = count ?? 0;
   }

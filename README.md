@@ -38,6 +38,28 @@ The authoritative product reference is **Sohoj Academy ERP — Product Constitut
 - pnpm
 - Supabase SQL migrations and database verification scripts
 
+## Test the admission process
+
+After pulling `feature/dashboard_initialization`, apply pending migrations 0010–0012 to the same development Supabase project used by `.env.local`:
+
+```bash
+pnpm exec supabase migration list
+pnpm exec supabase db push
+pnpm dev
+```
+
+If the development server is already running on port 3000, use that server or stop it before starting another one.
+
+1. Programme Offerings → publish a Fee Plan.
+2. Batches (`/dashboard/academics/batches`) → create an offering-linked batch.
+3. Public Interest → create a Prospect.
+4. Admissions (`/dashboard/admissions`) → create a draft, review identity/fees, mark Ready and Accept.
+5. Post Initial Billing, then Evaluate Enrollment Activation.
+6. If the policy requires payment, post actual money received and recheck activation.
+7. View the Student register, dashboard count, outstanding balance, audit events and printable admission form / actual receipt.
+
+`supabase/tests/0010_v2_admission_end_to_end.sql` runs development fixtures in a transaction and rolls them back. Run it as database owner in a development database after applying all migrations. It tests state transitions, fee inheritance, policy pinning, retries, full batches, payment gating and overpayment.
+
 ## Local setup
 
 ### Preview the Programme Offering and Fee Plan screens
@@ -70,7 +92,7 @@ Sign in as the bootstrapped ADMIN, then open:
 - `http://localhost:3000/dashboard/academics/offerings`
 - `http://localhost:3000/dashboard/finance/fee-plans`
 
-Create an offering, then publish its first Fee Plan. Publication is limited to today's organization-local date, and a second version cannot be published on that same date. Admission and billing are subsequent workflows; creating an offering or plan does not create a student or a charge.
+Create an offering, then publish its first Fee Plan. Publication is limited to today's organization-local date, and a second version cannot be published on that same date. Creating an offering or plan does not create a student or a charge. Continue through Batches and Admissions for the complete normal flow.
 
 Create a local `.env.local` file containing the public Supabase project values used by this app:
 
