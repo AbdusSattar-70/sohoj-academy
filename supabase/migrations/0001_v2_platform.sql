@@ -901,9 +901,11 @@ cross join (values
   ('MOTHER','Mother'),
   ('BROTHER','Brother'),
   ('SISTER','Sister'),
+  ('GRANDFATHER','Grandfather'),
+  ('GRANDMOTHER','Grandmother'),
   ('UNCLE','Uncle'),
   ('AUNT','Aunt'),
-  ('OTHER','Other')
+  ('OTHER_GUARDIAN','Other Guardian')
 ) as v(code,name)
 where o.code='SOHOJ';
 
