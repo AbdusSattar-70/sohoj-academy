@@ -10,7 +10,7 @@ export const createStaffInputSchema = z.object({
   emergencyContactMobile: z.string().trim().max(30).optional(),
   joinedOn: z.string().min(1, "Select the joining date."),
   staffRoleCode: z.string().trim().min(1, "Select a Staff role.").max(60),
-  subjectIds: z.array(z.string().uuid()).max(30).default([]),
+  subjectIds: z.array(z.string().uuid()).max(30),
   notes: z.string().trim().max(1000).optional(),
 });
 
