@@ -225,6 +225,34 @@ export type Database = {
         created_at: string;
         updated_at: string;
       }>;
+      setting_definitions: TableDef<{
+        id: string;
+        code: string;
+        group_code: string;
+        name: string;
+        description: string | null;
+        value_type: string;
+        default_value: Json | null;
+        validation_contract: Json;
+        is_sensitive: boolean;
+        is_active: boolean;
+        sort_order: number;
+        created_at: string;
+      }>;
+      setting_versions: TableDef<{
+        id: string;
+        setting_definition_id: string;
+        organization_id: string;
+        branch_id: string | null;
+        version: number;
+        status: Database["public"]["Enums"]["rule_status"];
+        effective_from: string;
+        effective_to: string | null;
+        value: Json;
+        change_reason: string;
+        created_by: string;
+        created_at: string;
+      }>;
       lead_sources: TableDef<{
         id: string;
         organization_id: string;
@@ -395,6 +423,32 @@ export type Database = {
       my_erp_context: { Args: never; Returns: Json };
       record_prospect_followup: {
         Args: { p_input: Json };
+        Returns: Json;
+      };
+      publish_setting_value: {
+        Args: {
+          p_setting_code: string;
+          p_value: Json;
+          p_reason: string;
+          p_branch_id?: string | null;
+        };
+        Returns: Json;
+      };
+      publish_business_rule_version: {
+        Args: {
+          p_domain: string;
+          p_rule_key: string;
+          p_payload: Json;
+          p_reason: string;
+        };
+        Returns: Json;
+      };
+      set_role_permissions: {
+        Args: {
+          p_role_code: string;
+          p_permission_codes: string[];
+          p_reason: string;
+        };
         Returns: Json;
       };
       submit_public_interest: {
