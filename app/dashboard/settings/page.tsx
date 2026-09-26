@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { PolicyControlCenter } from "@/modules/settings/components/policy-control-center";
 import { RolePermissionEditor } from "@/modules/settings/components/role-permission-editor";
+import { UserAccessEditor } from "@/modules/settings/components/user-access-editor";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { getSettingsOverview } from "@/modules/settings/queries";
 import { can } from "@/types/erp";
@@ -17,6 +18,7 @@ export default async function SettingsPage() {
   const data = await getSettingsOverview();
   const canManagePolicies = can(context, "system.settings.manage");
   const canManageRoles = can(context, "system.roles.manage");
+  const canManageUsers = can(context, "system.users.manage");
 
   return (
     <div className="space-y-7">
@@ -87,10 +89,33 @@ export default async function SettingsPage() {
         )}
       </section>
 
+      <section className="space-y-4">
+        <SectionHeader
+          title="User Access Assignments"
+          description="Choose which operational role bundles each signed-in profile receives. ADMIN recovery access is protected and is not modified here."
+          badge={canManageUsers ? "Editable" : "Restricted"}
+          icon={UsersRound}
+        />
+
+        {canManageUsers ? (
+          <div className="rounded-2xl border bg-card p-5 sm:p-6">
+            <UserAccessEditor users={data.accessUsers} roles={data.roles} />
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed bg-card p-6 text-sm leading-6 text-muted-foreground">
+            User role assignment requires the
+            <code className="mx-1 rounded bg-muted px-1.5 py-0.5">
+              system.users.manage
+            </code>
+            permission.
+          </div>
+        )}
+      </section>
+
       <section className="rounded-2xl border border-blue-200 bg-blue-50 p-5 text-sm leading-6 text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">
-        Policy and permission changes are written through controlled database
-        workflows. Direct browser writes to policy-version and role-permission
-        tables are revoked.
+        Policy, permission and user-access changes are written through controlled
+        database workflows. Direct browser writes to policy-version,
+        role-permission and user-role assignment tables are revoked.
       </section>
     </div>
   );
