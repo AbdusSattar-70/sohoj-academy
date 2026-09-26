@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - main
-      - feature/student-management
-      - rewrite/erp-blueprint-v2
+      - "feature/**"
+      - "rewrite/**"
   pull_request:
 
 permissions:
