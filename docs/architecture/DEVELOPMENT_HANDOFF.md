@@ -71,6 +71,7 @@ Typecheck intentionally clears stale Next route types and regenerates them befor
 - `0005_v2_configuration.sql`
 - `0006_v2_control_center_editing.sql`
 - `0007_v2_user_access_control.sql`
+- `0008_v2_programme_offerings_fee_plans.sql` (repository migration; apply and verify in linked environment)
 
 Verification tests:
 - `0001_v2_platform.sql`
@@ -80,6 +81,7 @@ Verification tests:
 - `0005_v2_configuration.sql`
 - `0006_v2_control_center_editing.sql`
 - `0007_v2_user_access_control.sql`
+- `0008_v2_programme_fee_foundation.sql` (run after migration 0008)
 
 ## Current implemented ERP routes
 
@@ -201,26 +203,19 @@ The latest reported local quality gate passed:
 - `pnpm typecheck` ✅
 - `pnpm build` ✅
 
-The generated linked Supabase types were refreshed and the local working tree currently reports:
-
-`M types/database.ts`
-
-This generated file is a large replacement of the provisional hand-written type contract and includes the latest RPCs:
+The generated linked Supabase types were refreshed and committed on this branch (`fac4cbd`). They include the RPCs:
 - `publish_business_rule_version`
 - `validate_business_rule_payload`
 - `set_role_permissions`
 - `set_user_operational_roles`
 
-Because the full app now lint/typechecks/builds against the generated linked types, the generated `types/database.ts` should be treated as authoritative and committed, not discarded.
+Treat generated `types/database.ts` as authoritative. Regenerate it only after applying migration 0008; do not hand-edit it.
 
-Recommended local commands:
+## Programme Offering / Fee Plan foundation (2026-09-26)
 
-```bash
-git diff --check
-git add types/database.ts
-git commit -m "Sync generated Supabase database types"
-git push origin feature/dashboard_initialization
-```
+Migration 0008 adds canonical academic groups, Programme Offerings, immutable published Fee Plan Versions and their charge components. Creation and publication use permission-checked, audited RPCs. Publishing serializes on the offering row, and authenticated clients cannot directly mutate these tables. A Fee Plan may be published effective today; future scheduling and same-day re-publication require a separate policy/workflow design. No fee amounts are seeded.
+
+The SQL was parsed, but this workspace has no linked Supabase credentials, local Postgres service, or signed-in ADMIN browser session. Migration 0008 and test 0008 have **not** been run against a database. Do not mark Settings real-UI verification complete. Apply the migration in a disposable development environment, run the SQL test, exercise both RPCs with an authorized ADMIN, and regenerate linked database types before wiring the Control Center forms and Admission.
 
 After confirming the commit is pushed, the old stash created before switching from `rewrite/erp-blueprint-v2` can remain temporarily or be dropped deliberately later. Do not `git stash pop` it over this branch.
 
@@ -237,11 +232,11 @@ After confirming the commit is pushed, the old stash created before switching fr
 
 ## Immediate next implementation direction
 
-After generated DB types are committed and ADMIN login is verified:
+After ADMIN login and Settings are verified in the real UI:
 
 1. Finish Settings/Control Center verification in the real UI.
-2. Add Programme Offering domain.
-3. Add versioned Fee Plan and Fee Components.
+2. Apply and verify migration 0008 for Programme Offering and versioned Fee Plan/Components; regenerate linked database types.
+3. Build Programme Offering and Fee Plan Control Center workflows against the verified RPCs.
 4. Build Admission Case state machine.
 5. Auto-inherit Fee Plan during Admission.
 6. Add initial Billing/Receivable creation.
