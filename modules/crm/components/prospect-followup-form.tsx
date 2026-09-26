@@ -1,12 +1,18 @@
 "use client";
 
-import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type FieldPath } from "react-hook-form";
 import { PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
 import { WorkflowGuide } from "@/components/erp/workflow-guide";
 import { recordProspectFollowup } from "@/modules/crm/actions";
+import {
+  recordProspectFollowupSchema,
+  type RecordProspectFollowupInput,
+} from "@/modules/crm/schema";
 import {
   allowedProspectStatuses,
   type ProspectStatus,
@@ -24,52 +30,77 @@ export function ProspectFollowupForm({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [newStatus, setNewStatus] = useState<ProspectStatus>(currentStatus);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const [fieldError, setFieldError] = useState<{ field?: string; text: string } | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
+    null
+  );
 
   const statuses = useMemo(
     () => allowedProspectStatuses(currentStatus),
     [currentStatus]
   );
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const data = new FormData(form);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    setError,
+    formState: { errors, isDirty, isValid },
+  } = useForm<RecordProspectFollowupInput>({
+    resolver: zodResolver(recordProspectFollowupSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    shouldUnregister: true,
+    defaultValues: {
+      prospectId,
+      followupType: "CALL",
+      notes: "",
+      outcome: "",
+      newStatus: currentStatus,
+      nextFollowUpAt: "",
+      lostReason: "",
+    },
+  });
+
+  const newStatus = watch("newStatus");
+
+  const submit = handleSubmit((input) => {
     setMessage(null);
-    setFieldError(null);
 
     startTransition(async () => {
-      const result = await recordProspectFollowup({
-        prospectId,
-        followupType: String(data.get("followupType") ?? "") as
-          | "CALL"
-          | "WHATSAPP"
-          | "IN_PERSON"
-          | "COUNSELLING"
-          | "TRIAL"
-          | "OTHER",
-        notes: String(data.get("notes") ?? ""),
-        outcome: String(data.get("outcome") ?? ""),
-        newStatus,
-        nextFollowUpAt: String(data.get("nextFollowUpAt") ?? ""),
-        lostReason: String(data.get("lostReason") ?? ""),
-      });
+      const result = await recordProspectFollowup(input);
 
       if (result.ok) {
-        form.reset();
+        const nextStatus = result.status as ProspectStatus;
+        reset({
+          prospectId,
+          followupType: "CALL",
+          notes: "",
+          outcome: "",
+          newStatus: nextStatus,
+          nextFollowUpAt: "",
+          lostReason: "",
+        });
         setMessage({
           ok: true,
           text: `Follow-up recorded. Prospect status is now ${result.status.replaceAll("_", " ")}.`,
         });
         router.refresh();
-      } else {
-        setMessage({ ok: false, text: result.error });
-        setFieldError({ field: result.field, text: result.error });
+        return;
       }
+
+      if (result.field) {
+        setError(result.field as FieldPath<RecordProspectFollowupInput>, {
+          type: "server",
+          message: result.error,
+        });
+      }
+
+      setMessage({ ok: false, text: result.error });
     });
-  }
+  });
+
+  const canSubmit = isDirty && isValid && !pending;
 
   return (
     <section className="rounded-2xl border bg-card p-5 sm:p-6">
@@ -93,22 +124,26 @@ export function ProspectFollowupForm({
         ]}
       />
 
-      <form onSubmit={submit} className="mt-6 grid gap-5 md:grid-cols-2">
+      <form
+        onSubmit={submit}
+        noValidate
+        className="mt-6 grid gap-5 md:grid-cols-2"
+      >
+        <input type="hidden" {...register("prospectId")} />
+
         <ErpFormField
           id="followup-type"
           label="Follow-up Type"
           required
-          error={fieldError?.field === "followupType" ? fieldError.text : null}
+          error={errors.followupType?.message}
         >
           {({ id, describedBy, invalid }) => (
             <select
               id={id}
-              name="followupType"
-              required
-              defaultValue="CALL"
               aria-describedby={describedBy}
               aria-invalid={invalid}
               className={inputClass}
+              {...register("followupType")}
             >
               <option value="CALL">Phone Call</option>
               <option value="WHATSAPP">WhatsApp / Messaging</option>
@@ -125,20 +160,15 @@ export function ProspectFollowupForm({
           label="Resulting Status"
           required
           hint="Conversion to Student is not performed here; it belongs to the Admission workflow."
-          error={fieldError?.field === "newStatus" ? fieldError.text : null}
+          error={errors.newStatus?.message}
         >
           {({ id, describedBy, invalid }) => (
             <select
               id={id}
-              name="newStatus"
-              required
-              value={newStatus}
-              onChange={(event) =>
-                setNewStatus(event.target.value as ProspectStatus)
-              }
               aria-describedby={describedBy}
               aria-invalid={invalid}
               className={inputClass}
+              {...register("newStatus")}
             >
               {statuses.map((status) => (
                 <option key={status} value={status}>
@@ -154,18 +184,17 @@ export function ProspectFollowupForm({
           label="Follow-up Notes"
           required
           hint="Record the meaningful facts discussed or observed. Avoid vague notes such as ‘talked’."
-          error={fieldError?.field === "notes" ? fieldError.text : null}
+          error={errors.notes?.message}
           className="md:col-span-2"
         >
           {({ id, describedBy, invalid }) => (
             <textarea
               id={id}
-              name="notes"
               rows={4}
-              required
               aria-describedby={describedBy}
               aria-invalid={invalid}
               className={`${inputClass} py-2.5`}
+              {...register("notes")}
             />
           )}
         </ErpFormField>
@@ -174,14 +203,15 @@ export function ProspectFollowupForm({
           id="followup-outcome"
           label="Outcome"
           hint="Optional concise outcome, for example: guardian wants a trial class before admission."
+          error={errors.outcome?.message}
         >
           {({ id, describedBy, invalid }) => (
             <input
               id={id}
-              name="outcome"
               aria-describedby={describedBy}
               aria-invalid={invalid}
               className={inputClass}
+              {...register("outcome")}
             />
           )}
         </ErpFormField>
@@ -191,17 +221,16 @@ export function ProspectFollowupForm({
           label="Next Follow-up"
           required={newStatus === "FUTURE_FOLLOW_UP"}
           hint="Use this whenever another contact is expected. Action Center will surface it when due."
-          error={fieldError?.field === "nextFollowUpAt" ? fieldError.text : null}
+          error={errors.nextFollowUpAt?.message}
         >
           {({ id, describedBy, invalid }) => (
             <input
               id={id}
-              name="nextFollowUpAt"
               type="datetime-local"
-              required={newStatus === "FUTURE_FOLLOW_UP"}
               aria-describedby={describedBy}
               aria-invalid={invalid}
               className={inputClass}
+              {...register("nextFollowUpAt")}
             />
           )}
         </ErpFormField>
@@ -212,18 +241,17 @@ export function ProspectFollowupForm({
             label="Lost Reason"
             required
             hint="Use a factual reason that management can analyze later."
-            error={fieldError?.field === "lostReason" ? fieldError.text : null}
+            error={errors.lostReason?.message}
             className="md:col-span-2"
           >
             {({ id, describedBy, invalid }) => (
               <textarea
                 id={id}
-                name="lostReason"
                 rows={3}
-                required
                 aria-describedby={describedBy}
                 aria-invalid={invalid}
                 className={`${inputClass} py-2.5`}
+                {...register("lostReason")}
               />
             )}
           </ErpFormField>
@@ -233,8 +261,14 @@ export function ProspectFollowupForm({
           <ErpFormStatus message={message} />
         </div>
 
-        <div className="md:col-span-2 flex justify-end">
-          <Button type="submit" disabled={pending} className="min-h-11">
+        <div className="md:col-span-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          {!canSubmit && !pending && (
+            <p className="text-xs text-muted-foreground">
+              Add the required follow-up details and resolve validation errors to
+              enable saving.
+            </p>
+          )}
+          <Button type="submit" disabled={!canSubmit} className="min-h-11">
             <PhoneCall className="mr-2 size-4" aria-hidden="true" />
             {pending ? "Saving Follow-up…" : "Record Follow-up"}
           </Button>
