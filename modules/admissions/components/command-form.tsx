@@ -146,9 +146,9 @@ export function AdmissionCommandForm({
         if (!result.ok) {
           if (result.field)
             setError(result.field as FieldPath<AdmissionCommand>, {
-              message: result.error,
+              message: result.message,
             });
-          setMessage({ ok: false, text: result.error });
+          setMessage({ ok: false, text: result.message });
           return;
         }
         request.current = null;
