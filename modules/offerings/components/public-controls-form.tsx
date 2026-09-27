@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type FieldPath } from "react-hook-form";
+import { useForm, type FieldPath, type Resolver } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
 import { updateProgrammeOfferingPublicControls } from "@/modules/offerings/actions";
@@ -49,7 +49,7 @@ export function PublicControlsForm({
     watch,
     formState: { errors, isDirty, isValid },
   } = useForm<UpdateOfferingPublicControlsInput>({
-    resolver: zodResolver(updateOfferingPublicControlsSchema),
+    resolver: zodResolver(updateOfferingPublicControlsSchema) as Resolver<UpdateOfferingPublicControlsInput>,
     mode: "onChange",
     defaultValues: {
       offeringId: offering.id,
@@ -175,7 +175,7 @@ export function PublicControlsForm({
         </ErpFormField>
         <ErpFormField id={`${offering.id}-sort`} label="Sort order" hint="Lower numbers appear first." error={errors.showcaseSortOrder?.message}>
           {({ id, describedBy, invalid }) => (
-            <input id={id} type="number" min={0} max={9999} aria-describedby={describedBy} aria-invalid={invalid} className={controlClass} disabled={pending} {...register("showcaseSortOrder")} />
+            <input id={id} type="number" min={0} max={9999} aria-describedby={describedBy} aria-invalid={invalid} className={controlClass} disabled={pending} {...register("showcaseSortOrder", { valueAsNumber: true })} />
           )}
         </ErpFormField>
         <ErpFormField id={`${offering.id}-open`} label="Applications open on" error={errors.applicationsOpenOn?.message}>
