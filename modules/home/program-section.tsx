@@ -11,6 +11,69 @@ import {
 import { LocalizedText } from "@/components/shared/localized-text";
 import { getPublicProgrammeOfferings } from "@/modules/offerings/queries";
 
+function feeSummaryFromPlan(
+  plan: {
+    billing_cycle: string;
+    currency_code: string;
+    components: { name: string; amount: number; charge_type: string; recurrence: string }[];
+  } | null | undefined,
+): [string, string] | null {
+  if (!plan?.components?.length) return null;
+  const tuition = plan.components.find(
+    (c) => c.charge_type === "TUITION" && c.recurrence === "PER_CYCLE",
+  );
+  const admission = plan.components.find((c) => c.charge_type === "ADMISSION");
+  const currency = plan.currency_code || "BDT";
+  const cycle = (plan.billing_cycle || "MONTHLY").replaceAll("_", " ").toLowerCase();
+  const partsEn: string[] = [];
+  const partsBn: string[] = [];
+  if (tuition) {
+    partsEn.push(`${currency} ${Number(tuition.amount).toLocaleString("en-BD")} / ${cycle}`);
+    partsBn.push(`${currency} ${Number(tuition.amount).toLocaleString("en-BD")} / ${cycle}`);
+  }
+  if (admission) {
+    partsEn.push(`Admission ${currency} ${Number(admission.amount).toLocaleString("en-BD")}`);
+    partsBn.push(`ভর্তি ${currency} ${Number(admission.amount).toLocaleString("en-BD")}`);
+  }
+  if (!partsEn.length) {
+    const first = plan.components[0];
+    partsEn.push(`${currency} ${Number(first.amount).toLocaleString("en-BD")}`);
+    partsBn.push(`${currency} ${Number(first.amount).toLocaleString("en-BD")}`);
+  }
+  return [partsEn.join(" · "), partsBn.join(" · ")];
+}
+
+function windowNoteFromOffering(row: {
+  is_accepting_applications: boolean;
+  applications_open_on: string | null;
+  applications_close_on: string | null;
+}): [string, string] | null {
+  if (!row.is_accepting_applications) {
+    return ["Applications closed", "আবেদন বন্ধ"];
+  }
+  const open = row.applications_open_on;
+  const close = row.applications_close_on;
+  if (!open && !close) return ["Applications open", "আবেদন চলছে"];
+  const fmt = (d: string) => {
+    try {
+      return new Date(d).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return d;
+    }
+  };
+  if (open && close) {
+    return [`Apply ${fmt(open)} – ${fmt(close)}`, `আবেদন ${fmt(open)} – ${fmt(close)}`];
+  }
+  if (close) {
+    return [`Apply by ${fmt(close)}`, `${fmt(close)} পর্যন্ত আবেদন`];
+  }
+  return [`Opens ${fmt(open!)}`, `${fmt(open!)} থেকে খোলা`];
+}
+
 const SHOWCASE_ICONS: Record<string, LucideIcon> = {
   "clipboard-check": ClipboardCheck,
   "graduation-cap": GraduationCap,
@@ -28,6 +91,8 @@ type ProgramCard = {
   icon: LucideIcon;
   offeringId: string | null;
   acceptingApplications: boolean;
+  feeSummary: [string, string] | null;
+  windowNote: [string, string] | null;
 };
 
 const FALLBACK_PROGRAMS: ProgramCard[] = [
@@ -42,6 +107,8 @@ const FALLBACK_PROGRAMS: ProgramCard[] = [
     icon: ClipboardCheck,
     offeringId: null,
     acceptingApplications: true,
+    feeSummary: null,
+    windowNote: null,
   },
   {
     key: "fallback-ssc",
@@ -49,31 +116,35 @@ const FALLBACK_PROGRAMS: ProgramCard[] = [
     title: ["SSC A+ Preparation", "SSC A+ প্রস্তুতি"],
     description: [
       "Structured subject support, regular testing and progress review designed around disciplined SSC preparation.",
-      "বিষয়ভিত্তিক সহায়তা, নিয়মিত পরীক্ষা ও অগ্রগতি পর্যালোচনার মাধ্যমে শৃঙ্খলাবদ্ধ SSC প্রস্তুতি।",
+      "বিষয়ভিত্তিক সহায়তা, নিয়মিত টেস্ট এবং অগ্রগতি পর্যালোচনার মাধ্যমে শৃঙ্খলিত SSC প্রস্তুতি।",
     ],
     icon: GraduationCap,
     offeringId: null,
     acceptingApplications: true,
+    feeSummary: null,
+    windowNote: null,
   },
   {
-    key: "fallback-batch",
-    eyebrow: ["Academic Support", "একাডেমিক সহায়তা"],
-    title: ["Focused Small-Batch Learning", "ছোট ব্যাচে মনোযোগী শেখা"],
+    key: "fallback-hsc",
+    eyebrow: ["Class 11–12", "ক্লাস ১১–১২"],
+    title: ["HSC Foundation", "HSC ফাউন্ডেশন"],
     description: [
-      "A maximum of 12 students per batch helps teachers notice individual learning gaps instead of teaching to a crowded room.",
-      "প্রতি ব্যাচে সর্বোচ্চ ১২ জন শিক্ষার্থী থাকায় ভিড়ের মধ্যে পড়ানোর বদলে প্রত্যেক শিক্ষার্থীর শেখার ঘাটতি শনাক্ত করা সহজ হয়।",
+      "Build core concepts early with steady practice so higher secondary study stays manageable and measurable.",
+      "মৌলিক ধারণা আগে থেকে গড়ে তুলে নিয়মিত অনুশীলনের মাধ্যমে উচ্চ মাধ্যমিক পড়াশোনা সহজ ও পরিমাপযোগ্য রাখা।",
     ],
-    icon: UsersRound,
+    icon: BookOpenCheck,
     offeringId: null,
     acceptingApplications: true,
+    feeSummary: null,
+    windowNote: null,
   },
 ];
 
 export async function HomeProgramSection() {
-  const publicOfferings = await getPublicProgrammeOfferings();
+  const rows = await getPublicProgrammeOfferings();
   const programs: ProgramCard[] =
-    publicOfferings.length > 0
-      ? publicOfferings.map((row) => ({
+    rows.length > 0
+      ? rows.map((row) => ({
           key: row.id,
           eyebrow: [
             row.showcase_eyebrow || row.code,
@@ -90,6 +161,8 @@ export async function HomeProgramSection() {
           icon: SHOWCASE_ICONS[row.showcase_icon ?? ""] ?? GraduationCap,
           offeringId: row.id,
           acceptingApplications: Boolean(row.is_accepting_applications),
+          feeSummary: feeSummaryFromPlan(row.fee_plan),
+          windowNote: windowNoteFromOffering(row),
         }))
       : FALLBACK_PROGRAMS;
 
@@ -140,6 +213,20 @@ export async function HomeProgramSection() {
                 <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
                   <LocalizedText en={program.description[0]} bn={program.description[1]} />
                 </p>
+                {(program.feeSummary || program.windowNote) && (
+                  <div className="mt-4 space-y-1 text-xs leading-5 text-muted-foreground">
+                    {program.windowNote ? (
+                      <p className="font-medium text-foreground/80">
+                        <LocalizedText en={program.windowNote[0]} bn={program.windowNote[1]} />
+                      </p>
+                    ) : null}
+                    {program.feeSummary ? (
+                      <p>
+                        <LocalizedText en={program.feeSummary[0]} bn={program.feeSummary[1]} />
+                      </p>
+                    ) : null}
+                  </div>
+                )}
                 <div className="mt-6 flex flex-col gap-2 sm:flex-row">
                   <Link
                     href={interestHref}
