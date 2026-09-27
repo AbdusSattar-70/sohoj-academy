@@ -68,6 +68,12 @@ begin
   if fee is null then
     raise exception 'Fee plan publish did not activate offering.';
   end if;
+  result := public.admission_command(jsonb_build_object(
+    'action','CREATE_BATCH','request_id',gen_random_uuid(),
+    'offering_id',offering,'code','PADM-B-'||left(u::text,8),
+    'name','Public Admissions Placement','capacity',2,
+    'reason','Create placement availability fixture'
+  ));
 
   -- Hidden by default: not website visible, not accepting
   listed := public.list_public_programme_offerings();
@@ -202,8 +208,11 @@ begin
       and e->>'class_name' is not null
       and e->>'application_state' = 'OPEN'
       and (e->>'is_accepting_applications')::boolean
+      and (e->>'active_batch_count')::integer = 1
+      and (e->>'current_total_seats')::integer = 2
+      and (e->>'current_open_seats')::integer = 2
   ) then
-    raise exception 'Public card must show academic context and an effective open state.';
+    raise exception 'Public card must show academic context, availability and an effective open state.';
   end if;
 
   result := public.submit_public_interest(jsonb_build_object(

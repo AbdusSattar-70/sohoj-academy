@@ -78,6 +78,9 @@ export type PublicOfferingCard = {
   public_requirements_bn: string | null;
   admission_policy: string | null;
   admission_policy_bn: string | null;
+  active_batch_count: number;
+  current_total_seats: number;
+  current_open_seats: number;
   showcase_sort_order: number;
   is_accepting_applications: boolean;
   application_state: "OPEN" | "UPCOMING" | "CLOSED";

@@ -25,6 +25,8 @@ type OpenOfferingOption = {
   policy: string | null;
   policyBn: string | null;
   feePlan: { billing_cycle: string; currency_code: string; components: { name: string; amount: number; recurrence: string }[] } | null;
+  openSeats: number;
+  activeBatches: number;
 };
 
 const dayOptions = [
@@ -287,6 +289,7 @@ export function PublicInterestForm({
           ) : null}
           {intent === "admission" && selectedOffering ? (
             <div className="space-y-3 rounded-xl border bg-muted/40 p-4 text-sm leading-6">
+              <p>{selectedOffering.activeBatches === 0 ? (bn ? "ব্যাচে স্থান নির্ধারণ প্রস্তুত হচ্ছে।" : "Batch placement is being prepared.") : selectedOffering.openSeats === 0 ? (bn ? "বর্তমান ব্যাচগুলো পূর্ণ; স্টাফ স্থান নির্ধারণ পর্যালোচনা করবে।" : "Current batches are full; staff will review placement options.") : (bn ? `বর্তমানে ${selectedOffering.openSeats}টি ব্যাচ আসন খালি। যাচাইয়ের পরে স্থান নিশ্চিত হবে।` : `${selectedOffering.openSeats} current batch seats are open. Placement is confirmed after staff review.`)}</p>
               {selectedOffering.schedule ? <p><strong>{bn ? "সময়সূচি" : "Schedule"}:</strong> {bn ? selectedOffering.scheduleBn || selectedOffering.schedule : selectedOffering.schedule}</p> : null}
               {selectedOffering.feePlan?.components.length ? (
                 <div>

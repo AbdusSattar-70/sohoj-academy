@@ -16,6 +16,7 @@ Updated 2026-09-28. Branch: `feature/blueprint_gap_closure`, based on `feature/d
 | Signed consent register | Admission staff can upload a PDF or photo of the signed paper form to a private bucket before acceptance. The case displays versioned receipts with guardian signing date, file hash and receiving staff. A permissioned route issues a short-lived download URL. No overwrites or ordinary staff deletes are granted. | SQL test 0033 validates receipt and audit in an isolated Storage metadata fixture; live bucket/RLS/upload/download must still be tested |
 | Homework follow-up | A submitted class log with homework becomes the assignment for that session. Assigned teachers can check each eligible student as not submitted, needs work or complete; review notes and corrections are append-only. The latest check and full revision history appear on the class session. | SQL suite 0020 covers teacher scope, retries, stale revision rejection and preserved corrections |
 | Assessment results | Teachers create dated batch/subject assessments, publish their terms, save one mark per eligible student and submit the roster. A different authorized reviewer approves or rejects the immutable revision. Only approved marks are shown as official; corrected rosters retain prior submissions. | SQL suite 0020 covers complete roster, teacher/reviewer separation and official result; typecheck/build |
+| Public placement snapshot | Published cards and admission form show the count of active batches and currently open seats, derived from batch capacity and active enrollments. The copy says placement is confirmed after staff review; applying does not reserve a seat. | SQL suite 0027 covers batch capacity in the public payload |
 
 ### Staff print sequence
 
@@ -29,7 +30,7 @@ Updated 2026-09-28. Branch: `feature/blueprint_gap_closure`, based on `feature/d
 These items need separate implementation and acceptance work on this branch. Do not describe them as shipped:
 
 1. Public **Apply for Admission** collects the application declarations and terms snapshot. A signed document upload, applicant correction return channel and an individual requirements checklist remain.
-2. Programme cards now show configured admission requirements, policy and schedule. Live batch capacity and placement availability, reviewed publishing/preview controls and a versioned public content contract remain.
+2. Programme cards show configured admission requirements, policy, schedule and a current batch seat snapshot. Reviewed publishing/preview controls and a versioned public content contract remain; the seat snapshot does not reserve placement.
 3. Signed form attachment and a versioned receipt exist. Test private bucket access and upload/download on linked Supabase, then enforce receipt before acceptance for new cases with a cutover that preserves older historical cases. A staff attestation and uploaded file cannot automatically prove a genuine signature.
 4. Academic operations have plans, sessions, attendance review, submitted class logs, per-student homework follow-up, manually authored question bank review and assessment result approval. Coverage gaps/recovery, question-to-paper assembly, assisted question generation and student progress reports remain.
 5. Finance covers discounts, cancellations, refunds and operator-run recurring invoices. General ledger/journals, advances/payables, expense reconciliation, teacher compensation calculations and settlements remain.
@@ -37,7 +38,7 @@ These items need separate implementation and acceptance work on this branch. Do 
 
 ## Validation and deployment
 
-- Apply migrations in order through `0035` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
+- Apply migrations in order through `0036` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
 - Run all rollback-only SQL scripts, especially `supabase/tests/0027_v2_public_admissions_workflow.sql`.
 - Run `pnpm lint`, `pnpm typecheck`, `pnpm build`, then verify the homepage, interest and admission paths while signed in as authorized staff where required.
 - Print a real draft with multiple fee components on A4 to check that the declarations, signatures and office-use area remain on the same page. Use the academy's actual letterhead, or print to blank paper and check the 50 mm reserved space.

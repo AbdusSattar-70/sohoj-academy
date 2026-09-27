@@ -102,6 +102,7 @@ type ProgramCard = {
   schedule: [string, string] | null;
   requirements: [string, string] | null;
   policy: [string, string] | null;
+  availability: [string, string];
 };
 
 export async function HomeProgramSection() {
@@ -132,6 +133,11 @@ export async function HomeProgramSection() {
           schedule: row.public_schedule ? [row.public_schedule, row.public_schedule_bn || row.public_schedule] : null,
           requirements: row.public_requirements ? [row.public_requirements, row.public_requirements_bn || row.public_requirements] : null,
           policy: row.admission_policy ? [row.admission_policy, row.admission_policy_bn || row.admission_policy] : null,
+          availability: row.active_batch_count === 0
+            ? ["Batch placement being prepared", "ব্যাচে স্থান নির্ধারণ প্রস্তুত হচ্ছে"]
+            : row.current_open_seats === 0
+              ? ["Current batches are full; staff will review placement options", "বর্তমান ব্যাচগুলো পূর্ণ; স্টাফ স্থান নির্ধারণ পর্যালোচনা করবে"]
+              : [`${row.current_open_seats} of ${row.current_total_seats} current batch seats open · placement confirmed after review`, `বর্তমান ব্যাচে ${row.current_total_seats}টির মধ্যে ${row.current_open_seats}টি আসন খালি · যাচাইয়ের পরে স্থান নিশ্চিত`],
         })) ?? [];
 
   return (
@@ -198,6 +204,7 @@ export async function HomeProgramSection() {
                   {program.schedule ? <p><LocalizedText en="Schedule" bn="সময়সূচি" />: <LocalizedText en={program.schedule[0]} bn={program.schedule[1]} /></p> : null}
                   {program.requirements ? <p><LocalizedText en="Requirements" bn="শর্ত" />: <LocalizedText en={program.requirements[0]} bn={program.requirements[1]} /></p> : null}
                   {program.policy ? <p><LocalizedText en="Admission policy" bn="ভর্তি নীতি" />: <LocalizedText en={program.policy[0]} bn={program.policy[1]} /></p> : null}
+                  <p><LocalizedText en={program.availability[0]} bn={program.availability[1]} /></p>
                 </div>
                 {(program.feeSummary || program.windowNote) && (
                   <div className="mt-4 space-y-1 text-xs leading-5 text-muted-foreground">

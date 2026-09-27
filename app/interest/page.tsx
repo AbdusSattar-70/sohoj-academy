@@ -185,6 +185,8 @@ export default async function InterestPage({
                   policy: row.admission_policy,
                   policyBn: row.admission_policy_bn,
                   feePlan: row.fee_plan,
+                  openSeats: row.current_open_seats,
+                  activeBatches: row.active_batch_count,
                   name: row.showcase_title || row.name,
                   classId: row.class_id,
                   programId: row.program_id,
