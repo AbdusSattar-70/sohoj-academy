@@ -59,6 +59,12 @@ export function PublicControlsForm({
       showcaseDescriptionBn: offering.showcase_description_bn ?? "",
       showcaseEyebrow: offering.showcase_eyebrow ?? "",
       showcaseEyebrowBn: offering.showcase_eyebrow_bn ?? "",
+      publicSchedule: offering.public_schedule ?? "",
+      publicScheduleBn: offering.public_schedule_bn ?? "",
+      publicRequirements: offering.public_requirements ?? "",
+      publicRequirementsBn: offering.public_requirements_bn ?? "",
+      admissionPolicy: offering.admission_policy ?? "",
+      admissionPolicyBn: offering.admission_policy_bn ?? "",
       showcaseIcon: (offering.showcase_icon as UpdateOfferingPublicControlsInput["showcaseIcon"]) ?? "",
       showcaseSortOrder: offering.showcase_sort_order ?? 100,
       isWebsiteVisible: offering.is_website_visible ?? false,
@@ -161,6 +167,36 @@ export function PublicControlsForm({
         <ErpFormField id={`${offering.id}-desc-bn`} label="Description (Bangla)" className="sm:col-span-2" error={errors.showcaseDescriptionBn?.message}>
           {({ id, describedBy, invalid }) => (
             <textarea id={id} rows={3} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5.5rem] py-2`} disabled={pending} {...register("showcaseDescriptionBn")} />
+          )}
+        </ErpFormField>
+        <ErpFormField id={`${offering.id}-schedule`} label="Public schedule (English)" className="sm:col-span-2" hint="State the intended days and times. Actual placement is confirmed by staff." error={errors.publicSchedule?.message}>
+          {({ id, describedBy, invalid }) => (
+            <textarea id={id} rows={2} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5rem] py-2`} disabled={pending} {...register("publicSchedule")} />
+          )}
+        </ErpFormField>
+        <ErpFormField id={`${offering.id}-schedule-bn`} label="Public schedule (Bangla)" className="sm:col-span-2" error={errors.publicScheduleBn?.message}>
+          {({ id, describedBy, invalid }) => (
+            <textarea id={id} rows={2} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5rem] py-2`} disabled={pending} {...register("publicScheduleBn")} />
+          )}
+        </ErpFormField>
+        <ErpFormField id={`${offering.id}-requirements`} label="Application requirements (English)" className="sm:col-span-2" hint="Describe eligibility and documents staff will verify. Applicants see this before submitting." error={errors.publicRequirements?.message}>
+          {({ id, describedBy, invalid }) => (
+            <textarea id={id} rows={3} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5.5rem] py-2`} disabled={pending} {...register("publicRequirements")} />
+          )}
+        </ErpFormField>
+        <ErpFormField id={`${offering.id}-requirements-bn`} label="Application requirements (Bangla)" className="sm:col-span-2" error={errors.publicRequirementsBn?.message}>
+          {({ id, describedBy, invalid }) => (
+            <textarea id={id} rows={3} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5.5rem] py-2`} disabled={pending} {...register("publicRequirementsBn")} />
+          )}
+        </ErpFormField>
+        <ErpFormField id={`${offering.id}-policy`} label="Admission policy (English)" className="sm:col-span-2" hint="Explain verification, placement and when admission becomes confirmed. Fees remain governed by the published plan." error={errors.admissionPolicy?.message}>
+          {({ id, describedBy, invalid }) => (
+            <textarea id={id} rows={3} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5.5rem] py-2`} disabled={pending} {...register("admissionPolicy")} />
+          )}
+        </ErpFormField>
+        <ErpFormField id={`${offering.id}-policy-bn`} label="Admission policy (Bangla)" className="sm:col-span-2" error={errors.admissionPolicyBn?.message}>
+          {({ id, describedBy, invalid }) => (
+            <textarea id={id} rows={3} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5.5rem] py-2`} disabled={pending} {...register("admissionPolicyBn")} />
           )}
         </ErpFormField>
         <ErpFormField id={`${offering.id}-icon`} label="Icon" error={errors.showcaseIcon?.message}>

@@ -29,28 +29,33 @@ export default async function InterestPage({
 
   const supabase = await createClient();
 
-  const [classesQ, programsQ, subjectsQ, schoolsQ, publicOfferings] = await Promise.all([
-    supabase.from("classes").select("id,name").order("sort_order"),
+  const [classesQ, programsQ, subjectsQ, schoolsQ, sourcesQ, relationshipsQ, publicOfferings] = await Promise.all([
+    supabase.from("classes").select("id,name").eq("is_active", true).order("sort_order"),
     supabase.from("programs").select("id,name").eq("is_active", true).order("name"),
     supabase.from("subjects").select("id,name").eq("is_active", true).order("name"),
     supabase.from("schools").select("id,name").eq("is_active", true).order("name").limit(500),
+    supabase.from("lead_sources").select("code,name").eq("is_active", true).order("name"),
+    supabase.from("guardian_relationships").select("code,name").eq("is_active", true).order("name"),
     getPublicProgrammeOfferings(),
   ]);
 
-  const openOfferings = publicOfferings.filter((row) => Boolean(row.is_accepting_applications));
+  const openOfferings = (publicOfferings ?? []).filter((row) => row.is_accepting_applications);
   const preselected =
     openOfferings.find((row) => row.id === requestedOfferingId) ??
     null;
   const closedRequested =
     Boolean(requestedOfferingId) &&
     !preselected &&
-    publicOfferings.some((row) => row.id === requestedOfferingId);
+    (publicOfferings ?? []).some((row) => row.id === requestedOfferingId);
 
   const optionsUnavailable =
     Boolean(classesQ.error) ||
     Boolean(programsQ.error) ||
     Boolean(subjectsQ.error) ||
-    Boolean(schoolsQ.error);
+    Boolean(schoolsQ.error) ||
+    Boolean(sourcesQ.error) ||
+    Boolean(relationshipsQ.error) ||
+    publicOfferings === null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -168,9 +173,20 @@ export default async function InterestPage({
                   id: school.id,
                   label: school.name,
                 }))}
+                sourceOptions={sourcesQ.data ?? []}
+                relationships={relationshipsQ.data ?? []}
                 openOfferings={openOfferings.map((row) => ({
                   id: row.id,
                   code: row.code,
+                  schedule: row.public_schedule,
+                  scheduleBn: row.public_schedule_bn,
+                  requirements: row.public_requirements,
+                  requirementsBn: row.public_requirements_bn,
+                  policy: row.admission_policy,
+                  policyBn: row.admission_policy_bn,
+                  feePlan: row.fee_plan,
+                  openSeats: row.current_open_seats,
+                  activeBatches: row.active_batch_count,
                   name: row.showcase_title || row.name,
                   classId: row.class_id,
                   programId: row.program_id,

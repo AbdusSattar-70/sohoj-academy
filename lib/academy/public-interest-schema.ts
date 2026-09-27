@@ -23,18 +23,7 @@ export const publicInterestSchema = z.object({
   trialInterest: z.boolean().default(false),
   programIds: z.array(z.string().uuid()).max(10).default([]),
   subjectIds: z.array(z.string().uuid()).max(20).default([]),
-  sourceCode: z
-    .enum([
-      "WALK_IN",
-      "SOCIAL",
-      "TEACHER_REFERRAL",
-      "STUDENT_REFERRAL",
-      "GUARDIAN_REFERRAL",
-      "SCHOOL_VISIT",
-      "OFFLINE_CAMPAIGN",
-      "OTHER",
-    ])
-    .optional(),
+  sourceCode: z.string().trim().max(40).regex(/^[A-Z0-9_-]+$/).optional(),
   referralNote: z.string().trim().max(240).optional(),
   notes: z.string().trim().max(500).optional(),
   consentToContact: z.boolean().refine((value) => value, {
@@ -43,6 +32,10 @@ export const publicInterestSchema = z.object({
   website: z.string().max(0).optional(),
   offeringId: z.string().uuid().optional(),
   intent: z.enum(["interest", "admission"]).default("interest"),
+  guardianAddress: z.string().trim().max(300).optional(),
+  academicBackground: z.string().trim().max(500).optional(),
+  requirementsAcknowledged: z.boolean().optional(),
+  policyAcknowledged: z.boolean().optional(),
 }).superRefine((value, ctx) => {
   if (value.intent === "admission" && !value.offeringId) {
     ctx.addIssue({
@@ -50,6 +43,14 @@ export const publicInterestSchema = z.object({
       path: ["offeringId"],
       message: "Select an open programme offering for admission applications.",
     });
+  }
+  if (value.intent === "admission") {
+    if (!value.guardianAddress || value.guardianAddress.length < 5) {
+      ctx.addIssue({ code: "custom", path: ["guardianAddress"], message: "Enter the guardian's address." });
+    }
+    if (!value.requirementsAcknowledged || !value.policyAcknowledged) {
+      ctx.addIssue({ code: "custom", path: ["requirementsAcknowledged"], message: "Review and acknowledge the programme requirements and admission policy." });
+    }
   }
 });
 

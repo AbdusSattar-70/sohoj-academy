@@ -9,7 +9,8 @@ export type ErpRouteIcon =
   | "approvals"
   | "audit"
   | "rules"
-  | "settings";
+  | "settings"
+  | "teacher";
 
 export type ErpRouteDefinition = {
   id: string;
@@ -24,6 +25,16 @@ export type ErpRouteDefinition = {
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
   {
+    id: "question-bank", title: "Question Bank", eyebrow: "Academics",
+    href: "/dashboard/academics/questions", navGroup: "Academics",
+    permission: "academics.view", icon: "offerings",
+  },
+  {
+    id: "assessments", title: "Assessments & Results", eyebrow: "Academics",
+    href: "/dashboard/academics/assessments", navGroup: "Academics",
+    permission: "academics.view", icon: "offerings",
+  },
+  {
     id: "academic-operations",
     title: "Academic Operations",
     eyebrow: "Academics",
@@ -31,6 +42,16 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     navGroup: "Academics",
     permission: "academics.view",
     icon: "offerings",
+  },
+
+  {
+    id: "teacher-dashboard",
+    title: "My Classes",
+    eyebrow: "Teaching",
+    href: "/dashboard/teacher",
+    navGroup: "Academics",
+    permission: "academics.view",
+    icon: "teacher",
   },
 
   {

@@ -12,6 +12,7 @@ import {
 import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { ProspectFollowupForm } from "@/modules/crm/components/prospect-followup-form";
+import { AdmissionRequirementReview } from "@/modules/crm/components/admission-requirement-review";
 import { getProspectDetail } from "@/modules/crm/queries";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { can } from "@/types/erp";
@@ -172,6 +173,25 @@ export default async function ProspectDetailPage({
               <p className="mt-2 text-sm leading-6">{prospect.notes}</p>
             </div>
           )}
+
+          {prospect.application ? (
+            <section className="mt-6 space-y-3 rounded-xl border bg-muted/30 p-4">
+              <h2 className="font-semibold">Submitted admission application</h2>
+              <p className="text-xs text-muted-foreground">Received {new Date(prospect.application.submittedAt).toLocaleString()} · Review the original declarations before admitting.</p>
+              <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                <Detail label="Guardian address" value={prospect.application.guardianAddress} />
+                <Detail label="Academic background" value={prospect.application.academicBackground || "—"} />
+                <Detail label="Offering at submission" value={prospect.application.publishedTerms.offering_name || prospect.offeringLabel} />
+                <Detail label="Fee plan version" value={prospect.application.feePlanVersionId || "—"} />
+                <Detail label="Programme requirements" value={prospect.application.publishedTerms.requirements || "No additional requirements published"} />
+                <Detail label="Admission policy" value={prospect.application.publishedTerms.policy || "Staff verification required"} />
+                <Detail label="Schedule" value={prospect.application.publishedTerms.schedule || "—"} />
+                <Detail label="Declarations" value={prospect.application.requirementsAcknowledged && prospect.application.policyAcknowledged ? "Requirements and policy acknowledged" : "Incomplete"} />
+              </dl>
+              {can(context, "crm.followups.manage") && prospect.status !== "CONVERTED" ?
+                <AdmissionRequirementReview applicationId={prospect.application.id} prospectId={prospect.id} reviews={prospect.application.reviews} /> : null}
+            </section>
+          ) : null}
 
           {prospect.lostReason && (
             <div className="mt-5 rounded-xl border border-red-300 bg-red-50 p-4 text-red-950 dark:border-red-900 dark:bg-red-950/30 dark:text-red-100">

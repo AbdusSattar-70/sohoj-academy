@@ -68,6 +68,12 @@ begin
   if fee is null then
     raise exception 'Fee plan publish did not activate offering.';
   end if;
+  result := public.admission_command(jsonb_build_object(
+    'action','CREATE_BATCH','request_id',gen_random_uuid(),
+    'offering_id',offering,'code','PADM-B-'||left(u::text,8),
+    'name','Public Admissions Placement','capacity',2,
+    'reason','Create placement availability fixture'
+  ));
 
   -- Hidden by default: not website visible, not accepting
   listed := public.list_public_programme_offerings();
@@ -83,6 +89,9 @@ begin
     'showcase_title', 'Public Test Programme',
     'showcase_title_bn', 'পাবলিক টেস্ট প্রোগ্রাম',
     'showcase_description', 'Acceptance fixture description',
+    'public_requirements', 'Bring your previous class result',
+    'admission_policy', 'Staff review is required',
+    'public_schedule', 'Saturday mornings',
     'showcase_description_bn', 'যাচাইকরণ বর্ণনা',
     'showcase_eyebrow', 'Class fixture',
     'showcase_eyebrow_bn', 'ক্লাস',
@@ -140,7 +149,10 @@ begin
       'mobile', '01710000002',
       'class_id', cl,
       'consent_to_contact', true,
-      'intent', 'admission'
+      'intent', 'admission',
+      'guardian_address', 'Test street address',
+      'requirements_acknowledged', true,
+      'policy_acknowledged', true
     ));
   exception when others then
     raised := true;
@@ -187,6 +199,22 @@ begin
     'reason', 'Open applications for acceptance fixture'
   ));
 
+  listed := public.list_public_programme_offerings();
+  if not exists (
+    select 1 from jsonb_array_elements(listed) e
+    where (e->>'id')::uuid = offering
+      and e->>'academic_year_name' = 'PADM-' || left(u::text, 8)
+      and e->>'branch_name' is not null
+      and e->>'class_name' is not null
+      and e->>'application_state' = 'OPEN'
+      and (e->>'is_accepting_applications')::boolean
+      and (e->>'active_batch_count')::integer = 1
+      and (e->>'current_total_seats')::integer = 2
+      and (e->>'current_open_seats')::integer = 2
+  ) then
+    raise exception 'Public card must show academic context, availability and an effective open state.';
+  end if;
+
   result := public.submit_public_interest(jsonb_build_object(
     'student_name', 'Admission Student',
     'guardian_name', 'Admission Guardian',
@@ -195,6 +223,10 @@ begin
     'school_name_snapshot', 'Linked Later School',
     'consent_to_contact', true,
     'intent', 'admission',
+    'guardian_address', 'Test street address',
+    'academic_background', 'Previous class completed',
+    'requirements_acknowledged', true,
+    'policy_acknowledged', true,
     'offering_id', offering
   ));
   prospect := (result->>'prospect_id')::uuid;
@@ -206,6 +238,18 @@ begin
       and status = 'NEW'
   ) then
     raise exception 'Admission prospect must store intent and offering.';
+  end if;
+
+  if not exists (
+    select 1 from public.public_admission_applications
+    where prospect_id = prospect and offering_id = offering
+      and fee_plan_version_id = fee
+      and guardian_address = 'Test street address'
+      and academic_background = 'Previous class completed'
+      and requirements_acknowledged and policy_acknowledged
+      and published_terms_snapshot->>'requirements' = 'Bring your previous class result'
+  ) then
+    raise exception 'Admission application must retain the declarations and published terms snapshot.';
   end if;
 
   if not exists (
@@ -237,6 +281,16 @@ begin
     'reason', 'Move open window into the future'
   ));
 
+  listed := public.list_public_programme_offerings();
+  if not exists (
+    select 1 from jsonb_array_elements(listed) e
+    where (e->>'id')::uuid = offering
+      and e->>'application_state' = 'UPCOMING'
+      and not (e->>'is_accepting_applications')::boolean
+  ) then
+    raise exception 'Upcoming offering must display without an open application action.';
+  end if;
+
   raised := false;
   begin
     perform public.submit_public_interest(jsonb_build_object(
@@ -253,6 +307,33 @@ begin
   end;
   if not raised then
     raise exception 'Submit before applications_open_on must be rejected.';
+  end if;
+
+  perform public.update_programme_offering_public_controls(jsonb_build_object(
+    'offering_id', offering,
+    'showcase_title', 'Public Test Programme',
+    'showcase_title_bn', 'পাবলিক টেস্ট প্রোগ্রাম',
+    'showcase_description', 'Acceptance fixture description',
+    'showcase_description_bn', 'যাচাইকরণ বর্ণনা',
+    'showcase_eyebrow', 'Class fixture',
+    'showcase_eyebrow_bn', 'ক্লাস',
+    'showcase_icon', 'book-open-check',
+    'showcase_sort_order', 10,
+    'is_website_visible', true,
+    'is_accepting_applications', true,
+    'applications_open_on', today - 30,
+    'applications_close_on', today - 1,
+    'subject_ids', '[]'::jsonb,
+    'reason', 'Close the public application window'
+  ));
+  listed := public.list_public_programme_offerings();
+  if not exists (
+    select 1 from jsonb_array_elements(listed) e
+    where (e->>'id')::uuid = offering
+      and e->>'application_state' = 'CLOSED'
+      and not (e->>'is_accepting_applications')::boolean
+  ) then
+    raise exception 'Expired offering must remain visible but closed.';
   end if;
 end;
 $$;

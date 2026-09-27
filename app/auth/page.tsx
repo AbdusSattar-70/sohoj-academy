@@ -135,8 +135,8 @@ export default function AuthHomePage() {
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   <LocalizedText
-                    en="Admin, Operator, Teacher, Guardian and Student accounts that have been created or linked by Sohoj Academy."
-                    bn="সহজ একাডেমি কর্তৃক তৈরি বা সংযুক্ত Admin, Operator, Teacher, Guardian এবং Student অ্যাকাউন্ট।"
+                    en="Authorised academy staff, including administrators, operators and teachers. Students and guardians can apply on the website without an account."
+                    bn="অনুমোদিত একাডেমি স্টাফ, যেমন অ্যাডমিন, অপারেটর ও শিক্ষক। শিক্ষার্থী ও অভিভাবক অ্যাকাউন্ট ছাড়াই ওয়েবসাইটে আবেদন করতে পারেন।"
                   />
                 </p>
               </div>

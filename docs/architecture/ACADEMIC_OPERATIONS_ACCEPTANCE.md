@@ -3,15 +3,15 @@
 ## Update locally
 
 ```bash
-git switch feature/student-lifecycle
-git pull --ff-only origin feature/student-lifecycle
+git switch feature/dashboard_teacher
+git pull --ff-only origin feature/dashboard_teacher
 pnpm install
 pnpm exec supabase migration list
 pnpm exec supabase db push
 pnpm dev
 ```
 
-Apply all pending migrations through 0021 to the development project used by `.env.local`. If the dev server is running, use it instead of starting another. No reset is needed.
+Apply all pending migrations through 0028 to the development project used by `.env.local`. If the dev server is running, use it instead of starting another. No reset is needed.
 
 ## Prerequisites and people
 
@@ -20,13 +20,13 @@ Apply all pending migrations through 0021 to the development project used by `.e
 - A teacher's Auth/Profile must be linked to the assigned Staff identity. An operational TEACHER role alone does not identify which staff member is teaching.
 - Independent reviewer: ADMIN or an operational account with attendance approval permission. The attendance author cannot approve their own submission, including ADMIN.
 
-| Activity | Required permissions |
-| --- | --- |
-| Open academic screens | `academics.view` |
-| Publish curriculum | `academics.curriculum.manage` |
-| Rooms, routines, sessions and cancellation | `academics.sessions.manage` |
-| Record/submit attendance | `academics.attendance.record` and assigned session scope, or managerial/reviewer session scope |
-| Approve/reject attendance | `academics.attendance.approve`, different from author/requester |
+| Activity                                   | Required permissions                                                                           |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Open academic screens                      | `academics.view`                                                                               |
+| Publish curriculum                         | `academics.curriculum.manage`                                                                  |
+| Rooms, routines, sessions and cancellation | `academics.sessions.manage`                                                                    |
+| Record/submit attendance                   | `academics.attendance.record` and assigned session scope, or managerial/reviewer session scope |
+| Approve/reject attendance                  | `academics.attendance.approve`, different from author/requester                                |
 
 ## Start with setup
 
@@ -38,7 +38,7 @@ Apply all pending migrations through 0021 to the development project used by `.e
 
 ## Attendance and review
 
-1. Sign in as the assigned teacher and open a session after its start time. The teacher should not see another teacher's unrelated sessions/rosters.
+1. Sign in as the assigned teacher and open **Academics → My Classes** (`/dashboard/teacher`). Only sessions assigned to the linked Staff identity appear. Open a session after its start time. The teacher should not see another teacher's unrelated sessions/rosters.
 2. Choose PRESENT, ABSENT, LATE or EXCUSED for every roster member; nobody is automatically marked present. Add notes and a reason, then save the draft.
 3. Review saved revision history, then **Submit Saved Attendance**. Save any edits before submitting: submission uses the saved revision, not unsaved inputs.
 4. Under the independent reviewer account, follow the Action Center → Approval Register → Review class attendance link, or open the session directly.
@@ -56,6 +56,12 @@ Apply all pending migrations through 0021 to the development project used by `.e
 
 ## Scope and verification
 
-Curriculum targets are plans. Neither the passage of session time nor attendance approval marks teaching coverage complete. Actual class logs, homework, coverage recovery, assessments/results and teacher question creation are separate next modules.
+Curriculum targets are plans. Neither the passage of session time nor attendance approval marks teaching coverage complete. Submitted actual class logs preserve what was taught. Homework follow-up, coverage recovery, assessments/results and teacher question creation remain separate next modules.
 
 `supabase/tests/0020_v2_academic_operations.sql` contains rollback-only test fixtures for scheduling, scope, attendance and revision integrity. All SQL tests passed locally in isolated PGlite/Postgres. Live browser, linked Supabase and concurrent-connection testing remain required before operational rollout.
+
+## Actual class logs (migration 0028)
+
+On **My Classes → Open class / attendance**, after the scheduled start, an assigned teacher with `academics.attendance.record` may save a draft or submit the actual class log. The log records coverage against the curriculum version pinned to that session, class summary, reason for any unfinished planned content, homework and next-session plan. Partial/uncovered units require an explanation. Plans are not marked complete by attendance or a submitted teacher log. Save the draft before submitting; submission sends the persisted snapshot. Later corrections start a new revision linked to the submitted record.
+
+Submitted logs are immutable; corrections begin as a new linked revision. Only the assigned teacher or a session manager can create a log; authorized reviewers/managers can inspect session history. It is separate from attendance approval and does not itself certify curriculum mastery. The rollback-only 0020 academic test now verifies draft retry, submit, visibility, immutable history and revoked table writes.

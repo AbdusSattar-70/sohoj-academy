@@ -5,7 +5,7 @@ declare
  u uuid:=gen_random_uuid(); org uuid; cl uuid; program uuid; branch uuid; yr uuid;
  offering uuid; batch uuid; prospect uuid; a uuid; a2 uuid; fee uuid; method uuid;
  result jsonb; input jsonb; today date; baseline jsonb;
- reviewer uuid:=gen_random_uuid();teacher_user uuid:=gen_random_uuid();other_user uuid:=gen_random_uuid();teacher uuid;other_teacher uuid;subject uuid;room uuid;routine uuid;session uuid;curriculum uuid;draft uuid;approval uuid;roster jsonb;enrollment uuid;
+ reviewer uuid:=gen_random_uuid();teacher_user uuid:=gen_random_uuid();other_user uuid:=gen_random_uuid();teacher uuid;other_teacher uuid;subject uuid;room uuid;routine uuid;session uuid;curriculum uuid;draft uuid;approval uuid;roster jsonb;enrollment uuid;assessment uuid;
 begin
  insert into auth.users(id,email,raw_user_meta_data) values(u,'admission-test-'||u||'@example.invalid','{"full_name":"Admission Test"}');
  perform public.bootstrap_admin('admission-test-'||u||'@example.invalid','Admission Test');
@@ -72,6 +72,18 @@ begin
  perform public.academic_command(input||jsonb_build_object('request_id',gen_random_uuid()));
  if (select count(*) from public.class_sessions where routine_id=routine)<>2 then raise exception 'Routine dates duplicated';end if;
  select id into session from public.class_sessions where routine_id=routine and session_date=today;
+ -- Actual teaching log is separate from the pinned plan and attendance.
+ input:=jsonb_build_object('action','SAVE_DRAFT','request_id',gen_random_uuid(),'session_id',session,'reason','Record the delivered lesson','class_summary','Explained the first chapter and solved examples.','unit_progress',jsonb_build_array(jsonb_build_object('unit_index',0,'status','PARTIAL','note','Exercises remain')),'unfinished_reason','Need more practice time.','homework','Complete exercises 1–4.','next_session_plan','Review work and continue practice.');
+ result:=public.class_log_command(input);draft:=(result->>'id')::uuid;
+ if public.class_log_command(input)<>result then raise exception 'Class log draft retry duplicated.'; end if;
+ result:=public.class_log_command(jsonb_build_object('action','SUBMIT','request_id',gen_random_uuid(),'session_id',session,'reason','Submit the lesson record'));
+ if result->>'status'<>'SUBMITTED' then raise exception 'Class log was not submitted.'; end if;
+ begin
+  update public.class_logs set class_summary='Tampered' where id=draft;
+  raise exception 'Submitted class log was editable.';
+ exception when others then if sqlerrm not like '%immutable%' then raise; end if; end;
+ if (public.class_log_workspace(session)->'logs'->0->>'class_summary')<>'Explained the first chapter and solved examples.' then raise exception 'Submitted class log was not visible.'; end if;
+ if has_table_privilege('authenticated','public.class_logs','INSERT') or has_table_privilege('authenticated','public.class_logs','UPDATE') then raise exception 'Class-log table writes bypass the command.'; end if;
  if (select curriculum_version_id from public.class_sessions where id=session)<>curriculum then raise exception 'Curriculum not pinned';end if;
  -- Revisions do not rewrite sessions already linked to the earlier curriculum.
  perform public.academic_command(jsonb_build_object('action','PUBLISH_CURRICULUM','request_id',gen_random_uuid(),'batch_id',batch,'subject_id',subject,'title','Revised curriculum','units',jsonb_build_array(jsonb_build_object('title','Chapter 2','target_date',today+40)),'reason','Publish revised learning targets'));
@@ -90,6 +102,34 @@ begin
  roster:=public.class_session_workspace(session)->'roster';
  if jsonb_array_length(roster)<>1 then raise exception 'Session roster wrong';end if;
  enrollment:=(roster->0->>'enrollment_id')::uuid;
+ if (public.homework_workspace(session)->'assignment'->>'id')::uuid<>draft then raise exception 'Submitted homework was not attached to class log.'; end if;
+ input:=jsonb_build_object('request_id',gen_random_uuid(),'session_id',session,'class_log_id',draft,'enrollment_id',enrollment,'base_revision',0,'status','NEEDS_WORK','submitted_on',today,'feedback','Revise exercises 2 and 3.');
+ result:=public.homework_command(input);
+ if public.homework_command(input)<>result then raise exception 'Homework retry created a duplicate.'; end if;
+ if (public.homework_workspace(session)->'students'->0->>'status')<>'NEEDS_WORK' then raise exception 'Homework review was not visible.'; end if;
+ begin
+  perform public.homework_command(input||jsonb_build_object('request_id',gen_random_uuid()));
+  raise exception 'Stale homework check accepted.';
+ exception when others then if sqlerrm not like '%changed%' then raise; end if; end;
+ result:=public.homework_command(jsonb_build_object('request_id',gen_random_uuid(),'session_id',session,'class_log_id',draft,'enrollment_id',enrollment,'base_revision',1,'status','COMPLETE','submitted_on',today,'feedback','Corrections verified.'));
+ if (result->>'revision')::integer<>2 or jsonb_array_length(public.homework_workspace(session)->'history')<>2 then raise exception 'Homework correction did not preserve earlier review.'; end if;
+ -- Results remain drafts until a different reviewer approves the submitted roster.
+ result:=public.assessment_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'batch_id',batch,'subject_id',subject,'title','Chapter 1 assessment','assessment_date',today,'max_marks',50));
+ assessment:=(result->>'id')::uuid;
+ perform public.assessment_command(jsonb_build_object('action','PUBLISH','request_id',gen_random_uuid(),'assessment_id',assessment));
+ input:=jsonb_build_object('action','SAVE_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment,'entries',jsonb_build_array(jsonb_build_object('enrollment_id',enrollment,'score',42,'feedback','Good progress.')));
+ result:=public.assessment_command(input);
+ if public.assessment_command(input)<>result then raise exception 'Result draft retry duplicated.'; end if;
+ if (public.assessment_workspace()->'assessments'->0->'submissions'->0->>'status')<>'DRAFT' then raise exception 'Result draft was not visible.'; end if;
+ perform public.assessment_command(jsonb_build_object('action','SUBMIT_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment));
+ begin
+   perform public.assessment_command(jsonb_build_object('action','APPROVE_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment,'review_note','Checked all marks.'));
+   raise exception 'Teacher without review permission approved results.';
+ exception when others then if sqlerrm not like '%review permission%' then raise; end if; end;
+ perform set_config('request.jwt.claim.sub',reviewer::text,true);
+ perform public.assessment_command(jsonb_build_object('action','APPROVE_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment,'review_note','Marks checked against script.'));
+ if not exists(select 1 from public.assessment_result_submissions where assessment_id=assessment and status='APPROVED') then raise exception 'Result review did not become official.'; end if;
+ perform set_config('request.jwt.claim.sub',teacher_user::text,true);
  begin
   perform public.academic_command(jsonb_build_object('action','SAVE_ATTENDANCE','request_id',gen_random_uuid(),'session_id',session,'entries','[]'::jsonb,'reason','Attempt incomplete attendance'));raise exception 'Incomplete roster accepted';
  exception when others then if sqlerrm not like '%exactly one%' then raise;end if;end;

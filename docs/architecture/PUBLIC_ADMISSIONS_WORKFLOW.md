@@ -1,6 +1,6 @@
 # Public admissions workflow (account-free)
 
-Authoritative product decisions for branch `feature/workflow_redefine`.
+Authoritative product decisions for the account-free public path, continued on `feature/blueprint_gap_closure`.
 Complements the Product Constitution, [ERP implementation guardrails](ERP_IMPLEMENTATION_GUARDRAILS.md), and [Student lifecycle acceptance](STUDENT_LIFECYCLE_ACCEPTANCE.md).
 
 ## Product decision
@@ -79,7 +79,7 @@ Both forms:
 - Create a **Prospect** (not a Student)
 - Return a reference number
 - Capture consent to contact
-- Allow unlisted school names as snapshot text for staff review (do not auto-create verified schools)
+- Keep unlisted school names as prospect snapshot text for staff review; public submission does not create a school record
 - Never auto-merge on shared phone numbers
 
 If a prior interest exists, staff **link** the admission application after verification — shared phone numbers never auto-merge children.

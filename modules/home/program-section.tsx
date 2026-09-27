@@ -11,6 +11,73 @@ import {
 import { LocalizedText } from "@/components/shared/localized-text";
 import { getPublicProgrammeOfferings } from "@/modules/offerings/queries";
 
+function feeSummaryFromPlan(
+  plan: {
+    billing_cycle: string;
+    currency_code: string;
+    components: { name: string; amount: number; charge_type: string; recurrence: string }[];
+  } | null | undefined,
+): [string, string] | null {
+  if (!plan?.components?.length) return null;
+  const tuition = plan.components.find(
+    (c) => c.charge_type === "TUITION" && c.recurrence === "PER_CYCLE",
+  );
+  const admission = plan.components.find((c) => c.charge_type === "ADMISSION");
+  const currency = plan.currency_code || "BDT";
+  const cycle = (plan.billing_cycle || "MONTHLY").replaceAll("_", " ").toLowerCase();
+  const partsEn: string[] = [];
+  const partsBn: string[] = [];
+  if (tuition) {
+    partsEn.push(`${currency} ${Number(tuition.amount).toLocaleString("en-BD")} / ${cycle}`);
+    partsBn.push(`${currency} ${Number(tuition.amount).toLocaleString("en-BD")} / ${cycle}`);
+  }
+  if (admission) {
+    partsEn.push(`Admission ${currency} ${Number(admission.amount).toLocaleString("en-BD")}`);
+    partsBn.push(`ভর্তি ${currency} ${Number(admission.amount).toLocaleString("en-BD")}`);
+  }
+  if (!partsEn.length) {
+    const first = plan.components[0];
+    partsEn.push(`${currency} ${Number(first.amount).toLocaleString("en-BD")}`);
+    partsBn.push(`${currency} ${Number(first.amount).toLocaleString("en-BD")}`);
+  }
+  return [partsEn.join(" · "), partsBn.join(" · ")];
+}
+
+function windowNoteFromOffering(row: {
+  is_accepting_applications: boolean;
+  application_state: "OPEN" | "UPCOMING" | "CLOSED";
+  applications_open_on: string | null;
+  applications_close_on: string | null;
+}): [string, string] | null {
+  if (row.application_state === "UPCOMING" && row.applications_open_on) {
+    return [`Opens ${row.applications_open_on}`, `${row.applications_open_on} থেকে আবেদন`];
+  }
+  if (!row.is_accepting_applications) {
+    return ["Applications closed", "আবেদন বন্ধ"];
+  }
+  const open = row.applications_open_on;
+  const close = row.applications_close_on;
+  if (!open && !close) return ["Applications open", "আবেদন চলছে"];
+  const fmt = (d: string) => {
+    try {
+      return new Date(d).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return d;
+    }
+  };
+  if (open && close) {
+    return [`Apply ${fmt(open)} – ${fmt(close)}`, `আবেদন ${fmt(open)} – ${fmt(close)}`];
+  }
+  if (close) {
+    return [`Apply by ${fmt(close)}`, `${fmt(close)} পর্যন্ত আবেদন`];
+  }
+  return [`Opens ${fmt(open!)}`, `${fmt(open!)} থেকে খোলা`];
+}
+
 const SHOWCASE_ICONS: Record<string, LucideIcon> = {
   "clipboard-check": ClipboardCheck,
   "graduation-cap": GraduationCap,
@@ -28,52 +95,20 @@ type ProgramCard = {
   icon: LucideIcon;
   offeringId: string | null;
   acceptingApplications: boolean;
+  feeSummary: [string, string] | null;
+  windowNote: [string, string] | null;
+  academicContext: string;
+  subjects: string[];
+  schedule: [string, string] | null;
+  requirements: [string, string] | null;
+  policy: [string, string] | null;
+  availability: [string, string];
 };
 
-const FALLBACK_PROGRAMS: ProgramCard[] = [
-  {
-    key: "fallback-annual",
-    eyebrow: ["Class 8–9", "ক্লাস ৮–৯"],
-    title: ["Annual Exam Readiness", "বার্ষিক পরীক্ষা প্রস্তুতি"],
-    description: [
-      "Identify syllabus gaps, practise weak areas and prepare systematically for annual examinations with focused assessment.",
-      "সিলেবাসের ঘাটতি শনাক্ত করে দুর্বল অংশে অনুশীলন এবং নিয়মিত মূল্যায়নের মাধ্যমে বার্ষিক পরীক্ষার জন্য পরিকল্পিত প্রস্তুতি।",
-    ],
-    icon: ClipboardCheck,
-    offeringId: null,
-    acceptingApplications: true,
-  },
-  {
-    key: "fallback-ssc",
-    eyebrow: ["Class 10 • Science", "ক্লাস ১০ • বিজ্ঞান"],
-    title: ["SSC A+ Preparation", "SSC A+ প্রস্তুতি"],
-    description: [
-      "Structured subject support, regular testing and progress review designed around disciplined SSC preparation.",
-      "বিষয়ভিত্তিক সহায়তা, নিয়মিত পরীক্ষা ও অগ্রগতি পর্যালোচনার মাধ্যমে শৃঙ্খলাবদ্ধ SSC প্রস্তুতি।",
-    ],
-    icon: GraduationCap,
-    offeringId: null,
-    acceptingApplications: true,
-  },
-  {
-    key: "fallback-batch",
-    eyebrow: ["Academic Support", "একাডেমিক সহায়তা"],
-    title: ["Focused Small-Batch Learning", "ছোট ব্যাচে মনোযোগী শেখা"],
-    description: [
-      "A maximum of 12 students per batch helps teachers notice individual learning gaps instead of teaching to a crowded room.",
-      "প্রতি ব্যাচে সর্বোচ্চ ১২ জন শিক্ষার্থী থাকায় ভিড়ের মধ্যে পড়ানোর বদলে প্রত্যেক শিক্ষার্থীর শেখার ঘাটতি শনাক্ত করা সহজ হয়।",
-    ],
-    icon: UsersRound,
-    offeringId: null,
-    acceptingApplications: true,
-  },
-];
-
 export async function HomeProgramSection() {
-  const publicOfferings = await getPublicProgrammeOfferings();
+  const rows = await getPublicProgrammeOfferings();
   const programs: ProgramCard[] =
-    publicOfferings.length > 0
-      ? publicOfferings.map((row) => ({
+    rows?.map((row) => ({
           key: row.id,
           eyebrow: [
             row.showcase_eyebrow || row.code,
@@ -90,8 +125,20 @@ export async function HomeProgramSection() {
           icon: SHOWCASE_ICONS[row.showcase_icon ?? ""] ?? GraduationCap,
           offeringId: row.id,
           acceptingApplications: Boolean(row.is_accepting_applications),
-        }))
-      : FALLBACK_PROGRAMS;
+          feeSummary: feeSummaryFromPlan(row.fee_plan),
+          windowNote: windowNoteFromOffering(row),
+          academicContext: [row.academic_year_name, row.branch_name, row.class_name, row.group_name]
+            .filter(Boolean).join(" · "),
+          subjects: row.subjects.map((subject) => subject.name),
+          schedule: row.public_schedule ? [row.public_schedule, row.public_schedule_bn || row.public_schedule] : null,
+          requirements: row.public_requirements ? [row.public_requirements, row.public_requirements_bn || row.public_requirements] : null,
+          policy: row.admission_policy ? [row.admission_policy, row.admission_policy_bn || row.admission_policy] : null,
+          availability: row.active_batch_count === 0
+            ? ["Batch placement being prepared", "ব্যাচে স্থান নির্ধারণ প্রস্তুত হচ্ছে"]
+            : row.current_open_seats === 0
+              ? ["Current batches are full; staff will review placement options", "বর্তমান ব্যাচগুলো পূর্ণ; স্টাফ স্থান নির্ধারণ পর্যালোচনা করবে"]
+              : [`${row.current_open_seats} of ${row.current_total_seats} current batch seats open · placement confirmed after review`, `বর্তমান ব্যাচে ${row.current_total_seats}টির মধ্যে ${row.current_open_seats}টি আসন খালি · যাচাইয়ের পরে স্থান নিশ্চিত`],
+        })) ?? [];
 
   return (
     <section id="programs" className="scroll-mt-24 border-b border-border bg-muted/35">
@@ -115,6 +162,15 @@ export async function HomeProgramSection() {
         </div>
 
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          {programs.length === 0 && (
+            <p className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground lg:col-span-3" role={rows === null ? "alert" : "status"}>
+              {rows === null ? (
+                <LocalizedText en="Programme information is temporarily unavailable. Please try again shortly." bn="প্রোগ্রামের তথ্য সাময়িকভাবে পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।" />
+              ) : (
+                <LocalizedText en="No programmes are published at the moment. Please check back soon." bn="এখন কোনো প্রোগ্রাম প্রকাশিত নেই। পরে আবার দেখুন।" />
+              )}
+            </p>
+          )}
           {programs.map((program) => {
             const interestHref = program.offeringId
               ? `/interest?offering=${program.offeringId}`
@@ -140,6 +196,30 @@ export async function HomeProgramSection() {
                 <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
                   <LocalizedText en={program.description[0]} bn={program.description[1]} />
                 </p>
+                <div className="mt-3 space-y-1 text-xs leading-5 text-muted-foreground">
+                  <p>{program.academicContext}</p>
+                  {program.subjects.length > 0 && (
+                    <p><LocalizedText en="Subjects" bn="বিষয়সমূহ" />: {program.subjects.join(", ")}</p>
+                  )}
+                  {program.schedule ? <p><LocalizedText en="Schedule" bn="সময়সূচি" />: <LocalizedText en={program.schedule[0]} bn={program.schedule[1]} /></p> : null}
+                  {program.requirements ? <p><LocalizedText en="Requirements" bn="শর্ত" />: <LocalizedText en={program.requirements[0]} bn={program.requirements[1]} /></p> : null}
+                  {program.policy ? <p><LocalizedText en="Admission policy" bn="ভর্তি নীতি" />: <LocalizedText en={program.policy[0]} bn={program.policy[1]} /></p> : null}
+                  <p><LocalizedText en={program.availability[0]} bn={program.availability[1]} /></p>
+                </div>
+                {(program.feeSummary || program.windowNote) && (
+                  <div className="mt-4 space-y-1 text-xs leading-5 text-muted-foreground">
+                    {program.windowNote ? (
+                      <p className="font-medium text-foreground/80">
+                        <LocalizedText en={program.windowNote[0]} bn={program.windowNote[1]} />
+                      </p>
+                    ) : null}
+                    {program.feeSummary ? (
+                      <p>
+                        <LocalizedText en={program.feeSummary[0]} bn={program.feeSummary[1]} />
+                      </p>
+                    ) : null}
+                  </div>
+                )}
                 <div className="mt-6 flex flex-col gap-2 sm:flex-row">
                   <Link
                     href={interestHref}

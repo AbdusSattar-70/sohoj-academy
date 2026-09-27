@@ -38,15 +38,31 @@ The authoritative product reference is **Sohoj Academy ERP — Product Constitut
 - pnpm
 - Supabase SQL migrations and database verification scripts
 
+## Current branch preview
+
+`feature/blueprint_gap_closure` continues the blueprint-first build from `feature/dashboard_teacher`. See [Blueprint gap closure](docs/architecture/BLUEPRINT_GAP_CLOSURE.md) for changes and outstanding gaps. In a development checkout:
+
+```bash
+git fetch origin
+git switch feature/blueprint_gap_closure
+git pull --ff-only origin feature/blueprint_gap_closure
+pnpm install
+pnpm exec supabase migration list
+pnpm exec supabase db push
+pnpm dev
+```
+
+The linked development Supabase project needs migrations through `0030`. Print the admission and consent form from **Admissions → Print Consent Form** on a draft case, collect the guardian signature and file the signed copy with its reference. Applicant accounts are not required.
+
 ## Academic operations
 
-On `feature/student-lifecycle`, apply migrations through 0021 and open **Academics → Academic Operations**. Configure rooms and curriculum, create weekly routine templates, generate dated classes, and record attendance for independent review. Assigned teachers see their own sessions; managers and attendance approvers can review the broader schedule.
+After applying migrations through 0028, open **Academics → Academic Operations**. Configure rooms and curriculum, create weekly routine templates, generate dated classes, record attendance for independent review, and submit actual class logs. Assigned teachers see their own sessions; managers and attendance approvers can review the broader schedule.
 
-See [Academic operations acceptance](docs/architecture/ACADEMIC_OPERATIONS_ACCEPTANCE.md). Curriculum plans and attendance are separate from actual teaching coverage. Class logs, recovery, assessments and the question-creation module are not implemented by this slice.
+See [Academic operations acceptance](docs/architecture/ACADEMIC_OPERATIONS_ACCEPTANCE.md). Curriculum plans, attendance and actual teaching logs are separate. Homework follow-up, coverage recovery, assessments and question creation remain to build.
 
 ## Student profiles and lifecycle
 
-Branch `feature/student-lifecycle` includes migrations through 0019. Open **Students → Student ID** for the detailed profile, guardian contacts, enrollment history, finance-authorized balances and lifecycle requests.
+The student lifecycle migrations through 0019 provide **Students → Student ID** for the detailed profile, guardian contacts, enrollment history, finance-authorized balances and lifecycle requests.
 
 Create an enrollment draft with an existing Student ID; request a same-offering batch transfer; or submit a verified duplicate identity for independent review. History and permanent IDs are retained. See [Student lifecycle acceptance](docs/architecture/STUDENT_LIFECYCLE_ACCEPTANCE.md) for permissions, boundaries and testing.
 
@@ -70,7 +86,7 @@ See [Finance acceptance guide](docs/architecture/FINANCE_ACCEPTANCE.md) for setu
 
 ## Test the admission process
 
-After pulling `feature/dashboard_initialization`, apply pending migrations through 0016 to the same development Supabase project used by `.env.local`:
+After pulling the current feature branch, apply pending migrations to the same development Supabase project used by `.env.local`:
 
 ```bash
 pnpm exec supabase migration list
@@ -97,8 +113,8 @@ If the development server is already running on port 3000, use that server or st
 In your existing checkout, first commit or stash any uncommitted work you want to keep. Then:
 
 ```bash
-git switch feature/dashboard_initialization
-git pull --ff-only origin feature/dashboard_initialization
+git switch feature/blueprint_gap_closure
+git pull --ff-only origin feature/blueprint_gap_closure
 pnpm install
 ```
 

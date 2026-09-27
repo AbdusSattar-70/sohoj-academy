@@ -17,7 +17,7 @@ import { HomeProgramSection } from "@/modules/home/program-section";
 
 const trustPoints = [
   {
-    title: ["Maximum 12 students", "সর্বোচ্চ ১২ জন শিক্ষার্থী"],
+    title: ["Small learning groups", "ছোট শেখার দল"],
     description: [
       "Small batches make personal attention practical, not promotional.",
       "ছোট ব্যাচে ব্যক্তিগত মনোযোগ বাস্তবে দেওয়া সম্ভব হয়।",
@@ -27,8 +27,8 @@ const trustPoints = [
   {
     title: ["Continuous assessment", "ধারাবাহিক মূল্যায়ন"],
     description: [
-      "Weekly, monthly and model-test performance turns progress into something measurable.",
-      "সাপ্তাহিক, মাসিক ও মডেল টেস্টের ফলাফল অগ্রগতিকে পরিমাপযোগ্য করে।",
+      "Regular practice and review help make progress measurable.",
+      "নিয়মিত অনুশীলন ও পর্যালোচনা অগ্রগতি পরিমাপে সাহায্য করে।",
     ],
     icon: BookOpenCheck,
   },

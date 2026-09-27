@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition, type ReactNode } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { CheckCircle2, Send } from "lucide-react";
 import { submitPublicInterest } from "@/app/actions/public-interest";
@@ -18,30 +18,16 @@ type OpenOfferingOption = {
   classId: string;
   programId: string;
   subjectIds: string[];
+  schedule: string | null;
+  scheduleBn: string | null;
+  requirements: string | null;
+  requirementsBn: string | null;
+  policy: string | null;
+  policyBn: string | null;
+  feePlan: { billing_cycle: string; currency_code: string; components: { name: string; amount: number; recurrence: string }[] } | null;
+  openSeats: number;
+  activeBatches: number;
 };
-
-const relationships = [
-  ["Father", "পিতা"],
-  ["Mother", "মাতা"],
-  ["Brother", "ভাই"],
-  ["Sister", "বোন"],
-  ["Grandfather", "দাদা/নানা"],
-  ["Grandmother", "দাদি/নানি"],
-  ["Uncle", "চাচা/মামা"],
-  ["Aunt", "ফুফু/খালা"],
-  ["Other Guardian", "অন্যান্য অভিভাবক"],
-] as const;
-
-const sourceOptions = [
-  ["WALK_IN", "Walk-in / visited the academy", "সরাসরি একাডেমিতে এসেছেন"],
-  ["SOCIAL", "Facebook / social media", "ফেসবুক / সামাজিক মাধ্যম"],
-  ["TEACHER_REFERRAL", "Teacher referral", "শিক্ষকের রেফারেল"],
-  ["STUDENT_REFERRAL", "Student referral", "শিক্ষার্থীর রেফারেল"],
-  ["GUARDIAN_REFERRAL", "Guardian referral", "অভিভাবকের রেফারেল"],
-  ["SCHOOL_VISIT", "School visit", "স্কুল ভিজিট"],
-  ["OFFLINE_CAMPAIGN", "Miking / leaflet", "মাইকিং / লিফলেট"],
-  ["OTHER", "Other", "অন্যান্য"],
-] as const;
 
 const dayOptions = [
   ["SAT", "Sat", "শনি"],
@@ -61,6 +47,8 @@ export function PublicInterestForm({
   programs,
   subjects,
   schools,
+  sourceOptions,
+  relationships,
   openOfferings = [],
   defaultOfferingId = "",
   intent = "interest",
@@ -69,6 +57,8 @@ export function PublicInterestForm({
   programs: Option[];
   subjects: Option[];
   schools: SmartSelectOption[];
+  sourceOptions: { code: string; name: string }[];
+  relationships: { code: string; name: string }[];
   openOfferings?: OpenOfferingOption[];
   defaultOfferingId?: string;
   intent?: "interest" | "admission";
@@ -90,7 +80,13 @@ export function PublicInterestForm({
   const [isPending, startTransition] = useTransition();
   const [formVersion, setFormVersion] = useState(0);
   const [message, setMessage] = useState<
-    { ok: boolean; text: string; prospectNo?: string | null } | null
+    {
+      ok: boolean;
+      text: string;
+      prospectNo?: string | null;
+      studentName?: string;
+      intentLabel?: string;
+    } | null
   >(null);
 
   function submit(formData: FormData) {
@@ -125,23 +121,17 @@ export function PublicInterestForm({
       trialInterest: formData.get("trialInterest") === "on",
       programIds: formData.getAll("programIds").map(String),
       subjectIds: formData.getAll("subjectIds").map(String),
-      sourceCode:
-        (String(formData.get("sourceCode") ?? "") || undefined) as
-          | "WALK_IN"
-          | "SOCIAL"
-          | "TEACHER_REFERRAL"
-          | "STUDENT_REFERRAL"
-          | "GUARDIAN_REFERRAL"
-          | "SCHOOL_VISIT"
-          | "OFFLINE_CAMPAIGN"
-          | "OTHER"
-          | undefined,
+      sourceCode: String(formData.get("sourceCode") ?? "") || undefined,
       referralNote: String(formData.get("referralNote") ?? ""),
       notes: String(formData.get("notes") ?? ""),
       consentToContact: formData.get("consentToContact") === "on",
       website: String(formData.get("website") ?? ""),
       offeringId: String(formData.get("offeringId") ?? "") || undefined,
       intent: (String(formData.get("intent") ?? intent) || "interest") as "interest" | "admission",
+      guardianAddress: String(formData.get("guardianAddress") ?? ""),
+      academicBackground: String(formData.get("academicBackground") ?? ""),
+      requirementsAcknowledged: formData.get("requirementsAcknowledged") === "on",
+      policyAcknowledged: formData.get("policyAcknowledged") === "on",
     };
 
     startTransition(async () => {
@@ -150,9 +140,18 @@ export function PublicInterestForm({
         setMessage({
           ok: true,
           prospectNo: result.prospectNo,
+          studentName: input.studentName,
+          intentLabel:
+            input.intent === "admission"
+              ? bn
+                ? "ভর্তির আবেদন"
+                : "Admission application"
+              : bn
+                ? "আগ্রহ নিবন্ধন"
+                : "Interest registration",
           text: bn
-            ? "ধন্যবাদ। আপনার আগ্রহ নিবন্ধিত হয়েছে।"
-            : "Thank you. Your interest has been recorded.",
+            ? "ধন্যবাদ। আপনার আগ্রহ নিবন্ধিত হয়েছে। এটি এখনো ভর্তি নয়—স্টাফ যাচাইয়ের পর যোগাযোগ করবে।"
+            : "Thank you. Your request is recorded. This is not yet admission — staff will verify and contact you.",
         });
         formRef.current?.reset();
         setFormVersion((value) => value + 1);
@@ -188,16 +187,54 @@ export function PublicInterestForm({
                   : "Please check the form"}
             </p>
             <p className="mt-1 text-sm leading-6">{message.text}</p>
-            {message.ok && message.prospectNo && (
-              <p className="mt-3 text-sm">
-                {bn ? "রেফারেন্স" : "Reference"}:{" "}
-                <span className="font-bold">{message.prospectNo}</span>
-              </p>
+            {message.ok && (
+              <div
+                id="interest-acknowledgement"
+                className="mt-4 space-y-3 rounded-xl border border-emerald-200/80 bg-white/70 p-4 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-50 print:border-black print:bg-white print:text-black"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide">
+                  {bn ? "প্রাপ্তি স্বীকার (এখনো ভর্তি নয়)" : "Acknowledgement (not yet admitted)"}
+                </p>
+                {message.prospectNo ? (
+                  <p>
+                    {bn ? "রেফারেন্স" : "Reference"}:{" "}
+                    <span className="font-bold">{message.prospectNo}</span>
+                  </p>
+                ) : null}
+                {message.studentName ? (
+                  <p>
+                    {bn ? "শিক্ষার্থী" : "Student"}:{" "}
+                    <span className="font-medium">{message.studentName}</span>
+                  </p>
+                ) : null}
+                {message.intentLabel ? (
+                  <p>
+                    {bn ? "ধরন" : "Type"}: {message.intentLabel}
+                  </p>
+                ) : null}
+                <p className="text-xs leading-5 opacity-90">
+                  {bn
+                    ? "এই রেফারেন্স নম্বরটি সংরক্ষণ করুন। সহজ একাডেমি যাচাই শেষে যোগাযোগ করবে।"
+                    : "Keep this reference number. Sohoj Academy will contact you after verification."}
+                </p>
+              </div>
             )}
             {message.ok && (
-              <Link href="/" className="mt-4 inline-flex text-sm font-semibold underline underline-offset-4">
-                {bn ? "সহজ একাডেমিতে ফিরুন" : "Return to Sohoj Academy"}
-              </Link>
+              <div className="mt-4 flex flex-wrap gap-3 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-700/40 bg-white px-4 text-sm font-semibold text-emerald-900 hover:bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
+                >
+                  {bn ? "প্রিন্ট / সেভ" : "Print / save"}
+                </button>
+                <Link
+                  href="/"
+                  className="inline-flex min-h-10 items-center text-sm font-semibold underline underline-offset-4"
+                >
+                  {bn ? "সহজ একাডেমিতে ফিরুন" : "Return to Sohoj Academy"}
+                </Link>
+              </div>
             )}
           </div>
         )}
@@ -249,6 +286,20 @@ export function PublicInterestForm({
                 ? "এখন কোনো অফারিং আবেদন গ্রহণ করছে না।"
                 : "No offerings are accepting applications right now."}
             </p>
+          ) : null}
+          {intent === "admission" && selectedOffering ? (
+            <div className="space-y-3 rounded-xl border bg-muted/40 p-4 text-sm leading-6">
+              <p>{selectedOffering.activeBatches === 0 ? (bn ? "ব্যাচে স্থান নির্ধারণ প্রস্তুত হচ্ছে।" : "Batch placement is being prepared.") : selectedOffering.openSeats === 0 ? (bn ? "বর্তমান ব্যাচগুলো পূর্ণ; স্টাফ স্থান নির্ধারণ পর্যালোচনা করবে।" : "Current batches are full; staff will review placement options.") : (bn ? `বর্তমানে ${selectedOffering.openSeats}টি ব্যাচ আসন খালি। যাচাইয়ের পরে স্থান নিশ্চিত হবে।` : `${selectedOffering.openSeats} current batch seats are open. Placement is confirmed after staff review.`)}</p>
+              {selectedOffering.schedule ? <p><strong>{bn ? "সময়সূচি" : "Schedule"}:</strong> {bn ? selectedOffering.scheduleBn || selectedOffering.schedule : selectedOffering.schedule}</p> : null}
+              {selectedOffering.feePlan?.components.length ? (
+                <div>
+                  <p className="font-semibold">{bn ? "প্রকাশিত ফি" : "Published fees"} ({selectedOffering.feePlan.currency_code}, {selectedOffering.feePlan.billing_cycle.toLowerCase().replaceAll("_", " ")})</p>
+                  <ul className="list-inside list-disc">
+                    {selectedOffering.feePlan.components.map((component) => <li key={component.name}>{component.name}: {Number(component.amount).toLocaleString("en-BD")} ({component.recurrence.toLowerCase().replaceAll("_", " ")})</li>)}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </section>
 
@@ -312,8 +363,8 @@ export function PublicInterestForm({
               <Label htmlFor="interest-relationship">{bn ? "সম্পর্ক" : "Relationship"}</Label>
               <select id="interest-relationship" name="guardianRelationship" className={selectClass}>
                 <option value="">{bn ? "সম্পর্ক নির্বাচন করুন" : "Select relationship"}</option>
-                {relationships.map(([value, bnLabel]) => (
-                  <option key={value} value={value}>{bn ? bnLabel : value}</option>
+                {relationships.map((row) => (
+                  <option key={row.code} value={row.code}>{row.name}</option>
                 ))}
               </select>
             </div>
@@ -383,8 +434,8 @@ export function PublicInterestForm({
               <Label htmlFor="interest-source">{bn ? "কীভাবে জেনেছেন?" : "How did you hear about us?"}</Label>
               <select id="interest-source" name="sourceCode" className={selectClass}>
                 <option value="">{bn ? "জানা থাকলে নির্বাচন করুন" : "Select if known"}</option>
-                {sourceOptions.map(([code, en, bnLabel]) => (
-                  <option key={code} value={code}>{bn ? bnLabel : en}</option>
+                {sourceOptions.map((row) => (
+                  <option key={row.code} value={row.code}>{row.name}</option>
                 ))}
               </select>
             </div>
@@ -414,6 +465,30 @@ export function PublicInterestForm({
           </div>
         </section>
 
+        {intent === "admission" ? (
+          <section className="space-y-4 rounded-xl border p-4">
+            <h2 className="text-lg font-semibold">{bn ? "ভর্তির আবেদন" : "Admission application"}</h2>
+            <div>
+              <Label htmlFor="guardian-address">{bn ? "অভিভাবকের ঠিকানা" : "Guardian address"} *</Label>
+              <textarea id="guardian-address" name="guardianAddress" required minLength={5} maxLength={300} rows={2} className={`${selectClass} min-h-20 py-2`} />
+            </div>
+            <div>
+              <Label htmlFor="academic-background">{bn ? "পূর্ববর্তী শিক্ষাগত তথ্য" : "Academic background"}</Label>
+              <textarea id="academic-background" name="academicBackground" maxLength={500} rows={2} className={`${selectClass} min-h-20 py-2`} />
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3 text-sm leading-6">
+              <p className="font-semibold">{bn ? "প্রোগ্রামের শর্ত" : "Programme requirements"}</p>
+              <p className="whitespace-pre-wrap">{(bn ? selectedOffering?.requirementsBn || selectedOffering?.requirements : selectedOffering?.requirements) || (bn ? "অফারিংয়ের জন্য কোনো অতিরিক্ত শর্ত প্রকাশিত নেই।" : "No additional requirements published for this offering.")}</p>
+            </div>
+            <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="requirementsAcknowledged" required className="mt-1 size-4 accent-blue-700" /><span>{bn ? "আমি প্রোগ্রামের শর্ত পড়েছি ও বুঝেছি।" : "I have read and understood the programme requirements."}</span></label>
+            <div className="rounded-lg bg-muted/50 p-3 text-sm leading-6">
+              <p className="font-semibold">{bn ? "ভর্তি নীতি" : "Admission policy"}</p>
+              <p className="whitespace-pre-wrap">{(bn ? selectedOffering?.policyBn || selectedOffering?.policy : selectedOffering?.policy) || (bn ? "স্টাফ যাচাইয়ের পরে ভর্তি নিশ্চিত হবে।" : "Admission is confirmed only after staff verification.")}</p>
+            </div>
+            <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="policyAcknowledged" required className="mt-1 size-4 accent-blue-700" /><span>{bn ? "আমি ভর্তি নীতি পড়েছি ও বুঝেছি।" : "I have read and understood the admission policy."}</span></label>
+          </section>
+        ) : null}
+
         <label className="flex items-start gap-3 rounded-xl border p-4 text-sm leading-6">
           <input type="checkbox" name="consentToContact" required className="mt-1 size-4 accent-blue-700" />
           <span>
@@ -434,8 +509,8 @@ export function PublicInterestForm({
               ? "জমা হচ্ছে…"
               : "Submitting…"
             : bn
-              ? "আগ্রহ জমা দিন"
-              : "Submit Interest"}
+              ? intent === "admission" ? "ভর্তির আবেদন জমা দিন" : "আগ্রহ জমা দিন"
+              : intent === "admission" ? "Submit Admission Application" : "Submit Interest"}
         </button>
       </form>
     </div>
