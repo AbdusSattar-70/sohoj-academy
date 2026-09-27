@@ -25,6 +25,11 @@ export type ErpRouteDefinition = {
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
   {
+    id: "question-bank", title: "Question Bank", eyebrow: "Academics",
+    href: "/dashboard/academics/questions", navGroup: "Academics",
+    permission: "academics.view", icon: "offerings",
+  },
+  {
     id: "academic-operations",
     title: "Academic Operations",
     eyebrow: "Academics",
