@@ -21,7 +21,8 @@ export type ErpNavIcon =
   | "approvals"
   | "audit"
   | "rules"
-  | "settings";
+  | "settings"
+  | "teacher";
 
 export type ErpNavItem = {
   id: string;
