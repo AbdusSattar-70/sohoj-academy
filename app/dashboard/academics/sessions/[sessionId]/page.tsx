@@ -27,12 +27,14 @@ export default async function SessionPage({
         title={`${s.batch} · ${s.subject}`}
         description={`${s.date} · ${s.teacher} · ${s.room}`}
       />
-      <Link
-        className="text-sm underline"
-        href="/dashboard/academics/operations"
-      >
-        Back to Academic Operations
-      </Link>
+      <div className="flex flex-wrap gap-4 text-sm">
+        <Link className="underline" href="/dashboard/teacher">
+          Back to My Classes
+        </Link>
+        <Link className="underline" href="/dashboard/academics/operations">
+          Academic Operations
+        </Link>
+      </div>
       <section className="space-y-3 rounded-2xl border bg-card p-5">
         <StatusBadge value={s.status} />
         <p className="text-sm">
