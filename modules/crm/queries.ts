@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createOfferingClient } from "@/modules/offerings/database-contract";
 import type { ProspectStatus } from "@/modules/crm/prospect-status";
 
 /** Prospect columns including migration 0025 fields (types/database may lag). */
@@ -51,6 +52,7 @@ export type ProspectListRow = {
 
 export async function getProspectList(): Promise<ProspectListRow[]> {
   const supabase = await createClient();
+  const offeringDb = await createOfferingClient();
 
   const prospectsClient = supabase as unknown as {
     from: (table: string) => {
@@ -75,7 +77,7 @@ export async function getProspectList(): Promise<ProspectListRow[]> {
       supabase.from("schools").select("id,name,is_verified"),
       supabase.from("lead_sources").select("id,name"),
       supabase.from("staff").select("id,full_name"),
-      supabase.from("programme_offerings").select("id,code,name"),
+      offeringDb.from("programme_offerings").select("id,code,name"),
     ]);
 
   const classNames = new Map(
@@ -177,6 +179,7 @@ export async function getProspectDetail(
   prospectId: string
 ): Promise<ProspectDetail | null> {
   const supabase = await createClient();
+  const offeringDb = await createOfferingClient();
 
   const detailClient = supabase as unknown as {
     from: (table: string) => {
@@ -231,7 +234,7 @@ export async function getProspectDetail(
       )
       .eq("prospect_id", prospectId)
       .order("occurred_at", { ascending: false }),
-    supabase.from("programme_offerings").select("id,code,name"),
+    offeringDb.from("programme_offerings").select("id,code,name"),
   ]);
 
   const profileIds = Array.from(
