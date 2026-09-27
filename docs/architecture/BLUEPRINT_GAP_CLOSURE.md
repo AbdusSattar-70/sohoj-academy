@@ -13,6 +13,7 @@ Updated 2026-09-28. Branch: `feature/blueprint_gap_closure`, based on `feature/d
 | Admission consent | A draft admission case can be printed for paper consent. The A4 form reserves the top 50 mm for academy letterhead, identifies the case, student, guardian, programme, class and batch, displays the pinned fee plan, includes guardian declaration, optional student acknowledgement, signature/date fields, verifier fields and authorized signature/seal. Payment receipts remain separate. | Production build; manual signed-in print review remains |
 | Public admission application | Published schedule, requirements and policy are managed on offering controls and shown on the card and account-free application. The admission form collects guardian address, academic background and explicit acknowledgements. Submission creates an immutable application record linked to the Prospect with the published terms and active fee plan version at submission. Staff see the record in CRM. | SQL suite 0027 validates snapshot and admission remains a Prospect; typecheck and build |
 | Question bank review | Assigned teaching staff can author MCQ or short-answer drafts in the Question Bank. Submitted revisions require a different authorized reviewer. Rejection keeps the record and opens a new revision; approved questions keep their answer and rationale within the staff workspace. Each command has an audit event and replay identity. | Rollback SQL 0032 covers self review block, rejection/revision, approval, audit and retry; typecheck/build |
+| Signed consent register | Admission staff can upload a PDF or photo of the signed paper form to a private bucket before acceptance. The case displays versioned receipts with guardian signing date, file hash and receiving staff. A permissioned route issues a short-lived download URL. No overwrites or ordinary staff deletes are granted. | SQL test 0033 validates receipt and audit in an isolated Storage metadata fixture; live bucket/RLS/upload/download must still be tested |
 
 ### Staff print sequence
 
@@ -27,14 +28,14 @@ These items need separate implementation and acceptance work on this branch. Do 
 
 1. Public **Apply for Admission** collects the application declarations and terms snapshot. A signed document upload, applicant correction return channel and an individual requirements checklist remain.
 2. Programme cards now show configured admission requirements, policy and schedule. Live batch capacity and placement availability, reviewed publishing/preview controls and a versioned public content contract remain.
-3. The signed admission form is a paper workflow. Add permissioned document attachment, receipt of consent, version and audit before requiring signed evidence at acceptance. Preserve existing historical cases without forcing invalid backfills.
+3. Signed form attachment and a versioned receipt exist. Test private bucket access and upload/download on linked Supabase, then enforce receipt before acceptance for new cases with a cutover that preserves older historical cases. A staff attestation and uploaded file cannot automatically prove a genuine signature.
 4. Academic operations have plans, sessions, attendance review, submitted class logs and a manually authored question bank with independent review. Homework follow-up, coverage gaps/recovery, assessments/results, assessment assembly and assisted question generation remain.
 5. Finance covers discounts, cancellations, refunds and operator-run recurring invoices. General ledger/journals, advances/payables, expense reconciliation, teacher compensation calculations and settlements remain.
 6. Staff leave/workload, asset/procurement, richer analytics, PWA/offline outbox, observability, browser accessibility/E2E and live Supabase/concurrency acceptance remain.
 
 ## Validation and deployment
 
-- Apply migrations in order through `0032` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
+- Apply migrations in order through `0033` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
 - Run all rollback-only SQL scripts, especially `supabase/tests/0027_v2_public_admissions_workflow.sql`.
 - Run `pnpm lint`, `pnpm typecheck`, `pnpm build`, then verify the homepage, interest and admission paths while signed in as authorized staff where required.
 - Print a real draft with multiple fee components on A4 to check that the declarations, signatures and office-use area remain on the same page. Use the academy's actual letterhead, or print to blank paper and check the 50 mm reserved space.

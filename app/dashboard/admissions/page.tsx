@@ -4,6 +4,8 @@ import { StatusBadge } from "@/components/erp/status-badge";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { getAdmissionWorkspace } from "@/modules/admissions/queries";
 import { AdmissionCommandForm } from "@/modules/admissions/components/command-form";
+import { ConsentForm } from "@/modules/admissions/components/consent-form";
+import { getConsentDocuments } from "@/modules/admissions/consent";
 import type { AdmissionCommand } from "@/modules/admissions/schema";
 const nextAction: Record<
   string,
@@ -47,7 +49,7 @@ export default async function AdmissionsPage({
 }) {
   const context = await requirePermission("admissions.view");
   const { prospect: prospectParam } = await searchParams;
-  const data = await getAdmissionWorkspace();
+  const [data, consentDocuments] = await Promise.all([getAdmissionWorkspace(), getConsentDocuments()]);
   const manage = context.permissions.includes("admissions.create");
   const pay = context.permissions.includes("finance.payments.post");
   const defaultProspectId =
@@ -102,6 +104,7 @@ export default async function AdmissionsPage({
       {data.cases.map((a) => {
         const next = nextAction[a.status];
         const due = a.invoice ? a.invoice.due : null;
+        const signedForms = consentDocuments.filter((d) => d.admission_id === a.id);
         return (
           <article
             key={a.id}
@@ -142,6 +145,14 @@ export default async function AdmissionsPage({
               Print the admission and consent form for the guardian to sign. The student may
               sign if able. File the signed copy with the admission record before final review.
             </p>
+            <section className="rounded-xl border p-4">
+              <h3 className="font-semibold">Signed consent evidence</h3>
+              {signedForms.length ? <ul className="mt-2 space-y-1 text-sm">{signedForms.map((document) => <li key={document.id}>
+                <Link className="underline" href={`/dashboard/admissions/${a.id}/consent/${document.id}`} target="_blank" rel="noopener noreferrer">Open signed form v{document.version}</Link>
+                {" · Guardian signed "}{document.guardian_signed_on}{" · Received "}{new Date(document.received_at).toLocaleString()}
+              </li>)}</ul> : <p className="mt-2 text-sm text-amber-700">No signed form has been received for this case.</p>}
+            </section>
+            {manage && ["DRAFT","READY"].includes(a.status) && <ConsentForm admissionId={a.id} />}
             <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <p className="text-xs text-muted-foreground">Guardian</p>
