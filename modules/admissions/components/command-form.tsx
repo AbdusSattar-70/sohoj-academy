@@ -21,6 +21,7 @@ export function AdmissionCommandForm({
   description,
   maxAmount,
   identity,
+  defaultProspectId,
 }: {
   action: AdmissionCommand["action"];
   data: AdmissionWorkspace;
@@ -29,23 +30,25 @@ export function AdmissionCommandForm({
   description: string;
   maxAmount?: number;
   identity?: { name: string; guardian: string; mobile: string };
+  defaultProspectId?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
     null,
   );
-  const request = useRef<{ signature: string; id: string } | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const {
     register,
     handleSubmit,
     control,
     setValue,
-    reset,
     setError,
     formState: { errors, isDirty, isValid },
   } = useForm<AdmissionCommand>({
     resolver: zodResolver(commandSchema),
     mode: "onChange",
+    reValidateMode: "onChange",
+    shouldUnregister: true,
     defaultValues: {
       action,
       admissionId,
@@ -60,6 +63,9 @@ export function AdmissionCommandForm({
         : {}),
       ...(action === "CREATE_BATCH"
         ? { capacity: data.capacityLimit ?? undefined }
+        : {}),
+      ...(action === "CREATE" && defaultProspectId
+        ? { prospectId: defaultProspectId }
         : {}),
     },
   });
@@ -121,158 +127,158 @@ export function AdmissionCommandForm({
                   ? (data.capacityLimit ?? undefined)
                   : undefined
             }
-            {...register(key, numeric ? { valueAsNumber: true } : {})}
+            {...register(key, {
+              valueAsNumber: numeric || key === "amount",
+            })}
           />
         )
       }
     </ErpFormField>
   );
-  const submit = (event: FormEvent<HTMLFormElement>) =>
-    handleSubmit((value) => {
-      const signature = JSON.stringify({ ...value, requestId: undefined });
-      if (request.current?.signature !== signature)
-        request.current = { signature, id: crypto.randomUUID() };
-      const requestId = request.current.id;
-      setMessage(null);
-      startTransition(async () => {
-        try {
-          const result = await runAdmissionCommand({ ...value, requestId });
-          setMessage({ ok: result.ok, text: result.message });
-          if (!result.ok && result.field)
-            setError(result.field as FieldPath<AdmissionCommand>, {
-              message: result.message,
-            });
-          if (result.ok) {
-            reset();
-            request.current = null;
-          }
-        } catch {
-          setMessage({
-            ok: false,
-            text: "The result could not be confirmed. Retry the same values; your request is protected against duplicate posting.",
-          });
-        }
-      });
-    })(event);
+  const onSubmit = handleSubmit((values) => {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await runAdmissionCommand(values);
+      if (result.ok) {
+        setMessage({ ok: true, text: result.message });
+        formRef.current?.reset();
+        return;
+      }
+      if (result.field) {
+        setError(result.field as FieldPath<AdmissionCommand>, {
+          type: "server",
+          message: result.error,
+        });
+      }
+      setMessage({ ok: false, text: result.error });
+    });
+  });
   return (
     <form
-      noValidate
-      onSubmit={submit}
-      className="space-y-4 rounded-xl border bg-card p-4 print:hidden"
+      ref={formRef}
+      onSubmit={(event: FormEvent) => {
+        event.preventDefault();
+        void onSubmit();
+      }}
+      className="space-y-4 rounded-2xl border bg-card p-5 sm:p-6"
     >
       <div>
-        <h3 className="font-semibold">{label}</h3>
+        <h2 className="text-lg font-semibold">{label}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
-      <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
-        {action === "CREATE_BATCH" && (
-          <>
-            {field(
-              "offeringId",
-              "Offering",
-              "The batch inherits the offering’s academic year, branch, class and programme.",
-              data.offerings.map((o) => ({
-                id: o.id,
-                name: `${o.name} · ${o.className}`,
+      {field("reason", "Reason", "Record why this action is being taken.")}
+      {action === "CREATE_BATCH" && (
+        <>
+          {field(
+            "offeringId",
+            "Programme Offering",
+            "Batches belong to one offering and its published fee plan.",
+            data.offerings.map((o) => ({
+              id: o.id,
+              name: `${o.name} · ${o.className}`,
+            })),
+          )}
+          {field("code", "Batch Code", "Short unique code for operations.")}
+          {field(
+            "name",
+            "Batch Name",
+            "Use the name staff and guardians recognize.",
+          )}
+          {field(
+            "capacity",
+            "Capacity",
+            `Current policy maximum: ${data.capacityLimit ?? "not configured"}.`,
+            undefined,
+            true,
+          )}
+        </>
+      )}
+      {action === "CREATE" && (
+        <>
+          {field(
+            "prospectId",
+            "Prospect",
+            "Select an existing enquiry. Identity and guardian details are inherited.",
+            data.prospects.map((p) => ({
+              id: p.id,
+              name: `${p.number} · ${p.name} · ${p.mobile}`,
+            })),
+          )}
+          {field(
+            "batchId",
+            "Batch",
+            "Only batches for this Prospect’s class are offered. Full batches cannot be selected.",
+            data.batches
+              .filter((b) => b.classId === prospect?.classId)
+              .map((b) => ({
+                id: b.id,
+                name: `${b.name} · ${b.occupied}/${b.capacity} seats`,
+                disabled:
+                  b.occupied >=
+                  Math.min(b.capacity, data.capacityLimit ?? b.capacity),
               })),
-            )}
-            {field("code", "Batch Code", "Unique within the academic year.")}
-            {field(
-              "name",
-              "Batch Name",
-              "Use the name staff and guardians recognize.",
-            )}
-            {field(
-              "capacity",
-              "Capacity",
-              `Current policy maximum: ${data.capacityLimit ?? "not configured"}.`,
-              undefined,
-              true,
-            )}
-          </>
-        )}
-        {action === "CREATE" && (
-          <>
-            {field(
-              "prospectId",
-              "Prospect",
-              "Select an existing enquiry. Identity and guardian details are inherited.",
-              data.prospects.map((p) => ({
-                id: p.id,
-                name: `${p.number} · ${p.name}`,
-              })),
-            )}
-            {field(
-              "batchId",
-              "Batch",
-              "Only batches for this Prospect’s class are offered. Full batches cannot be selected.",
-              data.batches
-                .filter((b) => b.classId === prospect?.classId)
-                .map((b) => ({
-                  id: b.id,
-                  name: `${b.name} · ${b.occupied}/${b.capacity} seats`,
-                  disabled:
-                    b.occupied >=
-                    Math.min(b.capacity, data.capacityLimit ?? b.capacity),
-                })),
-            )}
-          </>
-        )}
-        {action === "EDIT_DRAFT" && (
-          <>
-            {field(
-              "studentName",
-              "Student Name",
-              "Use the verified student name.",
-            )}
-            {field(
-              "guardianName",
-              "Guardian Name",
-              "Use the verified guardian name.",
-            )}
-            {field(
-              "mobile",
-              "Guardian Mobile",
-              "11-digit Bangladesh mobile, beginning 01.",
-            )}
-          </>
-        )}
-        {action === "PAY" && (
-          <>
-            {field(
-              "paymentMethodId",
-              "Payment Method",
-              "Select how money was actually received.",
-              data.paymentMethods,
-            )}
-            {field(
-              "amount",
-              "Amount Received (BDT)",
-              `Outstanding balance: ${maxAmount?.toFixed(2)}. Enter only actual money received.`,
-              undefined,
-              true,
-            )}
-            {field(
-              "externalReference",
-              "Transaction Reference",
-              "Use the bank/mobile transaction reference when available.",
-              undefined,
-              false,
-              false,
-            )}
-          </>
-        )}
-        {field(
-          "reason",
-          "Reason / Verification Note",
-          "Record what you checked or why you are performing this action.",
-        )}
-      </fieldset>
+          )}
+        </>
+      )}
+      {action === "EDIT_DRAFT" && (
+        <>
+          {field(
+            "studentName",
+            "Student Name",
+            "Use the verified student name.",
+          )}
+          {field(
+            "guardianName",
+            "Guardian Name",
+            "Primary guardian for contact and billing.",
+          )}
+          {field("mobile", "Mobile", "11-digit Bangladesh mobile number.")}
+        </>
+      )}
+      {action === "PAY" && (
+        <>
+          {field(
+            "paymentMethodId",
+            "Payment Method",
+            "How the money was received.",
+            data.paymentMethods.map((m) => ({ id: m.id, name: m.name })),
+          )}
+          {field(
+            "amount",
+            "Amount Received",
+            maxAmount
+              ? `Outstanding balance on this invoice: BDT ${maxAmount.toFixed(2)}.`
+              : "Enter the amount actually received.",
+            undefined,
+            true,
+          )}
+          {field(
+            "externalReference",
+            "External Reference",
+            "Optional bank or gateway reference.",
+            undefined,
+            false,
+            false,
+          )}
+        </>
+      )}
       {prospect && action === "CREATE" && (
-        <p className="text-sm text-muted-foreground">
-          Guardian: {prospect.guardian} · {prospect.mobile}. Standard fees will
-          be shown in the saved draft for review.
-        </p>
+        <div className="rounded-xl border bg-muted/30 p-4 text-sm leading-6">
+          <p className="font-medium text-foreground">
+            Verified CRM data will seed this draft
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            {prospect.number} · {prospect.name}
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            Guardian: {prospect.guardian} · {prospect.mobile}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Student, guardian and contact details are inherited from the
+            Prospect. Choose an eligible batch, then review fees before
+            acceptance.
+          </p>
+        </div>
       )}
       <Button type="submit" disabled={!isDirty || !isValid || pending}>
         {pending ? "Saving…" : label}
