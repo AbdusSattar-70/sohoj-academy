@@ -54,6 +54,8 @@ export async function submitPublicInterest(
       referral_note: data.referralNote || "",
       notes: data.notes || "",
       consent_to_contact: data.consentToContact,
+      offering_id: data.offeringId || "",
+      intent: data.intent || "interest",
     },
   });
 
@@ -69,6 +71,12 @@ export async function submitPublicInterest(
       "Selected source is not available.",
       "One selected program is not available.",
       "One selected subject is not available.",
+      "Selected programme offering is not available.",
+      "Applications are closed for this programme offering.",
+      "Applications are not open yet for this programme offering.",
+      "An open programme offering is required for admission applications.",
+      "Selected class does not match the chosen programme offering.",
+      "One selected subject is not part of the chosen programme offering.",
     ];
 
     const known = knownMessages.find((message) => error.message.includes(message));

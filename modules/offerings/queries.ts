@@ -56,6 +56,11 @@ export type PublicOfferingCard = {
   id: string;
   code: string;
   name: string;
+  class_id: string;
+  program_id: string;
+  group_id: string | null;
+  branch_id: string;
+  academic_year_id: string;
   showcase_title: string | null;
   showcase_title_bn: string | null;
   showcase_description: string | null;
