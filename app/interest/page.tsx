@@ -6,6 +6,7 @@ import { PublicInterestForm } from "@/components/public/interest-form";
 import Logo from "@/components/shared/logo";
 import { LocalizedText } from "@/components/shared/localized-text";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicProgrammeOfferings } from "@/modules/offerings/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -15,15 +16,35 @@ export const metadata: Metadata = {
     "Register academic interest with Sohoj Academy for programme, subject and schedule follow-up.",
 };
 
-export default async function InterestPage() {
+type SearchParams = Promise<{ offering?: string; intent?: string }>;
+
+export default async function InterestPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const params = await searchParams;
+  const intent = params.intent === "admission" ? "admission" : "interest";
+  const requestedOfferingId = params.offering?.trim() || "";
+
   const supabase = await createClient();
 
-  const [classesQ, programsQ, subjectsQ, schoolsQ] = await Promise.all([
+  const [classesQ, programsQ, subjectsQ, schoolsQ, publicOfferings] = await Promise.all([
     supabase.from("classes").select("id,name").order("sort_order"),
     supabase.from("programs").select("id,name").eq("is_active", true).order("name"),
     supabase.from("subjects").select("id,name").eq("is_active", true).order("name"),
     supabase.from("schools").select("id,name").eq("is_active", true).order("name").limit(500),
+    getPublicProgrammeOfferings(),
   ]);
+
+  const openOfferings = publicOfferings.filter((row) => Boolean(row.is_accepting_applications));
+  const preselected =
+    openOfferings.find((row) => row.id === requestedOfferingId) ??
+    null;
+  const closedRequested =
+    Boolean(requestedOfferingId) &&
+    !preselected &&
+    publicOfferings.some((row) => row.id === requestedOfferingId);
 
   const optionsUnavailable =
     Boolean(classesQ.error) ||
@@ -47,19 +68,37 @@ export default async function InterestPage() {
 
             <div className="mt-8 max-w-3xl">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-700 dark:text-blue-400">
-                <LocalizedText en="Student Interest Registration" bn="শিক্ষার্থী আগ্রহ নিবন্ধন" />
+                {intent === "admission" ? (
+                  <LocalizedText en="Admission application" bn="ভর্তির আবেদন" />
+                ) : (
+                  <LocalizedText en="Student Interest Registration" bn="শিক্ষার্থী আগ্রহ নিবন্ধন" />
+                )}
               </p>
               <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl lg:text-5xl">
-                <LocalizedText
-                  en="Tell us what support the student is looking for."
-                  bn="শিক্ষার্থী কী ধরনের সহায়তা খুঁজছে তা আমাদের জানান।"
-                />
+                {intent === "admission" ? (
+                  <LocalizedText
+                    en="Apply for an open programme offering."
+                    bn="উন্মুক্ত প্রোগ্রাম অফারিংয়ে ভর্তির আবেদন করুন।"
+                  />
+                ) : (
+                  <LocalizedText
+                    en="Tell us what support the student is looking for."
+                    bn="শিক্ষার্থী কী ধরনের সহায়তা খুঁজছে তা আমাদের জানান।"
+                  />
+                )}
               </h1>
               <p className="mt-5 text-base leading-8 text-muted-foreground">
-                <LocalizedText
-                  en="This short registration helps Sohoj Academy understand the student's class, programme or subject interests and preferred schedule before admission."
-                  bn="এই সংক্ষিপ্ত নিবন্ধনটি ভর্তি হওয়ার আগে শিক্ষার্থীর বর্তমান ক্লাস, প্রোগ্রাম বা বিষয়ভিত্তিক আগ্রহ এবং পছন্দের সময় সম্পর্কে সহজ একাডেমিকে ধারণা দেয়।"
-                />
+                {intent === "admission" ? (
+                  <LocalizedText
+                    en="Choose an offering that is currently accepting applications. Staff will verify the details before any admission is confirmed."
+                    bn="বর্তমানে আবেদন গ্রহণ করছে এমন একটি অফারিং বেছে নিন। ভর্তি নিশ্চিত হওয়ার আগে স্টাফ তথ্য যাচাই করবে।"
+                  />
+                ) : (
+                  <LocalizedText
+                    en="This short registration helps Sohoj Academy understand the student's class, programme or subject interests and preferred schedule before admission."
+                    bn="এই সংক্ষিপ্ত নিবন্ধন ভর্তির আগে শিক্ষার্থীর ক্লাস, প্রোগ্রাম বা বিষয় আগ্রহ এবং পছন্দের সময় বুঝতে সাহায্য করে।"
+                  />
+                )}
               </p>
             </div>
 
@@ -72,8 +111,8 @@ export default async function InterestPage() {
                   </p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     <LocalizedText
-                      en="No fee or permanent Student ID is created by this interest form."
-                      bn="এই ফর্ম থেকে কোনো ফি বা স্থায়ী Student ID তৈরি হয় না।"
+                      en="No fee or permanent Student ID is created by this form until staff complete verification and admission."
+                      bn="স্টাফ যাচাই ও ভর্তি সম্পন্ন না করা পর্যন্ত এই ফর্ম থেকে ফি বা স্থায়ী Student ID তৈরি হয় না।"
                     />
                   </p>
                 </div>
@@ -97,6 +136,18 @@ export default async function InterestPage() {
         </section>
 
         <section className="mx-auto max-w-5xl px-5 py-10 sm:px-6 lg:px-8 lg:py-14">
+          {closedRequested ? (
+            <div
+              role="alert"
+              className="mb-5 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm leading-6 text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
+            >
+              <LocalizedText
+                en="Applications are closed for the programme you selected. Choose another open offering below, or register general interest."
+                bn="আপনি যে প্রোগ্রামটি বেছেছিলেন তার আবেদন বর্তমানে বন্ধ। নিচে অন্য উন্মুক্ত অফারিং বেছে নিন, অথবা সাধারণ আগ্রহ নিবন্ধন করুন।"
+              />
+            </div>
+          ) : null}
+
           {optionsUnavailable ? (
             <div
               role="alert"
@@ -117,6 +168,16 @@ export default async function InterestPage() {
                   id: school.id,
                   label: school.name,
                 }))}
+                openOfferings={openOfferings.map((row) => ({
+                  id: row.id,
+                  code: row.code,
+                  name: row.showcase_title || row.name,
+                  classId: row.class_id,
+                  programId: row.program_id,
+                  subjectIds: (row.subjects ?? []).map((subject) => subject.id),
+                }))}
+                defaultOfferingId={preselected?.id ?? ""}
+                intent={intent}
               />
             </div>
           )}
@@ -126,7 +187,9 @@ export default async function InterestPage() {
       <footer className="border-t border-border bg-background">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-5 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <Logo size={76} />
-          <p className="text-xs text-muted-foreground">শিক্ষা হোক সহজ ও আনন্দময়</p>
+          <p className="text-xs text-muted-foreground">
+            <LocalizedText en="Learning should be easy and enjoyable" bn="শিক্ষা হোক সহজ ও আনন্দময়" />
+          </p>
         </div>
       </footer>
     </div>
