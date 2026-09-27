@@ -61,17 +61,21 @@ export async function publishFeePlan(input: PublishFeePlanInput): Promise<Offeri
     effective_from: value.effectiveFrom,
     reason: value.reason,
     components: value.components.map((component, sortOrder) => ({
-      code: component.code, name: component.name, amount: component.amount,
-      charge_type: component.chargeType, recurrence: component.recurrence,
+      code: component.code,
+      name: component.name,
+      amount: component.amount,
+      charge_type: component.chargeType,
+      recurrence: component.recurrence,
       sort_order: sortOrder,
     })),
   } });
   if (error) return { ok: false, error: error.message };
-  const result = data as { fee_plan_version_id?: string; version?: number } | null;
-  if (!result?.fee_plan_version_id) return { ok: false, error: "Fee Plan publication returned no version." };
+  const result = data as { fee_plan_version_id?: string } | null;
+  if (!result?.fee_plan_version_id) return { ok: false, error: "Fee Plan publish returned no identity." };
   revalidatePath("/dashboard/academics/offerings");
   revalidatePath("/dashboard/finance/fee-plans");
-  return { ok: true, reference: `Version ${result.version}` };
+  revalidatePath("/");
+  return { ok: true, reference: result.fee_plan_version_id };
 }
 
 export async function updateProgrammeOfferingPublicControls(
@@ -80,15 +84,11 @@ export async function updateProgrammeOfferingPublicControls(
   const parsed = updateOfferingPublicControlsSchema.safeParse(input);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
-    return {
-      ok: false,
-      error: issue?.message ?? "Check the public control details.",
-      field: issue?.path[0]?.toString(),
-    };
+    return { ok: false, error: issue?.message ?? "Check public controls.", field: issue?.path[0]?.toString() };
   }
   const context = await getErpContext();
   if (!context?.permissions.includes("academics.manage")) {
-    return { ok: false, error: "You are not authorized to curate programme public controls." };
+    return { ok: false, error: "You are not authorized to update offering public controls." };
   }
   const value = parsed.data;
   const db = await createOfferingClient();
@@ -121,3 +121,6 @@ export async function updateProgrammeOfferingPublicControls(
   revalidatePath("/interest");
   return { ok: true, reference: result.offering_id };
 }
+
+/** @deprecated Use updateProgrammeOfferingPublicControls */
+export const updateProgrammeOfferingShowcase = updateProgrammeOfferingPublicControls;

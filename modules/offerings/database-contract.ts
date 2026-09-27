@@ -2,9 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
 
-// Scoped contract for migrations 0008 + 0024. Generated types/database.ts is not hand-edited.
-type ReadonlyTable<Row> = {
-  Row: Row;
+type ReadonlyTable<T> = {
+  Row: T;
   Insert: never;
   Update: never;
   Relationships: [];
@@ -24,6 +23,8 @@ type Offering = {
   showcase_icon: string | null;
   showcase_sort_order: number;
   is_website_visible: boolean;
+  /** @deprecated Prefer is_website_visible */
+  is_public_showcase?: boolean;
   is_accepting_applications: boolean;
   applications_open_on: string | null;
   applications_close_on: string | null;
