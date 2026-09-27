@@ -42,7 +42,7 @@ const workspaceFeatures = [
 export default function AuthHomePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto grid min-h-screen max-w-[96rem] lg:grid-cols-[1.05fr_.95fr]">
+      <div className="mx-auto grid min-h-screen max-w-384 lg:grid-cols-[1.05fr_.95fr]">
         <section className="relative hidden overflow-hidden bg-slate-950 p-10 text-white dark:bg-black lg:flex lg:flex-col xl:p-14">
           <div
             className="pointer-events-none absolute inset-0"
@@ -76,7 +76,7 @@ export default function AuthHomePage() {
 
             <div className="mt-10 grid gap-3">
               {workspaceFeatures.map((item) => (
-                <div key={item.title[0]} className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+                <div key={item.title[0]} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-400/10 text-blue-200">
                     <item.icon className="size-5" aria-hidden="true" />
                   </div>
