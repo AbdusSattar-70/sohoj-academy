@@ -280,14 +280,18 @@ export function PublicInterestForm({
               </select>
             </div>
             <div>
-              <Label htmlFor="interest-school">{bn ? "বর্তমান স্কুল" : "Current School"}</Label>
               <SmartSelect
                 key={`school-${formVersion}`}
-                id="interest-school"
                 name="schoolId"
+                snapshotName="schoolNameSnapshot"
+                label={bn ? "বর্তমান স্কুল" : "Current School"}
                 options={schools}
                 placeholder={bn ? "স্কুলের নাম লিখতে শুরু করুন" : "Start typing the school name"}
-                freeTextName="schoolNameSnapshot"
+                hint={
+                  bn
+                    ? "তালিকায় থাকলে স্কুলটি নির্বাচন করুন। না থাকলে অফিসিয়াল নাম লিখুন; স্টাফ পরে যাচাই করবে।"
+                    : "Pick a listed school when possible. If not listed, type the official name; staff can verify later."
+                }
               />
             </div>
             <div className="md:col-span-2">
@@ -436,8 +440,4 @@ export function PublicInterestForm({
       </form>
     </div>
   );
-}
-
-function LabelField({ children }: { children: ReactNode }) {
-  return <div className="space-y-2">{children}</div>;
 }
