@@ -1,6 +1,34 @@
 import { createClient } from "@/lib/supabase/server";
 import type { ProspectStatus } from "@/modules/crm/prospect-status";
 
+/** Prospect columns including migration 0025 fields (types/database may lag). */
+type ProspectCoreRow = {
+  id: string;
+  prospect_no: string;
+  student_name: string;
+  guardian_name: string;
+  guardian_relationship_snapshot?: string | null;
+  mobile: string;
+  alternate_mobile?: string | null;
+  current_class_id: string | null;
+  school_id: string | null;
+  school_name_snapshot: string | null;
+  area_snapshot?: string | null;
+  preferred_schedule?: string | null;
+  preferred_days?: string[] | null;
+  trial_interest?: boolean;
+  source_id: string | null;
+  referral_note?: string | null;
+  notes?: string | null;
+  status: ProspectStatus;
+  assigned_to_staff_id: string | null;
+  next_follow_up_at: string | null;
+  lost_reason?: string | null;
+  created_at: string;
+  interested_offering_id: string | null;
+  submission_intent: string | null;
+};
+
 export type SubmissionIntent = "interest" | "admission";
 
 export type ProspectListRow = {
@@ -24,9 +52,19 @@ export type ProspectListRow = {
 export async function getProspectList(): Promise<ProspectListRow[]> {
   const supabase = await createClient();
 
+  const prospectsClient = supabase as unknown as {
+    from: (table: string) => {
+      select: (cols: string) => {
+        order: (col: string, opts: { ascending: boolean }) => {
+          limit: (n: number) => Promise<{ data: ProspectCoreRow[] | null }>;
+        };
+      };
+    };
+  };
+
   const [prospectsQ, classesQ, schoolsQ, sourcesQ, staffQ, offeringsQ] =
     await Promise.all([
-      supabase
+      prospectsClient
         .from("prospects")
         .select(
           "id,prospect_no,student_name,guardian_name,mobile,current_class_id,school_id,school_name_snapshot,source_id,assigned_to_staff_id,status,next_follow_up_at,created_at,interested_offering_id,submission_intent"
@@ -140,7 +178,17 @@ export async function getProspectDetail(
 ): Promise<ProspectDetail | null> {
   const supabase = await createClient();
 
-  const { data: prospect, error } = await supabase
+  const detailClient = supabase as unknown as {
+    from: (table: string) => {
+      select: (cols: string) => {
+        eq: (col: string, val: string) => {
+          maybeSingle: () => Promise<{ data: ProspectCoreRow | null; error: unknown }>;
+        };
+      };
+    };
+  };
+
+  const { data: prospect, error } = await detailClient
     .from("prospects")
     .select(
       "id,prospect_no,student_name,guardian_name,guardian_relationship_snapshot,mobile,alternate_mobile,current_class_id,school_id,school_name_snapshot,area_snapshot,preferred_schedule,preferred_days,trial_interest,source_id,referral_note,notes,status,assigned_to_staff_id,next_follow_up_at,lost_reason,created_at,interested_offering_id,submission_intent"
@@ -246,27 +294,27 @@ export async function getProspectDetail(
     guardianName: prospect.guardian_name,
     relationship: prospect.guardian_relationship_snapshot ?? "—",
     mobile: prospect.mobile,
-    alternateMobile: prospect.alternate_mobile,
+    alternateMobile: prospect.alternate_mobile ?? null,
     className: prospect.current_class_id
       ? classNames.get(prospect.current_class_id) ?? "—"
       : "—",
     schoolName,
     schoolNeedsReview,
     area: prospect.area_snapshot ?? "—",
-    preferredSchedule: prospect.preferred_schedule,
+    preferredSchedule: prospect.preferred_schedule ?? null,
     preferredDays: prospect.preferred_days ?? [],
-    trialInterest: prospect.trial_interest,
+    trialInterest: Boolean(prospect.trial_interest),
     sourceName: prospect.source_id
       ? sourceNames.get(prospect.source_id) ?? "—"
       : "—",
-    referralNote: prospect.referral_note,
-    notes: prospect.notes,
+    referralNote: prospect.referral_note ?? null,
+    notes: prospect.notes ?? null,
     status: prospect.status as ProspectStatus,
     assignedTo: prospect.assigned_to_staff_id
       ? staffNames.get(prospect.assigned_to_staff_id) ?? "Unassigned"
       : "Unassigned",
     nextFollowUpAt: prospect.next_follow_up_at,
-    lostReason: prospect.lost_reason,
+    lostReason: prospect.lost_reason ?? null,
     createdAt: prospect.created_at,
     programs: (programLinksQ.data ?? [])
       .map((link) => programNames.get(link.program_id))
