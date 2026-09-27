@@ -18,6 +18,16 @@ export type ActionCenterData = {
     status: string;
     nextFollowUpAt: string;
   }>;
+  verificationQueue: Array<{
+    id: string;
+    prospectNo: string;
+    studentName: string;
+    mobile: string;
+    status: string;
+    createdAt: string;
+    schoolNeedsReview: boolean;
+    schoolName: string;
+  }>;
 };
 
 export async function getActionCenterData(
@@ -27,6 +37,7 @@ export async function getActionCenterData(
 
   let approvals: ActionCenterData["approvals"] = [];
   let dueProspects: ActionCenterData["dueProspects"] = [];
+  let verificationQueue: ActionCenterData["verificationQueue"] = [];
 
   if (can(context, "approvals.view")) {
     const { data } = await supabase
@@ -49,16 +60,28 @@ export async function getActionCenterData(
   }
 
   if (can(context, "crm.prospects.view")) {
-    const { data } = await supabase
-      .from("prospects")
-      .select("id,prospect_no,student_name,mobile,status,next_follow_up_at")
-      .not("next_follow_up_at", "is", null)
-      .lte("next_follow_up_at", new Date().toISOString())
-      .not("status", "in", "(CONVERTED,LOST)")
-      .order("next_follow_up_at", { ascending: true })
-      .limit(50);
+    const nowIso = new Date().toISOString();
 
-    dueProspects = (data ?? [])
+    const [dueQ, queueQ] = await Promise.all([
+      supabase
+        .from("prospects")
+        .select("id,prospect_no,student_name,mobile,status,next_follow_up_at")
+        .not("next_follow_up_at", "is", null)
+        .lte("next_follow_up_at", nowIso)
+        .not("status", "in", "(CONVERTED,LOST)")
+        .order("next_follow_up_at", { ascending: true })
+        .limit(50),
+      supabase
+        .from("prospects")
+        .select(
+          "id,prospect_no,student_name,mobile,status,created_at,school_id,school_name_snapshot"
+        )
+        .in("status", ["NEW", "CONTACTED", "COUNSELLING"])
+        .order("created_at", { ascending: false })
+        .limit(40),
+    ]);
+
+    dueProspects = (dueQ.data ?? [])
       .filter((row) => row.next_follow_up_at)
       .map((row) => ({
         id: row.id,
@@ -68,7 +91,23 @@ export async function getActionCenterData(
         status: row.status,
         nextFollowUpAt: row.next_follow_up_at as string,
       }));
+
+    verificationQueue = (queueQ.data ?? []).map((row) => {
+      const schoolNeedsReview = Boolean(
+        !row.school_id && row.school_name_snapshot
+      );
+      return {
+        id: row.id,
+        prospectNo: row.prospect_no,
+        studentName: row.student_name,
+        mobile: row.mobile,
+        status: row.status,
+        createdAt: row.created_at,
+        schoolNeedsReview,
+        schoolName: row.school_name_snapshot ?? "—",
+      };
+    });
   }
 
-  return { approvals, dueProspects };
+  return { approvals, dueProspects, verificationQueue };
 }
