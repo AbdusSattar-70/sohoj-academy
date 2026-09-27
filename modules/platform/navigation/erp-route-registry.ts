@@ -9,7 +9,8 @@ export type ErpRouteIcon =
   | "approvals"
   | "audit"
   | "rules"
-  | "settings";
+  | "settings"
+  | "teacher";
 
 export type ErpRouteDefinition = {
   id: string;
@@ -31,6 +32,16 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     navGroup: "Academics",
     permission: "academics.view",
     icon: "offerings",
+  },
+
+  {
+    id: "teacher-dashboard",
+    title: "My Classes",
+    eyebrow: "Teaching",
+    href: "/dashboard/teacher",
+    navGroup: "Academics",
+    permission: "academics.view",
+    icon: "teacher",
   },
 
   {
