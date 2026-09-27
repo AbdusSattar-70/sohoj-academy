@@ -33,6 +33,7 @@ type ProspectCoreRow = {
 export type SubmissionIntent = "interest" | "admission";
 
 type PublicApplication = {
+  id: string;
   guardianAddress: string;
   academicBackground: string | null;
   requirementsAcknowledged: boolean;
@@ -40,6 +41,7 @@ type PublicApplication = {
   submittedAt: string;
   feePlanVersionId: string | null;
   publishedTerms: { offering_name?: string; requirements?: string | null; policy?: string | null; schedule?: string | null; applications_open_on?: string | null; applications_close_on?: string | null };
+  reviews: Array<{ id: string; requirementLabel: string; status: string; note: string; revision: number; reviewedAt: string }>;
 };
 
 export type ProspectListRow = {
@@ -247,11 +249,20 @@ export async function getProspectDetail(
       .eq("prospect_id", prospectId)
       .order("occurred_at", { ascending: false }),
     offeringDb.from("programme_offerings").select("id,code,name"),
-    (supabase as unknown as { from: (name: string) => { select: (columns: string) => { eq: (column: string, value: string) => { maybeSingle: () => Promise<{ data: { guardian_address: string; academic_background: string | null; requirements_acknowledged: boolean; policy_acknowledged: boolean; submitted_at: string; fee_plan_version_id: string | null; published_terms_snapshot: Record<string, string | null> } | null; error: unknown }> } } } })
+    (supabase as unknown as { from: (name: string) => { select: (columns: string) => { eq: (column: string, value: string) => { maybeSingle: () => Promise<{ data: { id: string; guardian_address: string; academic_background: string | null; requirements_acknowledged: boolean; policy_acknowledged: boolean; submitted_at: string; fee_plan_version_id: string | null; published_terms_snapshot: Record<string, string | null> } | null; error: unknown }> } } } })
       .from("public_admission_applications")
-      .select("guardian_address,academic_background,requirements_acknowledged,policy_acknowledged,submitted_at,fee_plan_version_id,published_terms_snapshot")
+      .select("id,guardian_address,academic_background,requirements_acknowledged,policy_acknowledged,submitted_at,fee_plan_version_id,published_terms_snapshot")
       .eq("prospect_id", prospectId).maybeSingle(),
   ]);
+
+  type ReviewRow = { id: string; requirement_label: string; status: string; note: string; revision: number; reviewed_at: string };
+  const reviewsQ: { data: ReviewRow[] | null } = applicationQ.data
+    ? await (supabase as unknown as { from: (name: string) => { select: (columns: string) => { eq: (column: string, value: string) => { order: (column: string, options: { ascending: boolean }) => Promise<{ data: ReviewRow[] | null }> } } } })
+        .from("admission_requirement_reviews")
+        .select("id,requirement_label,status,note,revision,reviewed_at")
+        .eq("application_id", applicationQ.data.id)
+        .order("reviewed_at", { ascending: false })
+    : { data: [] };
 
   const profileIds = Array.from(
     new Set(
@@ -347,6 +358,7 @@ export async function getProspectDetail(
       ? offeringLabels.get(prospect.interested_offering_id) ?? "Linked offering"
       : "—",
     application: applicationQ.data ? {
+      id: applicationQ.data.id,
       guardianAddress: applicationQ.data.guardian_address,
       academicBackground: applicationQ.data.academic_background,
       requirementsAcknowledged: applicationQ.data.requirements_acknowledged,
@@ -354,6 +366,10 @@ export async function getProspectDetail(
       submittedAt: applicationQ.data.submitted_at,
       feePlanVersionId: applicationQ.data.fee_plan_version_id,
       publishedTerms: applicationQ.data.published_terms_snapshot,
+      reviews: (reviewsQ.data ?? []).map((row) => ({
+        id: row.id, requirementLabel: row.requirement_label, status: row.status,
+        note: row.note, revision: row.revision, reviewedAt: row.reviewed_at,
+      })),
     } : null,
     followups: (followupsQ.data ?? []).map((row) => ({
       id: row.id,

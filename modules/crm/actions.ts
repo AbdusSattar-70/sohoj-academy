@@ -9,6 +9,32 @@ import {
 } from "@/modules/crm/schema";
 import { allowedProspectStatuses } from "@/modules/crm/prospect-status";
 
+export async function reviewAdmissionRequirement(input: {
+  applicationId: string; prospectId: string; requirementLabel: string;
+  status: "PENDING" | "VERIFIED" | "FOLLOW_UP"; note: string; expectedRevision: number;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const context = await getErpContext();
+  if (!context?.permissions.includes("crm.followups.manage"))
+    return { ok: false, error: "CRM review permission is required." };
+  if (!/^[0-9a-f-]{36}$/i.test(input.applicationId) ||
+      !/^[0-9a-f-]{36}$/i.test(input.prospectId) ||
+      input.requirementLabel.trim().length < 3 || input.requirementLabel.length > 160 ||
+      !["PENDING", "VERIFIED", "FOLLOW_UP"].includes(input.status) ||
+      input.note.length > 1000 || input.expectedRevision < 0 ||
+      (input.status === "FOLLOW_UP" && input.note.trim().length < 5))
+    return { ok: false, error: "Check the requirement review details." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("review_admission_requirement" as never, {
+    p_input: {
+      application_id: input.applicationId, requirement_label: input.requirementLabel,
+      status: input.status, note: input.note, expected_revision: input.expectedRevision,
+    },
+  } as never);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/dashboard/crm/prospects/${input.prospectId}`);
+  return { ok: true };
+}
+
 export type ProspectFollowupResult =
   | { ok: true; status: string }
   | { ok: false; error: string; field?: string };
