@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type FieldPath } from "react-hook-form";
+import { useForm, type FieldPath, type Resolver } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
 import { StatusBadge } from "@/components/erp/status-badge";
@@ -249,11 +249,11 @@ export function MasterDataWorkspace({
                   </td>
                   {entity === "academic_year" && (
                     <td className="p-3 text-muted-foreground">
-                      {row.starts_on} → {row.ends_on}
+                      {row.starts_on} \u2192 {row.ends_on}
                     </td>
                   )}
                   {entity === "class" && (
-                    <td className="p-3 text-muted-foreground">{row.sort_order ?? "—"}</td>
+                    <td className="p-3 text-muted-foreground">{row.sort_order ?? "\u2014"}</td>
                   )}
                   {entity === "school" && (
                     <td className="p-3">
@@ -334,7 +334,7 @@ function MasterRecordForm({
     setError,
     formState: { errors, isDirty, isValid },
   } = useForm<ManageMasterRecordInput>({
-    resolver: zodResolver(manageMasterRecordSchema),
+    resolver: zodResolver(manageMasterRecordSchema) as Resolver<ManageMasterRecordInput>,
     mode: "onChange",
     defaultValues: initial,
   });
@@ -483,7 +483,7 @@ function MasterRecordForm({
                 aria-invalid={invalid}
                 className={controlClass}
                 disabled={pending}
-                {...register("sortOrder")}
+                {...register("sortOrder", { valueAsNumber: true })}
               />
             )}
           </ErpFormField>
