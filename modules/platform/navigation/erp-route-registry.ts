@@ -71,6 +71,15 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     icon: "prospects",
   },
   {
+    id: "manage-crm",
+    title: "Manage CRM",
+    eyebrow: "CRM & Student Bank",
+    href: "/dashboard/crm/manage",
+    navGroup: "CRM & Students",
+    permission: "system.master_data.manage",
+    icon: "settings",
+  },
+  {
     id: "students",
     title: "Students",
     eyebrow: "Student Core",
