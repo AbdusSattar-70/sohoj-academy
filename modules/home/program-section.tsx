@@ -33,11 +33,11 @@ type ProgramCard = {
 const FALLBACK_PROGRAMS: ProgramCard[] = [
   {
     key: "fallback-annual",
-    eyebrow: ["Class 8\u20139", "\u0995\u09cd\u09b2\u09be\u09b8 \u09ee\u2013\u09ef"],
-    title: ["Annual Exam Readiness", "\u09ac\u09be\u09b0\u09cd\u09b7\u09bf\u0995 \u09aa\u09b0\u09c0\u0995\u09cd\u09b7\u09be \u09aa\u09cd\u09b0\u09b8\u09cd\u09a4\u09c1\u09a4\u09bf"],
+    eyebrow: ["Class 8–9", "ক্লাস ৮–৯"],
+    title: ["Annual Exam Readiness", "বার্ষিক পরীক্ষা প্রস্তুতি"],
     description: [
       "Identify syllabus gaps, practise weak areas and prepare systematically for annual examinations with focused assessment.",
-      "\u09b8\u09bf\u09b2\u09c7\u09ac\u09be\u09b8\u09c7\u09b0 \u0998\u09be\u099f\u09a4\u09bf \u09b6\u09a8\u09be\u0995\u09cd\u09a4 \u0995\u09b0\u09c7 \u09a6\u09c1\u09b0\u09cd\u09ac\u09b2 \u0985\u0982\u09b6\u09c7 \u0985\u09a8\u09c1\u09b6\u09c0\u09b2\u09a8 \u098f\u09ac\u0982 \u09a8\u09bf\u09df\u09ae\u09bf\u09a4 \u09ae\u09c2\u09b2\u09cd\u09af\u09be\u09df\u09a8\u09c7\u09b0 \u09ae\u09be\u09a7\u09cd\u09af\u09ae\u09c7 \u09ac\u09be\u09b0\u09cd\u09b7\u09bf\u0995 \u09aa\u09b0\u09c0\u0995\u09cd\u09b7\u09be\u09b0 \u099c\u09a8\u09cd\u09af \u09aa\u09b0\u09bf\u0995\u09b2\u09cd\u09aa\u09bf\u09a4 \u09aa\u09cd\u09b0\u09b8\u09cd\u09a4\u09c1\u09a4\u09bf\u0964",
+      "সিলেবাসের ঘাটতি শনাক্ত করে দুর্বল অংশে অনুশীলন এবং নিয়মিত মূল্যায়নের মাধ্যমে বার্ষিক পরীক্ষার জন্য পরিকল্পিত প্রস্তুতি।",
     ],
     icon: ClipboardCheck,
     offeringId: null,
@@ -45,11 +45,11 @@ const FALLBACK_PROGRAMS: ProgramCard[] = [
   },
   {
     key: "fallback-ssc",
-    eyebrow: ["Class 10 \u2022 Science", "\u0995\u09cd\u09b2\u09be\u09b8 \u09e7\u09e6 \u2022 \u09ac\u09bf\u099c\u09cd\u099e\u09be\u09a8"],
-    title: ["SSC A+ Preparation", "SSC A+ \u09aa\u09cd\u09b0\u09b8\u09cd\u09a4\u09c1\u09a4\u09bf"],
+    eyebrow: ["Class 10 • Science", "ক্লাস ১০ • বিজ্ঞান"],
+    title: ["SSC A+ Preparation", "SSC A+ প্রস্তুতি"],
     description: [
       "Structured subject support, regular testing and progress review designed around disciplined SSC preparation.",
-      "\u09ac\u09bf\u09b7\u09df\u09ad\u09bf\u09a4\u09cd\u09a4\u09bf\u0995 \u09b8\u09b9\u09be\u09df\u09a4\u09be, \u09a8\u09bf\u09df\u09ae\u09bf\u09a4 \u09aa\u09b0\u09c0\u0995\u09cd\u09b7\u09be \u0993 \u0985\u0997\u09cd\u09b0\u0997\u09a4\u09bf \u09aa\u09b0\u09cd\u09af\u09be\u09b2\u09cb\u099a\u09a8\u09be\u09b0 \u09ae\u09be\u09a7\u09cd\u09af\u09ae\u09c7 \u09b6\u09c3\u0999\u09cd\u0996\u09b2\u09be\u09ac\u09a6\u09cd\u09a7 SSC \u09aa\u09cd\u09b0\u09b8\u09cd\u09a4\u09c1\u09a4\u09bf\u0964",
+      "বিষয়ভিত্তিক সহায়তা, নিয়মিত পরীক্ষা ও অগ্রগতি পর্যালোচনার মাধ্যমে শৃঙ্খলাবদ্ধ SSC প্রস্তুতি।",
     ],
     icon: GraduationCap,
     offeringId: null,
@@ -57,11 +57,11 @@ const FALLBACK_PROGRAMS: ProgramCard[] = [
   },
   {
     key: "fallback-batch",
-    eyebrow: ["Academic Support", "\u098f\u0995\u09be\u09a1\u09c7\u09ae\u09bf\u0995 \u09b8\u09b9\u09be\u09df\u09a4\u09be"],
-    title: ["Focused Small-Batch Learning", "\u099b\u09cb\u099f \u09ac\u09cd\u09af\u09be\u099a\u09c7 \u09ae\u09a8\u09cb\u09af\u09cb\u0997\u09c0 \u09b6\u09c7\u0996\u09be"],
+    eyebrow: ["Academic Support", "একাডেমিক সহায়তা"],
+    title: ["Focused Small-Batch Learning", "ছোট ব্যাচে মনোযোগী শেখা"],
     description: [
       "A maximum of 12 students per batch helps teachers notice individual learning gaps instead of teaching to a crowded room.",
-      "\u09aa\u09cd\u09b0\u09a4\u09bf \u09ac\u09cd\u09af\u09be\u099a\u09c7 \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09e7\u09e8 \u099c\u09a8 \u09b6\u09bf\u0995\u09cd\u09b7\u09be\u09b0\u09cd\u09a5\u09c0 \u09a5\u09be\u0995\u09be\u09df \u09ad\u09bf\u09dc\u09c7\u09b0 \u09ae\u09a7\u09cd\u09af\u09c7 \u09aa\u09dc\u09be\u09a8\u09cb\u09b0 \u09ac\u09a6\u09b2\u09c7 \u09aa\u09cd\u09b0\u09a4\u09cd\u09af\u09c7\u0995 \u09b6\u09bf\u0995\u09cd\u09b7\u09be\u09b0\u09cd\u09a5\u09c0\u09b0 \u09b6\u09c7\u0996\u09be\u09b0 \u0998\u09be\u099f\u09a4\u09bf \u09b6\u09a8\u09be\u0995\u09cd\u09a4 \u0995\u09b0\u09be \u09b8\u09b9\u099c \u09b9\u09df\u0964",
+      "প্রতি ব্যাচে সর্বোচ্চ ১২ জন শিক্ষার্থী থাকায় ভিড়ের মধ্যে পড়ানোর বদলে প্রত্যেক শিক্ষার্থীর শেখার ঘাটতি শনাক্ত করা সহজ হয়।",
     ],
     icon: UsersRound,
     offeringId: null,
@@ -98,18 +98,18 @@ export async function HomeProgramSection() {
       <div className="mx-auto max-w-7xl px-5 py-18 sm:px-6 lg:px-8 lg:py-24">
         <div className="max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-700 dark:text-blue-400">
-            <LocalizedText en="Programs" bn="\u09aa\u09cd\u09b0\u09cb\u0997\u09cd\u09b0\u09be\u09ae\u09b8\u09ae\u09c2\u09b9" />
+            <LocalizedText en="Programs" bn="প্রোগ্রামসমূহ" />
           </p>
           <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
             <LocalizedText
-              en="Focused academic support\u2014not crowded coaching."
-              bn="\u09ad\u09bf\u09dc\u09bc \u09a8\u09df\u2014\u09ae\u09a8\u09cb\u09af\u09cb\u0997\u09c0 \u098f\u0995\u09be\u09a1\u09c7\u09ae\u09bf\u0995 \u09b8\u09b9\u09be\u09df\u09a4\u09be\u0964"
+              en="Focused academic support—not crowded coaching."
+              bn="ভিড় নয়—মনোযোগী একাডেমিক সহায়তা।"
             />
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
             <LocalizedText
               en="Each program is designed around a clear academic purpose, manageable batch size and regular measurement of student progress."
-              bn="\u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09aa\u09cd\u09b0\u09cb\u0997\u09cd\u09b0\u09be\u09ae \u09b8\u09cd\u09aa\u09b7\u09cd\u099f \u098f\u0995\u09be\u09a1\u09c7\u09ae\u09bf\u0995 \u09b2\u0995\u09cd\u09b7\u09cd\u09af, \u09a8\u09bf\u09df\u09a8\u09cd\u09a4\u09cd\u09b0\u09bf\u09a4 \u09ac\u09cd\u09af\u09be\u099a \u09b8\u09be\u09a7\u09bf\u099c \u098f\u09ac\u0982 \u09b6\u09bf\u0995\u09cd\u09b7\u09be\u09b0\u09cd\u09a5\u09c0\u09b0 \u09a8\u09bf\u09df\u09ae\u09bf\u09a4 \u0985\u0997\u09cd\u09b0\u0997\u09a4\u09bf \u09aa\u09b0\u09bf\u09ae\u09be\u09aa\u0995\u09c7 \u0995\u09c7\u09a8\u09cd\u09a6\u09cd\u09b0 \u0995\u09b0\u09c7 \u09b8\u09be\u099c\u09be\u09a8\u09cb\u0964"
+              bn="প্রতিটি প্রোগ্রাম স্পষ্ট একাডেমিক লক্ষ্য, নিয়ন্ত্রিত ব্যাচ সাইজ এবং শিক্ষার্থীর নিয়মিত অগ্রগতি পরিমাপকে কেন্দ্র করে সাজানো।"
             />
           </p>
         </div>
@@ -145,18 +145,18 @@ export async function HomeProgramSection() {
                     href={interestHref}
                     className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-border bg-background px-3 text-sm font-semibold hover:bg-muted"
                   >
-                    <LocalizedText en="Register Interest" bn="\u0986\u0997\u09cd\u09b0\u09b9 \u09a8\u09bf\u09ac\u09a8\u09cd\u09a7\u09a8" />
+                    <LocalizedText en="Register Interest" bn="আগ্রহ নিবন্ধন" />
                   </Link>
                   {program.acceptingApplications ? (
                     <Link
                       href={applyHref}
                       className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-blue-700 px-3 text-sm font-semibold text-white hover:bg-blue-800"
                     >
-                      <LocalizedText en="Apply for Admission" bn="\u09ad\u09b0\u09cd\u09a4\u09bf\u09b0 \u0986\u09ac\u09c7\u09a6\u09a8" />
+                      <LocalizedText en="Apply for Admission" bn="ভর্তির আবেদন" />
                     </Link>
                   ) : (
                     <span className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-dashed px-3 text-xs font-medium text-muted-foreground">
-                      <LocalizedText en="Applications closed" bn="\u0986\u09ac\u09c7\u09a6\u09a8 \u09ac\u09a8\u09cd\u09a7" />
+                      <LocalizedText en="Applications closed" bn="আবেদন বন্ধ" />
                     </span>
                   )}
                 </div>
