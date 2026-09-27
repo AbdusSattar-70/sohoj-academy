@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import type { ProspectStatus } from "@/modules/crm/prospect-status";
 
+export type SubmissionIntent = "interest" | "admission";
+
 export type ProspectListRow = {
   id: string;
   prospectNo: string;
@@ -9,36 +11,40 @@ export type ProspectListRow = {
   mobile: string;
   className: string;
   schoolName: string;
+  schoolNeedsReview: boolean;
   sourceName: string;
   assignedTo: string;
   status: ProspectStatus;
   nextFollowUpAt: string | null;
   createdAt: string;
+  submissionIntent: SubmissionIntent;
+  offeringLabel: string;
 };
 
 export async function getProspectList(): Promise<ProspectListRow[]> {
   const supabase = await createClient();
 
-  const [prospectsQ, classesQ, schoolsQ, sourcesQ, staffQ] =
+  const [prospectsQ, classesQ, schoolsQ, sourcesQ, staffQ, offeringsQ] =
     await Promise.all([
       supabase
         .from("prospects")
         .select(
-          "id,prospect_no,student_name,guardian_name,mobile,current_class_id,school_id,school_name_snapshot,source_id,assigned_to_staff_id,status,next_follow_up_at,created_at"
+          "id,prospect_no,student_name,guardian_name,mobile,current_class_id,school_id,school_name_snapshot,source_id,assigned_to_staff_id,status,next_follow_up_at,created_at,interested_offering_id,submission_intent"
         )
         .order("created_at", { ascending: false })
         .limit(500),
       supabase.from("classes").select("id,name"),
-      supabase.from("schools").select("id,name"),
+      supabase.from("schools").select("id,name,is_verified"),
       supabase.from("lead_sources").select("id,name"),
       supabase.from("staff").select("id,full_name"),
+      supabase.from("programme_offerings").select("id,code,name"),
     ]);
 
   const classNames = new Map(
     (classesQ.data ?? []).map((row) => [row.id, row.name])
   );
-  const schoolNames = new Map(
-    (schoolsQ.data ?? []).map((row) => [row.id, row.name])
+  const schoolRows = new Map(
+    (schoolsQ.data ?? []).map((row) => [row.id, row])
   );
   const sourceNames = new Map(
     (sourcesQ.data ?? []).map((row) => [row.id, row.name])
@@ -46,32 +52,50 @@ export async function getProspectList(): Promise<ProspectListRow[]> {
   const staffNames = new Map(
     (staffQ.data ?? []).map((row) => [row.id, row.full_name])
   );
+  const offeringLabels = new Map(
+    (offeringsQ.data ?? []).map((row) => [
+      row.id,
+      row.code ? `${row.code} — ${row.name}` : row.name,
+    ])
+  );
 
-  return (prospectsQ.data ?? []).map((row) => ({
-    id: row.id,
-    prospectNo: row.prospect_no,
-    studentName: row.student_name,
-    guardianName: row.guardian_name,
-    mobile: row.mobile,
-    className: row.current_class_id
-      ? classNames.get(row.current_class_id) ?? "—"
-      : "—",
-    schoolName:
-      (row.school_id ? schoolNames.get(row.school_id) : null) ??
-      row.school_name_snapshot ??
-      "—",
-    sourceName: row.source_id
-      ? sourceNames.get(row.source_id) ?? "—"
-      : "—",
-    assignedTo: row.assigned_to_staff_id
-      ? staffNames.get(row.assigned_to_staff_id) ?? "Unassigned"
-      : "Unassigned",
-    status: row.status,
-    nextFollowUpAt: row.next_follow_up_at,
-    createdAt: row.created_at,
-  }));
+  return (prospectsQ.data ?? []).map((row) => {
+    const linkedSchool = row.school_id ? schoolRows.get(row.school_id) : null;
+    const schoolName =
+      linkedSchool?.name ?? row.school_name_snapshot ?? "—";
+    const schoolNeedsReview = Boolean(
+      (!row.school_id && row.school_name_snapshot) ||
+        (linkedSchool && linkedSchool.is_verified === false)
+    );
+
+    return {
+      id: row.id,
+      prospectNo: row.prospect_no,
+      studentName: row.student_name,
+      guardianName: row.guardian_name,
+      mobile: row.mobile,
+      className: row.current_class_id
+        ? classNames.get(row.current_class_id) ?? "—"
+        : "—",
+      schoolName,
+      schoolNeedsReview,
+      sourceName: row.source_id
+        ? sourceNames.get(row.source_id) ?? "—"
+        : "—",
+      assignedTo: row.assigned_to_staff_id
+        ? staffNames.get(row.assigned_to_staff_id) ?? "Unassigned"
+        : "Unassigned",
+      status: row.status as ProspectStatus,
+      nextFollowUpAt: row.next_follow_up_at,
+      createdAt: row.created_at,
+      submissionIntent:
+        row.submission_intent === "admission" ? "admission" : "interest",
+      offeringLabel: row.interested_offering_id
+        ? offeringLabels.get(row.interested_offering_id) ?? "Linked offering"
+        : "—",
+    };
+  });
 }
-
 
 export type ProspectDetail = {
   id: string;
@@ -83,6 +107,7 @@ export type ProspectDetail = {
   alternateMobile: string | null;
   className: string;
   schoolName: string;
+  schoolNeedsReview: boolean;
   area: string;
   preferredSchedule: string | null;
   preferredDays: string[];
@@ -97,6 +122,8 @@ export type ProspectDetail = {
   createdAt: string;
   programs: string[];
   subjects: string[];
+  submissionIntent: SubmissionIntent;
+  offeringLabel: string;
   followups: Array<{
     id: string;
     type: string;
@@ -116,44 +143,69 @@ export async function getProspectDetail(
   const { data: prospect, error } = await supabase
     .from("prospects")
     .select(
-      "id,prospect_no,student_name,guardian_name,guardian_relationship_snapshot,mobile,alternate_mobile,current_class_id,school_id,school_name_snapshot,area_snapshot,preferred_schedule,preferred_days,trial_interest,source_id,referral_note,notes,status,assigned_to_staff_id,next_follow_up_at,lost_reason,created_at"
+      "id,prospect_no,student_name,guardian_name,guardian_relationship_snapshot,mobile,alternate_mobile,current_class_id,school_id,school_name_snapshot,area_snapshot,preferred_schedule,preferred_days,trial_interest,source_id,referral_note,notes,status,assigned_to_staff_id,next_follow_up_at,lost_reason,created_at,interested_offering_id,submission_intent"
     )
     .eq("id", prospectId)
     .maybeSingle();
 
   if (error || !prospect) return null;
 
-  const [classesQ, schoolsQ, sourcesQ, staffQ, programLinksQ, subjectLinksQ, programsQ, subjectsQ, followupsQ, profilesQ] =
-    await Promise.all([
-      supabase.from("classes").select("id,name"),
-      supabase.from("schools").select("id,name"),
-      supabase.from("lead_sources").select("id,name"),
-      supabase.from("staff").select("id,full_name"),
-      supabase
-        .from("prospect_program_interests")
-        .select("program_id")
-        .eq("prospect_id", prospectId),
-      supabase
-        .from("prospect_subject_interests")
-        .select("subject_id")
-        .eq("prospect_id", prospectId),
-      supabase.from("programs").select("id,name"),
-      supabase.from("subjects").select("id,name"),
-      supabase
-        .from("prospect_followups")
-        .select(
-          "id,followup_type,occurred_at,outcome,notes,next_follow_up_at,recorded_by"
-        )
-        .eq("prospect_id", prospectId)
-        .order("occurred_at", { ascending: false }),
-      supabase.from("profiles").select("id,display_name"),
-    ]);
+  const [
+    classesQ,
+    schoolsQ,
+    sourcesQ,
+    staffQ,
+    programsQ,
+    subjectsQ,
+    programLinksQ,
+    subjectLinksQ,
+    followupsQ,
+    offeringsQ,
+  ] = await Promise.all([
+    supabase.from("classes").select("id,name"),
+    supabase.from("schools").select("id,name,is_verified"),
+    supabase.from("lead_sources").select("id,name"),
+    supabase.from("staff").select("id,full_name"),
+    supabase.from("programs").select("id,name"),
+    supabase.from("subjects").select("id,name"),
+    supabase
+      .from("prospect_program_interests")
+      .select("program_id")
+      .eq("prospect_id", prospectId),
+    supabase
+      .from("prospect_subject_interests")
+      .select("subject_id")
+      .eq("prospect_id", prospectId),
+    supabase
+      .from("prospect_followups")
+      .select(
+        "id,followup_type,occurred_at,outcome,notes,next_follow_up_at,recorded_by"
+      )
+      .eq("prospect_id", prospectId)
+      .order("occurred_at", { ascending: false }),
+    supabase.from("programme_offerings").select("id,code,name"),
+  ]);
+
+  const profileIds = Array.from(
+    new Set(
+      (followupsQ.data ?? [])
+        .map((row) => row.recorded_by)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  const profilesQ = profileIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id,display_name")
+        .in("id", profileIds)
+    : { data: [] as Array<{ id: string; display_name: string | null }> };
 
   const classNames = new Map(
     (classesQ.data ?? []).map((row) => [row.id, row.name])
   );
-  const schoolNames = new Map(
-    (schoolsQ.data ?? []).map((row) => [row.id, row.name])
+  const schoolRows = new Map(
+    (schoolsQ.data ?? []).map((row) => [row.id, row])
   );
   const sourceNames = new Map(
     (sourcesQ.data ?? []).map((row) => [row.id, row.name])
@@ -170,6 +222,22 @@ export async function getProspectDetail(
   const profileNames = new Map(
     (profilesQ.data ?? []).map((row) => [row.id, row.display_name])
   );
+  const offeringLabels = new Map(
+    (offeringsQ.data ?? []).map((row) => [
+      row.id,
+      row.code ? `${row.code} — ${row.name}` : row.name,
+    ])
+  );
+
+  const linkedSchool = prospect.school_id
+    ? schoolRows.get(prospect.school_id)
+    : null;
+  const schoolName =
+    linkedSchool?.name ?? prospect.school_name_snapshot ?? "—";
+  const schoolNeedsReview = Boolean(
+    (!prospect.school_id && prospect.school_name_snapshot) ||
+      (linkedSchool && linkedSchool.is_verified === false)
+  );
 
   return {
     id: prospect.id,
@@ -182,20 +250,18 @@ export async function getProspectDetail(
     className: prospect.current_class_id
       ? classNames.get(prospect.current_class_id) ?? "—"
       : "—",
-    schoolName:
-      (prospect.school_id ? schoolNames.get(prospect.school_id) : null) ??
-      prospect.school_name_snapshot ??
-      "—",
+    schoolName,
+    schoolNeedsReview,
     area: prospect.area_snapshot ?? "—",
     preferredSchedule: prospect.preferred_schedule,
-    preferredDays: prospect.preferred_days,
+    preferredDays: prospect.preferred_days ?? [],
     trialInterest: prospect.trial_interest,
     sourceName: prospect.source_id
       ? sourceNames.get(prospect.source_id) ?? "—"
       : "—",
     referralNote: prospect.referral_note,
     notes: prospect.notes,
-    status: prospect.status,
+    status: prospect.status as ProspectStatus,
     assignedTo: prospect.assigned_to_staff_id
       ? staffNames.get(prospect.assigned_to_staff_id) ?? "Unassigned"
       : "Unassigned",
@@ -208,6 +274,11 @@ export async function getProspectDetail(
     subjects: (subjectLinksQ.data ?? [])
       .map((link) => subjectNames.get(link.subject_id))
       .filter((value): value is string => Boolean(value)),
+    submissionIntent:
+      prospect.submission_intent === "admission" ? "admission" : "interest",
+    offeringLabel: prospect.interested_offering_id
+      ? offeringLabels.get(prospect.interested_offering_id) ?? "Linked offering"
+      : "—",
     followups: (followupsQ.data ?? []).map((row) => ({
       id: row.id,
       type: row.followup_type,

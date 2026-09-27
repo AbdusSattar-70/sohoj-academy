@@ -58,6 +58,12 @@ export default async function ProspectDetailPage({
               <p className="mt-1 font-medium text-foreground">
                 {new Date(prospect.createdAt).toLocaleString()}
               </p>
+              <p className="mt-3 capitalize text-foreground">
+                {prospect.submissionIntent} request
+              </p>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+                {prospect.offeringLabel}
+              </p>
             </div>
           </div>
 
@@ -81,7 +87,15 @@ export default async function ProspectDetailPage({
               label="Current Class"
               value={prospect.className}
             />
-            <Info icon={School} label="School" value={prospect.schoolName} />
+            <Info
+              icon={School}
+              label="School"
+              value={
+                prospect.schoolNeedsReview
+                  ? `${prospect.schoolName} (needs review)`
+                  : prospect.schoolName
+              }
+            />
             <Info icon={MapPin} label="Area" value={prospect.area} />
             <Info
               icon={CalendarClock}
@@ -103,7 +117,7 @@ export default async function ProspectDetailPage({
             />
             <Detail
               label="Preferred Days"
-              value={prospect.preferredDays.length ? prospect.preferredDays.join(", ") : "—"}
+              value={prospect.preferredDays?.length ? prospect.preferredDays.join(", ") : "—"}
             />
             <Detail
               label="Trial Interest"
