@@ -90,7 +90,13 @@ export function PublicInterestForm({
   const [isPending, startTransition] = useTransition();
   const [formVersion, setFormVersion] = useState(0);
   const [message, setMessage] = useState<
-    { ok: boolean; text: string; prospectNo?: string | null } | null
+    {
+      ok: boolean;
+      text: string;
+      prospectNo?: string | null;
+      studentName?: string;
+      intentLabel?: string;
+    } | null
   >(null);
 
   function submit(formData: FormData) {
@@ -150,9 +156,18 @@ export function PublicInterestForm({
         setMessage({
           ok: true,
           prospectNo: result.prospectNo,
+          studentName: input.studentName,
+          intentLabel:
+            input.intent === "admission"
+              ? bn
+                ? "ভর্তির আবেদন"
+                : "Admission application"
+              : bn
+                ? "আগ্রহ নিবন্ধন"
+                : "Interest registration",
           text: bn
-            ? "ধন্যবাদ। আপনার আগ্রহ নিবন্ধিত হয়েছে।"
-            : "Thank you. Your interest has been recorded.",
+            ? "ধন্যবাদ। আপনার আগ্রহ নিবন্ধিত হয়েছে। এটি এখনো ভর্তি নয়—স্টাফ যাচাইয়ের পর যোগাযোগ করবে।"
+            : "Thank you. Your request is recorded. This is not yet admission — staff will verify and contact you.",
         });
         formRef.current?.reset();
         setFormVersion((value) => value + 1);
@@ -188,16 +203,54 @@ export function PublicInterestForm({
                   : "Please check the form"}
             </p>
             <p className="mt-1 text-sm leading-6">{message.text}</p>
-            {message.ok && message.prospectNo && (
-              <p className="mt-3 text-sm">
-                {bn ? "রেফারেন্স" : "Reference"}:{" "}
-                <span className="font-bold">{message.prospectNo}</span>
-              </p>
+            {message.ok && (
+              <div
+                id="interest-acknowledgement"
+                className="mt-4 space-y-3 rounded-xl border border-emerald-200/80 bg-white/70 p-4 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-50 print:border-black print:bg-white print:text-black"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide">
+                  {bn ? "প্রাপ্তি স্বীকার (এখনো ভর্তি নয়)" : "Acknowledgement (not yet admitted)"}
+                </p>
+                {message.prospectNo ? (
+                  <p>
+                    {bn ? "রেফারেন্স" : "Reference"}:{" "}
+                    <span className="font-bold">{message.prospectNo}</span>
+                  </p>
+                ) : null}
+                {message.studentName ? (
+                  <p>
+                    {bn ? "শিক্ষার্থী" : "Student"}:{" "}
+                    <span className="font-medium">{message.studentName}</span>
+                  </p>
+                ) : null}
+                {message.intentLabel ? (
+                  <p>
+                    {bn ? "ধরন" : "Type"}: {message.intentLabel}
+                  </p>
+                ) : null}
+                <p className="text-xs leading-5 opacity-90">
+                  {bn
+                    ? "এই রেফারেন্স নম্বরটি সংরক্ষণ করুন। সহজ একাডেমি যাচাই শেষে যোগাযোগ করবে।"
+                    : "Keep this reference number. Sohoj Academy will contact you after verification."}
+                </p>
+              </div>
             )}
             {message.ok && (
-              <Link href="/" className="mt-4 inline-flex text-sm font-semibold underline underline-offset-4">
-                {bn ? "সহজ একাডেমিতে ফিরুন" : "Return to Sohoj Academy"}
-              </Link>
+              <div className="mt-4 flex flex-wrap gap-3 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-700/40 bg-white px-4 text-sm font-semibold text-emerald-900 hover:bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
+                >
+                  {bn ? "প্রিন্ট / সেভ" : "Print / save"}
+                </button>
+                <Link
+                  href="/"
+                  className="inline-flex min-h-10 items-center text-sm font-semibold underline underline-offset-4"
+                >
+                  {bn ? "সহজ একাডেমিতে ফিরুন" : "Return to Sohoj Academy"}
+                </Link>
+              </div>
             )}
           </div>
         )}
