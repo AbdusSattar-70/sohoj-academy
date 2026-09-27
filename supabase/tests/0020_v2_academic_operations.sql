@@ -102,6 +102,17 @@ begin
  roster:=public.class_session_workspace(session)->'roster';
  if jsonb_array_length(roster)<>1 then raise exception 'Session roster wrong';end if;
  enrollment:=(roster->0->>'enrollment_id')::uuid;
+ if (public.homework_workspace(session)->'assignment'->>'id')::uuid<>draft then raise exception 'Submitted homework was not attached to class log.'; end if;
+ input:=jsonb_build_object('request_id',gen_random_uuid(),'session_id',session,'class_log_id',draft,'enrollment_id',enrollment,'base_revision',0,'status','NEEDS_WORK','submitted_on',today,'feedback','Revise exercises 2 and 3.');
+ result:=public.homework_command(input);
+ if public.homework_command(input)<>result then raise exception 'Homework retry created a duplicate.'; end if;
+ if (public.homework_workspace(session)->'students'->0->>'status')<>'NEEDS_WORK' then raise exception 'Homework review was not visible.'; end if;
+ begin
+  perform public.homework_command(input||jsonb_build_object('request_id',gen_random_uuid()));
+  raise exception 'Stale homework check accepted.';
+ exception when others then if sqlerrm not like '%changed%' then raise; end if; end;
+ result:=public.homework_command(jsonb_build_object('request_id',gen_random_uuid(),'session_id',session,'class_log_id',draft,'enrollment_id',enrollment,'base_revision',1,'status','COMPLETE','submitted_on',today,'feedback','Corrections verified.'));
+ if (result->>'revision')::integer<>2 or jsonb_array_length(public.homework_workspace(session)->'history')<>2 then raise exception 'Homework correction did not preserve earlier review.'; end if;
  begin
   perform public.academic_command(jsonb_build_object('action','SAVE_ATTENDANCE','request_id',gen_random_uuid(),'session_id',session,'entries','[]'::jsonb,'reason','Attempt incomplete attendance'));raise exception 'Incomplete roster accepted';
  exception when others then if sqlerrm not like '%exactly one%' then raise;end if;end;

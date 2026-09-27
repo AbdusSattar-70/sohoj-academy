@@ -9,6 +9,8 @@ import {
   getClassLogWorkspace,
 } from "@/modules/academics/operations/queries";
 import { ClassLogForm } from "@/modules/academics/operations/class-log-form";
+import { getHomeworkWorkspace } from "@/modules/academics/homework/queries";
+import { HomeworkFollowup } from "@/modules/academics/homework/workspace";
 import { AcademicForm } from "@/modules/academics/operations/command-form";
 export default async function SessionPage({
   params,
@@ -18,9 +20,10 @@ export default async function SessionPage({
   const context = await requirePermission("academics.view");
   const { sessionId } = await params;
   if (!z.string().uuid().safeParse(sessionId).success) notFound();
-  const [data, classLogs] = await Promise.all([
+  const [data, classLogs, homework] = await Promise.all([
     getSessionWorkspace(sessionId),
     getClassLogWorkspace(sessionId),
+    getHomeworkWorkspace(sessionId),
   ]);
   const s = data.session;
   const latest = data.submissions[0];
@@ -238,6 +241,7 @@ export default async function SessionPage({
           </p>
         )}
       </section>
+      <HomeworkFollowup sessionId={sessionId} workspace={homework} canRecord={s.status === "SCHEDULED" && began && (can("academics.attendance.record") || can("academics.sessions.manage"))} />
       <section className="space-y-3">
         <h2 className="font-semibold">Attendance Revision History</h2>
         {data.submissions.map((a) => (
