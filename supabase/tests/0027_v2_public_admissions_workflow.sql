@@ -187,6 +187,19 @@ begin
     'reason', 'Open applications for acceptance fixture'
   ));
 
+  listed := public.list_public_programme_offerings();
+  if not exists (
+    select 1 from jsonb_array_elements(listed) e
+    where (e->>'id')::uuid = offering
+      and e->>'academic_year_name' = 'PADM-' || left(u::text, 8)
+      and e->>'branch_name' is not null
+      and e->>'class_name' is not null
+      and e->>'application_state' = 'OPEN'
+      and (e->>'is_accepting_applications')::boolean
+  ) then
+    raise exception 'Public card must show academic context and an effective open state.';
+  end if;
+
   result := public.submit_public_interest(jsonb_build_object(
     'student_name', 'Admission Student',
     'guardian_name', 'Admission Guardian',
@@ -237,6 +250,16 @@ begin
     'reason', 'Move open window into the future'
   ));
 
+  listed := public.list_public_programme_offerings();
+  if not exists (
+    select 1 from jsonb_array_elements(listed) e
+    where (e->>'id')::uuid = offering
+      and e->>'application_state' = 'UPCOMING'
+      and not (e->>'is_accepting_applications')::boolean
+  ) then
+    raise exception 'Upcoming offering must display without an open application action.';
+  end if;
+
   raised := false;
   begin
     perform public.submit_public_interest(jsonb_build_object(
@@ -253,6 +276,33 @@ begin
   end;
   if not raised then
     raise exception 'Submit before applications_open_on must be rejected.';
+  end if;
+
+  perform public.update_programme_offering_public_controls(jsonb_build_object(
+    'offering_id', offering,
+    'showcase_title', 'Public Test Programme',
+    'showcase_title_bn', 'পাবলিক টেস্ট প্রোগ্রাম',
+    'showcase_description', 'Acceptance fixture description',
+    'showcase_description_bn', 'যাচাইকরণ বর্ণনা',
+    'showcase_eyebrow', 'Class fixture',
+    'showcase_eyebrow_bn', 'ক্লাস',
+    'showcase_icon', 'book-open-check',
+    'showcase_sort_order', 10,
+    'is_website_visible', true,
+    'is_accepting_applications', true,
+    'applications_open_on', today - 30,
+    'applications_close_on', today - 1,
+    'subject_ids', '[]'::jsonb,
+    'reason', 'Close the public application window'
+  ));
+  listed := public.list_public_programme_offerings();
+  if not exists (
+    select 1 from jsonb_array_elements(listed) e
+    where (e->>'id')::uuid = offering
+      and e->>'application_state' = 'CLOSED'
+      and not (e->>'is_accepting_applications')::boolean
+  ) then
+    raise exception 'Expired offering must remain visible but closed.';
   end if;
 end;
 $$;

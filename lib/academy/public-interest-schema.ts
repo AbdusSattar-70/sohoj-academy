@@ -23,18 +23,7 @@ export const publicInterestSchema = z.object({
   trialInterest: z.boolean().default(false),
   programIds: z.array(z.string().uuid()).max(10).default([]),
   subjectIds: z.array(z.string().uuid()).max(20).default([]),
-  sourceCode: z
-    .enum([
-      "WALK_IN",
-      "SOCIAL",
-      "TEACHER_REFERRAL",
-      "STUDENT_REFERRAL",
-      "GUARDIAN_REFERRAL",
-      "SCHOOL_VISIT",
-      "OFFLINE_CAMPAIGN",
-      "OTHER",
-    ])
-    .optional(),
+  sourceCode: z.string().trim().max(40).regex(/^[A-Z0-9_-]+$/).optional(),
   referralNote: z.string().trim().max(240).optional(),
   notes: z.string().trim().max(500).optional(),
   consentToContact: z.boolean().refine((value) => value, {

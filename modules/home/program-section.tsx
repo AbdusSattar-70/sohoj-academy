@@ -45,9 +45,13 @@ function feeSummaryFromPlan(
 
 function windowNoteFromOffering(row: {
   is_accepting_applications: boolean;
+  application_state: "OPEN" | "UPCOMING" | "CLOSED";
   applications_open_on: string | null;
   applications_close_on: string | null;
 }): [string, string] | null {
+  if (row.application_state === "UPCOMING" && row.applications_open_on) {
+    return [`Opens ${row.applications_open_on}`, `${row.applications_open_on} থেকে আবেদন`];
+  }
   if (!row.is_accepting_applications) {
     return ["Applications closed", "আবেদন বন্ধ"];
   }
@@ -93,58 +97,14 @@ type ProgramCard = {
   acceptingApplications: boolean;
   feeSummary: [string, string] | null;
   windowNote: [string, string] | null;
+  academicContext: string;
+  subjects: string[];
 };
-
-const FALLBACK_PROGRAMS: ProgramCard[] = [
-  {
-    key: "fallback-annual",
-    eyebrow: ["Class 8–9", "ক্লাস ৮–৯"],
-    title: ["Annual Exam Readiness", "বার্ষিক পরীক্ষা প্রস্তুতি"],
-    description: [
-      "Identify syllabus gaps, practise weak areas and prepare systematically for annual examinations with focused assessment.",
-      "সিলেবাসের ঘাটতি শনাক্ত করে দুর্বল অংশে অনুশীলন এবং নিয়মিত মূল্যায়নের মাধ্যমে বার্ষিক পরীক্ষার জন্য পরিকল্পিত প্রস্তুতি।",
-    ],
-    icon: ClipboardCheck,
-    offeringId: null,
-    acceptingApplications: true,
-    feeSummary: null,
-    windowNote: null,
-  },
-  {
-    key: "fallback-ssc",
-    eyebrow: ["Class 10 • Science", "ক্লাস ১০ • বিজ্ঞান"],
-    title: ["SSC A+ Preparation", "SSC A+ প্রস্তুতি"],
-    description: [
-      "Structured subject support, regular testing and progress review designed around disciplined SSC preparation.",
-      "বিষয়ভিত্তিক সহায়তা, নিয়মিত টেস্ট এবং অগ্রগতি পর্যালোচনার মাধ্যমে শৃঙ্খলিত SSC প্রস্তুতি।",
-    ],
-    icon: GraduationCap,
-    offeringId: null,
-    acceptingApplications: true,
-    feeSummary: null,
-    windowNote: null,
-  },
-  {
-    key: "fallback-hsc",
-    eyebrow: ["Class 11–12", "ক্লাস ১১–১২"],
-    title: ["HSC Foundation", "HSC ফাউন্ডেশন"],
-    description: [
-      "Build core concepts early with steady practice so higher secondary study stays manageable and measurable.",
-      "মৌলিক ধারণা আগে থেকে গড়ে তুলে নিয়মিত অনুশীলনের মাধ্যমে উচ্চ মাধ্যমিক পড়াশোনা সহজ ও পরিমাপযোগ্য রাখা।",
-    ],
-    icon: BookOpenCheck,
-    offeringId: null,
-    acceptingApplications: true,
-    feeSummary: null,
-    windowNote: null,
-  },
-];
 
 export async function HomeProgramSection() {
   const rows = await getPublicProgrammeOfferings();
   const programs: ProgramCard[] =
-    rows.length > 0
-      ? rows.map((row) => ({
+    rows?.map((row) => ({
           key: row.id,
           eyebrow: [
             row.showcase_eyebrow || row.code,
@@ -163,8 +123,10 @@ export async function HomeProgramSection() {
           acceptingApplications: Boolean(row.is_accepting_applications),
           feeSummary: feeSummaryFromPlan(row.fee_plan),
           windowNote: windowNoteFromOffering(row),
-        }))
-      : FALLBACK_PROGRAMS;
+          academicContext: [row.academic_year_name, row.branch_name, row.class_name, row.group_name]
+            .filter(Boolean).join(" · "),
+          subjects: row.subjects.map((subject) => subject.name),
+        })) ?? [];
 
   return (
     <section id="programs" className="scroll-mt-24 border-b border-border bg-muted/35">
@@ -188,6 +150,15 @@ export async function HomeProgramSection() {
         </div>
 
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          {programs.length === 0 && (
+            <p className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground lg:col-span-3" role={rows === null ? "alert" : "status"}>
+              {rows === null ? (
+                <LocalizedText en="Programme information is temporarily unavailable. Please try again shortly." bn="প্রোগ্রামের তথ্য সাময়িকভাবে পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।" />
+              ) : (
+                <LocalizedText en="No programmes are published at the moment. Please check back soon." bn="এখন কোনো প্রোগ্রাম প্রকাশিত নেই। পরে আবার দেখুন।" />
+              )}
+            </p>
+          )}
           {programs.map((program) => {
             const interestHref = program.offeringId
               ? `/interest?offering=${program.offeringId}`
@@ -213,6 +184,12 @@ export async function HomeProgramSection() {
                 <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
                   <LocalizedText en={program.description[0]} bn={program.description[1]} />
                 </p>
+                <div className="mt-3 space-y-1 text-xs leading-5 text-muted-foreground">
+                  <p>{program.academicContext}</p>
+                  {program.subjects.length > 0 && (
+                    <p><LocalizedText en="Subjects" bn="বিষয়সমূহ" />: {program.subjects.join(", ")}</p>
+                  )}
+                </div>
                 {(program.feeSummary || program.windowNote) && (
                   <div className="mt-4 space-y-1 text-xs leading-5 text-muted-foreground">
                     {program.windowNote ? (

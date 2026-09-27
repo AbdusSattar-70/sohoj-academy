@@ -1,6 +1,6 @@
 # Public admissions workflow (account-free)
 
-Authoritative product decisions for branch `feature/workflow_redefine`.
+Authoritative product decisions for the account-free public path, continued on `feature/blueprint_gap_closure`.
 Complements the Product Constitution, [ERP implementation guardrails](ERP_IMPLEMENTATION_GUARDRAILS.md), and [Student lifecycle acceptance](STUDENT_LIFECYCLE_ACCEPTANCE.md).
 
 ## Product decision

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition, type ReactNode } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { CheckCircle2, Send } from "lucide-react";
 import { submitPublicInterest } from "@/app/actions/public-interest";
@@ -20,29 +20,6 @@ type OpenOfferingOption = {
   subjectIds: string[];
 };
 
-const relationships = [
-  ["Father", "পিতা"],
-  ["Mother", "মাতা"],
-  ["Brother", "ভাই"],
-  ["Sister", "বোন"],
-  ["Grandfather", "দাদা/নানা"],
-  ["Grandmother", "দাদি/নানি"],
-  ["Uncle", "চাচা/মামা"],
-  ["Aunt", "ফুফু/খালা"],
-  ["Other Guardian", "অন্যান্য অভিভাবক"],
-] as const;
-
-const sourceOptions = [
-  ["WALK_IN", "Walk-in / visited the academy", "সরাসরি একাডেমিতে এসেছেন"],
-  ["SOCIAL", "Facebook / social media", "ফেসবুক / সামাজিক মাধ্যম"],
-  ["TEACHER_REFERRAL", "Teacher referral", "শিক্ষকের রেফারেল"],
-  ["STUDENT_REFERRAL", "Student referral", "শিক্ষার্থীর রেফারেল"],
-  ["GUARDIAN_REFERRAL", "Guardian referral", "অভিভাবকের রেফারেল"],
-  ["SCHOOL_VISIT", "School visit", "স্কুল ভিজিট"],
-  ["OFFLINE_CAMPAIGN", "Miking / leaflet", "মাইকিং / লিফলেট"],
-  ["OTHER", "Other", "অন্যান্য"],
-] as const;
-
 const dayOptions = [
   ["SAT", "Sat", "শনি"],
   ["SUN", "Sun", "রবি"],
@@ -61,6 +38,8 @@ export function PublicInterestForm({
   programs,
   subjects,
   schools,
+  sourceOptions,
+  relationships,
   openOfferings = [],
   defaultOfferingId = "",
   intent = "interest",
@@ -69,6 +48,8 @@ export function PublicInterestForm({
   programs: Option[];
   subjects: Option[];
   schools: SmartSelectOption[];
+  sourceOptions: { code: string; name: string }[];
+  relationships: { code: string; name: string }[];
   openOfferings?: OpenOfferingOption[];
   defaultOfferingId?: string;
   intent?: "interest" | "admission";
@@ -131,17 +112,7 @@ export function PublicInterestForm({
       trialInterest: formData.get("trialInterest") === "on",
       programIds: formData.getAll("programIds").map(String),
       subjectIds: formData.getAll("subjectIds").map(String),
-      sourceCode:
-        (String(formData.get("sourceCode") ?? "") || undefined) as
-          | "WALK_IN"
-          | "SOCIAL"
-          | "TEACHER_REFERRAL"
-          | "STUDENT_REFERRAL"
-          | "GUARDIAN_REFERRAL"
-          | "SCHOOL_VISIT"
-          | "OFFLINE_CAMPAIGN"
-          | "OTHER"
-          | undefined,
+      sourceCode: String(formData.get("sourceCode") ?? "") || undefined,
       referralNote: String(formData.get("referralNote") ?? ""),
       notes: String(formData.get("notes") ?? ""),
       consentToContact: formData.get("consentToContact") === "on",
@@ -365,8 +336,8 @@ export function PublicInterestForm({
               <Label htmlFor="interest-relationship">{bn ? "সম্পর্ক" : "Relationship"}</Label>
               <select id="interest-relationship" name="guardianRelationship" className={selectClass}>
                 <option value="">{bn ? "সম্পর্ক নির্বাচন করুন" : "Select relationship"}</option>
-                {relationships.map(([value, bnLabel]) => (
-                  <option key={value} value={value}>{bn ? bnLabel : value}</option>
+                {relationships.map((row) => (
+                  <option key={row.code} value={row.code}>{row.name}</option>
                 ))}
               </select>
             </div>
@@ -436,8 +407,8 @@ export function PublicInterestForm({
               <Label htmlFor="interest-source">{bn ? "কীভাবে জেনেছেন?" : "How did you hear about us?"}</Label>
               <select id="interest-source" name="sourceCode" className={selectClass}>
                 <option value="">{bn ? "জানা থাকলে নির্বাচন করুন" : "Select if known"}</option>
-                {sourceOptions.map(([code, en, bnLabel]) => (
-                  <option key={code} value={code}>{bn ? bnLabel : en}</option>
+                {sourceOptions.map((row) => (
+                  <option key={row.code} value={row.code}>{row.name}</option>
                 ))}
               </select>
             </div>
@@ -487,8 +458,8 @@ export function PublicInterestForm({
               ? "জমা হচ্ছে…"
               : "Submitting…"
             : bn
-              ? "আগ্রহ জমা দিন"
-              : "Submit Interest"}
+              ? intent === "admission" ? "ভর্তির আবেদন জমা দিন" : "আগ্রহ জমা দিন"
+              : intent === "admission" ? "Submit Admission Application" : "Submit Interest"}
         </button>
       </form>
     </div>

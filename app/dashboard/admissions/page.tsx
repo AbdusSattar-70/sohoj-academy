@@ -134,10 +134,14 @@ export default async function AdmissionsPage({
                   href={`/dashboard/admissions/${a.id}/print`}
                   className="text-sm underline print:hidden"
                 >
-                  Admission Form
+                  Print Consent Form
                 </Link>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Print the admission and consent form for the guardian to sign. The student may
+              sign if able. File the signed copy with the admission record before final review.
+            </p>
             <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <p className="text-xs text-muted-foreground">Guardian</p>

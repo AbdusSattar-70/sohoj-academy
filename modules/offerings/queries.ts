@@ -61,6 +61,10 @@ export type PublicOfferingCard = {
   group_id: string | null;
   branch_id: string;
   academic_year_id: string;
+  academic_year_name: string;
+  branch_name: string;
+  class_name: string;
+  group_name: string | null;
   showcase_title: string | null;
   showcase_title_bn: string | null;
   showcase_description: string | null;
@@ -70,6 +74,7 @@ export type PublicOfferingCard = {
   showcase_icon: string | null;
   showcase_sort_order: number;
   is_accepting_applications: boolean;
+  application_state: "OPEN" | "UPCOMING" | "CLOSED";
   applications_open_on: string | null;
   applications_close_on: string | null;
   created_at: string;
@@ -81,14 +86,14 @@ export type PublicOfferingCard = {
   } | null;
 };
 
-/** Public homepage / forms: ACTIVE + website-visible offerings. */
-export async function getPublicProgrammeOfferings(): Promise<PublicOfferingCard[]> {
+/** ACTIVE + website-visible offerings. Null means the catalogue could not be loaded. */
+export async function getPublicProgrammeOfferings(): Promise<PublicOfferingCard[] | null> {
   try {
     const db = await createOfferingClient();
     const { data, error } = await db.rpc("list_public_programme_offerings");
-    if (error || !Array.isArray(data)) return [];
+    if (error || !Array.isArray(data)) return null;
     return data as PublicOfferingCard[];
   } catch {
-    return [];
+    return null;
   }
 }

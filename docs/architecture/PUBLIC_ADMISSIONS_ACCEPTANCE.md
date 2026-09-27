@@ -16,7 +16,7 @@ Published programme card
 
 ## Automated SQL suite
 
-Run as database owner on a development database after migrations through 0029:
+Run as database owner on a development database after migrations through 0030:
 
 ```bash
 # example: psql or Supabase SQL editor
@@ -48,7 +48,7 @@ Use a disposable development org seed (SOHOJ). Do not use production data.
    - Set bilingual showcase title/description/eyebrow.
    - Turn **Website visible** on.
    - Leave **Accepting applications** off first.
-5. Confirm the homepage shows the card (or falls back only when no curated cards exist).
+5. Confirm the homepage shows only published cards with year, branch, class, subjects, fees and application window; when none are published it shows an empty state.
 6. Confirm **Apply** is constrained (applications closed messaging or form rejection).
 7. Turn **Accepting applications** on with an open date window that includes today.
 8. Confirm Interest and Apply entry points pre-select the offering.
@@ -84,6 +84,6 @@ Use a disposable development org seed (SOHOJ). Do not use production data.
 ## Exit criteria
 
 - `pnpm run build` passes on the feature branch
-- Migrations through `0029` applied on the linked development database
+- Migrations through `0030` applied on the linked development database
 - SQL suite `0027` returns `PASS` and rolls back
 - Browser sequence A–C completed once on the linked environment

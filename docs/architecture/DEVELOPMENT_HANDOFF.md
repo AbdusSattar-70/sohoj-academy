@@ -1,6 +1,6 @@
 # Sohoj Academy ERP — Development Handoff
 
-Last updated: 2026-09-26
+Last updated: 2026-09-28
 
 This document is the durable handoff for continuing the ERP build in a fresh ChatGPT conversation.
 
@@ -23,7 +23,7 @@ Repository architecture references:
 
 ## Active development branch
 
-`feature/student-lifecycle` (branched from `feature/dashboard_initialization` at `d4b093a`, including the public Interest RPC receiver fix).
+`feature/blueprint_gap_closure` (branched from `feature/dashboard_teacher`). The sections below retain historical checkpoints; use [Blueprint gap closure](BLUEPRINT_GAP_CLOSURE.md) for the latest implementation state.
 
 Do not continue ERP work from the old MVP branch.
 
@@ -63,7 +63,7 @@ Typecheck intentionally clears stale Next route types and regenerates them befor
 17. Critical retry/concurrency workflows require idempotency, uniqueness and/or row locking.
 18. RLS/database authorization remains the security boundary.
 
-## Current migration chain
+## Foundation migration chain (historical checkpoint)
 
 - `0001_v2_platform.sql`
 - `0002_v2_crm_student_core.sql`
@@ -345,14 +345,14 @@ Permissions reuse the existing `academics.view`, `academics.curriculum.manage`, 
 
 Verification: all 13 SQL tests pass in isolated PGlite/Postgres. New test 0020 covers curriculum pinning, routine/session overlap rejection, retry/duplicate protection, teacher scope, roster completeness, stale draft rejection, independent approval, correction history, cancellation and retirement preservation. Typecheck, ESLint and production build pass. Live Supabase/browser and true multi-connection concurrency acceptance remain pending.
 
-## Immediate next implementation direction
+## Earlier implementation direction (historical checkpoint)
 
 1. Apply pending migrations through 0021 and regenerate linked database types. Follow `docs/architecture/ACADEMIC_OPERATIONS_ACCEPTANCE.md` with separate teacher and reviewer accounts.
 2. Build actual class logs, homework and coverage-gap/recovery workflows on the pinned curriculum/session foundation.
 3. Build assessments/results and the teacher question-creation/review module. Question creation remains unimplemented; do not confuse curriculum text entry with a question bank or generation portal.
 4. Continue broader student lifecycle, finance/accounting and compensation per the blueprint. Preserve historical versions, independent approval and canonical identities.
 
-## New-chat instruction
+## Earlier new-chat instruction (historical checkpoint)
 
 In a fresh conversation, say:
 
@@ -365,3 +365,18 @@ Active branch: `feature/dashboard_teacher` (branched from the existing `feature/
 Migration 0029 keeps unlisted school names as prospect text for staff review without creating school-directory records. The full rollback-only SQL suite passes in isolated PGlite after migration 0029. Apply through migration 0029; use `PUBLIC_ADMISSIONS_ACCEPTANCE.md`, `ACADEMIC_OPERATIONS_ACCEPTANCE.md`, and tests 0027/0020. Do not claim live Supabase/browser acceptance from isolated verification alone.
 
 For the next continuation, use `feature/dashboard_teacher` and start with this checkpoint. Public student/admission entry is account-free; read `PUBLIC_ADMISSIONS_WORKFLOW.md` and `PUBLIC_ADMISSIONS_ACCEPTANCE.md` before changing it. Academic operations now include immutable actual class-log submissions in addition to separate attendance evidence. Continue from homework follow-up and coverage recovery; assessments/results and teacher question creation remain outstanding.
+
+## Blueprint gap closure checkpoint (2026-09-28)
+
+Active branch: `feature/blueprint_gap_closure`, based on `feature/dashboard_teacher`. Migration 0030 makes the public catalogue expose the academic context and effective application state using the organization-local date; the submit RPC uses that date as well. The homepage no longer shows fabricated fallback programmes. Active master data drives form choices, and the old applicant sign-up placeholder routes to account-free interest. Admission Cases have a printable A4 admission and consent form with letterhead reserve, guardian declaration, optional student signature, fee terms and office-use verification.
+
+See [Blueprint gap closure](BLUEPRINT_GAP_CLOSURE.md) for delivered changes and remaining blueprint modules. All migrations through 0030 and all rollback-only SQL suites pass in isolated PGlite/Postgres; TypeScript, touched-file ESLint and the production build pass. Linked Supabase and signed-in print/browser acceptance remain pending.
+
+## Immediate next implementation direction
+
+1. Apply migrations through 0030 in the linked development environment. Verify homepage cards, active vocabulary choices, the public admission path, and print a draft form on A4 for guardian consent.
+2. Complete the fuller public admission application and the staff verification/correction workflow, including controlled signed-document retention and a permissioned receipt-of-consent step. Preserve account-free submission, Prospect-first identity and separate billing/payment facts.
+3. Extend the offering publication contract with editable requirements, policy, schedule and placement availability. Continue academic homework/coverage recovery, then assessments/results and teacher question authoring/review.
+4. Continue finance/accounting, teacher compensation and the remaining platform acceptance items listed in `BLUEPRINT_GAP_CLOSURE.md`.
+
+For continuation, use `feature/blueprint_gap_closure`; read this checkpoint, the architecture docs and Master Blueprint v1.1 before implementation. Do not revive the old MVP dashboard/schema.
