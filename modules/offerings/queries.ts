@@ -10,7 +10,10 @@ function dataOrThrow<T>(data: T | null, error: { message: string } | null): T {
 export async function getOfferingOverview() {
   const db = await createOfferingClient();
   const base = await createClient();
-  const [offeringsQ, groupsQ, yearsQ, branchesQ, classesQ, programsQ, plansQ, componentsQ] = await Promise.all([
+  const [
+    offeringsQ, groupsQ, yearsQ, branchesQ, classesQ, programsQ,
+    plansQ, componentsQ, subjectsQ,
+  ] = await Promise.all([
     db.from("programme_offerings").select("*").order("created_at", { ascending: false }),
     db.from("academic_groups").select("id,code,name").eq("is_active", true).order("name"),
     base.from("academic_years").select("id,name,is_active").order("starts_on", { ascending: false }),
@@ -19,7 +22,20 @@ export async function getOfferingOverview() {
     base.from("programs").select("id,name").eq("is_active", true).order("name"),
     db.from("fee_plan_versions").select("*").order("version", { ascending: false }),
     db.from("fee_plan_components").select("*").order("sort_order"),
+    base.from("subjects").select("id,code,name").eq("is_active", true).order("name"),
   ]);
+
+  let offeringSubjects: { offering_id: string; subject_id: string; sort_order: number }[] = [];
+  try {
+    const offeringSubjectsQ = await db
+      .from("programme_offering_subjects")
+      .select("offering_id,subject_id,sort_order");
+    if (!offeringSubjectsQ.error && offeringSubjectsQ.data) {
+      offeringSubjects = offeringSubjectsQ.data;
+    }
+  } catch {
+    offeringSubjects = [];
+  }
 
   return {
     offerings: dataOrThrow(offeringsQ.data, offeringsQ.error),
@@ -30,6 +46,44 @@ export async function getOfferingOverview() {
     programs: dataOrThrow(programsQ.data, programsQ.error),
     plans: dataOrThrow(plansQ.data, plansQ.error),
     components: dataOrThrow(componentsQ.data, componentsQ.error),
+    subjects: dataOrThrow(subjectsQ.data, subjectsQ.error),
+    offeringSubjects,
   };
 }
 export type OfferingOverview = Awaited<ReturnType<typeof getOfferingOverview>>;
+
+export type PublicOfferingCard = {
+  id: string;
+  code: string;
+  name: string;
+  showcase_title: string | null;
+  showcase_title_bn: string | null;
+  showcase_description: string | null;
+  showcase_description_bn: string | null;
+  showcase_eyebrow: string | null;
+  showcase_eyebrow_bn: string | null;
+  showcase_icon: string | null;
+  showcase_sort_order: number;
+  is_accepting_applications: boolean;
+  applications_open_on: string | null;
+  applications_close_on: string | null;
+  created_at: string;
+  subjects: { id: string; code: string; name: string }[];
+  fee_plan: {
+    billing_cycle: string;
+    currency_code: string;
+    components: { code: string; name: string; amount: number; charge_type: string; recurrence: string }[];
+  } | null;
+};
+
+/** Public homepage / forms: ACTIVE + website-visible offerings. */
+export async function getPublicProgrammeOfferings(): Promise<PublicOfferingCard[]> {
+  try {
+    const db = await createOfferingClient();
+    const { data, error } = await db.rpc("list_public_programme_offerings");
+    if (error || !Array.isArray(data)) return [];
+    return data as PublicOfferingCard[];
+  } catch {
+    return [];
+  }
+}
