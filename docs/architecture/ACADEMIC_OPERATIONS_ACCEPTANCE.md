@@ -38,7 +38,7 @@ Apply all pending migrations through 0021 to the development project used by `.e
 
 ## Attendance and review
 
-1. Sign in as the assigned teacher and open a session after its start time. The teacher should not see another teacher's unrelated sessions/rosters.
+1. Sign in as the assigned teacher and open **Academics → My Classes** (`/dashboard/teacher`). Only sessions assigned to the linked Staff identity appear. Open a session after its start time. The teacher should not see another teacher's unrelated sessions/rosters.
 2. Choose PRESENT, ABSENT, LATE or EXCUSED for every roster member; nobody is automatically marked present. Add notes and a reason, then save the draft.
 3. Review saved revision history, then **Submit Saved Attendance**. Save any edits before submitting: submission uses the saved revision, not unsaved inputs.
 4. Under the independent reviewer account, follow the Action Center → Approval Register → Review class attendance link, or open the session directly.
