@@ -32,6 +32,16 @@ type ProspectCoreRow = {
 
 export type SubmissionIntent = "interest" | "admission";
 
+type PublicApplication = {
+  guardianAddress: string;
+  academicBackground: string | null;
+  requirementsAcknowledged: boolean;
+  policyAcknowledged: boolean;
+  submittedAt: string;
+  feePlanVersionId: string | null;
+  publishedTerms: { offering_name?: string; requirements?: string | null; policy?: string | null; schedule?: string | null; applications_open_on?: string | null; applications_close_on?: string | null };
+};
+
 export type ProspectListRow = {
   id: string;
   prospectNo: string;
@@ -164,6 +174,7 @@ export type ProspectDetail = {
   subjects: string[];
   submissionIntent: SubmissionIntent;
   offeringLabel: string;
+  application: PublicApplication | null;
   followups: Array<{
     id: string;
     type: string;
@@ -212,6 +223,7 @@ export async function getProspectDetail(
     subjectLinksQ,
     followupsQ,
     offeringsQ,
+    applicationQ,
   ] = await Promise.all([
     supabase.from("classes").select("id,name"),
     supabase.from("schools").select("id,name,is_verified"),
@@ -235,6 +247,10 @@ export async function getProspectDetail(
       .eq("prospect_id", prospectId)
       .order("occurred_at", { ascending: false }),
     offeringDb.from("programme_offerings").select("id,code,name"),
+    (supabase as unknown as { from: (name: string) => { select: (columns: string) => { eq: (column: string, value: string) => { maybeSingle: () => Promise<{ data: { guardian_address: string; academic_background: string | null; requirements_acknowledged: boolean; policy_acknowledged: boolean; submitted_at: string; fee_plan_version_id: string | null; published_terms_snapshot: Record<string, string | null> } | null; error: unknown }> } } } })
+      .from("public_admission_applications")
+      .select("guardian_address,academic_background,requirements_acknowledged,policy_acknowledged,submitted_at,fee_plan_version_id,published_terms_snapshot")
+      .eq("prospect_id", prospectId).maybeSingle(),
   ]);
 
   const profileIds = Array.from(
@@ -330,6 +346,15 @@ export async function getProspectDetail(
     offeringLabel: prospect.interested_offering_id
       ? offeringLabels.get(prospect.interested_offering_id) ?? "Linked offering"
       : "—",
+    application: applicationQ.data ? {
+      guardianAddress: applicationQ.data.guardian_address,
+      academicBackground: applicationQ.data.academic_background,
+      requirementsAcknowledged: applicationQ.data.requirements_acknowledged,
+      policyAcknowledged: applicationQ.data.policy_acknowledged,
+      submittedAt: applicationQ.data.submitted_at,
+      feePlanVersionId: applicationQ.data.fee_plan_version_id,
+      publishedTerms: applicationQ.data.published_terms_snapshot,
+    } : null,
     followups: (followupsQ.data ?? []).map((row) => ({
       id: row.id,
       type: row.followup_type,

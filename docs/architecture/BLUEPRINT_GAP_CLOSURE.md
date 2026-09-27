@@ -11,6 +11,7 @@ Updated 2026-09-28. Branch: `feature/blueprint_gap_closure`, based on `feature/d
 | Public choices | Active classes, programmes, subjects, schools, lead sources and guardian relationships are read from managed ERP records. The relationship directory has active-only anonymous read policy. Server validation checks selected source and offering. | SQL suite 0027 and typecheck |
 | Applicant entry | No applicant sign-up; the old placeholder route goes to account-free interest. Auth copy describes staff access. | Route and typecheck |
 | Admission consent | A draft admission case can be printed for paper consent. The A4 form reserves the top 50 mm for academy letterhead, identifies the case, student, guardian, programme, class and batch, displays the pinned fee plan, includes guardian declaration, optional student acknowledgement, signature/date fields, verifier fields and authorized signature/seal. Payment receipts remain separate. | Production build; manual signed-in print review remains |
+| Public admission application | Published schedule, requirements and policy are managed on offering controls and shown on the card and account-free application. The admission form collects guardian address, academic background and explicit acknowledgements. Submission creates an immutable application record linked to the Prospect with the published terms and active fee plan version at submission. Staff see the record in CRM. | SQL suite 0027 validates snapshot and admission remains a Prospect; typecheck and build |
 
 ### Staff print sequence
 
@@ -23,8 +24,8 @@ Updated 2026-09-28. Branch: `feature/blueprint_gap_closure`, based on `feature/d
 
 These items need separate implementation and acceptance work on this branch. Do not describe them as shipped:
 
-1. Public **Apply for Admission** still shares the short interest form. It records admission intent and creates a Prospect, but does not yet collect a fuller application, requirements checklist, policy acknowledgement or signed document upload. The verification queue cannot request applicant corrections through a public return channel.
-2. Programme cards do not yet expose configurable admission requirements, policy, schedule, live batch capacity or placement availability. Offering controls currently manage showcase text, dates, subjects, website visibility and acceptance flag. Add reviewed publishing/preview controls and a proper public content contract.
+1. Public **Apply for Admission** collects the application declarations and terms snapshot. A signed document upload, applicant correction return channel and an individual requirements checklist remain.
+2. Programme cards now show configured admission requirements, policy and schedule. Live batch capacity and placement availability, reviewed publishing/preview controls and a versioned public content contract remain.
 3. The signed admission form is a paper workflow. Add permissioned document attachment, receipt of consent, version and audit before requiring signed evidence at acceptance. Preserve existing historical cases without forcing invalid backfills.
 4. Academic operations have plans, sessions, attendance review and submitted class logs. Homework follow-up, coverage gaps/recovery, assessments/results and the teacher question authoring/review module remain.
 5. Finance covers discounts, cancellations, refunds and operator-run recurring invoices. General ledger/journals, advances/payables, expense reconciliation, teacher compensation calculations and settlements remain.
@@ -32,7 +33,7 @@ These items need separate implementation and acceptance work on this branch. Do 
 
 ## Validation and deployment
 
-- Apply migrations in order through `0030` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
+- Apply migrations in order through `0031` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
 - Run all rollback-only SQL scripts, especially `supabase/tests/0027_v2_public_admissions_workflow.sql`.
 - Run `pnpm lint`, `pnpm typecheck`, `pnpm build`, then verify the homepage, interest and admission paths while signed in as authorized staff where required.
 - Print a real draft with multiple fee components on A4 to check that the declarations, signatures and office-use area remain on the same page. Use the academy's actual letterhead, or print to blank paper and check the 50 mm reserved space.

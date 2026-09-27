@@ -32,6 +32,10 @@ export const publicInterestSchema = z.object({
   website: z.string().max(0).optional(),
   offeringId: z.string().uuid().optional(),
   intent: z.enum(["interest", "admission"]).default("interest"),
+  guardianAddress: z.string().trim().max(300).optional(),
+  academicBackground: z.string().trim().max(500).optional(),
+  requirementsAcknowledged: z.boolean().optional(),
+  policyAcknowledged: z.boolean().optional(),
 }).superRefine((value, ctx) => {
   if (value.intent === "admission" && !value.offeringId) {
     ctx.addIssue({
@@ -39,6 +43,14 @@ export const publicInterestSchema = z.object({
       path: ["offeringId"],
       message: "Select an open programme offering for admission applications.",
     });
+  }
+  if (value.intent === "admission") {
+    if (!value.guardianAddress || value.guardianAddress.length < 5) {
+      ctx.addIssue({ code: "custom", path: ["guardianAddress"], message: "Enter the guardian's address." });
+    }
+    if (!value.requirementsAcknowledged || !value.policyAcknowledged) {
+      ctx.addIssue({ code: "custom", path: ["requirementsAcknowledged"], message: "Review and acknowledge the programme requirements and admission policy." });
+    }
   }
 });
 

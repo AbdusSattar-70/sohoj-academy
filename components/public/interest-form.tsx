@@ -18,6 +18,13 @@ type OpenOfferingOption = {
   classId: string;
   programId: string;
   subjectIds: string[];
+  schedule: string | null;
+  scheduleBn: string | null;
+  requirements: string | null;
+  requirementsBn: string | null;
+  policy: string | null;
+  policyBn: string | null;
+  feePlan: { billing_cycle: string; currency_code: string; components: { name: string; amount: number; recurrence: string }[] } | null;
 };
 
 const dayOptions = [
@@ -119,6 +126,10 @@ export function PublicInterestForm({
       website: String(formData.get("website") ?? ""),
       offeringId: String(formData.get("offeringId") ?? "") || undefined,
       intent: (String(formData.get("intent") ?? intent) || "interest") as "interest" | "admission",
+      guardianAddress: String(formData.get("guardianAddress") ?? ""),
+      academicBackground: String(formData.get("academicBackground") ?? ""),
+      requirementsAcknowledged: formData.get("requirementsAcknowledged") === "on",
+      policyAcknowledged: formData.get("policyAcknowledged") === "on",
     };
 
     startTransition(async () => {
@@ -273,6 +284,19 @@ export function PublicInterestForm({
                 ? "এখন কোনো অফারিং আবেদন গ্রহণ করছে না।"
                 : "No offerings are accepting applications right now."}
             </p>
+          ) : null}
+          {intent === "admission" && selectedOffering ? (
+            <div className="space-y-3 rounded-xl border bg-muted/40 p-4 text-sm leading-6">
+              {selectedOffering.schedule ? <p><strong>{bn ? "সময়সূচি" : "Schedule"}:</strong> {bn ? selectedOffering.scheduleBn || selectedOffering.schedule : selectedOffering.schedule}</p> : null}
+              {selectedOffering.feePlan?.components.length ? (
+                <div>
+                  <p className="font-semibold">{bn ? "প্রকাশিত ফি" : "Published fees"} ({selectedOffering.feePlan.currency_code}, {selectedOffering.feePlan.billing_cycle.toLowerCase().replaceAll("_", " ")})</p>
+                  <ul className="list-inside list-disc">
+                    {selectedOffering.feePlan.components.map((component) => <li key={component.name}>{component.name}: {Number(component.amount).toLocaleString("en-BD")} ({component.recurrence.toLowerCase().replaceAll("_", " ")})</li>)}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </section>
 
@@ -437,6 +461,30 @@ export function PublicInterestForm({
             <textarea id="interest-notes" name="notes" rows={3} className={`${selectClass} min-h-[5.5rem] py-2`} />
           </div>
         </section>
+
+        {intent === "admission" ? (
+          <section className="space-y-4 rounded-xl border p-4">
+            <h2 className="text-lg font-semibold">{bn ? "ভর্তির আবেদন" : "Admission application"}</h2>
+            <div>
+              <Label htmlFor="guardian-address">{bn ? "অভিভাবকের ঠিকানা" : "Guardian address"} *</Label>
+              <textarea id="guardian-address" name="guardianAddress" required minLength={5} maxLength={300} rows={2} className={`${selectClass} min-h-20 py-2`} />
+            </div>
+            <div>
+              <Label htmlFor="academic-background">{bn ? "পূর্ববর্তী শিক্ষাগত তথ্য" : "Academic background"}</Label>
+              <textarea id="academic-background" name="academicBackground" maxLength={500} rows={2} className={`${selectClass} min-h-20 py-2`} />
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3 text-sm leading-6">
+              <p className="font-semibold">{bn ? "প্রোগ্রামের শর্ত" : "Programme requirements"}</p>
+              <p className="whitespace-pre-wrap">{(bn ? selectedOffering?.requirementsBn || selectedOffering?.requirements : selectedOffering?.requirements) || (bn ? "অফারিংয়ের জন্য কোনো অতিরিক্ত শর্ত প্রকাশিত নেই।" : "No additional requirements published for this offering.")}</p>
+            </div>
+            <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="requirementsAcknowledged" required className="mt-1 size-4 accent-blue-700" /><span>{bn ? "আমি প্রোগ্রামের শর্ত পড়েছি ও বুঝেছি।" : "I have read and understood the programme requirements."}</span></label>
+            <div className="rounded-lg bg-muted/50 p-3 text-sm leading-6">
+              <p className="font-semibold">{bn ? "ভর্তি নীতি" : "Admission policy"}</p>
+              <p className="whitespace-pre-wrap">{(bn ? selectedOffering?.policyBn || selectedOffering?.policy : selectedOffering?.policy) || (bn ? "স্টাফ যাচাইয়ের পরে ভর্তি নিশ্চিত হবে।" : "Admission is confirmed only after staff verification.")}</p>
+            </div>
+            <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="policyAcknowledged" required className="mt-1 size-4 accent-blue-700" /><span>{bn ? "আমি ভর্তি নীতি পড়েছি ও বুঝেছি।" : "I have read and understood the admission policy."}</span></label>
+          </section>
+        ) : null}
 
         <label className="flex items-start gap-3 rounded-xl border p-4 text-sm leading-6">
           <input type="checkbox" name="consentToContact" required className="mt-1 size-4 accent-blue-700" />

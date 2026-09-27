@@ -99,6 +99,9 @@ type ProgramCard = {
   windowNote: [string, string] | null;
   academicContext: string;
   subjects: string[];
+  schedule: [string, string] | null;
+  requirements: [string, string] | null;
+  policy: [string, string] | null;
 };
 
 export async function HomeProgramSection() {
@@ -126,6 +129,9 @@ export async function HomeProgramSection() {
           academicContext: [row.academic_year_name, row.branch_name, row.class_name, row.group_name]
             .filter(Boolean).join(" · "),
           subjects: row.subjects.map((subject) => subject.name),
+          schedule: row.public_schedule ? [row.public_schedule, row.public_schedule_bn || row.public_schedule] : null,
+          requirements: row.public_requirements ? [row.public_requirements, row.public_requirements_bn || row.public_requirements] : null,
+          policy: row.admission_policy ? [row.admission_policy, row.admission_policy_bn || row.admission_policy] : null,
         })) ?? [];
 
   return (
@@ -189,6 +195,9 @@ export async function HomeProgramSection() {
                   {program.subjects.length > 0 && (
                     <p><LocalizedText en="Subjects" bn="বিষয়সমূহ" />: {program.subjects.join(", ")}</p>
                   )}
+                  {program.schedule ? <p><LocalizedText en="Schedule" bn="সময়সূচি" />: <LocalizedText en={program.schedule[0]} bn={program.schedule[1]} /></p> : null}
+                  {program.requirements ? <p><LocalizedText en="Requirements" bn="শর্ত" />: <LocalizedText en={program.requirements[0]} bn={program.requirements[1]} /></p> : null}
+                  {program.policy ? <p><LocalizedText en="Admission policy" bn="ভর্তি নীতি" />: <LocalizedText en={program.policy[0]} bn={program.policy[1]} /></p> : null}
                 </div>
                 {(program.feeSummary || program.windowNote) && (
                   <div className="mt-4 space-y-1 text-xs leading-5 text-muted-foreground">

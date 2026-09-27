@@ -72,6 +72,12 @@ export type PublicOfferingCard = {
   showcase_eyebrow: string | null;
   showcase_eyebrow_bn: string | null;
   showcase_icon: string | null;
+  public_schedule: string | null;
+  public_schedule_bn: string | null;
+  public_requirements: string | null;
+  public_requirements_bn: string | null;
+  admission_policy: string | null;
+  admission_policy_bn: string | null;
   showcase_sort_order: number;
   is_accepting_applications: boolean;
   application_state: "OPEN" | "UPCOMING" | "CLOSED";

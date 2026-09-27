@@ -56,6 +56,10 @@ export async function submitPublicInterest(
       consent_to_contact: data.consentToContact,
       offering_id: data.offeringId || "",
       intent: data.intent || "interest",
+      guardian_address: data.guardianAddress || "",
+      academic_background: data.academicBackground || "",
+      requirements_acknowledged: data.requirementsAcknowledged === true,
+      policy_acknowledged: data.policyAcknowledged === true,
     },
   });
 
@@ -77,6 +81,8 @@ export async function submitPublicInterest(
       "An open programme offering is required for admission applications.",
       "Selected class does not match the chosen programme offering.",
       "One selected subject is not part of the chosen programme offering.",
+      "Guardian address is required for an admission application.",
+      "Review and acknowledge the programme requirements and admission policy.",
     ];
 
     const known = knownMessages.find((message) => error.message.includes(message));

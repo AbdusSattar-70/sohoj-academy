@@ -28,6 +28,12 @@ type Offering = {
   is_accepting_applications: boolean;
   applications_open_on: string | null;
   applications_close_on: string | null;
+  public_schedule: string | null;
+  public_schedule_bn: string | null;
+  public_requirements: string | null;
+  public_requirements_bn: string | null;
+  admission_policy: string | null;
+  admission_policy_bn: string | null;
   created_by: string; created_at: string; updated_at: string;
 };
 type Plan = {

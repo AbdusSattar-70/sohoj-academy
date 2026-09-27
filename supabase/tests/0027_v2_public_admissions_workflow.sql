@@ -83,6 +83,9 @@ begin
     'showcase_title', 'Public Test Programme',
     'showcase_title_bn', 'পাবলিক টেস্ট প্রোগ্রাম',
     'showcase_description', 'Acceptance fixture description',
+    'public_requirements', 'Bring your previous class result',
+    'admission_policy', 'Staff review is required',
+    'public_schedule', 'Saturday mornings',
     'showcase_description_bn', 'যাচাইকরণ বর্ণনা',
     'showcase_eyebrow', 'Class fixture',
     'showcase_eyebrow_bn', 'ক্লাস',
@@ -140,7 +143,10 @@ begin
       'mobile', '01710000002',
       'class_id', cl,
       'consent_to_contact', true,
-      'intent', 'admission'
+      'intent', 'admission',
+      'guardian_address', 'Test street address',
+      'requirements_acknowledged', true,
+      'policy_acknowledged', true
     ));
   exception when others then
     raised := true;
@@ -208,6 +214,10 @@ begin
     'school_name_snapshot', 'Linked Later School',
     'consent_to_contact', true,
     'intent', 'admission',
+    'guardian_address', 'Test street address',
+    'academic_background', 'Previous class completed',
+    'requirements_acknowledged', true,
+    'policy_acknowledged', true,
     'offering_id', offering
   ));
   prospect := (result->>'prospect_id')::uuid;
@@ -219,6 +229,18 @@ begin
       and status = 'NEW'
   ) then
     raise exception 'Admission prospect must store intent and offering.';
+  end if;
+
+  if not exists (
+    select 1 from public.public_admission_applications
+    where prospect_id = prospect and offering_id = offering
+      and fee_plan_version_id = fee
+      and guardian_address = 'Test street address'
+      and academic_background = 'Previous class completed'
+      and requirements_acknowledged and policy_acknowledged
+      and published_terms_snapshot->>'requirements' = 'Bring your previous class result'
+  ) then
+    raise exception 'Admission application must retain the declarations and published terms snapshot.';
   end if;
 
   if not exists (

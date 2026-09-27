@@ -178,6 +178,13 @@ export default async function InterestPage({
                 openOfferings={openOfferings.map((row) => ({
                   id: row.id,
                   code: row.code,
+                  schedule: row.public_schedule,
+                  scheduleBn: row.public_schedule_bn,
+                  requirements: row.public_requirements,
+                  requirementsBn: row.public_requirements_bn,
+                  policy: row.admission_policy,
+                  policyBn: row.admission_policy_bn,
+                  feePlan: row.fee_plan,
                   name: row.showcase_title || row.name,
                   classId: row.class_id,
                   programId: row.program_id,
