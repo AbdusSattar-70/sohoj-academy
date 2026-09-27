@@ -21,6 +21,7 @@ export async function runAcademicCommand(input: AcademicCommand) {
     "/dashboard/governance/audit",
     "/dashboard/action-center",
     "/dashboard",
+    "/dashboard/teacher",
   ])
     revalidatePath(path);
   revalidatePath("/dashboard/academics/sessions/[sessionId]", "page");
