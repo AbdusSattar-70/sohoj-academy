@@ -57,7 +57,7 @@ export const updateOfferingPublicControlsSchema = z.object({
   showcaseEyebrow: z.string().trim().max(80),
   showcaseEyebrowBn: z.string().trim().max(80),
   showcaseIcon: z.union([z.enum(SHOWCASE_ICON_VALUES), z.literal("")]),
-  showcaseSortOrder: z.coerce.number().int().min(0).max(9999),
+  showcaseSortOrder: z.number().int().min(0).max(9999),
   isWebsiteVisible: z.boolean(),
   isAcceptingApplications: z.boolean(),
   applicationsOpenOn: z.string().optional(),

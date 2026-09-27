@@ -35,7 +35,7 @@ export const manageMasterRecordSchema = z
     code: z.string().optional(),
     name: z.string().optional(),
     description: z.string().optional(),
-    sortOrder: z.coerce.number().int().min(0).max(9999).optional(),
+    sortOrder: z.number().int().min(0).max(9999).optional(),
     startsOn: z.string().optional(),
     endsOn: z.string().optional(),
     areaId: z.union([z.string().uuid(), z.literal("")]).optional(),
