@@ -14,7 +14,7 @@ export default async function ProspectsPage() {
       <PageHeader
         eyebrow="CRM & Student Bank"
         title="Prospects"
-        description="Every enquiry remains traceable before admission. Public interest, follow-up ownership, source, status and later Student conversion all belong to the same acquisition history."
+        description="Verification queue for public interest and admission submissions. Filter by queue status, intent and schools that still need review before counselling or admission."
         actions={
           <div className="flex flex-wrap gap-2">
             <Link
