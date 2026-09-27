@@ -356,12 +356,12 @@ Verification: all 13 SQL tests pass in isolated PGlite/Postgres. New test 0020 c
 
 In a fresh conversation, say:
 
-“Continue the Sohoj Academy ERP build from GitHub branch `feature/student-lifecycle`. First read `docs/architecture/DEVELOPMENT_HANDOFF.md`, the repository architecture docs, and the Google Drive Master Blueprint v1.1. Use the existing blueprint-first architecture and continue from the Immediate next implementation direction. Do not revive the old MVP dashboard/schema.”
+“Continue the Sohoj Academy ERP build from GitHub branch `feature/dashboard_teacher`. First read `docs/architecture/DEVELOPMENT_HANDOFF.md`, the repository architecture docs, and the Google Drive Master Blueprint v1.1. Use the existing blueprint-first architecture and continue from the Immediate next implementation direction. Do not revive the old MVP dashboard/schema.”
 
 ## Teacher class-log checkpoint (2026-09-28)
 
 Active branch: `feature/dashboard_teacher` (branched from the existing `feature/teacher_dashboard` commit 0c9cfa7). Read `PUBLIC_ADMISSIONS_WORKFLOW.md` for the current account-free admission direction. The route `/dashboard/teacher` is the assigned-session view. Migration 0028 adds actual per-session class-log drafts/submissions; these record delivered coverage, unfinished content, homework and next-class plan against the session-pinned curriculum. Submitted revisions are immutable; new corrections link to the prior revision. Attendance and planned curriculum remain separate facts.
 
-The next academic work remains homework follow-up and coverage recovery, then assessments/results and teacher question creation. Question generation is still unimplemented. Apply through migration 0028; use the updated `ACADEMIC_OPERATIONS_ACCEPTANCE.md` and test 0020. Do not claim live Supabase/browser acceptance from isolated verification alone.
+Migration 0029 keeps unlisted school names as prospect text for staff review without creating school-directory records. The full rollback-only SQL suite passes in isolated PGlite after migration 0029. Apply through migration 0029; use `PUBLIC_ADMISSIONS_ACCEPTANCE.md`, `ACADEMIC_OPERATIONS_ACCEPTANCE.md`, and tests 0027/0020. Do not claim live Supabase/browser acceptance from isolated verification alone.
 
 For the next continuation, use `feature/dashboard_teacher` and start with this checkpoint. Public student/admission entry is account-free; read `PUBLIC_ADMISSIONS_WORKFLOW.md` and `PUBLIC_ADMISSIONS_ACCEPTANCE.md` before changing it. Academic operations now include immutable actual class-log submissions in addition to separate attendance evidence. Continue from homework follow-up and coverage recovery; assessments/results and teacher question creation remain outstanding.

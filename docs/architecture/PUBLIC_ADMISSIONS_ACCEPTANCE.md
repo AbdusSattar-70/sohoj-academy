@@ -16,7 +16,7 @@ Published programme card
 
 ## Automated SQL suite
 
-Run as database owner on a development database after all migrations:
+Run as database owner on a development database after migrations through 0029:
 
 ```bash
 # example: psql or Supabase SQL editor
@@ -84,6 +84,6 @@ Use a disposable development org seed (SOHOJ). Do not use production data.
 ## Exit criteria
 
 - `pnpm run build` passes on the feature branch
-- Migrations through `0026` applied on the linked development database
+- Migrations through `0029` applied on the linked development database
 - SQL suite `0027` returns `PASS` and rolls back
 - Browser sequence A–C completed once on the linked environment

@@ -79,7 +79,7 @@ Both forms:
 - Create a **Prospect** (not a Student)
 - Return a reference number
 - Capture consent to contact
-- Allow unlisted school names as snapshot text for staff review (do not auto-create verified schools)
+- Keep unlisted school names as prospect snapshot text for staff review; public submission does not create a school record
 - Never auto-merge on shared phone numbers
 
 If a prior interest exists, staff **link** the admission application after verification — shared phone numbers never auto-merge children.
