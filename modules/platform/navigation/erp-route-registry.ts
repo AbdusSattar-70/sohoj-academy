@@ -30,6 +30,11 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     permission: "academics.view", icon: "offerings",
   },
   {
+    id: "assessments", title: "Assessments & Results", eyebrow: "Academics",
+    href: "/dashboard/academics/assessments", navGroup: "Academics",
+    permission: "academics.view", icon: "offerings",
+  },
+  {
     id: "academic-operations",
     title: "Academic Operations",
     eyebrow: "Academics",

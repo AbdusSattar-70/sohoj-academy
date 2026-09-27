@@ -5,7 +5,7 @@ declare
  u uuid:=gen_random_uuid(); org uuid; cl uuid; program uuid; branch uuid; yr uuid;
  offering uuid; batch uuid; prospect uuid; a uuid; a2 uuid; fee uuid; method uuid;
  result jsonb; input jsonb; today date; baseline jsonb;
- reviewer uuid:=gen_random_uuid();teacher_user uuid:=gen_random_uuid();other_user uuid:=gen_random_uuid();teacher uuid;other_teacher uuid;subject uuid;room uuid;routine uuid;session uuid;curriculum uuid;draft uuid;approval uuid;roster jsonb;enrollment uuid;
+ reviewer uuid:=gen_random_uuid();teacher_user uuid:=gen_random_uuid();other_user uuid:=gen_random_uuid();teacher uuid;other_teacher uuid;subject uuid;room uuid;routine uuid;session uuid;curriculum uuid;draft uuid;approval uuid;roster jsonb;enrollment uuid;assessment uuid;
 begin
  insert into auth.users(id,email,raw_user_meta_data) values(u,'admission-test-'||u||'@example.invalid','{"full_name":"Admission Test"}');
  perform public.bootstrap_admin('admission-test-'||u||'@example.invalid','Admission Test');
@@ -113,6 +113,23 @@ begin
  exception when others then if sqlerrm not like '%changed%' then raise; end if; end;
  result:=public.homework_command(jsonb_build_object('request_id',gen_random_uuid(),'session_id',session,'class_log_id',draft,'enrollment_id',enrollment,'base_revision',1,'status','COMPLETE','submitted_on',today,'feedback','Corrections verified.'));
  if (result->>'revision')::integer<>2 or jsonb_array_length(public.homework_workspace(session)->'history')<>2 then raise exception 'Homework correction did not preserve earlier review.'; end if;
+ -- Results remain drafts until a different reviewer approves the submitted roster.
+ result:=public.assessment_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'batch_id',batch,'subject_id',subject,'title','Chapter 1 assessment','assessment_date',today,'max_marks',50));
+ assessment:=(result->>'id')::uuid;
+ perform public.assessment_command(jsonb_build_object('action','PUBLISH','request_id',gen_random_uuid(),'assessment_id',assessment));
+ input:=jsonb_build_object('action','SAVE_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment,'entries',jsonb_build_array(jsonb_build_object('enrollment_id',enrollment,'score',42,'feedback','Good progress.')));
+ result:=public.assessment_command(input);
+ if public.assessment_command(input)<>result then raise exception 'Result draft retry duplicated.'; end if;
+ if (public.assessment_workspace()->'assessments'->0->'submissions'->0->>'status')<>'DRAFT' then raise exception 'Result draft was not visible.'; end if;
+ perform public.assessment_command(jsonb_build_object('action','SUBMIT_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment));
+ begin
+   perform public.assessment_command(jsonb_build_object('action','APPROVE_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment,'review_note','Checked all marks.'));
+   raise exception 'Teacher without review permission approved results.';
+ exception when others then if sqlerrm not like '%review permission%' then raise; end if; end;
+ perform set_config('request.jwt.claim.sub',reviewer::text,true);
+ perform public.assessment_command(jsonb_build_object('action','APPROVE_RESULTS','request_id',gen_random_uuid(),'assessment_id',assessment,'review_note','Marks checked against script.'));
+ if not exists(select 1 from public.assessment_result_submissions where assessment_id=assessment and status='APPROVED') then raise exception 'Result review did not become official.'; end if;
+ perform set_config('request.jwt.claim.sub',teacher_user::text,true);
  begin
   perform public.academic_command(jsonb_build_object('action','SAVE_ATTENDANCE','request_id',gen_random_uuid(),'session_id',session,'entries','[]'::jsonb,'reason','Attempt incomplete attendance'));raise exception 'Incomplete roster accepted';
  exception when others then if sqlerrm not like '%exactly one%' then raise;end if;end;
