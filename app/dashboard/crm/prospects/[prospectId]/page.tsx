@@ -34,13 +34,25 @@ export default async function ProspectDetailPage({
         title={prospect.studentName}
         description={`${prospect.prospectNo} • Prospect history remains linked even after future Student conversion.`}
         actions={
-          <Link
-            href="/dashboard/crm/prospects"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
-          >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back to Prospects
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            {can(context, "admissions.create") &&
+            prospect.status !== "CONVERTED" &&
+            prospect.status !== "LOST" ? (
+              <Link
+                href={`/dashboard/admissions?prospect=${prospect.id}`}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800"
+              >
+                Start admission
+              </Link>
+            ) : null}
+            <Link
+              href="/dashboard/crm/prospects"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Back to Prospects
+            </Link>
+          </div>
         }
       />
 
