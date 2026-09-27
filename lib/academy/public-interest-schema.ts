@@ -41,6 +41,16 @@ export const publicInterestSchema = z.object({
     message: "Please allow Sohoj Academy to contact you about this interest request.",
   }),
   website: z.string().max(0).optional(),
+  offeringId: z.string().uuid().optional(),
+  intent: z.enum(["interest", "admission"]).default("interest"),
+}).superRefine((value, ctx) => {
+  if (value.intent === "admission" && !value.offeringId) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["offeringId"],
+      message: "Select an open programme offering for admission applications.",
+    });
+  }
 });
 
 export type PublicInterestInput = z.infer<typeof publicInterestSchema>;

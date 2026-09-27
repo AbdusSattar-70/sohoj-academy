@@ -50,6 +50,14 @@ Branch `feature/student-lifecycle` includes migrations through 0019. Open **Stud
 
 Create an enrollment draft with an existing Student ID; request a same-offering batch transfer; or submit a verified duplicate identity for independent review. History and permanent IDs are retained. See [Student lifecycle acceptance](docs/architecture/STUDENT_LIFECYCLE_ACCEPTANCE.md) for permissions, boundaries and testing.
 
+## Public interest and admission (account-free)
+
+Visitors browse ERP-managed programme cards and submit **Register Interest** or **Apply for Admission** without creating an account. Staff verify submissions in CRM / Action Center, then continue into the existing admission → billing → activation path.
+
+Master data (years, classes, subjects, schools, programmes, showcase content) is edited under **CRM → Manage CRM**. Homepage design stays fixed; content and availability come from ERP.
+
+See [Public admissions workflow](docs/architecture/PUBLIC_ADMISSIONS_WORKFLOW.md).
+
 ## Billing, discounts, cancellations and refunds
 
 Open **Finance → Billing & Adjustments** after applying migrations through 0016.

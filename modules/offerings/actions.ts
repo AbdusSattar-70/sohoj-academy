@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getErpContext } from "@/modules/platform/auth/erp-context";
 import { createOfferingClient } from "@/modules/offerings/database-contract";
 import {
-  createOfferingSchema, publishFeePlanSchema,
-  type CreateOfferingInput, type PublishFeePlanInput,
+  createOfferingSchema, publishFeePlanSchema, updateOfferingPublicControlsSchema,
+  type CreateOfferingInput, type PublishFeePlanInput, type UpdateOfferingPublicControlsInput,
 } from "@/modules/offerings/schema";
 
 export type OfferingMutationResult =
@@ -61,15 +61,66 @@ export async function publishFeePlan(input: PublishFeePlanInput): Promise<Offeri
     effective_from: value.effectiveFrom,
     reason: value.reason,
     components: value.components.map((component, sortOrder) => ({
-      code: component.code, name: component.name, amount: component.amount,
-      charge_type: component.chargeType, recurrence: component.recurrence,
+      code: component.code,
+      name: component.name,
+      amount: component.amount,
+      charge_type: component.chargeType,
+      recurrence: component.recurrence,
       sort_order: sortOrder,
     })),
   } });
   if (error) return { ok: false, error: error.message };
-  const result = data as { fee_plan_version_id?: string; version?: number } | null;
-  if (!result?.fee_plan_version_id) return { ok: false, error: "Fee Plan publication returned no version." };
+  const result = data as { fee_plan_version_id?: string } | null;
+  if (!result?.fee_plan_version_id) return { ok: false, error: "Fee Plan publish returned no identity." };
   revalidatePath("/dashboard/academics/offerings");
   revalidatePath("/dashboard/finance/fee-plans");
-  return { ok: true, reference: `Version ${result.version}` };
+  revalidatePath("/");
+  return { ok: true, reference: result.fee_plan_version_id };
 }
+
+export async function updateProgrammeOfferingPublicControls(
+  input: UpdateOfferingPublicControlsInput,
+): Promise<OfferingMutationResult> {
+  const parsed = updateOfferingPublicControlsSchema.safeParse(input);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return { ok: false, error: issue?.message ?? "Check public controls.", field: issue?.path[0]?.toString() };
+  }
+  const context = await getErpContext();
+  if (!context?.permissions.includes("academics.manage")) {
+    return { ok: false, error: "You are not authorized to update offering public controls." };
+  }
+  const value = parsed.data;
+  const db = await createOfferingClient();
+  const { data, error } = await db.rpc("update_programme_offering_public_controls", {
+    p_input: {
+      offering_id: value.offeringId,
+      showcase_title: value.showcaseTitle || null,
+      showcase_title_bn: value.showcaseTitleBn || null,
+      showcase_description: value.showcaseDescription || null,
+      showcase_description_bn: value.showcaseDescriptionBn || null,
+      showcase_eyebrow: value.showcaseEyebrow || null,
+      showcase_eyebrow_bn: value.showcaseEyebrowBn || null,
+      showcase_icon: value.showcaseIcon || null,
+      showcase_sort_order: value.showcaseSortOrder,
+      is_website_visible: value.isWebsiteVisible,
+      is_accepting_applications: value.isAcceptingApplications,
+      applications_open_on: value.applicationsOpenOn?.trim() || null,
+      applications_close_on: value.applicationsCloseOn?.trim() || null,
+      subject_ids: value.subjectIds,
+      reason: value.reason,
+    },
+  });
+  if (error) return { ok: false, error: error.message };
+  const result = data as { offering_id?: string } | null;
+  if (!result?.offering_id) {
+    return { ok: false, error: "Public controls update returned no identity." };
+  }
+  revalidatePath("/dashboard/academics/offerings");
+  revalidatePath("/");
+  revalidatePath("/interest");
+  return { ok: true, reference: result.offering_id };
+}
+
+/** @deprecated Use updateProgrammeOfferingPublicControls */
+export const updateProgrammeOfferingShowcase = updateProgrammeOfferingPublicControls;

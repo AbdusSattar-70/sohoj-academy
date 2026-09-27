@@ -16,14 +16,22 @@ export default async function ProspectsPage() {
         title="Prospects"
         description="Every enquiry remains traceable before admission. Public interest, follow-up ownership, source, status and later Student conversion all belong to the same acquisition history."
         actions={
-          <Link
-            href="/interest"
-            target="_blank"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
-          >
-            Public interest form
-            <ExternalLink className="size-4" aria-hidden="true" />
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/dashboard/crm/manage"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
+            >
+              Manage CRM
+            </Link>
+            <Link
+              href="/interest"
+              target="_blank"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
+            >
+              Public interest form
+              <ExternalLink className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
         }
       />
 

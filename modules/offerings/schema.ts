@@ -38,3 +38,50 @@ export const publishFeePlanSchema = z.object({
   }
 });
 export type PublishFeePlanInput = z.infer<typeof publishFeePlanSchema>;
+
+export const SHOWCASE_ICON_VALUES = [
+  "clipboard-check",
+  "graduation-cap",
+  "users-round",
+  "book-open-check",
+  "line-chart",
+  "shield-check",
+] as const;
+
+export const updateOfferingPublicControlsSchema = z.object({
+  offeringId: id,
+  showcaseTitle: z.string().trim().max(120),
+  showcaseTitleBn: z.string().trim().max(120),
+  showcaseDescription: z.string().trim().max(400),
+  showcaseDescriptionBn: z.string().trim().max(400),
+  showcaseEyebrow: z.string().trim().max(80),
+  showcaseEyebrowBn: z.string().trim().max(80),
+  showcaseIcon: z.union([z.enum(SHOWCASE_ICON_VALUES), z.literal("")]),
+  showcaseSortOrder: z.number().int().min(0).max(9999),
+  isWebsiteVisible: z.boolean(),
+  isAcceptingApplications: z.boolean(),
+  applicationsOpenOn: z.string().optional(),
+  applicationsCloseOn: z.string().optional(),
+  subjectIds: z.array(z.string().uuid()).max(30),
+  reason: z.string().trim().min(5, "Explain why public controls are changing.").max(500),
+}).superRefine((value, ctx) => {
+  if (value.isWebsiteVisible) {
+    if (!value.showcaseTitle) {
+      ctx.addIssue({ code: "custom", path: ["showcaseTitle"], message: "English title is required when website visibility is on." });
+    }
+    if (!value.showcaseDescription) {
+      ctx.addIssue({ code: "custom", path: ["showcaseDescription"], message: "English description is required when website visibility is on." });
+    }
+  }
+  const open = value.applicationsOpenOn?.trim() || "";
+  const close = value.applicationsCloseOn?.trim() || "";
+  if (open && close && close < open) {
+    ctx.addIssue({ code: "custom", path: ["applicationsCloseOn"], message: "Close date must be on or after the open date." });
+  }
+});
+export type UpdateOfferingPublicControlsInput = z.infer<typeof updateOfferingPublicControlsSchema>;
+
+/** @deprecated Use updateOfferingPublicControlsSchema — kept so old showcase-form.tsx can be deleted safely. */
+export const updateOfferingShowcaseSchema = updateOfferingPublicControlsSchema;
+/** @deprecated Use UpdateOfferingPublicControlsInput */
+export type UpdateOfferingShowcaseInput = UpdateOfferingPublicControlsInput;
