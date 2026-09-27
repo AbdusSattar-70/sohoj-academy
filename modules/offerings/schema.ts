@@ -80,3 +80,8 @@ export const updateOfferingPublicControlsSchema = z.object({
   }
 });
 export type UpdateOfferingPublicControlsInput = z.infer<typeof updateOfferingPublicControlsSchema>;
+
+/** @deprecated Use updateOfferingPublicControlsSchema — kept so old showcase-form.tsx can be deleted safely. */
+export const updateOfferingShowcaseSchema = updateOfferingPublicControlsSchema;
+/** @deprecated Use UpdateOfferingPublicControlsInput */
+export type UpdateOfferingShowcaseInput = UpdateOfferingPublicControlsInput;
