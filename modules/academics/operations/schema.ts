@@ -218,3 +218,66 @@ export const sessionWorkspaceSchema = z.object({
   ),
 });
 export type SessionWorkspace = z.infer<typeof sessionWorkspaceSchema>;
+
+export const classLogCommandSchema = z
+  .object({
+    action: z.enum(["SAVE_DRAFT", "SUBMIT"]),
+    request_id: id,
+    session_id: id,
+    reason: z.string().trim().min(5).max(500),
+    unit_progress: z
+      .array(
+        z.object({
+          unit_index: z.number().int().min(0),
+          status: z.enum(["COVERED", "PARTIAL", "NOT_COVERED"]),
+          note: z.string().max(500),
+        }),
+      )
+      .max(200),
+    class_summary: z.string().trim().min(2).max(4000),
+    unfinished_reason: z.string().max(2000),
+    homework: z.string().max(2000),
+    next_session_plan: z.string().max(2000),
+  })
+  .superRefine((v, ctx) => {
+    if (
+      v.unit_progress.some((x) => x.status !== "COVERED") &&
+      !v.unfinished_reason.trim()
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["unfinished_reason"],
+        message: "Explain planned curriculum left incomplete.",
+      });
+  });
+export const classLogWorkspaceSchema = z.object({
+  units: z.array(
+    z.object({ title: z.string(), target_date: z.string() }).passthrough(),
+  ),
+  logs: z.array(
+    z.object({
+      id: id,
+      session_id: id,
+      revision: z.number(),
+      previous_log_id: id.nullable(),
+      status: z.enum(["DRAFT", "SUBMITTED"]),
+      unit_progress: z.array(
+        z.object({
+          unit_index: z.number(),
+          status: z.enum(["COVERED", "PARTIAL", "NOT_COVERED"]),
+          note: z.string(),
+        }),
+      ),
+      class_summary: z.string(),
+      unfinished_reason: z.string(),
+      homework: z.string(),
+      next_session_plan: z.string(),
+      reason: z.string(),
+      authored_by: id,
+      created_at: z.string(),
+      submitted_at: z.string().nullable(),
+    }),
+  ),
+});
+export type ClassLogCommand = z.infer<typeof classLogCommandSchema>;
+export type ClassLogWorkspace = z.infer<typeof classLogWorkspaceSchema>;

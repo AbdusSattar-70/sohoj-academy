@@ -72,6 +72,18 @@ begin
  perform public.academic_command(input||jsonb_build_object('request_id',gen_random_uuid()));
  if (select count(*) from public.class_sessions where routine_id=routine)<>2 then raise exception 'Routine dates duplicated';end if;
  select id into session from public.class_sessions where routine_id=routine and session_date=today;
+ -- Actual teaching log is separate from the pinned plan and attendance.
+ input:=jsonb_build_object('action','SAVE_DRAFT','request_id',gen_random_uuid(),'session_id',session,'reason','Record the delivered lesson','class_summary','Explained the first chapter and solved examples.','unit_progress',jsonb_build_array(jsonb_build_object('unit_index',0,'status','PARTIAL','note','Exercises remain')),'unfinished_reason','Need more practice time.','homework','Complete exercises 1–4.','next_session_plan','Review work and continue practice.');
+ result:=public.class_log_command(input);draft:=(result->>'id')::uuid;
+ if public.class_log_command(input)<>result then raise exception 'Class log draft retry duplicated.'; end if;
+ result:=public.class_log_command(jsonb_build_object('action','SUBMIT','request_id',gen_random_uuid(),'session_id',session,'reason','Submit the lesson record'));
+ if result->>'status'<>'SUBMITTED' then raise exception 'Class log was not submitted.'; end if;
+ begin
+  update public.class_logs set class_summary='Tampered' where id=draft;
+  raise exception 'Submitted class log was editable.';
+ exception when others then if sqlerrm not like '%immutable%' then raise; end if; end;
+ if (public.class_log_workspace(session)->'logs'->0->>'class_summary')<>'Explained the first chapter and solved examples.' then raise exception 'Submitted class log was not visible.'; end if;
+ if has_table_privilege('authenticated','public.class_logs','INSERT') or has_table_privilege('authenticated','public.class_logs','UPDATE') then raise exception 'Class-log table writes bypass the command.'; end if;
  if (select curriculum_version_id from public.class_sessions where id=session)<>curriculum then raise exception 'Curriculum not pinned';end if;
  -- Revisions do not rewrite sessions already linked to the earlier curriculum.
  perform public.academic_command(jsonb_build_object('action','PUBLISH_CURRICULUM','request_id',gen_random_uuid(),'batch_id',batch,'subject_id',subject,'title','Revised curriculum','units',jsonb_build_array(jsonb_build_object('title','Chapter 2','target_date',today+40)),'reason','Publish revised learning targets'));

@@ -14,6 +14,7 @@ Document ID:
 `178UvETYjbLQchhWWSN1o5oSKTHOiWwSCmwReStbM7BI`
 
 Repository architecture references:
+
 - `docs/architecture/ERP_V2_REBUILD.md`
 - `docs/architecture/ERP_IMPLEMENTATION_GUARDRAILS.md`
 - `docs/architecture/ERP_INTERACTION_WORKFLOW_STANDARD.md`
@@ -75,6 +76,7 @@ Typecheck intentionally clears stale Next route types and regenerates them befor
 - `0009_v2_fee_plan_local_date.sql` (publish date follows organization timezone)
 
 Verification tests:
+
 - `0001_v2_platform.sql`
 - `0002_v2_crm_student.sql`
 - `0003_v2_mock_flow.sql`
@@ -105,6 +107,7 @@ The Sidebar/Header route metadata is centralized in:
 ## Current working verticals
 
 ### CRM / Student Bank
+
 - Public Interest creates a Prospect through controlled RPC.
 - Permanent Prospect number.
 - Prospect list/detail/timeline.
@@ -113,6 +116,7 @@ The Sidebar/Header route metadata is centralized in:
 - Action Center surfaces due follow-ups.
 
 ### Staff
+
 - Permanent Staff identity.
 - Role assignments.
 - Teaching subject qualifications.
@@ -120,6 +124,7 @@ The Sidebar/Header route metadata is centralized in:
 - Live-validated Staff form.
 
 ### Settings / Control Center
+
 - Versioned Business Rules.
 - Editable batch-capacity policy.
 - Editable admission-activation policy.
@@ -132,6 +137,7 @@ The Sidebar/Header route metadata is centralized in:
 ## Current database workflow functions
 
 Important functions include:
+
 - `bootstrap_admin(text,text)`
 - `has_permission(text)`
 - `my_erp_context()`
@@ -159,6 +165,7 @@ select public.bootstrap_admin(
 ```
 
 The function creates/updates:
+
 - Profile
 - linked Staff identity when absent
 - Administration Staff role
@@ -207,6 +214,7 @@ The latest reported local quality gate passed:
 - `pnpm build` ✅
 
 The generated linked Supabase types were refreshed and committed on this branch (`fac4cbd`). They include the RPCs:
+
 - `publish_business_rule_version`
 - `validate_business_rule_payload`
 - `set_role_permissions`
@@ -240,11 +248,13 @@ After confirming the commit is pushed, the old stash created before switching fr
 The user confirmed migrations 0008/0009 were applied and ADMIN sign-in works.
 
 New pending migrations:
+
 - `0010_v2_admission_workflow.sql`: offering-linked batch creation, Admission Cases, immutable initial invoices and lines, idempotent state transitions, identity/guardian creation, policy pinning and enrollment.
 - `0011_v2_admission_payments.sql`: actual payment, allocation, receipt identity, outstanding balance and payment-backed activation.
 - `0012_v2_admission_workspace.sql`: permission-scoped workspace read model.
 
 New routes:
+
 - `/dashboard/academics/batches`
 - `/dashboard/admissions`
 - `/dashboard/admissions/[admissionId]/print` (admission form; `?receipt=RCT-...` prints an actual posted receipt)
@@ -267,10 +277,12 @@ These are included in the current build, per the user's instruction; they are no
 Migrations 0013–0016 add immutable adjustment records, billing terms/runs, controlled finance commands, admission integration, and the Finance workspace. Apply all pending migrations through 0016 together. Existing posted invoices/payments are preserved; the only data backfill assigns the existing initial invoices their billing month.
 
 Routes:
+
 - `/dashboard/finance/billing`: Student Accounts, Approvals, Recurring Billing.
 - `/dashboard/finance/billing/[invoiceId]/print`: printable current invoice statement, including original payments and subsequent payouts.
 
 Implemented behavior:
+
 - Percentage or fixed tuition discount with an explicit effective billing-date range. Independent approval credits existing eligible invoices and applies to subsequent eligible invoices. Fixed discounts cap at tuition. Overlapping approved periods are rejected; other charge components are not discounted.
 - Cancellation with independent approval: either preserve existing charges as debt or credit all remaining net charges. Withdraws active enrollment, updates active-student status and stops recurring billing. Posted history remains. A cancelled unaccepted draft can be restarted from its unconverted Prospect; accepted identities are not duplicated.
 - Refund request → independent approval/reservation → actual payout with refund number, method and reference. Only unreserved customer credit supported by the original payment is refundable. Approval alone records no cash movement. Payment receipts retain their original amounts and show subsequent refunds.
@@ -287,6 +299,7 @@ Verification: all 11 SQL scripts pass in isolated PGlite/Postgres, including new
 Active feature branch: `feature/student-lifecycle`.
 
 New migrations:
+
 - `0017_v2_student_lifecycle.sql`: repeated admissions for a permanent Student ID, immutable transfer/identity-merge records, permissioned student commands, independent review, removal of direct identity-table writes.
 - `0018_v2_existing_student_admission.sql`: integrates existing identity drafts into the normal Ready → Accept → Bill → Activate workflow; locks the student during transitions and rejects archived identities.
 - `0019_v2_student_profile_workspace.sql`: runtime-validated profile read model; financial amounts require `finance.view`.
@@ -294,6 +307,7 @@ New migrations:
 Open Students → Student ID (`/dashboard/students/[studentId]`) for identity, linked guardians, admission cases, enrollment/transfer history, invoice balances and lifecycle approvals.
 
 Implemented:
+
 - Existing-student enrollment creates a new Admission Case with the same permanent Student ID and primary guardian. Standard fees load from the selected active Fee Plan. It proceeds through the existing review, billing and activation policy; previous debts/discounts remain attached to their original case. New one-time charges remain visible for review. Student identity cannot be overwritten through an enrollment draft.
 - The existing database restriction of one active enrollment per student per academic year remains explicit. An open admission in that year must be resolved before readmission; a new year can use the same identity.
 - Batch transfers require an independent approver with `admissions.approve`, a different active batch in the same offering, and capacity revalidation. The old enrollment closes as WITHDRAWN with a linked transfer event; a new ACTIVE enrollment replaces it. Fee Plan, invoices and billing continuity remain unchanged. Cross-offering/commercial changes are not performed through transfers.
@@ -310,10 +324,12 @@ Branch remains `feature/student-lifecycle`, per the user's instruction to contin
 Migrations 0020/0021 add academic rooms, immutable curriculum versions, effective-dated weekly routines, dated class sessions, attendance revisions and permission-scoped workspace RPCs.
 
 Routes:
+
 - `/dashboard/academics/operations`: Class Sessions, Routine Templates, Curriculum, Rooms; date-range filter for sessions.
 - `/dashboard/academics/sessions/[sessionId]`: pinned plan, session details, roster, attendance draft/submission/review and revision history.
 
 Implemented:
+
 - Room creation with branch and student capacity. Scheduling rejects a room smaller than the configured batch capacity.
 - Curriculum publication by batch/subject with chapter/topic/page descriptions and target dates inside the academic year. New publication adds a version; existing sessions keep their exact version. Planned targets are not completed coverage.
 - Weekly routines reserve teacher/batch/room slots over an effective date range. Teachers require a teaching Staff role and a subject qualification covering the entire range. Room and teacher branch eligibility are checked.
@@ -341,3 +357,11 @@ Verification: all 13 SQL tests pass in isolated PGlite/Postgres. New test 0020 c
 In a fresh conversation, say:
 
 “Continue the Sohoj Academy ERP build from GitHub branch `feature/student-lifecycle`. First read `docs/architecture/DEVELOPMENT_HANDOFF.md`, the repository architecture docs, and the Google Drive Master Blueprint v1.1. Use the existing blueprint-first architecture and continue from the Immediate next implementation direction. Do not revive the old MVP dashboard/schema.”
+
+## Teacher class-log checkpoint (2026-09-28)
+
+Active branch: `feature/dashboard_teacher` (branched from the existing `feature/teacher_dashboard` commit 0c9cfa7). Read `PUBLIC_ADMISSIONS_WORKFLOW.md` for the current account-free admission direction. The route `/dashboard/teacher` is the assigned-session view. Migration 0028 adds actual per-session class-log drafts/submissions; these record delivered coverage, unfinished content, homework and next-class plan against the session-pinned curriculum. Submitted revisions are immutable; new corrections link to the prior revision. Attendance and planned curriculum remain separate facts.
+
+The next academic work remains homework follow-up and coverage recovery, then assessments/results and teacher question creation. Question generation is still unimplemented. Apply through migration 0028; use the updated `ACADEMIC_OPERATIONS_ACCEPTANCE.md` and test 0020. Do not claim live Supabase/browser acceptance from isolated verification alone.
+
+For the next continuation, use `feature/dashboard_teacher` and start with this checkpoint. Public student/admission entry is account-free; read `PUBLIC_ADMISSIONS_WORKFLOW.md` and `PUBLIC_ADMISSIONS_ACCEPTANCE.md` before changing it. Academic operations now include immutable actual class-log submissions in addition to separate attendance evidence. Continue from homework follow-up and coverage recovery; assessments/results and teacher question creation remain outstanding.

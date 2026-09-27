@@ -1,7 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
-import { academicWorkspaceSchema, sessionWorkspaceSchema } from "./schema";
+import {
+  academicWorkspaceSchema,
+  sessionWorkspaceSchema,
+  classLogWorkspaceSchema,
+} from "./schema";
 type AcademicDatabase = Database & {
   public: {
     Functions: {
@@ -14,6 +18,8 @@ type AcademicDatabase = Database & {
         Args: { p_session_id: string };
         Returns: Json;
       };
+      class_log_workspace: { Args: { p_session_id: string }; Returns: Json };
+      class_log_command: { Args: { p_input: Json }; Returns: Json };
     };
   };
 };
@@ -36,4 +42,13 @@ export async function getSessionWorkspace(id: string) {
   });
   if (error) throw new Error(error.message);
   return sessionWorkspaceSchema.parse(data);
+}
+
+export async function getClassLogWorkspace(id: string) {
+  const db = await academicClient();
+  const { data, error } = await db.rpc("class_log_workspace", {
+    p_session_id: id,
+  });
+  if (error) throw new Error(error.message);
+  return classLogWorkspaceSchema.parse(data);
 }

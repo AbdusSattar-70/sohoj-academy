@@ -4,7 +4,11 @@ import { z } from "zod";
 import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
-import { getSessionWorkspace } from "@/modules/academics/operations/queries";
+import {
+  getSessionWorkspace,
+  getClassLogWorkspace,
+} from "@/modules/academics/operations/queries";
+import { ClassLogForm } from "@/modules/academics/operations/class-log-form";
 import { AcademicForm } from "@/modules/academics/operations/command-form";
 export default async function SessionPage({
   params,
@@ -14,7 +18,10 @@ export default async function SessionPage({
   const context = await requirePermission("academics.view");
   const { sessionId } = await params;
   if (!z.string().uuid().safeParse(sessionId).success) notFound();
-  const data = await getSessionWorkspace(sessionId);
+  const [data, classLogs] = await Promise.all([
+    getSessionWorkspace(sessionId),
+    getClassLogWorkspace(sessionId),
+  ]);
   const s = data.session;
   const latest = data.submissions[0];
   const approved = data.submissions.find((a) => a.status === "APPROVED");
@@ -170,6 +177,67 @@ export default async function SessionPage({
             />
           )
         ))}
+      <section className="space-y-4">
+        {s.status === "SCHEDULED" &&
+          began &&
+          (can("academics.attendance.record") ||
+            can("academics.sessions.manage")) && (
+            <ClassLogForm sessionId={s.id} workspace={classLogs} />
+          )}
+        <div>
+          <h2 className="font-semibold">Actual Class Log History</h2>
+          <p className="text-sm text-muted-foreground">
+            Submitted records are immutable. Corrections create a new revision.
+          </p>
+        </div>
+        {classLogs.logs
+          .filter((log) => log.status === "SUBMITTED")
+          .map((log) => (
+            <article
+              key={log.id}
+              className="space-y-2 rounded-xl border bg-card p-4"
+            >
+              <p className="text-sm font-semibold">
+                Revision {log.revision} · Submitted{" "}
+                {new Date(log.submitted_at!).toLocaleString("en-GB", {
+                  timeZone: s.timezone,
+                })}
+              </p>
+              <p className="text-sm">{log.class_summary}</p>
+              {log.unit_progress.length > 0 && (
+                <ul className="list-disc pl-5 text-sm">
+                  {log.unit_progress.map((entry) => (
+                    <li key={entry.unit_index}>
+                      {classLogs.units[entry.unit_index]?.title}:{" "}
+                      {entry.status.replaceAll("_", " ")}
+                      {entry.note ? ` — ${entry.note}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {log.unfinished_reason && (
+                <p className="text-sm">
+                  <strong>Unfinished content:</strong> {log.unfinished_reason}
+                </p>
+              )}
+              {log.homework && (
+                <p className="text-sm">
+                  <strong>Homework:</strong> {log.homework}
+                </p>
+              )}
+              {log.next_session_plan && (
+                <p className="text-sm">
+                  <strong>Next class:</strong> {log.next_session_plan}
+                </p>
+              )}
+            </article>
+          ))}
+        {!classLogs.logs.some((log) => log.status === "SUBMITTED") && (
+          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+            No actual teaching log has been submitted for this class.
+          </p>
+        )}
+      </section>
       <section className="space-y-3">
         <h2 className="font-semibold">Attendance Revision History</h2>
         {data.submissions.map((a) => (
