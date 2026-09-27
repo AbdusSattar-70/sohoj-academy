@@ -56,79 +56,52 @@ General navigation entry points may also open the forms without a pre-selected o
 
 | Control | Meaning |
 | --- | --- |
-| Operational status | `DRAFT` / `ACTIVE` / `RETIRED` — whether the offering runs operationally (Fee Plan published → ACTIVE) |
-| Website visibility | Whether the offering appears on public programme cards |
-| Accepting applications | Whether new interest/admission submissions may select this offering |
+| Operational status (`DRAFT` / `ACTIVE` / `RETIRED`) | Teaching and internal operations |
+| Website visibility | Whether the offering may appear on public programme cards |
+| Accepting applications | Whether public forms may select this offering for new interest/admission |
 
-An ACTIVE offering may continue teaching after applications close. Closing applications must not deactivate enrolled students.
+An offering may stay **ACTIVE** for existing students after applications close. Closing applications must not deactivate enrolled students.
 
-Only offerings that are **ACTIVE + website-visible** appear publicly. Closed offerings may show “Applications closed” and must reject new applications.
+Only **ACTIVE** offerings that are explicitly website-visible appear publicly. Closed offerings can show “Applications closed”; they cannot accept new applications.
 
-## Forms (no account)
+## Public forms (no sign-in)
 
-### Register Interest (lightweight)
+### Register Interest
 
-- Student name, current class, primary mobile, programme/subject interests
-- Optional guardian name, schedule preference, notes, consent
-- Pre-selected offering when entered from a card
-- Creates / updates a **Prospect** only — no Student ID, no invoice
+Short form. Offering optional (general interest allowed).
 
-### Apply for Admission (fuller)
+### Apply for Admission
 
-- Purpose: formal application for a specific offering
-- Student identity and academic context
-- Guardian / submitter relationship (who is submitting; relationship to student)
-- Selected offering + relevant subjects
-- Supporting information required for that offering
-- Consent and review step
-- Submission reference + printable acknowledgement stating admission is **not** confirmed
+Fuller form. **Open offering required.**
 
-Selecting “Teacher” as submitter **never** grants staff access. Teacher-assisted applications do not create staff privileges or automatic access to later financial/academic records.
+Both forms:
 
-### Shared rules
+- Create a **Prospect** (not a Student)
+- Return a reference number
+- Capture consent to contact
+- Allow unlisted school names as snapshot text for staff review (do not auto-create verified schools)
+- Never auto-merge on shared phone numbers
 
-- Spam protection, rate limits, duplicate-submit prevention
-- Reference number alone must not expose private student data
-- “School not listed” captures a free-text snapshot for **staff review** before adding to the shared school directory (do not auto-insert unlisted schools into master data on public submit)
-- If a prior interest exists, staff **link** the admission application after verification — shared phone numbers never auto-merge children
+If a prior interest exists, staff **link** the admission application after verification — shared phone numbers never auto-merge children.
 
-## Status models (kept separate)
+## Verification is not admission
 
-| Record | Example states |
+Verification confirms identity, eligibility, and placement readiness. Admission still follows existing acceptance, fee assignment, billing, and activation rules.
+
+## Manage CRM (master data)
+
+Staff with `system.master_data.manage` edit shared directories used by public forms and offerings:
+
+| Entity | Notes |
 | --- | --- |
-| Application / Interest submission | Draft (if saved), Submitted, Under review, Corrections requested, Verified, Withdrawn |
-| CRM engagement | New, Contacted, Counselling, Trial, Follow-up, Lost, Converted |
-| Admission | Draft, Ready, Accepted, Declined, Cancelled |
-| Enrollment | Pending activation, Active, Completed, Cancelled |
-| Finance | Charges, payments, approved discounts, adjustments, refunds |
-
-Applicant-facing messages may simplify these without exposing internal CRM terminology.
-
-Verification is **not** admission approval. Verification confirms identity, eligibility, and placement readiness. Admission still follows existing acceptance, fee assignment, billing, and activation rules.
-
-## Admin: Manage CRM (master data + public content)
-
-Dedicated ERP entry: **CRM → Manage CRM** (shared master records — not a CRM-only copy).
-
-| Section | Editable information |
-| --- | --- |
-| Academic years | Names, dates, availability |
-| Classes & groups | Class names, ordering, groups (e.g. Science) |
-| Subjects | Names, EN/BN labels, availability |
+| Academic years | Active calendar years |
+| Classes / groups | Eligibility structure |
+| Subjects / programmes | Curriculum catalogue |
 | Schools | School names, locations, active status; approve pending “not listed” names |
-| Programmes | Reusable programme definitions and descriptions |
-| Programme offerings | Year, branch, eligibility, subject selection, admission windows |
-| Website showcase | Public titles, descriptions, icons, display order, visibility, preview |
-| Registration settings | Lead sources, relationship options, schedule preferences, form requirements |
+| Lead sources / relationships | CRM capture vocabulary |
 
-### Editing rules
-
-1. Create, edit, reorder, **deactivate** — do not hard-delete operational history.
-2. Deactivated choices disappear from new applications; remain visible on historical records.
-3. Public content can be prepared and previewed before publishing.
-4. Fee / finalized admission terms keep prior versions (historical pinning).
-5. Every change requires permission, reason, and audit trail.
-6. Fee plans stay under Finance; offerings link to published plans.
+Every change requires permission, reason, and audit trail.
+Fee plans stay under Finance; offerings link to published plans.
 
 ### Admin setup sequence before opening applications
 
@@ -180,7 +153,7 @@ Possible duplicates are **reviewed**, never silently merged.
 4. **Homepage cards** driven by published offerings; Interest / Apply entry points; design unchanged
 5. **Public forms** constrained to open offerings; school-not-listed pending review
 6. **Verification queue** polish in Action Center / CRM
-7. Acceptance tests and SQL verification suites
+7. Acceptance tests and SQL verification suites (`docs/architecture/PUBLIC_ADMISSIONS_ACCEPTANCE.md`, `supabase/tests/0027_v2_public_admissions_workflow.sql`)
 
 ## Related code anchors
 

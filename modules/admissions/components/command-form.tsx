@@ -21,6 +21,7 @@ export function AdmissionCommandForm({
   description,
   maxAmount,
   identity,
+  defaultProspectId,
 }: {
   action: AdmissionCommand["action"];
   data: AdmissionWorkspace;
@@ -29,6 +30,7 @@ export function AdmissionCommandForm({
   description: string;
   maxAmount?: number;
   identity?: { name: string; guardian: string; mobile: string };
+  defaultProspectId?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
@@ -60,6 +62,9 @@ export function AdmissionCommandForm({
         : {}),
       ...(action === "CREATE_BATCH"
         ? { capacity: data.capacityLimit ?? undefined }
+        : {}),
+      ...(action === "CREATE" && defaultProspectId
+        ? { prospectId: defaultProspectId }
         : {}),
     },
   });
@@ -118,65 +123,81 @@ export function AdmissionCommandForm({
               key === "amount"
                 ? maxAmount
                 : key === "capacity"
-                  ? (data.capacityLimit ?? undefined)
+                  ? 500
                   : undefined
             }
-            {...register(key, numeric ? { valueAsNumber: true } : {})}
+            {...register(key, { valueAsNumber: numeric })}
           />
         )
       }
     </ErpFormField>
   );
-  const submit = (event: FormEvent<HTMLFormElement>) =>
-    handleSubmit((value) => {
-      const signature = JSON.stringify({ ...value, requestId: undefined });
-      if (request.current?.signature !== signature)
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSubmit((values) => {
+      const signature = JSON.stringify(values);
+      if (!request.current || request.current.signature !== signature) {
         request.current = { signature, id: crypto.randomUUID() };
-      const requestId = request.current.id;
+      }
+      const payload = { ...values, requestId: request.current.id };
       setMessage(null);
       startTransition(async () => {
-        try {
-          const result = await runAdmissionCommand({ ...value, requestId });
-          setMessage({ ok: result.ok, text: result.message });
-          if (!result.ok && result.field)
+        const result = await runAdmissionCommand(payload);
+        if (!result.ok) {
+          if (result.field)
             setError(result.field as FieldPath<AdmissionCommand>, {
               message: result.message,
             });
-          if (result.ok) {
-            reset();
-            request.current = null;
-          }
-        } catch {
-          setMessage({
-            ok: false,
-            text: "The result could not be confirmed. Retry the same values; your request is protected against duplicate posting.",
-          });
+          setMessage({ ok: false, text: result.message });
+          return;
         }
+        request.current = null;
+        reset({
+          action,
+          admissionId,
+          requestId: crypto.randomUUID(),
+          reason: "",
+          ...(identity
+            ? {
+                studentName: identity.name,
+                guardianName: identity.guardian,
+                mobile: identity.mobile,
+              }
+            : {}),
+          ...(action === "CREATE_BATCH"
+            ? { capacity: data.capacityLimit ?? undefined }
+            : {}),
+          ...(action === "CREATE" && defaultProspectId
+            ? { prospectId: defaultProspectId }
+            : {}),
+        });
+        setMessage({ ok: true, text: result.message ?? "Saved." });
       });
-    })(event);
+    })();
+  };
   return (
-    <form
-      noValidate
-      onSubmit={submit}
-      className="space-y-4 rounded-xl border bg-card p-4 print:hidden"
-    >
+    <form onSubmit={submit} className="space-y-4 rounded-2xl border p-5">
       <div>
         <h3 className="font-semibold">{label}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
-      <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {action === "CREATE_BATCH" && (
           <>
             {field(
               "offeringId",
               "Offering",
-              "The batch inherits the offering’s academic year, branch, class and programme.",
+              "Choose the programme offering this batch belongs to.",
               data.offerings.map((o) => ({
                 id: o.id,
                 name: `${o.name} · ${o.className}`,
               })),
             )}
-            {field("code", "Batch Code", "Unique within the academic year.")}
+            {field(
+              "code",
+              "Batch Code",
+              "Short operational code used in schedules and reports.",
+            )}
             {field(
               "name",
               "Batch Name",
@@ -199,7 +220,7 @@ export function AdmissionCommandForm({
               "Select an existing enquiry. Identity and guardian details are inherited.",
               data.prospects.map((p) => ({
                 id: p.id,
-                name: `${p.number} · ${p.name}`,
+                name: `${p.number} · ${p.name} · ${p.mobile}`,
               })),
             )}
             {field(
@@ -228,34 +249,32 @@ export function AdmissionCommandForm({
             {field(
               "guardianName",
               "Guardian Name",
-              "Use the verified guardian name.",
+              "Primary guardian for contact and billing.",
             )}
-            {field(
-              "mobile",
-              "Guardian Mobile",
-              "11-digit Bangladesh mobile, beginning 01.",
-            )}
+            {field("mobile", "Mobile", "Bangladesh mobile, 01XXXXXXXXX.")}
           </>
         )}
         {action === "PAY" && (
           <>
             {field(
-              "paymentMethodId",
-              "Payment Method",
-              "Select how money was actually received.",
-              data.paymentMethods,
-            )}
-            {field(
               "amount",
-              "Amount Received (BDT)",
-              `Outstanding balance: ${maxAmount?.toFixed(2)}. Enter only actual money received.`,
+              "Amount received",
+              maxAmount
+                ? `Outstanding balance about BDT ${maxAmount.toFixed(2)}.`
+                : "Enter the amount actually received.",
               undefined,
               true,
             )}
             {field(
+              "paymentMethodId",
+              "Payment method",
+              "How the payment was received.",
+              data.paymentMethods.map((m) => ({ id: m.id, name: m.name })),
+            )}
+            {field(
               "externalReference",
-              "Transaction Reference",
-              "Use the bank/mobile transaction reference when available.",
+              "External reference",
+              "Optional bank or gateway reference.",
               undefined,
               false,
               false,
@@ -264,20 +283,32 @@ export function AdmissionCommandForm({
         )}
         {field(
           "reason",
-          "Reason / Verification Note",
-          "Record what you checked or why you are performing this action.",
+          "Reason",
+          "Short operational reason for the audit trail.",
         )}
-      </fieldset>
+      </div>
       {prospect && action === "CREATE" && (
-        <p className="text-sm text-muted-foreground">
-          Guardian: {prospect.guardian} · {prospect.mobile}. Standard fees will
-          be shown in the saved draft for review.
-        </p>
+        <div className="rounded-xl border bg-muted/30 p-4 text-sm leading-6">
+          <p className="font-medium text-foreground">
+            Verified CRM data will seed this draft
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            {prospect.number} · {prospect.name}
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            Guardian: {prospect.guardian} · {prospect.mobile}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Student, guardian and contact details are inherited from the
+            Prospect. Choose an eligible batch, then review fees before
+            acceptance.
+          </p>
+        </div>
       )}
-      <Button type="submit" disabled={!isDirty || !isValid || pending}>
-        {pending ? "Saving…" : label}
-      </Button>
       <ErpFormStatus message={message} />
+      <Button type="submit" disabled={pending || !isDirty || !isValid}>
+        {pending ? "Working…" : label}
+      </Button>
     </form>
   );
 }

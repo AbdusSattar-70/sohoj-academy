@@ -40,11 +40,23 @@ const nextAction: Record<
       "After the required payment is posted, recheck policy conditions and seat availability.",
   },
 };
-export default async function AdmissionsPage() {
+export default async function AdmissionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ prospect?: string }>;
+}) {
   const context = await requirePermission("admissions.view");
+  const { prospect: prospectParam } = await searchParams;
   const data = await getAdmissionWorkspace();
   const manage = context.permissions.includes("admissions.create");
   const pay = context.permissions.includes("finance.payments.post");
+  const defaultProspectId =
+    prospectParam && data.prospects.some((p) => p.id === prospectParam)
+      ? prospectParam
+      : undefined;
+  const preselected = defaultProspectId
+    ? data.prospects.find((p) => p.id === defaultProspectId)
+    : undefined;
   return (
     <div className="space-y-7">
       <PageHeader
@@ -67,12 +79,25 @@ export default async function AdmissionsPage() {
         </Link>
       </div>
       {manage && (
-        <AdmissionCommandForm
-          action="CREATE"
-          data={data}
-          label="Create Admission Draft"
-          description="Start from a Prospect and select an eligible batch. Review the inherited fees before accepting admission."
-        />
+        <div className="space-y-3">
+          {preselected ? (
+            <p className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">
+              Starting from prospect{" "}
+              <span className="font-semibold">
+                {preselected.number} · {preselected.name}
+              </span>
+              . Identity and guardian details come from CRM — choose a batch and
+              save the draft.
+            </p>
+          ) : null}
+          <AdmissionCommandForm
+            action="CREATE"
+            data={data}
+            defaultProspectId={defaultProspectId}
+            label="Create Admission Draft"
+            description="Start from a Prospect and select an eligible batch. Review the inherited fees before accepting admission."
+          />
+        </div>
       )}
       {data.cases.map((a) => {
         const next = nextAction[a.status];

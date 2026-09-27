@@ -34,13 +34,25 @@ export default async function ProspectDetailPage({
         title={prospect.studentName}
         description={`${prospect.prospectNo} • Prospect history remains linked even after future Student conversion.`}
         actions={
-          <Link
-            href="/dashboard/crm/prospects"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
-          >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back to Prospects
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            {can(context, "admissions.create") &&
+            prospect.status !== "CONVERTED" &&
+            prospect.status !== "LOST" ? (
+              <Link
+                href={`/dashboard/admissions?prospect=${prospect.id}`}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800"
+              >
+                Start admission
+              </Link>
+            ) : null}
+            <Link
+              href="/dashboard/crm/prospects"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Back to Prospects
+            </Link>
+          </div>
         }
       />
 
@@ -66,6 +78,24 @@ export default async function ProspectDetailPage({
               </p>
             </div>
           </div>
+
+          {prospect.schoolNeedsReview ? (
+            <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+              <p className="font-medium">School name needs staff review</p>
+              <p className="mt-1 leading-6">
+                Submitted as free text:{" "}
+                <span className="font-semibold">{prospect.schoolName}</span>.
+                Confirm or create the school in Manage CRM, then continue follow-up
+                or admission.
+              </p>
+              <Link
+                href="/dashboard/crm/manage"
+                className="mt-3 inline-flex text-sm font-semibold underline underline-offset-4"
+              >
+                Open Manage CRM
+              </Link>
+            </div>
+          ) : null}
 
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             <Info

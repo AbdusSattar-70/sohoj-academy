@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardCheck, PhoneCall } from "lucide-react";
+import { ClipboardCheck, PhoneCall, UserRoundSearch } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
@@ -9,13 +9,16 @@ import { requirePermission } from "@/modules/platform/auth/erp-context";
 export default async function ActionCenterPage() {
   const context = await requirePermission("action_center.view");
   const data = await getActionCenterData(context);
+  const schoolReviewCount = data.verificationQueue.filter(
+    (item) => item.schoolNeedsReview
+  ).length;
 
   return (
     <div className="space-y-7">
       <PageHeader
         eyebrow="Exceptions first"
         title="Action Center"
-        description="Work that requires a human decision or timely follow-up is collected here so important exceptions do not disappear inside reports."
+        description="Approvals, public-admission verification, and CRM follow-ups that need a person — not reports that can wait."
       />
 
       <div className="grid gap-6 xl:grid-cols-2">
@@ -73,6 +76,75 @@ export default async function ActionCenterPage() {
 
         <section className="overflow-hidden rounded-2xl border bg-card">
           <div className="border-b px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="font-semibold">Verification queue</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Recent public interest and admission submissions still in early
+                  CRM states.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-blue-50 px-2.5 py-1 font-medium text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
+                  Queue: {data.verificationQueue.length}
+                </span>
+                <span className="rounded-full bg-amber-50 px-2.5 py-1 font-medium text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+                  School review: {schoolReviewCount}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {data.verificationQueue.length ? (
+            <div className="divide-y">
+              {data.verificationQueue.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start justify-between gap-4 px-5 py-4"
+                >
+                  <div className="min-w-0">
+                    <Link
+                      href={`/dashboard/crm/prospects/${item.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {item.studentName}
+                    </Link>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {item.prospectNo} • {item.mobile}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      School: {item.schoolName}
+                      {item.schoolNeedsReview ? " • needs review" : ""}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Received {new Date(item.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <StatusBadge value={item.status} />
+                </div>
+              ))}
+              <div className="p-4">
+                <Link
+                  href="/dashboard/crm/prospects"
+                  className="text-sm font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                >
+                  Open CRM prospects
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="p-5">
+              <EmptyState
+                icon={UserRoundSearch}
+                title="Verification queue is clear"
+                description="New public interest and admission submissions will appear here while they are still NEW, CONTACTED, or in counselling."
+              />
+            </div>
+          )}
+        </section>
+
+        <section className="overflow-hidden rounded-2xl border bg-card xl:col-span-2">
+          <div className="border-b px-5 py-4">
             <h2 className="font-semibold">CRM follow-ups due</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               Prospect follow-ups whose scheduled time has arrived.
@@ -80,14 +152,19 @@ export default async function ActionCenterPage() {
           </div>
 
           {data.dueProspects.length ? (
-            <div className="divide-y">
+            <div className="divide-y sm:grid sm:grid-cols-2 sm:divide-y-0">
               {data.dueProspects.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-start justify-between gap-4 px-5 py-4"
+                  className="flex items-start justify-between gap-4 border-b px-5 py-4 sm:border-b-0 sm:border-r"
                 >
                   <div>
-                    <p className="font-medium">{item.studentName}</p>
+                    <Link
+                      href={`/dashboard/crm/prospects/${item.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {item.studentName}
+                    </Link>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {item.prospectNo} • {item.mobile}
                     </p>
