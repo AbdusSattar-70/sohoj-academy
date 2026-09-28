@@ -84,40 +84,50 @@ export const academicCommandSchema = z
         "starts_on",
         "start_time",
         "end_time",
-        "planned_scope",
       ],
-      GENERATE_SESSIONS: [
-        "routine_id",
-        "starts_on",
-        "ends_on",
-        "planned_scope",
-      ],
+      GENERATE_SESSIONS: ["routine_id", "starts_on", "ends_on"],
       CANCEL_SESSION: ["session_id"],
       SAVE_ATTENDANCE: ["session_id", "entries"],
-      SUBMIT_ATTENDANCE: ["session_id", "attendance_id"],
-      DECIDE_ATTENDANCE: ["approval_id", "decision"],
+      SUBMIT_ATTENDANCE: ["attendance_id"],
+      DECIDE_ATTENDANCE: ["attendance_id", "approval_id", "decision"],
     };
-    for (const k of required[v.action])
-      if (v[k as keyof typeof v] === undefined)
+    for (const key of required[v.action]) {
+      const value = v[key as keyof typeof v];
+      if (value === undefined || value === null || value === "") {
         ctx.addIssue({
           code: "custom",
-          path: [k],
-          message: "This field is required.",
+          path: [key],
+          message: "Required for this action.",
         });
-    if (v.starts_on && v.ends_on && v.ends_on < v.starts_on)
-      ctx.addIssue({
-        code: "custom",
-        path: ["ends_on"],
-        message: "End date must follow start date.",
-      });
-    if (v.start_time && v.end_time && v.end_time <= v.start_time)
+      }
+    }
+    if (
+      v.action === "CREATE_ROUTINE" &&
+      v.start_time &&
+      v.end_time &&
+      v.start_time >= v.end_time
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["end_time"],
-        message: "End time must follow start time on the same day.",
+        message: "End time must be after start time.",
       });
+    }
+    if (
+      v.action === "CREATE_SESSION" &&
+      v.start_time &&
+      v.end_time &&
+      v.start_time >= v.end_time
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["end_time"],
+        message: "End time must be after start time.",
+      });
+    }
   });
 export type AcademicCommand = z.infer<typeof academicCommandSchema>;
+
 const option = z.object({ id, name: z.string() });
 export const academicWorkspaceSchema = z.object({
   branches: z.array(option),
@@ -130,11 +140,9 @@ export const academicWorkspaceSchema = z.object({
       id,
       batchId: id,
       subjectId: id,
-      batch: z.string(),
-      subject: z.string(),
-      version: z.number(),
       title: z.string(),
       units: z.array(unit),
+      status: z.string(),
     }),
   ),
   routines: z.array(
@@ -142,80 +150,77 @@ export const academicWorkspaceSchema = z.object({
       id,
       batchId: id,
       subjectId: id,
-      batch: z.string(),
-      subject: z.string(),
-      teacher: z.string(),
-      room: z.string(),
+      teacherId: id,
+      roomId: id,
       weekday: z.number(),
       startTime: z.string(),
       endTime: z.string(),
       startsOn: z.string(),
       endsOn: z.string(),
-      retired: z.boolean(),
+      status: z.string(),
     }),
   ),
   sessions: z.array(
     z.object({
       id,
-      batch: z.string(),
-      subject: z.string(),
-      teacher: z.string(),
-      room: z.string(),
-      date: z.string(),
+      batchId: id,
+      subjectId: id,
+      teacherId: id,
+      roomId: id,
+      startsOn: z.string(),
       startTime: z.string(),
       endTime: z.string(),
-      timezone: z.string(),
       status: z.string(),
-      scope: z.string(),
-      latestStatus: z.string().nullable(),
-      approvedRevision: z.number().nullable(),
+      plannedScope: z.string().nullable(),
+    }),
+  ),
+  attendances: z.array(
+    z.object({
+      id,
+      sessionId: id,
+      status: z.string(),
+      revision: z.number(),
     }),
   ),
 });
 export type AcademicWorkspace = z.infer<typeof academicWorkspaceSchema>;
-const rosterEntry = z.object({
-  enrollment_id: id,
-  student_id: id,
-  number: z.string(),
-  name: z.string(),
-  status: z.enum(["PRESENT", "ABSENT", "LATE", "EXCUSED"]).optional(),
-  note: z.string().optional(),
-});
+
 export const sessionWorkspaceSchema = z.object({
   session: z.object({
     id,
-    batch: z.string(),
-    subject: z.string(),
-    teacher: z.string(),
-    teacherProfileId: id.nullable(),
-    room: z.string(),
-    date: z.string(),
-    canRecordNow: z.boolean(),
-    startsAt: z.string(),
-    endsAt: z.string(),
-    timezone: z.string(),
+    batchId: id,
+    subjectId: id,
+    teacherId: id,
+    roomId: id,
+    startsOn: z.string(),
+    startTime: z.string(),
+    endTime: z.string(),
     status: z.string(),
-    scope: z.string(),
-    cancellationReason: z.string().nullable(),
-    curriculumTitle: z.string().nullable(),
-    curriculumVersion: z.number().nullable(),
-    units: z.array(unit),
+    plannedScope: z.string().nullable(),
   }),
-  roster: z.array(rosterEntry),
-  submissions: z.array(
+  enrollments: z.array(
     z.object({
       id,
-      revision: z.number(),
-      status: z.string(),
-      entries: z.array(rosterEntry),
-      reason: z.string(),
-      recordedBy: id,
-      recorder: z.string(),
-      createdAt: z.string(),
-      approvalId: id.nullable(),
-      decisionNote: z.string().nullable(),
+      studentId: id,
+      studentName: z.string(),
+      studentNumber: z.string().nullable(),
     }),
   ),
+  attendance: z
+    .object({
+      id,
+      status: z.string(),
+      revision: z.number(),
+      entries: z.array(entry.extend({ studentName: z.string().optional() })),
+    })
+    .nullable(),
+  classLog: z
+    .object({
+      id,
+      status: z.string(),
+      revision: z.number(),
+    })
+    .nullable(),
 });
 export type SessionWorkspace = z.infer<typeof sessionWorkspaceSchema>;
 
@@ -294,10 +299,10 @@ export const classLogReviewCommandSchema = z.object({
 });
 
 export const classLogCommandSchema = z.discriminatedUnion("action", [
-  classLogDraftCommandSchema.extend({
+  classLogDraftCommandSchema.safeExtend({
     action: z.literal("SAVE_DRAFT"),
   }),
-  classLogDraftCommandSchema.extend({
+  classLogDraftCommandSchema.safeExtend({
     action: z.literal("SUBMIT"),
   }),
   classLogReviewCommandSchema,
