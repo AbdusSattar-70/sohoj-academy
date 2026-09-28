@@ -11,6 +11,7 @@ Run these files in filename order:
 3. `0003_v3_academics_public.sql`
 4. `0004_v3_finance_and_current_workflows.sql`
 5. `0005_v3_direct_admin_finance.sql`
+6. `0006_v3_direct_admin_accounting.sql`
 
 The files are generated from the repository's reviewed V2 schema history and the current V3 forward changes. They contain schema objects, permissions, functions, constraints, indexes, triggers and system configuration only.
 
