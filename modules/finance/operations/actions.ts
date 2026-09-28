@@ -40,7 +40,7 @@ export async function runFinanceCommand(input: FinanceCommand) {
   const result = data as { message?: string; receipt_no?: string };
   return {
     ok: true,
-    message: result.message ?? `Payment posted. Receipt ${result.receipt_no}.`,
+    message: result.message ?? "Finance action completed.",
   };
 }
 export async function previewBilling(period: string, termId?: string) {
