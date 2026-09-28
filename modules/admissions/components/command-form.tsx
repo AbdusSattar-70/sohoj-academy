@@ -22,6 +22,9 @@ export function AdmissionCommandForm({
   maxAmount,
   identity,
   defaultProspectId,
+  initialBatch,
+  onSuccess,
+  onCancel,
 }: {
   action: AdmissionCommand["action"];
   data: AdmissionWorkspace;
@@ -31,6 +34,9 @@ export function AdmissionCommandForm({
   maxAmount?: number;
   identity?: { name: string; guardian: string; mobile: string };
   defaultProspectId?: string;
+  initialBatch?: { id: string; code: string; name: string; capacity: number };
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
@@ -62,6 +68,9 @@ export function AdmissionCommandForm({
         : {}),
       ...(action === "CREATE_BATCH"
         ? { capacity: data.capacityLimit ?? undefined }
+        : {}),
+      ...(action === "EDIT_BATCH" && initialBatch
+        ? { batchId: initialBatch.id, code: initialBatch.code, name: initialBatch.name, capacity: initialBatch.capacity }
         : {}),
       ...(action === "CREATE" && defaultProspectId
         ? { prospectId: defaultProspectId }
@@ -123,7 +132,7 @@ export function AdmissionCommandForm({
               key === "amount"
                 ? maxAmount
                 : key === "capacity"
-                  ? 500
+                  ? (data.capacityLimit ?? 500)
                   : undefined
             }
             {...register(key, { valueAsNumber: numeric })}
@@ -152,6 +161,7 @@ export function AdmissionCommandForm({
           return;
         }
         request.current = null;
+        onSuccess?.();
         reset({
           action,
           admissionId,
@@ -182,9 +192,9 @@ export function AdmissionCommandForm({
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {action === "CREATE_BATCH" && (
+        {(action === "CREATE_BATCH" || action === "EDIT_BATCH") && (
           <>
-            {field(
+            {action === "CREATE_BATCH" && field(
               "offeringId",
               "Offering",
               "Choose the programme offering this batch belongs to.",
@@ -210,6 +220,7 @@ export function AdmissionCommandForm({
               undefined,
               true,
             )}
+            {action === "EDIT_BATCH" && <input type="hidden" {...register("batchId")} />}
           </>
         )}
         {action === "CREATE" && (
@@ -228,7 +239,7 @@ export function AdmissionCommandForm({
               "Batch",
               "Only batches for this Prospect’s class are offered. Full batches cannot be selected.",
               data.batches
-                .filter((b) => b.classId === prospect?.classId)
+                .filter((b) => b.isActive && b.classId === prospect?.classId)
                 .map((b) => ({
                   id: b.id,
                   name: `${b.name} · ${b.occupied}/${b.capacity} seats`,

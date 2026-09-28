@@ -8,6 +8,7 @@ type AdmissionDatabase = Database & {
     Functions: {
       admission_workspace: { Args: Record<string, never>; Returns: Json };
       admission_command: { Args: { p_input: Json }; Returns: Json };
+      batch_command: { Args: { p_input: Json }; Returns: Json };
       post_admission_payment: { Args: { p_input: Json }; Returns: Json };
     };
   };

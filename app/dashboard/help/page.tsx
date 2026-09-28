@@ -39,8 +39,8 @@ const setup: Step[] = [
   },
   {
     title: "Create a batch with seats",
-    do: "Create a batch under the active offering. Confirm its capacity and class before admitting students. Batch occupancy is checked again when enrollment activates.",
-    check: "The batch appears as a placement choice with available seats.",
+    do: "Use the batch register to review cohorts or create a batch under the active offering. Edit a batch name, code or capacity there; its offering, year, class and branch stay fixed. Timetable days and hours are managed in Academic Operations. Batch occupancy is checked again when enrollment activates.",
+    check: "The batch appears in the register and becomes a placement choice with available seats.",
     href: "/dashboard/academics/batches", page: "Batches", permission: "academics.view",
   },
 ];
