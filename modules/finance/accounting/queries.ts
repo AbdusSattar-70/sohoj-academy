@@ -8,6 +8,8 @@ export type FinanceAccountingWorkspaceData = {
   vendors: Array<{ id: string; name: string }>;
   categories: Array<{ id: string; name: string }>;
   approvals: Array<{ id: string; workflow: string; entityId: string; requestedBy: string; detail: string }>;
+  externalReferrals: Array<{ admissionId:string; referrer:string; student:string; awardStatus:string|null }>;
+  referralApprovals: Array<{ id:string; admissionId:string; requestedBy:string; detail:string }>;
   compensationLines: Array<{ runId: string; teacherId: string; teacher: string; amount: number }>;
   accounts: Array<{ id: string; code: string; name: string; accountType: string; subtype: string; balance: number }>;
   payables: Array<{ id: string; number: string; type: string; beneficiary: string; amount: number; status: string; dueOn: string | null; remaining: number }>;
@@ -20,6 +22,7 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
   const supabase = (await createClient()) as unknown as SupabaseClient;
   const context = await (await import("@/modules/platform/auth/erp-context")).requireErpContext();
   const [
+    referralResult, referralAwardsResult, referralApprovalsResult,
     staffResult, vendorsResult, categoriesResult, approvalsResult, linesResult, settlementsResult,
     accountsResult,
     payablesResult,
@@ -28,6 +31,9 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     compensationResult,
     movementsResult,
   ] = await Promise.all([
+    supabase.from("admission_referrals").select("admission_id,source,referrer:referrer_id(id,full_name,staff_id),admission:admission_id(identity_snapshot,status)").eq("source","REFERRED"),
+    supabase.from("referral_bonus_awards").select("admission_id,status"),
+    supabase.from("approval_requests").select("id,entity_id,requested_by,request_note").eq("workflow_type","REFERRAL_BONUS").eq("status","PENDING"),
     supabase.from("staff").select("id,full_name").eq("status", "ACTIVE").order("full_name"),
     supabase.from("vendors").select("id,name").order("name"),
     supabase.from("finance_expense_categories").select("id,name").eq("is_active",true).order("name"),
@@ -35,14 +41,14 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     supabase.from("teacher_compensation_lines").select("run_id,teacher_id,amount,staff:teacher_id(full_name)"),
     supabase.from("finance_payable_settlements").select("payable_id,amount"),
     supabase.from("finance_accounts").select("id,code,name,account_type,account_subtype").eq("is_active", true).order("code"),
-    supabase.from("finance_payables").select("id,payable_no,payable_type,original_amount,status,due_on,staff:staff_id(full_name),vendor:vendor_id(name)").neq("status", "VOIDED").order("due_on"),
+    supabase.from("finance_payables").select("id,payable_no,payable_type,original_amount,status,due_on,staff:staff_id(full_name),vendor:vendor_id(name),referrer:referrer_id(full_name)").neq("status", "VOIDED").order("due_on"),
     supabase.from("finance_advances").select("id,advance_no,beneficiary_type,purpose,requested_amount,status,expected_settlement_date,approval_id,staff:staff_id(full_name),vendor:vendor_id(name)").order("created_at", { ascending: false }),
     supabase.from("finance_expenses").select("id,expense_no,expense_date,description,amount,status,approval_id").order("expense_date", { ascending: false }),
     supabase.from("teacher_compensation_runs").select("id,run_no,period_start,period_end,total_amount,status,approval_id").order("period_end", { ascending: false }),
     supabase.from("finance_advance_movements").select("advance_id,movement_type,amount"),
   ]);
 
-  for (const result of [staffResult,vendorsResult,categoriesResult,approvalsResult,linesResult,settlementsResult,accountsResult, payablesResult, advancesResult, expensesResult, compensationResult, movementsResult]) {
+  for (const result of [referralResult,referralAwardsResult,referralApprovalsResult,staffResult,vendorsResult,categoriesResult,approvalsResult,linesResult,settlementsResult,accountsResult, payablesResult, advancesResult, expensesResult, compensationResult, movementsResult]) {
     if (result.error) throw new Error(result.error.message);
   }
 
@@ -85,13 +91,17 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     vendors:(vendorsResult.data ?? []).map(x=>({id:x.id,name:x.name})),
     categories:(categoriesResult.data ?? []).map(x=>({id:x.id,name:x.name})),
     approvals:(approvalsResult.data ?? []).map(x=>({id:x.id,workflow:x.workflow_type,entityId:x.entity_id,requestedBy:x.requested_by,detail:x.request_note})),
+    externalReferrals:(referralResult.data??[]).filter(r=>r.referrer?.[0]&&!r.referrer[0].staff_id&&r.admission?.[0]?.status==="ACTIVE_ENROLLMENT")
+      .map(r=>({admissionId:r.admission_id,referrer:r.referrer?.[0]?.full_name??"Unknown",student:String((r.admission?.[0]?.identity_snapshot as Record<string,unknown>|null)?.student_name??"Student"),
+        awardStatus:(referralAwardsResult.data??[]).find(a=>a.admission_id===r.admission_id)?.status??null})),
+    referralApprovals:(referralApprovalsResult.data??[]).map(a=>({id:a.id,admissionId:a.entity_id,requestedBy:a.requested_by,detail:a.request_note})),
     compensationLines:[...compensationLines.values()],
     accounts,
     payables: (payablesResult.data ?? []).map((row) => ({
       id: row.id,
       number: row.payable_no,
       type: row.payable_type,
-      beneficiary: row.staff?.[0]?.full_name ?? row.vendor?.[0]?.name ?? "Other",
+      beneficiary: row.staff?.[0]?.full_name ?? row.vendor?.[0]?.name ?? row.referrer?.[0]?.full_name ?? "Other",
       amount: Number(row.original_amount),
       status: row.status,
       dueOn: row.due_on,

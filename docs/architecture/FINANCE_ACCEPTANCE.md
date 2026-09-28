@@ -5,15 +5,15 @@
 From the existing repository, with local changes committed or saved deliberately:
 
 ```bash
-git switch feature/dashboard_initialization
-git pull --ff-only origin feature/dashboard_initialization
+git switch feature/finance_accounting_gap
+git pull --ff-only origin feature/finance_accounting_gap
 pnpm install
 pnpm exec supabase migration list
 pnpm exec supabase db push
 pnpm dev
 ```
 
-Apply all pending migrations through 0016 to the same development project used by `.env.local`. Do not reset the database. If the development server is already running, use its existing localhost URL; stop that terminal with Ctrl+C before starting another copy.
+Apply all pending migrations through 0045 to the same development project used by `.env.local`. Do not reset the database. If the development server is already running, use its existing localhost URL; stop that terminal with Ctrl+C before starting another copy.
 
 ## People and permissions
 
@@ -59,3 +59,12 @@ Also test TERM plans by creating a non-overlapping academic term inside the year
 ## Automated verification
 
 Run the SQL files in `supabase/tests` as database owner on a development database after applying all migrations. Fixtures run inside transactions and roll back. Tests 0013 and 0014 cover finance workflow invariants and abuse/error paths. Local isolated verification is not a substitute for this signed-in, linked-environment acceptance sequence.
+
+## Referral and accounting scenario (migration 0045)
+
+1. Create an Admission draft. In **Admission source and referral**, choose **Organic** or select an existing staff/person. For a new referrer, register the verified name, 11-digit mobile, relationship and contact note in the same form. Confirm duplicate mobile numbers reuse the existing person and mismatched names require review. Acceptance requires a saved choice.
+2. For a referred external person, collect tuition and activate the admission. In **Finance → Accounting & Settlements**, request the external acquisition reward. A second authorized staff account reviews it. Verify that approval posts an acquisition expense and a referral payable only once. Pay the payable and compare the cash journal to the receipt/reference. The software records settlement; it does not send money automatically.
+3. For a referred teacher, verify that the teacher compensation preview includes the acquisition line in the first local collection month. Independently approve the monthly run and settle that teacher. It must not also create an external reward.
+4. Verify an Organic admission creates no referral bonus. A refund before external reward approval must force review/recalculation if it reduces first-month net collected tuition. A refund after an approved reward needs a separately approved compensation adjustment; approved journal entries remain intact.
+
+Follow the full regression and live Supabase/RLS gates in `FINANCE_IMPLEMENTATION_2026-09-28.md` before treating this workflow as production accepted.

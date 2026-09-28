@@ -5,6 +5,8 @@ import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { getAdmissionWorkspace } from "@/modules/admissions/queries";
 import { AdmissionCommandForm } from "@/modules/admissions/components/command-form";
 import { ConsentForm } from "@/modules/admissions/components/consent-form";
+import { ReferralForm } from "@/modules/admissions/components/referral-form";
+import { getAdmissionReferrals } from "@/modules/admissions/referrals";
 import { getConsentDocuments } from "@/modules/admissions/consent";
 import type { AdmissionCommand } from "@/modules/admissions/schema";
 const nextAction: Record<
@@ -49,7 +51,7 @@ export default async function AdmissionsPage({
 }) {
   const context = await requirePermission("admissions.view");
   const { prospect: prospectParam } = await searchParams;
-  const [data, consentDocuments] = await Promise.all([getAdmissionWorkspace(), getConsentDocuments()]);
+  const [data, consentDocuments, referrals] = await Promise.all([getAdmissionWorkspace(), getConsentDocuments(), getAdmissionReferrals()]);
   const manage = context.permissions.includes("admissions.create");
   const pay = context.permissions.includes("finance.payments.post");
   const defaultProspectId =
@@ -152,6 +154,8 @@ export default async function AdmissionsPage({
                 {" · Guardian signed "}{document.guardian_signed_on}{" · Received "}{new Date(document.received_at).toLocaleString()}
               </li>)}</ul> : <p className="mt-2 text-sm text-amber-700">No signed form has been received for this case.</p>}
             </section>
+            {manage && ["DRAFT","READY"].includes(a.status) && <ReferralForm admissionId={a.id} people={referrals} choice={referrals.choices.find(r=>r.admission_id===a.id)} />}
+            {!(["DRAFT","READY"].includes(a.status)) && <p className="text-sm">Admission source: {referrals.choices.find(r=>r.admission_id===a.id)?.source==="ORGANIC"?"Organic":referrals.people.find(p=>p.id===referrals.choices.find(r=>r.admission_id===a.id)?.referrer_id)?.full_name??"Unrecorded historical source"}</p>}
             {manage && ["DRAFT","READY"].includes(a.status) && <ConsentForm admissionId={a.id} />}
             <div className="grid gap-4 md:grid-cols-3">
               <div>

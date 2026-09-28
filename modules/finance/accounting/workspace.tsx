@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { submitAccountingCommand } from "./actions";
+import { runReferralCommand } from "@/modules/admissions/referral-actions";
 import type { FinanceAccountingWorkspaceData } from "./queries";
 
 function money(value: number) {
@@ -49,6 +50,13 @@ export function FinanceAccountingWorkspace({ initialData: data }: { initialData:
     {!!data.approvals.length && <Panel title="Pending approvals" description="The requester cannot decide their own request.">
       {data.approvals.map(a=><Row key={a.id} title={a.workflow.replaceAll("_"," ")} detail={a.detail} value="" status={a.requestedBy===data.currentProfileId?"Your request":"Awaiting decision"} actions={a.requestedBy!==data.currentProfileId && approvalPermission(a.workflow) && permitted(approvalPermission(a.workflow)!) ? <div className="flex gap-2"><Action onClick={()=>choose(decide(a.workflow)!,"Approve request",[field("decision","Decision","select",[{id:"APPROVED",name:"Approve"},{id:"REJECTED",name:"Reject"}])],{approval_id:a.id})}>Review</Action></div>:null}/>)}
     </Panel>}
+    <Panel title="External admission referrals" description="The acquisition reward uses the active versioned policy and first-month net collected tuition. Teacher referrals are handled in teacher compensation.">
+      {data.externalReferrals.map(r=><Row key={r.admissionId} title={r.referrer} detail={`${r.student} · ${r.admissionId}`} value="" status={r.awardStatus??"Not requested"}
+        actions={!r.awardStatus&&permitted("staff.compensation.manage")?<Action onClick={()=>choose("REQUEST_BONUS",`Request reward for ${r.referrer}`,[],{admission_id:r.admissionId})}>Request reward</Action>:null}/>)}
+      {data.referralApprovals.map(a=><Row key={a.id} title="Reward awaiting approval" detail={a.detail} value="" status={a.requestedBy===data.currentProfileId?"Your request":"Independent review"}
+        actions={a.requestedBy!==data.currentProfileId&&permitted("staff.compensation.approve")?<Action onClick={()=>choose("DECIDE_BONUS","Review referral reward",[field("decision","Decision","select",[{id:"APPROVED",name:"Approve"},{id:"REJECTED",name:"Reject"}])],{approval_id:a.id})}>Review</Action>:null}/>)}
+      {!data.externalReferrals.length&&!data.referralApprovals.length&&<Empty/>}
+    </Panel>
     <section className="rounded-2xl border bg-card p-5">
       <h2 className="text-lg font-semibold">Chart of accounts</h2>
       <p className="mt-1 text-sm text-muted-foreground">Current posted balances. Amounts include only approved ledger entries.</p>
@@ -68,7 +76,10 @@ export function FinanceAccountingWorkspace({ initialData: data }: { initialData:
         {data.compensation.map(c=><div key={c.id}><Row title={c.runNo} detail={`${c.from} → ${c.to}`} value={money(c.total)} status={c.status}/>{c.status==="APPROVED"&&permitted("staff.compensation.manage")&&data.compensationLines.filter(l=>l.runId===c.id).map(l=><div key={l.teacherId} className="ml-3 flex items-center justify-between border-b p-2 text-sm"><span>{l.teacher} · {money(l.amount)}</span><Action onClick={()=>choose("SETTLE_COMPENSATION",`Settle ${l.teacher}`,[field("advance_offset","Advance offset (enter 0 if none)","number"),field("payment_account_id","Cash or bank (if cash is due)","select",cash),field("external_reference","Bank or receipt reference")],{run_id:c.id,teacher_id:l.teacherId})}>Settle</Action></div>)}</div>)}{!data.compensation.length&&<Empty/>}
       </Panel>
     </section>
-    {operation&&<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><form className="max-h-[90vh] w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl bg-background p-6 shadow-xl" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);const values=Object.fromEntries([...form.entries()].filter(([key,value])=>key!=="reason"&&value!=="")) as Record<string,string>;const reason=String(form.get("reason")??"");startTransition(async()=>{const result=await submitAccountingCommand({action:operation.action,values:{...operation.preset,...values},reason});setFeedback(result.message);if(result.ok){setOperation(null);window.location.reload();}})}}>
+    {operation&&<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><form className="max-h-[90vh] w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl bg-background p-6 shadow-xl" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);const values=Object.fromEntries([...form.entries()].filter(([key,value])=>key!=="reason"&&value!=="")) as Record<string,string>;const reason=String(form.get("reason")??"");startTransition(async()=>{const result=["REQUEST_BONUS","DECIDE_BONUS"].includes(operation.action)
+          ? await runReferralCommand({action:operation.action,admissionId:operation.preset?.admission_id,
+              approvalId:operation.preset?.approval_id,decision:values.decision,reason})
+          : await submitAccountingCommand({action:operation.action,values:{...operation.preset,...values},reason});setFeedback(result.message);if(result.ok){setOperation(null);window.location.reload();}})}}>
       <div className="flex items-start justify-between gap-4"><div><h2 className="text-lg font-semibold">{operation.title}</h2><p className="text-sm text-muted-foreground">Confirm details before submitting. Posted entries retain an audit trail.</p></div><button type="button" onClick={()=>setOperation(null)} aria-label="Close" className="rounded border px-2 py-1">×</button></div>
       {operation.fields.map(f=><label key={f.name} className="block text-sm font-medium">{f.label}{f.options?<select name={f.name} defaultValue="" required={f.required} className="mt-1 w-full rounded-lg border bg-background p-2"><option value="">Choose…</option>{f.options.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select>:<input name={f.name} type={f.type??"text"} step={f.type==="number"?"0.01":undefined} min={f.type==="number"?"0":undefined} required={f.required} className="mt-1 w-full rounded-lg border bg-background p-2"/>}</label>)}
       <label className="block text-sm font-medium">Reason for this action<textarea name="reason" minLength={5} required className="mt-1 w-full rounded-lg border bg-background p-2"/></label>
