@@ -3,11 +3,25 @@ import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { getQuestionWorkspace } from "@/modules/academics/questions/queries";
 import { QuestionBank } from "@/modules/academics/questions/workspace";
 
-export default async function QuestionBankPage() {
+export default async function QuestionBankPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ item?: string }>;
+}) {
   const context = await requirePermission("academics.view");
+  const query = await searchParams;
   const data = await getQuestionWorkspace();
   return <div className="space-y-7">
     <PageHeader eyebrow="Academics" title="Question Bank" description="Draft teaching questions, submit them for an independent review, and retain every decision and revision." />
-    <QuestionBank data={data} actorId={context.profileId} canAuthor={context.permissions.includes("academics.assessments.record") || context.permissions.includes("academics.sessions.manage")} canReview={context.permissions.includes("academics.assessments.approve")} />
+    <QuestionBank
+      data={data}
+      actorId={context.profileId}
+      canAuthor={
+        context.permissions.includes("academics.assessments.record") ||
+        context.permissions.includes("academics.sessions.manage")
+      }
+      canReview={context.permissions.includes("academics.assessments.approve")}
+      focusItemId={query.item}
+    />
   </div>;
 }
