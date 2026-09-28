@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
-import { workspaceSchema } from "./schema";
+import { admissionCaseDetailSchema, workspaceSchema } from "./schema";
 // Narrow RPC contract until linked database types are regenerated.
 type AdmissionDatabase = Database & {
   public: {
@@ -21,4 +21,14 @@ export async function getAdmissionWorkspace() {
   const { data, error } = await db.rpc("admission_workspace", {});
   if (error) throw new Error(error.message);
   return workspaceSchema.parse(data);
+}
+
+
+export async function getAdmissionCase(admissionId: string) {
+  const db = await admissionClient();
+  const { data, error } = await db.rpc("admission_case_detail", {
+    p_admission_id: admissionId,
+  });
+  if (error) throw new Error(error.message);
+  return admissionCaseDetailSchema.parse(data);
 }
