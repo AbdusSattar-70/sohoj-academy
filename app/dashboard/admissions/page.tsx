@@ -155,6 +155,7 @@ export default async function AdmissionsPage({
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <StatusBadge value={a.status} />
+                <Link href={`/dashboard/admissions/${a.id}`} className="rounded-lg border px-3 py-2 text-sm font-medium underline-offset-2 hover:underline print:hidden">Open case</Link>
                 <Link href={`/dashboard/admissions/${a.id}/print`} className="rounded-lg border px-3 py-2 text-sm font-medium underline-offset-2 hover:underline print:hidden">
                   Print application &amp; consent
                 </Link>
