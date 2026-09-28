@@ -15,15 +15,15 @@ type Step = {
 const setup: Step[] = [
   {
     title: "Set up the academy directory",
-    do: "In Manage CRM, check the academic years, branch, classes and groups, subjects taught, programme definitions, schools and public form choices. Add missing entries and deactivate outdated choices instead of deleting historical data.",
+    do: "In Academic Directory, check the academic years, branches, classes and groups, subjects, programme definitions, schools and public-form choices. Add missing entries and deactivate outdated choices instead of deleting historical data.",
     check: "The year, class, subject and programme you need can be selected in the ERP forms. More than one academic year may be active while preparing a future intake.",
-    href: "/dashboard/crm/manage", page: "Manage CRM", permission: "system.master_data.manage",
+    href: "/dashboard/crm/manage", page: "Academic Directory", permission: "system.master_data.manage",
   },
   {
     title: "Review the operating rules and staff access",
-    do: "In Settings and Business Rules, review staff roles, admission activation, capacity, billing and compensation policies. Give a second authorized staff member approval permissions; requesters cannot approve their own financial actions.",
+    do: "In Access & Security and Operating Rules, review staff access, admission activation, capacity, billing and compensation policies. The Bootstrap admin can perform authorized setup and Finance operations directly; teacher submissions are reviewed by an admin.",
     check: "The intended operator and independent approver can each open their assigned workspaces.",
-    href: "/dashboard/settings", page: "Settings", permission: "system.settings.view",
+    href: "/dashboard/settings", page: "Access & Security", permission: "system.settings.view",
   },
   {
     title: "Create a programme offering",
@@ -48,8 +48,8 @@ const setup: Step[] = [
 const admission: Step[] = [
   {
     title: "Choose the right intake path",
-    do: "In Admissions, either enter a new applicant with the student/guardian, continue a Prospect already in CRM, or print a blank A4 form for the family. The new-applicant entry creates the Prospect and draft together. Applicants do not need an account or login.",
-    check: "The case is linked to one Prospect. For paper applications, staff enter the verified details online after collecting the form.",
+    do: "In Admissions, either enter a new applicant with the student/guardian, continue an Enquiry already in CRM, or print a blank A4 form for the family. Direct staff intake creates an application and draft case without creating a CRM Enquiry. Applicants do not need an account or login.",
+    check: "The case records its explicit origin. An Enquiry-conversion case links the real CRM Prospect; a direct staff case does not create a synthetic Prospect.",
     href: "/dashboard/admissions", page: "Admissions", permission: "admissions.create",
   },
   {
@@ -66,8 +66,8 @@ const admission: Step[] = [
   },
   {
     title: "Print and receive signed consent",
-    do: "Open Print Consent Form on the admission case. Explain the programme and pinned charges to the guardian, obtain the guardian signature and student acknowledgment when appropriate, then record the signed document in Signed consent evidence.",
-    check: "The signed document can be opened from the case. A new case cannot be accepted until its signed consent receipt is recorded.",
+    do: "Open Print form on the admission case. Explain the programme and pinned charges to the guardian, obtain the guardian signature and student acknowledgment when appropriate, keep the paper in the physical student file, and record its physical receipt on the case.",
+    check: "The case shows the recorded physical consent receipt. A new case cannot be accepted until that receipt is recorded.",
     href: "/dashboard/admissions", page: "Admissions · Consent", permission: "admissions.view",
   },
   {
@@ -84,19 +84,19 @@ const admission: Step[] = [
   },
   {
     title: "Record money actually received",
-    do: "If money is received, use Post Actual Payment on the case or Student Accounts in Billing & Adjustments. Enter only the amount received and choose the real payment method. Keep the permanent receipt; never post a payment for a promise to pay.",
+    do: "If money is received, use Student Accounts. Enter only the amount received and choose the real payment method. Keep the permanent receipt; never post a payment for a promise to pay.",
     check: "A receipt and allocation appear, and the outstanding balance changes. Posting payment does not activate enrollment automatically.",
-    href: "/dashboard/finance/billing", page: "Billing & Adjustments", permission: "finance.view",
+    href: "/dashboard/finance/billing", page: "Student Accounts", permission: "finance.view",
   },
   {
     title: "Evaluate enrollment activation",
-    do: "Return to the case and choose Evaluate Enrollment Activation. The pinned policy checks acceptance, initial billing, required payment and seat capacity. If Pending Payment remains, collect the required amount and run activation again.",
+    do: "Return to the admission case and choose Evaluate Enrollment Activation. The pinned policy checks acceptance, initial billing, required payment and seat capacity. If Pending Payment remains, collect the required amount and run activation again.",
     check: "Active Enrollment appears on the case and the student is visible in the active Student register. Any permitted credit balance remains due.",
     href: "/dashboard/admissions", page: "Admissions · Activate", permission: "admissions.view",
   },
   {
     title: "Continue the student journey",
-    do: "Open the Student register and batch. Record classes, attendance, homework and assessments in the academic workspaces. For future fee cycles, preview and post recurring billing, then record each actual payment separately.",
+    do: "Open the Student register and assigned batch. Record classes, attendance, homework and assessments in the academic workspaces. For future fee cycles, preview and post recurring billing, then record each actual payment separately.",
     check: "The student is assigned to the intended batch; teaching records and later invoices refer to that student.",
     href: "/dashboard/students", page: "Students", permission: "students.view",
   },
