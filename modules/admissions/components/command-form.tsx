@@ -12,6 +12,38 @@ import {
   type AdmissionCommandFormData,
 } from "../schema";
 import { runAdmissionCommand } from "../actions";
+const REASON_PRESETS: Partial<Record<AdmissionCommand["action"], string[]>> = {
+  READY: [
+    "Confirmed student identity, guardian contact, programme and batch",
+    "Verified public application against supporting documents",
+    "Corrected details with guardian present",
+  ],
+  ACCEPT: [
+    "Accepted after verification and signed paper consent",
+    "Accepted with verified referral and complete file",
+  ],
+  BILL: [
+    "Posted initial charges from the pinned Fee Plan",
+  ],
+  ACTIVATE: [
+    "Activation policy and batch capacity checked",
+    "Activated with outstanding balance allowed by policy",
+  ],
+  PAY: [
+    "Cash received at front desk",
+    "Bank transfer confirmed",
+  ],
+  EDIT_DRAFT: [
+    "Corrected identity details with guardian",
+  ],
+  CREATE: [
+    "Creating draft from verified enquiry",
+  ],
+  CREATE_BATCH: [
+    "Opening a new teaching batch for this offering",
+  ],
+};
+
 const inputClass =
   "min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-destructive";
 type Option = { id: string; name: string; disabled?: boolean };
@@ -327,11 +359,73 @@ export function AdmissionCommandForm({
             )}
           </>
         )}
-        {field(
-          "reason",
-          action === "READY" ? "Verification note" : action === "ACCEPT" ? "Acceptance note" : action === "BILL" ? "Billing note" : action === "ACTIVATE" ? "Enrollment decision note" : action === "PAY" ? "Payment note" : "Staff note",
-          action === "READY" ? "For example: Confirmed student identity, guardian contact, batch and published fees." : action === "ACCEPT" ? "For example: Reviewed the verified application and signed paper consent." : action === "BILL" ? "For example: Posted the initial charges from the pinned Fee Plan." : action === "ACTIVATE" ? "For example: Confirmed policy requirements and available batch capacity." : action === "PAY" ? "For example: Cash received at the front desk." : "Briefly record why you are making this change.",
-        )}
+        {(() => {
+          const presets = REASON_PRESETS[action] ?? [];
+          const label =
+            action === "READY"
+              ? "Verification note"
+              : action === "ACCEPT"
+                ? "Acceptance note"
+                : action === "BILL"
+                  ? "Billing note"
+                  : action === "ACTIVATE"
+                    ? "Enrollment decision note"
+                    : action === "PAY"
+                      ? "Payment note"
+                      : "Staff note";
+          return (
+            <ErpFormField
+              id={`${action}-${admissionId ?? "new"}-reason`}
+              label={label}
+              required
+              hint="Choose a standard note. Use Other only when the situation is unusual."
+              error={errors.reason?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <div className="space-y-2">
+                  {presets.length > 0 && (
+                    <select
+                      className={inputClass}
+                      defaultValue=""
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        if (value === "__other__") {
+                          setValue("reason", "", {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                          return;
+                        }
+                        if (value) {
+                          setValue("reason", value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }
+                      }}
+                    >
+                      <option value="">Select a standard note…</option>
+                      {presets.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                      <option value="__other__">Other (type below)</option>
+                    </select>
+                  )}
+                  <input
+                    id={id}
+                    className={inputClass}
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    placeholder="Selected note appears here; type only for Other"
+                    {...register("reason")}
+                  />
+                </div>
+              )}
+            </ErpFormField>
+          );
+        })()}
       </div>
       {prospect && action === "CREATE" && (
         <div className="rounded-xl border bg-muted/30 p-4 text-sm leading-6">
