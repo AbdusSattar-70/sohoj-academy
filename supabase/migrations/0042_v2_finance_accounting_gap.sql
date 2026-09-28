@@ -11,6 +11,18 @@
 
 insert into public.permissions(code,name,description)
 values
+  ('accounting.view','View accounting','View ledger, chart of accounts and reconciliations.'),
+  ('accounting.manage','Manage accounting','Post controlled accounting journals and mappings.'),
+  ('finance.advances.manage','Manage advances','Request, pay and settle staff/vendor/project advances.'),
+  ('finance.advances.approve','Approve advances','Approve or reject advance requests.'),
+  ('staff.compensation.view','View teacher compensation','View teacher compensation calculations and settlements.'),
+  ('staff.compensation.manage','Manage teacher compensation','Prepare compensation runs and settlements.'),
+  ('staff.compensation.approve','Approve teacher compensation','Approve compensation runs and adjustments.')
+on conflict(code) do update
+set name=excluded.name, description=excluded.description;
+
+insert into public.permissions(code,name,description)
+values
   ('accounting.expense.manage','Manage expenses','Create and post controlled expense records.'),
   ('accounting.expense.approve','Approve expenses','Approve expense records before posting.'),
   ('accounting.reconcile','Reconcile financial records','Reconcile expenses and cash/bank statements.'),
