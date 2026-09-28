@@ -9,6 +9,7 @@ const expected = [
   "0003_v3_academics_public.sql",
   "0004_v3_finance_and_current_workflows.sql",
   "0005_v3_direct_admin_finance.sql",
+  "0006_v3_direct_admin_accounting.sql",
 ];
 
 const forbidden = [
