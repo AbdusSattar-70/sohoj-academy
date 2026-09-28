@@ -50,7 +50,7 @@ export function AdmissionCommandForm({
     setValue,
     reset,
     setError,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = useForm<AdmissionCommand>({
     resolver: zodResolver(commandSchema),
     mode: "onChange",
@@ -317,9 +317,16 @@ export function AdmissionCommandForm({
         </div>
       )}
       <ErpFormStatus message={message} />
-      <Button type="submit" disabled={pending || !isDirty || !isValid}>
-        {pending ? "Working…" : label}
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button type="submit" disabled={pending || !isDirty}>
+          {pending ? "Working…" : label}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

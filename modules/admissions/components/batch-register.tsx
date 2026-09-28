@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AdmissionCommandForm } from "./command-form";
 import type { AdmissionWorkspace } from "../schema";
 import { StatusBadge } from "@/components/erp/status-badge";
 
 export function BatchRegister({ data, canManage }: { data: AdmissionWorkspace; canManage: boolean }) {
+  const router = useRouter();
   const [form, setForm] = useState<{ action: "CREATE_BATCH" | "EDIT_BATCH"; id?: string } | null>(null);
   const selected = form?.id ? data.batches.find((batch) => batch.id === form.id) : undefined;
   const close = () => setForm(null);
@@ -41,9 +43,9 @@ export function BatchRegister({ data, canManage }: { data: AdmissionWorkspace; c
           {form.action==="CREATE_BATCH"&&<p className="mt-1 text-sm text-muted-foreground">Choose an active programme offering, then define the cohort name, code and seat capacity.</p>}</div>
           <button type="button" onClick={close} aria-label="Close batch form" className="flex size-9 shrink-0 items-center justify-center rounded-lg border text-lg hover:bg-muted">×</button></div>
         <AdmissionCommandForm key={`${form.action}:${form.id??"new"}`} action={form.action} data={data}
-          label={form.action==="CREATE_BATCH"?"Batch details":"Update batch details"}
+          label={form.action==="CREATE_BATCH"?"Create batch":"Save batch changes"}
           description={form.action==="CREATE_BATCH"?`Capacity cannot exceed the active policy limit of ${data.capacityLimit??"not configured"} students.`:`Capacity cannot be below ${selected?.occupied??0} students already enrolled or above the current policy limit of ${data.capacityLimit??"not configured"}. Programme, year and class stay attached to the batch.`}
-          initialBatch={selected} onSuccess={close} onCancel={close}/>
+          initialBatch={selected} onSuccess={() => { close(); router.refresh(); }} onCancel={close}/>
       </section>
     </div>}
   </div>;
