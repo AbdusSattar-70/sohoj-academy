@@ -39,6 +39,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify V3 baseline
+        run: pnpm verify:v3-baseline
+
       - name: Lint
         run: pnpm lint
 
