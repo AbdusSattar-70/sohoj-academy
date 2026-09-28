@@ -14,12 +14,18 @@ export async function runFinanceCommand(input: FinanceCommand) {
     return { ok: false, message: parsed.error.issues[0].message };
   if (!(await getErpContext()))
     return { ok: false, message: "Sign in to continue." };
-  // Every command enforces its own permission and maker-checker rules atomically in the database.
+  // Finance V3 adjustments execute directly for an authorized admin; legacy
+  // approval commands remain available only for historical transition records.
   const db = await financeClient();
-  const { data, error } = await db.rpc(
-    input.action === "PAY" ? "post_admission_payment" : "finance_command",
-    { p_input: parsed.data },
-  );
+  const rpc =
+    parsed.data.action === "PAY"
+      ? "post_admission_payment"
+      : ["APPLY_DISCOUNT", "CANCEL_ADMISSION", "REFUND"].includes(
+            parsed.data.action,
+          )
+        ? "finance_v3_command"
+        : "finance_command";
+  const { data, error } = await db.rpc(rpc, { p_input: parsed.data });
   if (error) return { ok: false, message: error.message };
   for (const path of [
     "/dashboard/finance/billing",
