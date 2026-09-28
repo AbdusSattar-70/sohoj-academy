@@ -21,7 +21,7 @@ This branch is the V3 transition branch. The current application and Supabase mi
 | Finance V3 reconnection | In transition | Student-account discount, admission cancellation and refund operations now use direct authorized V3 commands with audit, idempotency and immutable financial history. Accounting advances/expenses/compensation still use transition workflows. |
 | Browser acceptance | Pending | Signed-in admin/teacher workflows have not been accepted against the linked development environment here. |
 | Database/RLS acceptance | Pending | V3 baseline constraints, RLS, idempotency and concurrency tests remain to be run in the clean V3 environment. |
-| Lint / typecheck / build | Pending | GitHub/Vercel checks should be treated as the authoritative execution gate; this branch has not been locally executed in this session. |
+| Lint / typecheck / build | Pending | Quality CI now includes the V3 baseline integrity gate before lint/typecheck/build; the latest run is still executing. |
 
 ## Current implementation boundary
 
