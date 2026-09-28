@@ -863,9 +863,21 @@ begin
 end;
 $$;
 
+create or replace function public.finance_sync_invoice_credit_trigger()
+returns trigger
+language plpgsql
+security definer
+set search_path=public
+as $
+begin
+  perform public.finance_sync_invoice_credit(new.id);
+  return new;
+end;
+$;
+
 create trigger invoice_credits_to_ledger
 after insert on public.invoice_credits
-for each row execute function public.finance_sync_invoice_credit(new.id);
+for each row execute function public.finance_sync_invoice_credit_trigger();
 
 create or replace function public.finance_sync_payment(p_payment_id uuid)
 returns uuid
@@ -899,9 +911,21 @@ begin
 end;
 $$;
 
+create or replace function public.finance_sync_payment_trigger()
+returns trigger
+language plpgsql
+security definer
+set search_path=public
+as $
+begin
+  perform public.finance_sync_payment(new.payment_id);
+  return new;
+end;
+$;
+
 create trigger admission_payment_allocations_to_ledger
 after insert on public.admission_payment_allocations
-for each row execute function public.finance_sync_payment(new.payment_id);
+for each row execute function public.finance_sync_payment_trigger();
 
 create or replace function public.finance_sync_refund(p_payout_id uuid)
 returns uuid
@@ -935,9 +959,21 @@ begin
 end;
 $$;
 
+create or replace function public.finance_sync_refund_trigger()
+returns trigger
+language plpgsql
+security definer
+set search_path=public
+as $
+begin
+  perform public.finance_sync_refund(new.id);
+  return new;
+end;
+$;
+
 create trigger refund_payouts_to_ledger
 after insert on public.refund_payouts
-for each row execute function public.finance_sync_refund(new.id);
+for each row execute function public.finance_sync_refund_trigger();
 
 -- ---------------------------------------------------------------------------
 -- Compensation calculation helpers
