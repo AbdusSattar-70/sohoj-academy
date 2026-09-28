@@ -879,6 +879,9 @@ create trigger invoice_credits_to_ledger
 after insert on public.invoice_credits
 for each row execute function public.finance_sync_invoice_credit_trigger();
 
+revoke all on function public.finance_sync_invoice_credit_trigger()
+from public,anon,authenticated;
+
 create or replace function public.finance_sync_payment(p_payment_id uuid)
 returns uuid
 language plpgsql
@@ -927,6 +930,9 @@ create trigger admission_payment_allocations_to_ledger
 after insert on public.admission_payment_allocations
 for each row execute function public.finance_sync_payment_trigger();
 
+revoke all on function public.finance_sync_payment_trigger()
+from public,anon,authenticated;
+
 create or replace function public.finance_sync_refund(p_payout_id uuid)
 returns uuid
 language plpgsql
@@ -974,6 +980,9 @@ $;
 create trigger refund_payouts_to_ledger
 after insert on public.refund_payouts
 for each row execute function public.finance_sync_refund_trigger();
+
+revoke all on function public.finance_sync_refund_trigger()
+from public,anon,authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Compensation calculation helpers
