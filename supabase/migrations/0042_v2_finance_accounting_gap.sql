@@ -30,6 +30,12 @@ values
 on conflict(code) do update
 set name=excluded.name, description=excluded.description;
 
+-- Bootstrap ADMIN retains recovery authority for every new permission.
+insert into public.role_permissions(role_id,permission_id)
+select r.id,p.id from public.system_roles r cross join public.permissions p
+where r.code='ADMIN'
+on conflict do nothing;
+
 insert into public.role_permissions(role_id,permission_id)
 select r.id,p.id
 from public.system_roles r
@@ -2422,7 +2428,7 @@ create policy compensation_adjustments_read
 on public.teacher_compensation_adjustments for select to authenticated
 using(public.has_permission('staff.compensation.view'));
 
-revoke insert,update,delete on all
+revoke insert,update,delete on
   public.finance_accounts,
   public.finance_cost_centres,
   public.general_ledger_journals,

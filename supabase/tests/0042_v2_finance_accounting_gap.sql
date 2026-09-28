@@ -1,6 +1,8 @@
 -- Finance/accounting invariants.
 -- Run against the migrated test database.
 
+begin;
+
 do $$
 declare
   org uuid;
@@ -10,7 +12,12 @@ declare
   journal uuid;
   debit_total numeric;
   credit_total numeric;
+  actor uuid := gen_random_uuid();
 begin
+  insert into auth.users(id,email,raw_user_meta_data)
+  values(actor,'finance-test-'||actor||'@example.invalid','{"full_name":"Finance Test"}');
+  perform public.bootstrap_admin('finance-test-'||actor||'@example.invalid','Finance Test');
+  perform set_config('request.jwt.claim.sub',actor::text,true);
   select id into org from public.organizations where code='SOHOJ' limit 1;
   if org is null then raise exception 'SOHOJ organization seed is required.'; end if;
 
@@ -28,7 +35,7 @@ begin
   perform public.finance_post_journal(
     org,current_date,'MANUAL','TEST_JOURNAL',gen_random_uuid()::text,
     'Finance invariant test',
-    (select id from public.profiles order by created_at limit 1),
+    actor,
     jsonb_build_array(
       jsonb_build_object('account_id',ar,'debit',100,'credit',0),
       jsonb_build_object('account_id',revenue,'debit',0,'credit',100)
@@ -58,7 +65,7 @@ begin
     perform public.finance_post_journal(
       org,current_date,'MANUAL','TEST_UNBALANCED',gen_random_uuid()::text,
       'Must fail',
-      (select id from public.profiles order by created_at limit 1),
+      actor,
       jsonb_build_array(
         jsonb_build_object('account_id',ar,'debit',100,'credit',0),
         jsonb_build_object('account_id',cash,'debit',0,'credit',90)
@@ -79,4 +86,5 @@ begin
     select 1 from public.permissions where code='staff.compensation.manage'
   ) then raise exception 'Compensation permission seed missing.'; end if;
 end
-$$;
+$;
+rollback;
