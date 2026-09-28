@@ -1,7 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { can, type ErpContext } from "@/types/erp";
+import { adminReviewQueueSchema } from "@/modules/governance/schema";
 
 export type ActionCenterData = {
+  teacherReviews: Array<{
+    id: string;
+    reviewType: "ATTENDANCE" | "CLASS_LOG" | "ASSESSMENT_RESULTS" | "QUESTION";
+    title: string;
+    teacherName: string;
+    batchName: string;
+    subjectName: string;
+    submittedAt: string;
+    revision: number;
+    href: string;
+  }>;
   approvals: Array<{
     id: string;
     workflowType: string;
@@ -31,23 +43,42 @@ export type ActionCenterData = {
 };
 
 export async function getActionCenterData(
-  context: ErpContext
+  context: ErpContext,
 ): Promise<ActionCenterData> {
   const supabase = await createClient();
 
+  let teacherReviews: ActionCenterData["teacherReviews"] = [];
   let approvals: ActionCenterData["approvals"] = [];
   let dueProspects: ActionCenterData["dueProspects"] = [];
   let verificationQueue: ActionCenterData["verificationQueue"] = [];
 
+  if (
+    can(context, "academics.attendance.approve") ||
+    can(context, "academics.assessments.approve")
+  ) {
+    const { data, error } = await supabase.rpc("admin_review_queue" as never);
+    if (error) throw new Error(error.message);
+    teacherReviews = adminReviewQueueSchema
+      .parse(data)
+      .filter((item) =>
+        item.reviewType === "ATTENDANCE" || item.reviewType === "CLASS_LOG"
+          ? can(context, "academics.attendance.approve")
+          : can(context, "academics.assessments.approve"),
+      )
+      .slice(0, 8);
+  }
+
   if (can(context, "approvals.view")) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("approval_requests")
       .select(
-        "id,workflow_type,entity_type,requested_action,requested_at,request_note"
+        "id,workflow_type,entity_type,requested_action,requested_at,request_note",
       )
       .eq("status", "PENDING")
       .order("requested_at", { ascending: true })
       .limit(50);
+
+    if (error) throw new Error(error.message);
 
     approvals = (data ?? []).map((row) => ({
       id: row.id,
@@ -74,12 +105,15 @@ export async function getActionCenterData(
       supabase
         .from("prospects")
         .select(
-          "id,prospect_no,student_name,mobile,status,created_at,school_id,school_name_snapshot"
+          "id,prospect_no,student_name,mobile,status,created_at,school_id,school_name_snapshot",
         )
         .in("status", ["NEW", "CONTACTED", "COUNSELLING"])
         .order("created_at", { ascending: false })
         .limit(40),
     ]);
+
+    if (dueQ.error) throw new Error(dueQ.error.message);
+    if (queueQ.error) throw new Error(queueQ.error.message);
 
     dueProspects = (dueQ.data ?? [])
       .filter((row) => row.next_follow_up_at)
@@ -92,22 +126,17 @@ export async function getActionCenterData(
         nextFollowUpAt: row.next_follow_up_at as string,
       }));
 
-    verificationQueue = (queueQ.data ?? []).map((row) => {
-      const schoolNeedsReview = Boolean(
-        !row.school_id && row.school_name_snapshot
-      );
-      return {
-        id: row.id,
-        prospectNo: row.prospect_no,
-        studentName: row.student_name,
-        mobile: row.mobile,
-        status: row.status,
-        createdAt: row.created_at,
-        schoolNeedsReview,
-        schoolName: row.school_name_snapshot ?? "—",
-      };
-    });
+    verificationQueue = (queueQ.data ?? []).map((row) => ({
+      id: row.id,
+      prospectNo: row.prospect_no,
+      studentName: row.student_name,
+      mobile: row.mobile,
+      status: row.status,
+      createdAt: row.created_at,
+      schoolNeedsReview: Boolean(!row.school_id && row.school_name_snapshot),
+      schoolName: row.school_name_snapshot ?? "—",
+    }));
   }
 
-  return { approvals, dueProspects, verificationQueue };
+  return { teacherReviews, approvals, dueProspects, verificationQueue };
 }
