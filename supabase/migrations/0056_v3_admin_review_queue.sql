@@ -20,10 +20,12 @@ as $$
       st.staff_no as teacher_staff_no,
       b.name as batch_name,
       s.name as subject_name,
-      a.created_at as submitted_at,
+      coalesce(ar.requested_at, a.created_at) as submitted_at,
       a.revision,
       '/dashboard/academics/sessions/' || cs.id::text as href
     from public.attendance_submissions a
+    left join public.approval_requests ar
+      on ar.id = a.approval_id
     join public.class_sessions cs on cs.id = a.session_id
     join public.batches b on b.id = cs.batch_id
     join public.subjects s on s.id = cs.subject_id
