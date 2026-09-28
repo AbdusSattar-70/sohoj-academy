@@ -219,16 +219,7 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     navGroup: "Governance",
     permission: "audit.view",
     icon: "audit",
-  },
-  {
-    id: "help",
-    title: "Help & Workflows",
-    eyebrow: "Support",
-    href: "/dashboard/help",
-    navGroup: "Support",
-    permission: "dashboard.view",
-    icon: "help",
-  },
+  }
 ];
 
 export function routeMatches(pathname: string, route: ErpRouteDefinition) {
