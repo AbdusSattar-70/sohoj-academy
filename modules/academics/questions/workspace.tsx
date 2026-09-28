@@ -1,14 +1,30 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { runQuestionCommand } from "./actions";
 import type { QuestionCommand, QuestionWorkspace } from "./schema";
 
 type Item = QuestionWorkspace["items"][number];
 
-export function QuestionBank({ data, actorId, canAuthor, canReview }: {
-  data: QuestionWorkspace; actorId: string; canAuthor: boolean; canReview: boolean;
+export function QuestionBank({
+  data,
+  actorId,
+  canAuthor,
+  canReview,
+  focusItemId,
+}: {
+  data: QuestionWorkspace;
+  actorId: string;
+  canAuthor: boolean;
+  canReview: boolean;
+  focusItemId?: string;
 }) {
+  useEffect(() => {
+    if (!focusItemId) return;
+    const target = document.getElementById("question-" + focusItemId);
+    target?.scrollIntoView({ block: "start" });
+    target?.focus({ preventScroll: true });
+  }, [focusItemId]);
   const [editing, setEditing] = useState<Item | null>(null);
   const [pending, startTransition] = useTransition();
   const [notice, setNotice] = useState("");
@@ -60,7 +76,12 @@ export function QuestionBank({ data, actorId, canAuthor, canReview }: {
     </section>}
     <section className="space-y-4"><h2 className="text-lg font-semibold">Question history</h2>
       {data.items.length === 0 && <p className="rounded-xl border p-5 text-sm text-muted-foreground">No questions in your accessible scope yet.</p>}
-      {data.items.map((q) => <article className="space-y-3 rounded-xl border bg-card p-5" key={q.id}>
+      {data.items.map((q) => <article
+          id={"question-" + q.id}
+          tabIndex={q.id === focusItemId ? -1 : undefined}
+          className="scroll-mt-24 space-y-3 rounded-xl border bg-card p-5"
+          key={q.id}
+        >
         <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{q.topic} · v{q.revision}</h3><span className="rounded-full border px-2 py-1 text-xs font-semibold">{q.status}</span></div>
         <p className="text-xs text-muted-foreground">{q.batch} · {q.subject} · {q.difficulty} · {q.author}</p>
         <p className="whitespace-pre-wrap text-sm">{q.prompt}</p>
