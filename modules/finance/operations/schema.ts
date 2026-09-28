@@ -4,6 +4,9 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a date.");
 export const financeCommandSchema = z
   .object({
     action: z.enum([
+      "APPLY_DISCOUNT",
+      "CANCEL_ADMISSION",
+      "REFUND",
       "REQUEST_DISCOUNT",
       "REQUEST_CANCEL",
       "REQUEST_REFUND",
@@ -42,6 +45,15 @@ export const financeCommandSchema = z
   })
   .superRefine((v, ctx) => {
     const required: Record<typeof v.action, string[]> = {
+      APPLY_DISCOUNT: [
+        "admission_id",
+        "kind",
+        "value",
+        "starts_on",
+        "ends_on",
+      ],
+      CANCEL_ADMISSION: ["admission_id", "settlement"],
+      REFUND: ["invoice_id", "payment_id", "amount", "payment_method_id"],
       REQUEST_DISCOUNT: [
         "admission_id",
         "kind",
