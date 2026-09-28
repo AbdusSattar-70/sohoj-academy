@@ -15,9 +15,9 @@ This branch is the V3 transition branch. The current application and Supabase mi
 | Referral / paper-consent focused refresh | Implemented | Successful actions refresh the focused case route. |
 | Unified teacher Admin Review Queue | Implemented | Attendance, class logs, assessment results and questions are surfaced as one review queue with exact task links. |
 | Teacher class-log review lifecycle | Implemented | Class logs now follow DRAFT → SUBMITTED → APPROVED/REJECTED with immutable reviewed history. |
-| V3 clean database baseline | Prepared | Six ordered schema-only baseline parts now exist under `supabase/baseline_v3`; the active Supabase migration path remains V2 until clean-environment verification. |
+| V3 clean database baseline | Prepared | Seven ordered schema-only baseline parts now exist under `supabase/baseline_v3`; the active Supabase migration path remains V2 until clean-environment verification. |
 | V3 database cutover/reset | Not implemented | The baseline is isolated and ready for disposable clean-database rehearsal; the linked V2 project has not been reset. |
-| Teacher vertical slice | In transition | Direct teacher submission/review path and unified Admin Review Queue are implemented as V3 transition surfaces; the underlying schema still comes from the V2 chain. |
+| Teacher vertical slice | In transition | Class-log and focused attendance submission/review boundaries now use V3 commands with revision history, admin review metadata and self-review protection; assessments/questions still use transition commands. |
 | Finance V3 reconnection | In transition | Student Accounts and core accounting now have direct authorized V3 commands for discounts, cancellations, refunds, advances, expenses and compensation adjustments/runs. Legacy approval records remain only as a transition surface for older data. |
 | Browser acceptance | Pending | Signed-in admin/teacher workflows have not been accepted against the linked development environment here. |
 | Database/RLS acceptance | Pending | V3 baseline constraints, RLS, idempotency and concurrency tests remain to be run in the clean V3 environment. |
@@ -29,4 +29,4 @@ The admission case route now uses a focused V3 transition read model. Direct sta
 
 ## Next V3 delivery slice
 
-The clean V3 baseline is prepared as six ordered schema-only files under `supabase/baseline_v3/`, including direct Student Account and core accounting operations. The next gate is to apply it to a disposable clean Supabase database, run the SQL/RLS suite, generate fresh database types, then remove the superseded V2 migration path and continue Finance reconnection.
+The clean V3 baseline is prepared as seven ordered schema-only files under `supabase/baseline_v3/`, including direct Student Account, core accounting and focused attendance operations. The next gate is to apply it to a disposable clean Supabase database, run the SQL/RLS suite, generate fresh database types, then remove the superseded V2 migration path and continue Finance reconnection.
