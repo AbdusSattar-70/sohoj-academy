@@ -219,6 +219,39 @@ export const sessionWorkspaceSchema = z.object({
 });
 export type SessionWorkspace = z.infer<typeof sessionWorkspaceSchema>;
 
+export const classLogWorkspaceSchema = z.object({
+  units: z.array(
+    z.object({ title: z.string(), target_date: z.string() }).passthrough(),
+  ),
+  logs: z.array(
+    z.object({
+      id,
+      session_id: id,
+      revision: z.number(),
+      previous_log_id: id.nullable(),
+      status: z.enum(["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"]),
+      unit_progress: z.array(
+        z.object({
+          unit_index: z.number(),
+          status: z.enum(["COVERED", "PARTIAL", "NOT_COVERED"]),
+          note: z.string(),
+        }),
+      ),
+      class_summary: z.string(),
+      unfinished_reason: z.string(),
+      homework: z.string(),
+      next_session_plan: z.string(),
+      reason: z.string(),
+      authored_by: id,
+      created_at: z.string(),
+      submitted_at: z.string().nullable(),
+      reviewer_id: id.nullable(),
+      review_note: z.string().nullable(),
+      reviewed_at: z.string().nullable(),
+    }),
+  ),
+});
+
 export const classLogDraftCommandSchema = z.object({
   action: z.enum(["SAVE_DRAFT", "SUBMIT"]),
   request_id: id,
