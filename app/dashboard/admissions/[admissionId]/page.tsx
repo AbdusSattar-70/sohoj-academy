@@ -128,31 +128,37 @@ export default async function AdmissionCasePage({
 
   const steps = [
     {
+      id: "step-verify",
       title: "Verify identity and placement",
       complete: admission.status !== "DRAFT" && !isCancelled,
       active: admission.status === "DRAFT",
     },
     {
+      id: "step-referral",
       title: "Record admission source",
       complete: hasReferral,
       active: admission.status === "READY" && !hasReferral,
     },
     {
+      id: "step-consent",
       title: "File paper consent",
       complete: hasConsent,
       active: admission.status === "READY" && hasReferral && !hasConsent,
     },
     {
+      id: "step-accept",
       title: "Accept admission",
       complete: currentIndex >= 2 && reviewComplete,
       active: admission.status === "READY" && reviewComplete,
     },
     {
+      id: "step-bill",
       title: "Post initial bill",
       complete: currentIndex >= 3 && reviewComplete,
       active: admission.status === "ACCEPTED",
     },
     {
+      id: "step-activate",
       title: "Activate enrollment",
       complete: admission.status === "ACTIVE_ENROLLMENT" && reviewComplete,
       active:
@@ -160,6 +166,8 @@ export default async function AdmissionCasePage({
         ["BILLING_POSTED", "PENDING_PAYMENT"].includes(admission.status),
     },
   ];
+  const activeStep =
+    steps.find((step) => step.active) ?? steps.find((step) => !step.complete);
 
   return (
     <div className="space-y-7">
@@ -205,22 +213,37 @@ export default async function AdmissionCasePage({
           className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3"
         >
           {steps.map((step, index) => (
-            <li
-              key={step.title}
-              className={`rounded-xl border p-3 text-sm ${
-                step.active
-                  ? "border-primary bg-primary/5 font-medium"
-                  : step.complete
-                    ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900"
-                    : "text-muted-foreground"
-              }`}
-            >
-              <div className="flex items-center gap-3">
+            <li key={step.id}>
+              <a
+                href="#work-panel"
+                className={`flex items-center gap-3 rounded-xl border p-3 text-sm transition hover:border-primary/60 ${
+                  step.active
+                    ? "border-primary bg-primary/5 font-medium"
+                    : step.complete
+                      ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900"
+                      : "text-muted-foreground"
+                }`}
+              >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
                   {step.complete ? "✓" : index + 1}
                 </span>
-                <span>{step.title}</span>
-              </div>
+                <span className="min-w-0">
+                  <span className="block">{step.title}</span>
+                  {step.active ? (
+                    <span className="mt-0.5 block text-xs font-normal text-primary">
+                      Current — open work panel
+                    </span>
+                  ) : step.complete ? (
+                    <span className="mt-0.5 block text-xs font-normal text-emerald-700 dark:text-emerald-300">
+                      Done
+                    </span>
+                  ) : (
+                    <span className="mt-0.5 block text-xs font-normal">
+                      Waiting
+                    </span>
+                  )}
+                </span>
+              </a>
             </li>
           ))}
         </ol>
@@ -287,17 +310,45 @@ export default async function AdmissionCasePage({
       </section>
 
       {!isCancelled && (
-        <section className="space-y-4 rounded-2xl border bg-card p-5 sm:p-6">
+        <section
+          id="work-panel"
+          className="scroll-mt-24 space-y-4 rounded-2xl border bg-card p-5 sm:p-6"
+        >
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              Working steps
+              Work panel
             </p>
-            <h2 className="mt-1 text-xl font-semibold">Complete the case</h2>
+            <h2 className="mt-1 text-xl font-semibold">
+              {activeStep ? activeStep.title : "Complete the case"}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              The case owns the workflow context. Open another register only
-              when the action itself belongs there.
+              Finish the current step here. The page stays on this case after
+              every save. Open another register only when the action itself
+              belongs there, then return here.
             </p>
           </div>
+
+          {admission.status === "DRAFT" && manage && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Confirm student and guardian details before marking verification
+                complete. Correct anything captured incorrectly on the public form
+                or staff intake.
+              </p>
+              <AdmissionCommandForm
+                action="EDIT_DRAFT"
+                admissionId={admission.id}
+                data={commandData}
+                identity={{
+                  name: admission.name,
+                  guardian: admission.guardian,
+                  mobile: admission.mobile,
+                }}
+                label="Save verified identity"
+                description="Updates stay on this draft. Mark verification complete as the next action when ready."
+              />
+            </div>
+          )}
 
           {admission.status === "READY" && !hasReferral && manage && (
             <ReferralForm
