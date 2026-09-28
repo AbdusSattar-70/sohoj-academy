@@ -2,21 +2,43 @@
 
 This directory is the reviewed V3 schema baseline for a **clean database**.
 
-## Apply order
+On branch `feature/refactor`, promote these files into the active migration path with:
 
-Run these files in filename order:
+```bash
+pnpm run activate:v3-migrations
+pnpm run verify:v3-baseline
+```
 
-1. `0001_v3_platform_crm_admissions.sql`
-2. `0002_v3_admissions_finance_academics.sql`
-3. `0003_v3_academics_public.sql`
-4. `0004_v3_finance_and_current_workflows.sql`
-5. `0005_v3_direct_admin_finance.sql`
-6. `0006_v3_direct_admin_accounting.sql`
-7. `0007_v3_attendance_command.sql`
+That writes:
 
-The files are generated from the repository's reviewed V2 schema history and the current V3 forward changes. They contain schema objects, permissions, functions, constraints, indexes, triggers and system configuration only.
+| Baseline source | Active migration |
+| --- | --- |
+| `0001_v3_platform_crm_admissions.sql` | `01_platform_crm_admissions.sql` |
+| `0002_v3_admissions_finance_academics.sql` | `02_admissions_finance_academics.sql` |
+| `0003_v3_academics_public.sql` | `03_academics_public.sql` |
+| `0004_v3_finance_and_current_workflows.sql` | `04_finance_and_current_workflows.sql` |
+| `0005_v3_direct_admin_finance.sql` | `05_direct_admin_finance.sql` |
+| `0006_v3_direct_admin_accounting.sql` | `06_direct_admin_accounting.sql` |
+| `0007_v3_attendance_command.sql` | `07_attendance_command.sql` |
 
-They must **not** be applied to the linked V2 project while its existing `supabase_migrations` history is present.
+and moves prior V2 SQL into `supabase/migrations_v2_archive/`.
+
+## Apply on a disposable clean database
+
+1. Confirm you are **not** using production, or you have authorized a full reset of a development project.
+2. Reset the database (Supabase dashboard → Database → Reset, or new project).
+3. From the repo root on `feature/refactor`:
+
+```bash
+pnpm run activate:v3-migrations
+pnpm run verify:v3-baseline
+pnpm exec supabase migration list
+pnpm exec supabase db push
+pnpm exec supabase gen types typescript --linked > types/database.ts
+pnpm run build
+```
+
+See `docs/V3_DATABASE_CUTOVER.md` for the full operator checklist.
 
 ## What this baseline intentionally does not contain
 
@@ -24,17 +46,3 @@ They must **not** be applied to the linked V2 project while its existing `supaba
 - Auth users.
 - Storage fixtures.
 - A data migration from V2 into V3.
-
-## Why the source history is retained in Git
-
-The old `supabase/migrations/*.sql` files remain available for reference and forensic review. The V3 baseline is the schema artifact intended for a future clean project/reset.
-
-## Before activation
-
-1. Apply the five baseline files to a disposable clean Supabase database.
-2. Run all V3 SQL tests plus RLS/authorization tests.
-3. Generate `types/database.ts` from that clean database.
-4. Run lint, typecheck, production build and browser acceptance.
-5. Only after those gates pass, replace the active `supabase/migrations` path and rehearse the owner's authorized test-project reset.
-
-The baseline is therefore **prepared, not released**.
