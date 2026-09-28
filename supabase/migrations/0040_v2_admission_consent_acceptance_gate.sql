@@ -18,26 +18,39 @@ create index if not exists admission_cases_consent_gate_idx
 -- Replace the current admission command definition while preserving all existing
 -- workflow behavior. The gate is deliberately in the transactional ACCEPT branch
 -- so direct callers cannot bypass the policy.
+
 do $migration$
 declare
   definition text;
-  old_block text := $old$      if v_fee.status<>'ACTIVE' then raise exception 'Fee Plan changed. Refresh and review before acceptance.'; end if;
-      select * into v_policy$old$;
-  new_block text := $new$      if v_fee.status<>'ACTIVE' then raise exception 'Fee Plan changed. Refresh and review before acceptance.'; end if;
+  fee_check text := 'if v_fee.status<>''ACTIVE'' then raise exception ''Fee Plan changed. Refresh and review before acceptance.''; end if;';
+  consent_gate text := $gate$
       if v_case.consent_required and not exists (
         select 1 from public.admission_consent_documents d
         where d.admission_id = v_case.id
       ) then
         raise exception 'A recorded signed consent receipt is required before acceptance.';
-      end if;
-      select * into v_policy$new$;
+      end if;$gate$;
 begin
   select pg_get_functiondef('public.admission_command(jsonb)'::regprocedure)
     into definition;
-  if position(old_block in definition) = 0 then
-    if position(new_block in definition) > 0 then return; end if;
-    raise exception 'Could not install admission consent acceptance gate; inspect admission_command before migrating.';
+
+  -- Already installed
+  if position('A recorded signed consent receipt is required before acceptance.' in definition) > 0 then
+    return;
   end if;
-  execute replace(definition, old_block, new_block);
+
+  -- Must still contain the fee-plan guard we anchor on
+  if position(fee_check in definition) = 0 then
+    raise exception 'Could not install admission consent acceptance gate; inspect admission_command before migrating. Fee-plan guard not found.';
+  end if;
+
+  -- Inject the consent gate immediately after the fee-plan guard
+  definition := replace(
+    definition,
+    fee_check,
+    fee_check || E'\n' || consent_gate
+  );
+
+  execute definition;
 end;
 $migration$;
