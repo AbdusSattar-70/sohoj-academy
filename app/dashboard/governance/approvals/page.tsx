@@ -14,8 +14,8 @@ export default async function ApprovalsPage() {
     <div className="space-y-7">
       <PageHeader
         eyebrow="Governance"
-        title="Approval Register"
-        description="Sensitive workflows remain traceable from request through decision. The requester cannot approve their own request."
+        title="Admin Review Queue"
+        description="Review teacher submissions and other controlled workflows in one place. Teacher work becomes official only after an admin review decision."
       />
 
       <Link
