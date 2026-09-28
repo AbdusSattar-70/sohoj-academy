@@ -185,7 +185,12 @@ export default async function SessionPage({
           began &&
           (can("academics.attendance.record") ||
             can("academics.sessions.manage")) && (
-            <ClassLogForm sessionId={s.id} workspace={classLogs} />
+            <ClassLogForm
+            sessionId={s.id}
+            workspace={classLogs}
+            canReview={can("academics.attendance.approve")}
+            actorId={context.profileId}
+          />
           )}
         <div>
           <h2 className="font-semibold">Actual Class Log History</h2>
@@ -194,18 +199,28 @@ export default async function SessionPage({
           </p>
         </div>
         {classLogs.logs
-          .filter((log) => log.status === "SUBMITTED")
+          .filter((log) => log.status !== "DRAFT")
           .map((log) => (
             <article
               key={log.id}
               className="space-y-2 rounded-xl border bg-card p-4"
             >
               <p className="text-sm font-semibold">
-                Revision {log.revision} · Submitted{" "}
-                {new Date(log.submitted_at!).toLocaleString("en-GB", {
-                  timeZone: s.timezone,
-                })}
+                Revision {log.revision} · {log.status} · Submitted{" "}
+                {log.submitted_at
+                  ? new Date(log.submitted_at).toLocaleString("en-GB", {
+                      timeZone: s.timezone,
+                    })
+                  : "—"}
               </p>
+              {log.reviewed_at && (
+                <p className="text-xs text-muted-foreground">
+                  Reviewed{" "}
+                  {new Date(log.reviewed_at).toLocaleString("en-GB", {
+                    timeZone: s.timezone,
+                  })}
+                </p>
+              )}
               <p className="text-sm">{log.class_summary}</p>
               {log.unit_progress.length > 0 && (
                 <ul className="list-disc pl-5 text-sm">
@@ -233,9 +248,14 @@ export default async function SessionPage({
                   <strong>Next class:</strong> {log.next_session_plan}
                 </p>
               )}
+              {log.review_note && (
+                <p className="rounded-lg bg-muted/50 p-3 text-sm">
+                  <strong>Review note:</strong> {log.review_note}
+                </p>
+              )}
             </article>
           ))}
-        {!classLogs.logs.some((log) => log.status === "SUBMITTED") && (
+        {!classLogs.logs.some((log) => log.status !== "DRAFT") && (
           <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
             No actual teaching log has been submitted for this class.
           </p>
