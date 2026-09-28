@@ -9,6 +9,7 @@ import {
   commandSchema,
   type AdmissionCommand,
   type AdmissionWorkspace,
+  type AdmissionCommandFormData,
 } from "../schema";
 import { runAdmissionCommand } from "../actions";
 const inputClass =
@@ -28,7 +29,7 @@ export function AdmissionCommandForm({
   onCancel,
 }: {
   action: AdmissionCommand["action"];
-  data: AdmissionWorkspace;
+  data: AdmissionCommandFormData;
   admissionId?: string;
   label: string;
   description: string;
