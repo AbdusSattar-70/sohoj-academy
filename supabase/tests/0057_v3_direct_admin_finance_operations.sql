@@ -16,7 +16,7 @@ declare
   fee_id uuid;
   batch_id uuid;
   prospect_id uuid;
-  admission_id uuid;
+  finance_admission_id uuid;
   invoice_id uuid;
   payment_id uuid;
   method_id uuid;
@@ -102,30 +102,30 @@ begin
     'offering_id',offering_id,
     'batch_id',batch_id
   ));
-  admission_id:=(result->>'id')::uuid;
+  finance_admission_id:=(result->>'id')::uuid;
 
   update public.admission_cases
   set consent_required=false
-  where id=admission_id;
+  where id=finance_admission_id;
 
   perform public.admission_command(jsonb_build_object(
     'action','READY',
     'request_id',gen_random_uuid(),
     'reason','Prepare finance V3 admission',
-    'admission_id',admission_id
+    'admission_id',finance_admission_id
   ));
 
   perform public.referral_command(jsonb_build_object(
     'action','CAPTURE',
     'request_id',gen_random_uuid(),
-    'admission_id',admission_id,
+    'admission_id',finance_admission_id,
     'source','ORGANIC',
     'reason','Use organic source in finance test'
   ));
 
   perform public.record_physical_admission_consent(jsonb_build_object(
     'request_id',gen_random_uuid(),
-    'admission_id',admission_id,
+    'admission_id',finance_admission_id,
     'guardian_signed_on',current_date,
     'student_signed',false,
     'reason','Record finance test paper consent'
@@ -135,20 +135,20 @@ begin
     'action','ACCEPT',
     'request_id',gen_random_uuid(),
     'reason','Accept finance V3 admission',
-    'admission_id',admission_id
+    'admission_id',finance_admission_id
   ));
 
   perform public.admission_command(jsonb_build_object(
     'action','BILL',
     'request_id',gen_random_uuid(),
     'reason','Post finance V3 initial invoice',
-    'admission_id',admission_id
+    'admission_id',finance_admission_id
   ));
 
-  select id into invoice_id
-  from public.admission_invoices
-  where admission_id=admission_id
-    and invoice_kind='INITIAL';
+  select ai.id into invoice_id
+  from public.admission_invoices ai
+  where ai.admission_id=finance_admission_id
+    and ai.invoice_kind='INITIAL';
 
   select id into method_id
   from public.payment_methods
@@ -157,7 +157,7 @@ begin
 
   perform public.post_admission_payment(jsonb_build_object(
     'request_id',gen_random_uuid(),
-    'admission_id',admission_id,
+    'admission_id',finance_admission_id,
     'invoice_id',invoice_id,
     'payment_method_id',method_id,
     'amount',2600,
@@ -166,7 +166,7 @@ begin
 
   select id into payment_id
   from public.admission_payments
-  where student_id=(select student_id from public.admission_cases where id=admission_id)
+  where student_id=(select student_id from public.admission_cases where id=finance_admission_id)
   order by posted_at desc
   limit 1;
 
@@ -177,7 +177,7 @@ begin
     'action','APPLY_DISCOUNT',
     'request_id',gen_random_uuid(),
     'reason','Direct admin tuition correction for V3 finance test',
-    'admission_id',admission_id,
+    'admission_id',finance_admission_id,
     'kind','FIXED',
     'value',500,
     'starts_on',current_date,
@@ -194,11 +194,11 @@ begin
     raise exception 'Direct discount was not idempotent.';
   end if;
 
-  if (select approval_id from public.admission_discounts where admission_id=admission_id) is not null then
+  if (select ad.approval_id from public.admission_discounts ad where ad.admission_id=finance_admission_id) is not null then
     raise exception 'V3 discount created a generic approval request.';
   end if;
 
-  if (select authorized_by from public.admission_discounts where admission_id=admission_id)<>u then
+  if (select ad.authorized_by from public.admission_discounts ad where ad.admission_id=finance_admission_id)<>u then
     raise exception 'Discount actor was not recorded.';
   end if;
 
@@ -230,7 +230,7 @@ begin
     raise exception 'Direct refund did not reconcile the credit balance.';
   end if;
 
-  if (select approval_id from public.refund_authorizations where payment_id=payment_id order by created_at desc limit 1) is not null then
+  if (select ra.approval_id from public.refund_authorizations ra where ra.payment_id=payment_id order by ra.created_at desc limit 1) is not null then
     raise exception 'V3 refund created a generic approval request.';
   end if;
 
@@ -238,25 +238,25 @@ begin
     'action','CANCEL_ADMISSION',
     'request_id',gen_random_uuid(),
     'reason','End finance V3 test enrollment',
-    'admission_id',admission_id,
+    'admission_id',finance_admission_id,
     'settlement','KEEP_CHARGES'
   );
 
   result:=public.finance_v3_command(input);
 
-  if (select approval_id from public.admission_cancellations where admission_id=admission_id) is not null then
+  if (select ac.approval_id from public.admission_cancellations ac where ac.admission_id=finance_admission_id) is not null then
     raise exception 'V3 cancellation created a generic approval request.';
   end if;
 
-  if (select cancelled_by from public.admission_cancellations where admission_id=admission_id)<>u then
+  if (select ac.cancelled_by from public.admission_cancellations ac where ac.admission_id=finance_admission_id)<>u then
     raise exception 'Cancellation actor was not recorded.';
   end if;
 
-  if (select status from public.admission_cases where id=admission_id)<>'CANCELLED' then
+  if (select ac.status from public.admission_cases ac where ac.id=finance_admission_id)<>'CANCELLED' then
     raise exception 'Direct cancellation did not update the admission state.';
   end if;
 
-  if (select status from public.enrollments where id=(select enrollment_id from public.admission_cases where id=admission_id))='ACTIVE' then
+  if (select e.status from public.enrollments e where e.id=(select ac.enrollment_id from public.admission_cases ac where ac.id=finance_admission_id))='ACTIVE' then
     raise exception 'Direct cancellation did not withdraw enrollment.';
   end if;
 
@@ -281,7 +281,7 @@ begin
       'action','CANCEL_ADMISSION',
       'request_id',gen_random_uuid(),
       'reason','Unauthorized V3 finance attempt',
-      'admission_id',admission_id,
+      'admission_id',finance_admission_id,
       'settlement','KEEP_CHARGES'
     ));
     raise exception 'Unauthorized V3 finance command was accepted.';
@@ -296,7 +296,7 @@ begin
   begin
     update public.admission_discounts
     set value=1
-    where admission_id=admission_id;
+    where admission_id=finance_admission_id;
     raise exception 'Immutable finance history was writable.';
   exception when others then
     if position('immutable' in lower(sqlerrm))=0 then
