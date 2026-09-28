@@ -173,6 +173,10 @@ export function AdmissionCommandForm({
         }
         request.current = null;
         onSuccess?.();
+        if (action === "CREATE" && typeof result.entityId === "string") {
+          router.push(`/dashboard/admissions/${result.entityId}`);
+          return;
+        }
         router.refresh();
         reset({
           action,
