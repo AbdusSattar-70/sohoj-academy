@@ -18,8 +18,8 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     compensationResult,
   ] = await Promise.all([
     supabase.from("finance_accounts").select("id,code,name,account_type,account_subtype").eq("is_active", true).order("code"),
-    supabase.from("finance_payables").select("id,payable_no,payable_type,original_amount,status,due_on,staff:staff_id(full_name),vendor:vendor_id(name)").neq("status", "VOIDED").order("due_on"),
-    supabase.from("finance_advances").select("id,advance_no,beneficiary_type,purpose,requested_amount,status,expected_settlement_date,staff:staff_id(full_name),vendor:vendor_id(name)").order("created_at", { ascending: false }),
+    supabase.from("finance_payables").select("id,payable_no,payable_type,original_amount,status,due_on").neq("status", "VOIDED").order("due_on"),
+    supabase.from("finance_advances").select("id,advance_no,beneficiary_type,purpose,requested_amount,status,expected_settlement_date").order("created_at", { ascending: false }),
     supabase.from("finance_expenses").select("id,expense_no,expense_date,description,amount,status").order("expense_date", { ascending: false }),
     supabase.from("teacher_compensation_runs").select("id,run_no,period_start,period_end,total_amount,status").order("period_end", { ascending: false }),
   ]);
@@ -50,7 +50,7 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
       id: row.id,
       number: row.payable_no,
       type: row.payable_type,
-      beneficiary: row.staff?.full_name ?? row.vendor?.name ?? "Other",
+      beneficiary: row.staff_id ?? row.vendor_id ?? "Other",
       amount: Number(row.original_amount),
       status: row.status,
       dueOn: row.due_on,
@@ -58,7 +58,7 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     advances: (advancesResult.data ?? []).map((row) => ({
       id: row.id,
       number: row.advance_no,
-      beneficiary: row.staff?.full_name ?? row.vendor?.name ?? row.beneficiary_type,
+      beneficiary: row.staff_id ?? row.vendor_id ?? row.beneficiary_type,
       purpose: row.purpose,
       requestedAmount: Number(row.requested_amount),
       balance: 0,
