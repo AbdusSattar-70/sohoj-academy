@@ -108,10 +108,21 @@ export function AdmissionCommandForm({
         ? { batchId: initialBatch.id, code: initialBatch.code, name: initialBatch.name, capacity: initialBatch.capacity }
         : {}),
       ...(action === "CREATE" && defaultProspectId
-        ? {
-            prospectId: defaultProspectId,
-            offeringId: data.prospects.find((p) => p.id === defaultProspectId)?.interestedOfferingId ?? undefined,
-          }
+        ? (() => {
+            const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
+            const classMatched = data.offerings.filter(
+              (o) => !nextProspect?.classId || o.classId === nextProspect.classId,
+            );
+            const preferred =
+              nextProspect?.interestedOfferingId &&
+              classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+                ? nextProspect.interestedOfferingId
+                : classMatched[0]?.id;
+            return {
+              prospectId: defaultProspectId,
+              offeringId: preferred,
+            };
+          })()
         : {}),
     },
   });
@@ -145,7 +156,18 @@ export function AdmissionCommandForm({
               onChange: (event) => {
                 if (key === "prospectId") {
                   const nextProspect = data.prospects.find((p) => p.id === event.target.value);
-                  setValue("offeringId", nextProspect?.interestedOfferingId ?? "", { shouldDirty: true, shouldValidate: true });
+                  const classMatched = data.offerings.filter(
+                    (o) => !nextProspect?.classId || o.classId === nextProspect.classId,
+                  );
+                  const preferred =
+                    nextProspect?.interestedOfferingId &&
+                    classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+                      ? nextProspect.interestedOfferingId
+                      : classMatched[0]?.id ?? "";
+                  setValue("offeringId", preferred, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
                   setValue("batchId", "", {
                     shouldDirty: true,
                     shouldValidate: true,
@@ -157,11 +179,17 @@ export function AdmissionCommandForm({
             })}
           >
             <option value="">Select {title}</option>
-            {options.map((o) => (
-              <option key={o.id} value={o.id} disabled={o.disabled}>
-                {o.name}
+            {options.length === 0 ? (
+              <option value="" disabled>
+                No valid options available
               </option>
-            ))}
+            ) : (
+              options.map((o) => (
+                <option key={o.id} value={o.id} disabled={o.disabled}>
+                  {o.name}
+                </option>
+              ))
+            )}
           </select>
         ) : (
           <input
@@ -227,10 +255,21 @@ export function AdmissionCommandForm({
             ? { capacity: data.capacityLimit ?? undefined }
             : {}),
           ...(action === "CREATE" && defaultProspectId
-            ? {
-                prospectId: defaultProspectId,
-                offeringId: data.prospects.find((p) => p.id === defaultProspectId)?.interestedOfferingId ?? undefined,
-              }
+            ? (() => {
+                const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
+                const classMatched = data.offerings.filter(
+                  (o) => !nextProspect?.classId || o.classId === nextProspect.classId,
+                );
+                const preferred =
+                  nextProspect?.interestedOfferingId &&
+                  classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+                    ? nextProspect.interestedOfferingId
+                    : classMatched[0]?.id;
+                return {
+                  prospectId: defaultProspectId,
+                  offeringId: preferred,
+                };
+              })()
             : {}),
         });
         setMessage({ ok: true, text: result.message ?? "Saved." });
@@ -280,7 +319,9 @@ export function AdmissionCommandForm({
             {field(
               "prospectId",
               "Prospect",
-              "Select an existing enquiry. Identity and guardian details are inherited.",
+              data.prospects.length
+                ? "Select an existing enquiry. Identity and guardian details are inherited."
+                : "No open enquiries are available. Use staff intake for a new applicant, or continue an enquiry in CRM first.",
               data.prospects.map((p) => ({
                 id: p.id,
                 name: `${p.number} · ${p.name} · ${p.mobile}`,
@@ -289,24 +330,73 @@ export function AdmissionCommandForm({
             {field(
               "offeringId",
               "Programme offering",
-              prospect?.interestedOfferingId
-                ? "Preselected from the Prospect’s recorded interest. Change only if the applicant confirms a different programme."
-                : prospect?.classId
+              (() => {
+                if (!prospect) {
+                  return "Select a Prospect first.";
+                }
+                if (!data.offerings.length) {
+                  return "No programme offerings are loaded. Publish a Fee Plan on an ACTIVE offering under Academics, then refresh this page.";
+                }
+                const classMatched = data.offerings.filter(
+                  (o) => !prospect.classId || o.classId === prospect.classId,
+                );
+                if (!classMatched.length) {
+                  return "No active offering matches this Prospect’s class. Open Academics → Offerings, or clear the class on the enquiry.";
+                }
+                if (
+                  prospect.interestedOfferingId &&
+                  !classMatched.some((o) => o.id === prospect.interestedOfferingId)
+                ) {
+                  return "The Prospect’s preferred offering is not available. Choose another active offering for their class.";
+                }
+                return prospect.classId
                   ? "Choose an active offering for the Prospect’s class."
-                  : "This Prospect has no class or offering on file. Confirm the applicant’s intended programme; the class will be assigned from this offering.",
-              data.offerings
-                .filter((o) =>
-                  (!prospect?.classId || o.classId === prospect.classId) &&
-                  (!prospect?.interestedOfferingId || o.id === prospect.interestedOfferingId),
-                )
-                .map((o) => ({ id: o.id, name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}` })),
+                  : "Confirm the intended programme. Class is taken from the offering when the Prospect has none.";
+              })(),
+              (() => {
+                if (!prospect) return [];
+                const classMatched = data.offerings.filter(
+                  (o) => !prospect.classId || o.classId === prospect.classId,
+                );
+                // Prefer the recorded interest when still available; otherwise show all class-matched offerings.
+                const preferred = classMatched.filter(
+                  (o) =>
+                    !prospect.interestedOfferingId ||
+                    o.id === prospect.interestedOfferingId,
+                );
+                const list = preferred.length ? preferred : classMatched;
+                return list.map((o) => ({
+                  id: o.id,
+                  name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}`,
+                }));
+              })(),
             )}
             {field(
               "batchId",
               "Batch",
-              "Choose an active batch in the selected offering. Full batches cannot be selected.",
+              (() => {
+                if (!offeringId) {
+                  return "Select a programme offering first.";
+                }
+                const active = data.batches.filter(
+                  (b) => b.isActive && b.offeringId === offeringId,
+                );
+                if (!active.length) {
+                  return "No active batch exists for this offering. Create one under Academics → Batches, then return here.";
+                }
+                if (
+                  active.every(
+                    (b) =>
+                      b.occupied >=
+                      Math.min(b.capacity, data.capacityLimit ?? b.capacity),
+                  )
+                ) {
+                  return "All batches for this offering are full. Open a new batch or raise capacity, then return here.";
+                }
+                return "Choose an active batch in the selected offering. Full batches cannot be selected.";
+              })(),
               data.batches
-                .filter((b) => b.isActive && b.offeringId === offeringId && (!prospect?.classId || b.classId === prospect.classId))
+                .filter((b) => b.isActive && b.offeringId === offeringId)
                 .map((b) => ({
                   id: b.id,
                   name: `${b.name} · ${b.occupied}/${b.capacity} seats`,
