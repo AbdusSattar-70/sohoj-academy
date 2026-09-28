@@ -209,7 +209,7 @@ begin
   end if;
 
   input:=jsonb_build_object(
-    'action','POST_REFUND',
+    'action','REFUND',
     'request_id',gen_random_uuid(),
     'reason','Return direct customer credit in V3 finance test',
     'invoice_id',invoice_id,
