@@ -13,9 +13,9 @@ export default async function ManageCrmPage() {
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="CRM & Student Bank"
-        title="Manage CRM"
-        description="Edit shared academic and registration master data used by public forms, programme offerings and admissions. Deactivate rather than delete so history stays intact."
+        eyebrow="Academy Setup"
+        title="Academic Directory"
+        description="Maintain the shared academic and registration directory used by offerings, admissions and public forms. Deactivate rather than delete so referenced history stays intact."
       />
 
       <section className="grid gap-3 rounded-2xl border bg-card p-5 sm:grid-cols-2 lg:grid-cols-4 sm:p-6">
