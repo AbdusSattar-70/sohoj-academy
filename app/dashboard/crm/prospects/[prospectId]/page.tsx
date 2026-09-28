@@ -41,7 +41,7 @@ export default async function ProspectDetailPage({
             prospect.status !== "CONVERTED" &&
             prospect.status !== "LOST" ? (
               <Link
-                href={`/dashboard/admissions?prospect=${prospect.id}`}
+                href={`/dashboard/admissions?start=enquiry&prospect=${prospect.id}`}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800"
               >
                 Start admission
