@@ -184,11 +184,11 @@ as $$
     else 0
   end
   from public.finance_accounts a
-  left join public.general_ledger_lines l on l.account_id=a.id
-  left join public.general_ledger_journals j on j.id=l.journal_id
+  join public.general_ledger_lines l on l.account_id=a.id
+  join public.general_ledger_journals j on j.id=l.journal_id
+  where a.id=p_account_id
     and j.status='POSTED'
     and j.journal_date<=p_as_of
-  where a.id=p_account_id
   group by a.id,a.account_type;
 $$;
 
@@ -280,7 +280,7 @@ create table public.finance_payable_settlements (
   id uuid primary key default gen_random_uuid(),
   payable_id uuid not null references public.finance_payables(id),
   amount numeric(14,2) not null check(amount>0),
-  payment_account_id uuid not null references public.finance_accounts(id),
+  payment_account_id uuid references public.finance_accounts(id),
   external_reference text,
   settled_by uuid not null references public.profiles(id),
   settled_at timestamptz not null default now(),
@@ -1311,6 +1311,7 @@ declare
   settlement_id uuid;
   decision text;
   source_type text;
+  permission text;
 begin
   if actor is null then raise exception 'Sign in to continue.'; end if;
   if req is null or length(reason)<5 then
@@ -1547,9 +1548,17 @@ begin
   elsif action='SETTLE_ADVANCE' then
     select * into advance from public.finance_advances where id=(p_input->>'advance_id')::uuid for update;
     amount:=(p_input->>'amount')::numeric;
+    if advance.id is null then raise exception 'Advance not found.'; end if;
     adv_balance:=public.advance_balance(advance.id);
     if advance.id is null or adv_balance<=0 then raise exception 'Advance has no unsettled balance.'; end if;
     if amount is null or amount<=0 or amount>adv_balance then raise exception 'Settlement exceeds the current advance balance.'; end if;
+
+    if advance.beneficiary_type='VENDOR' and p_input->>'settlement_type' not in('VENDOR_BILL','EXPENSE') then
+      raise exception 'A vendor advance can only be settled against a vendor bill or expense.';
+    end if;
+    if advance.beneficiary_type='STAFF' and p_input->>'settlement_type'='VENDOR_BILL' then
+      raise exception 'A staff advance cannot be settled against a vendor bill.';
+    end if;
 
     if p_input->>'settlement_type'='EXPENSE' then
       expense_account:=(p_input->>'expense_account_id')::uuid;
@@ -1722,6 +1731,13 @@ begin
     select * into expense from public.finance_expenses
     where id=(p_input->>'expense_id')::uuid for update;
     if expense.id is null or expense.status<>'APPROVED' then raise exception 'Only approved expenses can be posted.'; end if;
+    if expense.payment_mode='PAID_NOW'
+       and not exists(select 1 from public.finance_accounts where id=expense.payment_account_id and organization_id=org and account_subtype in('CASH','BANK','MOBILE_BANK') and is_active) then
+      raise exception 'Choose an active cash or bank account for this expense.';
+    end if;
+    if expense.payment_mode='ON_ACCOUNT' and expense.vendor_id is null and expense.staff_id is null then
+      raise exception 'An on-account expense must identify a vendor or staff claimant.';
+    end if;
 
     if expense.payment_mode='PAID_NOW' then
       perform public.finance_post_journal(
@@ -1964,7 +1980,7 @@ begin
           )
           values(
             compensation.organization_id,'TEACHER_COMPENSATION',teacher_id,
-            'COMPENSATION_RUN',compensation.id::text,
+            'COMPENSATION_RUN',compensation.id::text||':'||teacher_id::text,
             (select id from public.finance_accounts where organization_id=compensation.organization_id and account_subtype='TEACHER_PAYABLE' limit 1),
             amount,compensation.period_end,actor
           )
@@ -2017,7 +2033,7 @@ begin
     teacher_id:=(p_input->>'teacher_id')::uuid;
     select * into payable from public.finance_payables
     where source_type='COMPENSATION_RUN'
-      and source_id=compensation.id::text
+      and source_id=compensation.id::text||':'||teacher_id::text
       and staff_id=teacher_id
     for update;
     if payable.id is null then raise exception 'Teacher payable not found.'; end if;
@@ -2131,7 +2147,7 @@ begin
     if not exists(
       select 1 from public.finance_payables
       where source_type='COMPENSATION_RUN'
-        and source_id=compensation.id::text
+        and source_id like compensation.id::text||':%'
         and status<>'SETTLED'
     ) then
       update public.teacher_compensation_runs set status='SETTLED' where id=compensation.id;
