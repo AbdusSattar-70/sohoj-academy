@@ -28,7 +28,7 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [created, setCreated] = useState<{ admissionId: string; prospectNo: string } | null>(null);
+  const [created, setCreated] = useState<{ admissionId: string; admissionNo: string } | null>(null);
   const [offeringId, setOfferingId] = useState("");
   const requestId = useRef("");
   const offering = data.offerings.find((row) => row.id === offeringId);
@@ -70,7 +70,7 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
         return;
       }
       requestId.current = "";
-      setCreated({ admissionId: result.admissionId, prospectNo: result.prospectNo });
+      setCreated({ admissionId: result.admissionId, admissionNo: result.admissionNo });
       form.reset();
       setOfferingId("");
       router.push(`/dashboard/admissions/${result.admissionId}`);
@@ -80,7 +80,7 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
   return <form onSubmit={submit} className="space-y-6 rounded-2xl border bg-card p-5 sm:p-6">
     <header>
       <p className="text-sm font-semibold">Enter applicant details with the student or guardian</p>
-      <p className="mt-1 text-sm text-muted-foreground">This creates a CRM Prospect and an admission draft together. Staff can complete this on the family’s behalf; it does not accept admission, post fees, or activate enrollment.</p>
+      <p className="mt-1 text-sm text-muted-foreground">This creates an admission application and draft case directly. It does not create a CRM Enquiry. Staff can complete this on the family’s behalf; it does not accept admission, post fees, or activate enrollment.</p>
     </header>
 
     <section className="space-y-3">
@@ -125,7 +125,7 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
         <TextField label="Primary mobile" name="mobile" required pattern={phonePattern} hint="11-digit Bangladesh mobile, e.g. 01712345678." />
         <TextField label="Alternate mobile" name="alternateMobile" pattern={`^$|${phonePattern}`} />
         <TextField label="Guardian address" name="guardianAddress" required maxLength={300} className="md:col-span-2" />
-        <TextField label="Referrer or referral note" name="referralNote" maxLength={500} hint="Record the name/contact if shared. Confirm and assign the referral on the case before acceptance." className="md:col-span-2" />
+        <TextField label="Additional intake note" name="referralNote" maxLength={500} hint="Optional context from the family. The official admission source is recorded separately on the case before acceptance." className="md:col-span-2" />
       </div>
     </section>
 
