@@ -10,7 +10,7 @@ export function ReferralForm({admissionId,people,choice}:{admissionId:string;peo
  const [person,setPerson]=useState(choice?.referrer_id??"");
  const [message,setMessage]=useState<{ok:boolean;text:string}|null>(null);
  const [pending,startTransition]=useTransition();
- return <section className="rounded-xl border p-4 print:hidden"><h3 className="font-semibold">1. Record the admission source</h3>
+ return <section className="rounded-xl border p-4 print:hidden"><h3 className="font-semibold">2. Record the admission source</h3>
   <p className="mt-1 text-sm text-muted-foreground">Ask the guardian who referred the student. Choose Organic when nobody referred them. Any referral reward is handled later by Finance.</p>
   <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);
     startTransition(async()=>{const result=await runReferralCommand({action:"CAPTURE",admissionId,source,

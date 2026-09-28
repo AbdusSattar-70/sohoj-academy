@@ -125,17 +125,21 @@ export default async function AdmissionsPage({
         const hasConsent = signedForms.length > 0 || paperReceipts.length > 0;
         const referral = referrals.choices.find((item) => item.admission_id === a.id);
         const referralReady = !!referral;
-        const canAccept = hasConsent && referralReady;
+        const isVerified = a.status !== "DRAFT" && a.status !== "CANCELLED";
+        const canAccept = isVerified && hasConsent && referralReady && a.status === "READY";
         const total = a.components.reduce((sum, component) => sum + component.amount, 0);
         const preAcceptance = ["DRAFT", "READY"].includes(a.status);
-        const completed = ["ACCEPTED", "BILLING_POSTED", "PENDING_PAYMENT", "ACTIVE_ENROLLMENT"].includes(a.status);
+        const accepted = ["ACCEPTED", "BILLING_POSTED", "PENDING_PAYMENT", "ACTIVE_ENROLLMENT"].includes(a.status);
+        const billed = ["BILLING_POSTED", "PENDING_PAYMENT", "ACTIVE_ENROLLMENT"].includes(a.status);
+        const requiredRecordsComplete = referralReady && hasConsent;
+        const canContinueFinance = requiredRecordsComplete && accepted;
         const steps = [
-          { title: "Verify application", done: a.status !== "DRAFT", active: a.status === "DRAFT" },
-          { title: "Record referral", done: referralReady, active: preAcceptance && !referralReady },
-          { title: "File paper consent", done: hasConsent, active: preAcceptance && !hasConsent },
-          { title: "Accept admission", done: completed, active: a.status === "READY" && canAccept },
-          { title: "Post initial bill", done: ["BILLING_POSTED", "PENDING_PAYMENT", "ACTIVE_ENROLLMENT"].includes(a.status), active: a.status === "ACCEPTED" },
-          { title: "Activate enrollment", done: a.status === "ACTIVE_ENROLLMENT", active: ["BILLING_POSTED", "PENDING_PAYMENT"].includes(a.status) },
+          { title: "Verify application", done: isVerified, active: a.status === "DRAFT" },
+          { title: "Record referral", done: isVerified && referralReady, active: isVerified && !referralReady },
+          { title: "File paper consent", done: isVerified && referralReady && hasConsent, active: isVerified && referralReady && !hasConsent },
+          { title: "Accept admission", done: accepted && requiredRecordsComplete, active: a.status === "READY" && canAccept },
+          { title: "Post initial bill", done: billed && requiredRecordsComplete, active: a.status === "ACCEPTED" && canContinueFinance },
+          { title: "Activate enrollment", done: a.status === "ACTIVE_ENROLLMENT" && requiredRecordsComplete, active: ["BILLING_POSTED", "PENDING_PAYMENT"].includes(a.status) && canContinueFinance },
         ];
         return (
           <article key={a.id} id={a.id} className="rounded-2xl border bg-card p-4 sm:p-6">
@@ -180,11 +184,12 @@ export default async function AdmissionsPage({
                     <p><span className="text-muted-foreground">Referral:</span> {referral ? referral.source === "ORGANIC" ? "Organic" : referrals.people.find((person) => person.id === referral.referrer_id)?.full_name ?? "Referred person" : "Not recorded"}</p>
                   </div>
                 </div>
-                {manage && <ReferralForm admissionId={a.id} people={referrals} choice={referral} />}
-                <section className="rounded-xl border p-4">
+                {a.status === "READY" && !referralReady && manage && <ReferralForm admissionId={a.id} people={referrals} choice={referral} />}
+                {a.status === "READY" && referralReady && (
+                  <section className="rounded-xl border p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-semibold">Signed paper consent</h3>
+                      <h3 className="font-semibold">3. Signed paper consent</h3>
                       <p className="mt-1 text-sm text-muted-foreground">{hasConsent ? "Receipt recorded. Keep the original in the student file." : "Print the form, have the guardian review and sign it, then confirm receipt here."}</p>
                     </div>
                     {!hasConsent && <Link className="text-sm font-medium underline" href={`/dashboard/admissions/${a.id}/print`}>Print form</Link>}
@@ -194,7 +199,8 @@ export default async function AdmissionsPage({
                   ))}</ul>}
                   {signedForms.length > 0 && <p className="mt-3 text-sm">Legacy digital consent record exists ({signedForms.map((item) => `v${item.version}`).join(", ")}).</p>}
                   {!hasConsent && manage && <div className="mt-4"><PhysicalConsentForm admissionId={a.id} /></div>}
-                </section>
+                  </section>
+                )}
                 {manage && !a.existingStudent && (
                   <details className="rounded-xl border p-4 print:hidden">
                     <summary className="cursor-pointer font-medium">Correct student or guardian details</summary>
@@ -227,12 +233,14 @@ export default async function AdmissionsPage({
             {!preAcceptance && a.status !== "CANCELLED" && (
               <div className="mt-5 space-y-4">
                 <section className="rounded-xl border bg-muted/20 p-4">
-                  <h3 className="font-semibold">{a.status === "ACCEPTED" ? "Next: create the initial bill" : a.status === "ACTIVE_ENROLLMENT" ? "Enrollment is active" : "Next: finish enrollment"}</h3>
+                  <h3 className="font-semibold">{!requiredRecordsComplete ? "Complete the admission file before continuing" : a.status === "ACCEPTED" ? "Next: create the initial bill" : a.status === "ACTIVE_ENROLLMENT" ? "Enrollment is active" : "Next: finish enrollment"}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {a.status === "ACCEPTED" ? "Post the initial charges from the fee plan reviewed at acceptance. This creates an invoice; it does not record money received." : a.status === "ACTIVE_ENROLLMENT" ? "The student is enrolled. Record later payments, discounts or refunds in Finance." : "Check payment requirements and seat availability before activating enrollment. Record any money received separately in Finance."}
+                    {!requiredRecordsComplete ? "This older admission is missing a required record. Complete the referral and signed-consent steps below; billing and enrollment stay blocked until then." : a.status === "ACCEPTED" ? "Post the initial charges from the fee plan reviewed at acceptance. This creates an invoice; it does not record money received." : a.status === "ACTIVE_ENROLLMENT" ? "The student is enrolled. Record later payments, discounts or refunds in Finance." : "Check payment requirements and seat availability before activating enrollment. Record any money received separately in Finance."}
                   </p>
                   {a.invoice && <p className="mt-3 text-sm">Invoice {a.invoice.number} · billed BDT {a.invoice.total.toFixed(2)} · outstanding BDT {a.invoice.due.toFixed(2)}</p>}
-                  {manage && next && <div className="mt-4"><AdmissionCommandForm key={`${a.id}-${a.status}`} {...next} admissionId={a.id} data={data} /></div>}
+                  {!referralReady && manage && <div className="mt-4"><ReferralForm admissionId={a.id} people={referrals} choice={referral} /></div>}
+                  {!hasConsent && manage && <div className="mt-4"><PhysicalConsentForm admissionId={a.id} /></div>}
+                  {manage && next && requiredRecordsComplete && <div className="mt-4"><AdmissionCommandForm key={`${a.id}-${a.status}`} {...next} admissionId={a.id} data={data} /></div>}
                   {a.status !== "ACCEPTED" && <Link href="/dashboard/finance/billing" className="mt-3 inline-block text-sm font-medium underline">Open Finance billing and payments</Link>}
                 </section>
                 <details className="rounded-xl border p-4">

@@ -16,9 +16,9 @@ Duplicate open Prospects with the same student name and guardian mobile are surf
 
 | Stage | Staff action | Result |
 | --- | --- | --- |
-| Draft | Verify student/guardian details, programme, batch and fee summary. Record the referral source and whether the guardian signed the printed form. | A reviewable, unconfirmed case. |
-| Signed paper consent | Print the case form, have the guardian sign it, file the original physically, then record the signing date and optional paper-file location. No scan or upload is needed. | Acceptance remains unavailable until staff record the paper receipt. |
-| Ready | Mark the verified draft ready for acceptance. Resolve any identity or fee-plan issue first. | The case enters the acceptance review stage. |
+| Draft | Verify student/guardian details, programme, batch and fee summary. Mark the draft ready only after those details are checked. | Verification is complete; the next step is to record the admission source. |
+| Ready · referral | Choose the verified referrer or Organic. This step is shown only after verification. | Referral source is stored in the admission record. |
+| Ready · paper consent | Print the case form, have the guardian sign it, file the original physically, then record the signing date and optional paper-file location. No scan or upload is needed. This step is shown after the referral source is recorded. | Acceptance remains unavailable until staff record the paper receipt. |
 | Accepted | Accept the case after required consent; the permanent Student identity is created and policy versions are pinned. | Student identity exists; no payment or active enrollment is implied. |
 | Initial billing | Post the initial charges from the pinned Fee Plan. | A receivable/invoice exists; this is not a receipt. |
 | Payment | Record only money actually received using the finance payment workflow. | An allocation and numbered receipt are recorded. |
@@ -33,6 +33,7 @@ Cancelled cases retain their history. Correct a draft through its audited correc
 - Keep the signed original in the physical student file. The ERP records who received it, the guardian signing date, whether the student also signed, and an optional paper-file location.
 - Recording the paper receipt does not move the case to Ready or Accepted. An authorized staff member performs each workflow transition.
 - Older cases may show a legacy digital consent receipt; those files remain available through the authenticated document route.
+- If an older accepted case has no consent receipt in the ERP, staff can record the already-filed paper consent afterward. Initial billing and enrollment remain blocked until the admission source and consent records are complete.
 
 ## Permissions and audit
 
@@ -50,6 +51,7 @@ Cancelled cases retain their history. Correct a draft through its audited correc
 - [ ] Submit the same request twice; confirm it returns the original case. Try a different request for a matching open name/mobile; confirm it directs staff to CRM.
 - [ ] Print the blank paper form and verify A4 print layout, handwriting space, declaration and guardian/student signatures.
 - [ ] Try Ready → Accept without a referral source or signed consent receipt; confirm the interface explains the missing step and the database rejects direct bypass.
+- [ ] Confirm Draft shows only verification. After marking Ready, confirm referral appears; after saving referral, confirm paper consent appears; after recording consent, confirm Accept appears.
 - [ ] Record receipt of the physically filed signed form; confirm the case refreshes in place without uploading a file.
 - [ ] Complete Accept → Initial billing → actual payment → enrollment activation and verify each state remains distinct.
 

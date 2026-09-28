@@ -22,7 +22,7 @@ begin
   offering:=(result->>'offering_id')::uuid;
   perform public.publish_fee_plan(jsonb_build_object('offering_id',offering,'billing_cycle','MONTHLY',
     'due_day',10,'effective_from',today,'reason','Paper consent test fee',
-    'components','[{"code":"TUITION","name":"Tuition","amount":1500,"charge_type":"TUITION","recurrence":"PER_CYCLE"}]'::jsonb));
+    'components','[{"code":"TUITION","name":"Tuition","amount":1500,"charge_type":"TUITION","recurrence":"PER_CYCLE"},{"code":"ADMISSION","name":"Admission","amount":0,"charge_type":"ADMISSION","recurrence":"ONE_TIME"}]'::jsonb));
   result:=public.admission_command(jsonb_build_object('action','CREATE_BATCH','request_id',gen_random_uuid(),
     'reason','Create consent test batch','offering_id',offering,'code','PC-'||left(actor::text,8),
     'name','Paper Consent Test Batch','capacity',10));
@@ -49,6 +49,23 @@ begin
     if position('A recorded signed consent receipt is required' in sqlerrm)=0 then raise; end if;
   end;
 
+  -- Simulate a grandfathered admission, which may have been accepted without
+  -- evidence before the consent gate existed. Billing remains blocked until
+  -- staff reconciles the physically filed form.
+  update public.admission_cases set consent_required=false where id=admission;
+  perform public.admission_command(jsonb_build_object('action','ACCEPT','request_id',gen_random_uuid(),
+    'reason','Accept verified legacy applicant','admission_id',admission));
+  if not exists(select 1 from public.admission_cases where id=admission and status='ACCEPTED' and student_id is not null) then
+    raise exception 'The legacy admission fixture did not reach Accepted.';
+  end if;
+  begin
+    perform public.admission_command(jsonb_build_object('action','BILL','request_id',gen_random_uuid(),
+      'reason','Attempt billing without consent','admission_id',admission));
+    raise exception 'Billing was allowed before the missing paper consent was reconciled.';
+  exception when others then
+    if position('Record the signed paper consent' in sqlerrm)=0 then raise; end if;
+  end;
+
   receipt_input:=jsonb_build_object(
     'request_id',request_id,'admission_id',admission,'guardian_signed_on',today,
     'student_signed',false,'physical_copy_reference','Admissions cabinet · test folder',
@@ -63,10 +80,23 @@ begin
     raise exception 'Paper consent receipt metadata was not stored.';
   end if;
 
-  perform public.admission_command(jsonb_build_object('action','ACCEPT','request_id',gen_random_uuid(),
-    'reason','Accept verified applicant with signed paper consent','admission_id',admission));
-  if not exists(select 1 from public.admission_cases where id=admission and status='ACCEPTED' and student_id is not null) then
-    raise exception 'Admission did not accept after paper consent was recorded.';
+  perform public.admission_command(jsonb_build_object('action','BILL','request_id',gen_random_uuid(),
+    'reason','Post verified initial bill','admission_id',admission));
+  if not exists(select 1 from public.admission_invoices where admission_id=admission and total=1500) then
+    raise exception 'Initial billing did not post the expected invoice total.';
+  end if;
+  if (select count(*) from public.general_ledger_lines l
+      join public.general_ledger_journals j on j.id=l.journal_id
+      join public.admission_invoices i on i.id::text=j.source_id
+      where i.admission_id=admission and j.source_type='ADMISSION_INVOICE')<>2 then
+    raise exception 'Zero-value fee component was not omitted from the general ledger.';
+  end if;
+  if exists(select 1 from public.general_ledger_lines l
+      join public.general_ledger_journals j on j.id=l.journal_id
+      join public.admission_invoices i on i.id::text=j.source_id
+      where i.admission_id=admission and j.source_type='ADMISSION_INVOICE'
+        and l.debit=0 and l.credit=0) then
+    raise exception 'General ledger contains a zero-value line.';
   end if;
   if has_table_privilege('authenticated','public.admission_physical_consent_receipts','INSERT') then
     raise exception 'Authenticated users can directly insert consent receipts.';

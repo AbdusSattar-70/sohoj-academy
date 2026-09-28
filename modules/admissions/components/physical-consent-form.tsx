@@ -23,7 +23,7 @@ export function PhysicalConsentForm({ admissionId }: { admissionId: string }) {
         physicalCopyReference: form.get("physicalCopyReference"),
         reason: form.get("reason"),
       });
-      setMessage(result);
+      setMessage({ ok: result.ok, text: result.message });
       if (result.ok) {
         requestId.current = crypto.randomUUID();
         formElement.reset();
@@ -33,7 +33,7 @@ export function PhysicalConsentForm({ admissionId }: { admissionId: string }) {
   };
   return <form onSubmit={submit} className="space-y-4 rounded-xl border p-4 print:hidden">
     <div>
-      <h3 className="font-semibold">2. Record the signed paper form</h3>
+      <h3 className="font-semibold">3. Record the signed paper form</h3>
       <p className="mt-1 text-sm text-muted-foreground">Keep the signed original in the student file. Record the signing date and where the paper is filed; no scan or upload is needed.</p>
     </div>
     <div className="grid gap-3 sm:grid-cols-2">
