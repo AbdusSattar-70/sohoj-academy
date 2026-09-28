@@ -10,9 +10,11 @@ This branch is the V3 transition branch. The current application and Supabase mi
 | Ordered task navigation | Implemented | Sidebar groups follow the V3 operator order; Help remains available from the ERP shell/header. |
 | Unknown-route header handling | Implemented | Unknown paths show a neutral ERP heading instead of inheriting another module title. |
 | Focused admission case route | Implemented | `/dashboard/admissions/[admissionId]` provides the working case page and next-step actions. |
-| Direct staff intake → case | Implemented | Successful direct intake navigates to its admission case. |
-| Prospect conversion → case | Implemented | Creating an admission from a Prospect returns the case identity and navigates to it. |
+| Direct staff intake → case | Implemented | Successful direct intake navigates to its admission case; no synthetic CRM Enquiry is created. |
+| Prospect conversion → case | Implemented | Creating an admission from a CRM Enquiry preserves the original enquiry link and opens the case. |
 | Referral / paper-consent focused refresh | Implemented | Successful actions refresh the focused case route. |
+| Unified teacher Admin Review Queue | Implemented | Attendance, class logs, assessment results and questions are surfaced as one review queue with exact task links. |
+| Teacher class-log review lifecycle | Implemented | Class logs now follow DRAFT → SUBMITTED → APPROVED/REJECTED with immutable reviewed history. |
 | V3 clean database baseline | Not implemented | The repository still contains the V2 migration chain. |
 | V3 database cutover/reset | Not implemented | Do not reset or push the current migration folder as a V3 baseline. |
 | Teacher vertical slice | Not implemented as V3 | Existing teacher workflow remains V2 code until migrated to the V3 domain boundary. |
