@@ -24,7 +24,7 @@ begin
  batch := (payload->>'id')::uuid;
  insert into public.prospects(organization_id,student_name,guardian_name,mobile,current_class_id)
  values(org,'Consent Test Student','Consent Test Guardian','01710000919',cl) returning id into prospect;
- payload := public.admission_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Consent test draft','prospect_id',prospect,'batch_id',batch));
+ payload := public.admission_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Consent test draft','prospect_id',prospect,'offering_id',offering,'batch_id',batch));
  admission := (payload->>'id')::uuid;
  path := admission::text || '/' || gen_random_uuid()::text || '.pdf';
 

@@ -27,14 +27,19 @@ begin
  result:=public.admission_command(input); batch:=(result->>'id')::uuid;
  if public.admission_command(input)<>result then raise exception 'Batch retry was not idempotent.'; end if;
  insert into public.prospects(organization_id,student_name,guardian_name,mobile,current_class_id) values(org,'Mock Admission Student '||u::text,'Mock Guardian','01700000991',cl) returning id into prospect;
- input:=jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Create verification admission','prospect_id',prospect,'batch_id',batch);
+ input:=jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Create verification admission','prospect_id',prospect,'offering_id',offering,'batch_id',batch);
  result:=public.admission_command(input); a:=(result->>'id')::uuid;
  if public.admission_command(input)<>result then raise exception 'Admission retry was not idempotent.'; end if;
  begin
   perform public.admission_command(jsonb_build_object('action','BILL','request_id',gen_random_uuid(),'reason','Attempt invalid state','admission_id',a));
   raise exception 'Invalid state was accepted';
  exception when others then if sqlerrm not like '%not allowed%' then raise; end if; end;
+ -- This fixture isolates the workflow under test from signed-consent evidence.
+ update public.admission_cases set consent_required=false where id=a;
  perform public.admission_command(jsonb_build_object('action','READY','request_id',gen_random_uuid(),'reason','Verify identity and fees','admission_id',a));
+ -- The acceptance tests select Organic to isolate their domain behavior from referral qualification.
+ perform public.referral_command(jsonb_build_object('action','CAPTURE','request_id',gen_random_uuid(),
+   'admission_id',a,'source','ORGANIC','reason','Guardian confirmed organic test source'));
  perform public.admission_command(jsonb_build_object('action','ACCEPT','request_id',gen_random_uuid(),'reason','Accept reviewed admission','admission_id',a));
  if exists(select 1 from public.enrollments e join public.admission_cases ac on ac.student_id=e.student_id where ac.id=a) then raise exception 'Acceptance activated enrollment early.'; end if;
  perform public.admission_command(jsonb_build_object('action','BILL','request_id',gen_random_uuid(),'reason','Post standard initial billing','admission_id',a));
@@ -53,14 +58,19 @@ begin
  exception when others then if sqlerrm not like '%exceeds%' then raise; end if; end;
  insert into public.prospects(organization_id,student_name,guardian_name,mobile,current_class_id) values(org,'Mock Second Student '||u::text,'Mock Second Guardian','01700000992',cl) returning id into prospect;
  begin
-  perform public.admission_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Attempt over-capacity admission','prospect_id',prospect,'batch_id',batch));
+  perform public.admission_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Attempt over-capacity admission','prospect_id',prospect,'offering_id',offering,'batch_id',batch));
   raise exception 'Full batch was accepted';
  exception when others then if sqlerrm not like '%full%' then raise; end if; end;
  perform public.publish_business_rule_version('admissions','activation_policy','{"requires_admission_acceptance":true,"requires_initial_billing_posted":true,"payment_requirement":"FULL","minimum_payment_percent":100,"allow_credit_enrollment":false,"count_student_active_only_when_enrollment_active":true}', 'Verify full-payment policy');
  result:=public.admission_command(jsonb_build_object('action','CREATE_BATCH','request_id',gen_random_uuid(),'reason','Create second verification batch','offering_id',offering,'code','TEST2-'||left(u::text,8),'name','Second Verification Batch','capacity',1));
  batch:=(result->>'id')::uuid;
- result:=public.admission_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Create second admission','prospect_id',prospect,'batch_id',batch)); a2:=(result->>'id')::uuid;
+ result:=public.admission_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),'reason','Create second admission','prospect_id',prospect,'offering_id',offering,'batch_id',batch)); a2:=(result->>'id')::uuid;
+ -- This fixture isolates the workflow under test from signed-consent evidence.
+ update public.admission_cases set consent_required=false where id=a2;
  perform public.admission_command(jsonb_build_object('action','READY','request_id',gen_random_uuid(),'reason','Verify second identity','admission_id',a2));
+ -- The acceptance tests select Organic to isolate their domain behavior from referral qualification.
+ perform public.referral_command(jsonb_build_object('action','CAPTURE','request_id',gen_random_uuid(),
+   'admission_id',a2,'source','ORGANIC','reason','Guardian confirmed organic test source'));
  perform public.admission_command(jsonb_build_object('action','ACCEPT','request_id',gen_random_uuid(),'reason','Accept second admission','admission_id',a2));
  perform public.admission_command(jsonb_build_object('action','BILL','request_id',gen_random_uuid(),'reason','Post second invoice','admission_id',a2));
  -- Later settings must not silently rewrite the accepted case's policy.

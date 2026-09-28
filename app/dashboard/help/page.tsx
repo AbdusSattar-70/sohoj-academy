@@ -47,15 +47,15 @@ const setup: Step[] = [
 
 const admission: Step[] = [
   {
-    title: "Find or register the enquiry",
-    do: "Search Prospects first to avoid a duplicate. If the student or guardian submitted the public interest or admission form, open that record, review its details and follow up. A walk-in can complete the account-free form with staff assistance; the applicant does not need a login.",
-    check: "One verified Prospect contains the student's name, guardian, mobile, class and intended offering.",
-    href: "/dashboard/crm/prospects", page: "Prospects", permission: "crm.prospects.view",
+    title: "Choose the right intake path",
+    do: "In Admissions, either enter a new applicant with the student/guardian, continue a Prospect already in CRM, or print a blank A4 form for the family. The new-applicant entry creates the Prospect and draft together. Applicants do not need an account or login.",
+    check: "The case is linked to one Prospect. For paper applications, staff enter the verified details online after collecting the form.",
+    href: "/dashboard/admissions", page: "Admissions", permission: "admissions.create",
   },
   {
-    title: "Create the admission draft",
-    do: "In Admissions, choose the verified Prospect and the matching batch. Review the inherited student and guardian details, published fee terms and available seats. Correct mistakes in the draft before acceptance.",
-    check: "The case shows Draft, a batch and the expected standard Fee Plan version.",
+    title: "Confirm programme and batch placement",
+    do: "Choose an active Programme Offering and an available batch. The year, branch and class are shown with the offering. If an older Prospect has no class, choose its recorded offering or confirm an offering; the class is then completed from that choice.",
+    check: "The case shows Draft, the intended batch and the effective published Fee Plan version. Full batches and mismatched classes are rejected again by the database.",
     href: "/dashboard/admissions", page: "Admissions", permission: "admissions.view",
   },
   {
@@ -129,7 +129,7 @@ export default async function HelpPage() {
     </nav>
     <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:p-6">
       <h2 className="text-lg font-semibold">A student is here right now</h2>
-      <p className="mt-2 text-sm leading-6">Start by searching <Link className="font-semibold underline" href="/dashboard/crm/prospects">Prospects</Link>. Create the admission draft only after verifying the person and choosing a matching batch. Then record referral or Organic, receive signed consent, accept, bill, record actual payment and evaluate activation.</p>
+      <p className="mt-2 text-sm leading-6">Open <Link className="font-semibold underline" href="/dashboard/admissions">Admissions</Link> and choose one of three starts: enter a new applicant online with staff, continue a Prospect already in CRM, or print a blank form for a family to complete. Then verify placement, record referral or Organic, attach signed consent, accept, bill, record actual payment and evaluate activation.</p>
       <a className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline" href="#student">Follow the admission steps <ArrowRight className="size-4" aria-hidden="true"/></a>
     </section>
     <section id="setup" className="scroll-mt-24 space-y-4"><div><p className="text-xs font-semibold uppercase tracking-widest text-primary">Before taking applications</p><h2 className="mt-1 text-2xl font-bold">Start from zero</h2><p className="mt-2 text-sm text-muted-foreground">Do these setup steps once per programme, year or branch as needed.</p></div><StepList steps={setup} permissions={context.permissions} start={1}/></section>
@@ -150,7 +150,7 @@ export default async function HelpPage() {
     </div></section>
     <section id="problems" className="scroll-mt-24 rounded-2xl border bg-card p-5 sm:p-6"><h2 className="text-xl font-bold">If something blocks you</h2><dl className="mt-4 space-y-4 text-sm leading-6">
       <div><dt className="font-semibold">An offering is Draft or missing on the website</dt><dd className="text-muted-foreground">Publish its effective Fee Plan, then review website visibility, application dates and accepting-applications controls. Check the organisation’s local date.</dd></div>
-      <div><dt className="font-semibold">You cannot create an admission or choose a batch</dt><dd className="text-muted-foreground">Verify that the Prospect is open, its class matches the active offering, the batch exists and has room, and a published Fee Plan is effective.</dd></div>
+      <div><dt className="font-semibold">You cannot create an admission or choose a batch</dt><dd className="text-muted-foreground">Verify the Prospect is open, choose the intended active offering, and check that the batch belongs to it, has room and an effective published Fee Plan. A Prospect missing class data can be placed through the offering the applicant confirmed.</dd></div>
       <div><dt className="font-semibold">Accept Admission is rejected</dt><dd className="text-muted-foreground">Check the signed consent evidence, referral or Organic choice, identity, batch, and Fee Plan version. If terms changed, refresh fees and review again.</dd></div>
       <div><dt className="font-semibold">Payment is posted but the student is not active</dt><dd className="text-muted-foreground">Return to the admission case and run Evaluate Enrollment Activation. Read its status for a payment, policy or seat issue.</dd></div>
       <div><dt className="font-semibold">A button or workspace is unavailable</dt><dd className="text-muted-foreground">Your ERP role may lack that permission. Ask the administrator for the specific task; financial approval must be completed by another authorized person.</dd></div>

@@ -47,9 +47,17 @@ export default async function AdmissionDocument({
         <dl className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 text-sm">
           {[
             ["Student name", a.name],
+            ["Student name (Bangla)", a.nameBn || "—"],
             ["Student ID", a.studentNo ?? "Pending admission completion"],
+            ["Date of birth", a.dateOfBirth || "—"],
+            ["Gender", a.gender || "—"],
+            ["Current school", a.schoolName || "—"],
+            ["School roll", a.schoolRoll || "—"],
             ["Guardian name", a.guardian],
+            ["Relationship", a.guardianRelationship || "—"],
             ["Guardian Mobile", a.mobile],
+            ["Alternate Mobile", a.alternateMobile || "—"],
+            ["Guardian address", a.guardianAddress || "—"],
             ["Programme", offering?.name ?? "—"],
             ["Class", offering?.className ?? "—"],
             ["Batch", batch?.name ?? "—"],

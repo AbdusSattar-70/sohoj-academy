@@ -27,7 +27,7 @@ begin
  insert into public.prospects(organization_id,student_name,guardian_name,mobile,current_class_id)
  values(org,'Referral Student','Guardian Person','01700000981',cl) returning id into prospect;
  result:=public.admission_command(jsonb_build_object('action','CREATE','request_id',gen_random_uuid(),
- 'reason','Create referral admission','prospect_id',prospect,'batch_id',batch)); admission:=(result->>'id')::uuid;
+ 'reason','Create referral admission','prospect_id',prospect,'offering_id',offering,'batch_id',batch)); admission:=(result->>'id')::uuid;
  begin
    update public.admission_cases set status='ACCEPTED' where id=admission;
    raise exception 'Missing referral choice was allowed';

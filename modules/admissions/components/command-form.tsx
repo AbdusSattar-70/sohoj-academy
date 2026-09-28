@@ -73,11 +73,15 @@ export function AdmissionCommandForm({
         ? { batchId: initialBatch.id, code: initialBatch.code, name: initialBatch.name, capacity: initialBatch.capacity }
         : {}),
       ...(action === "CREATE" && defaultProspectId
-        ? { prospectId: defaultProspectId }
+        ? {
+            prospectId: defaultProspectId,
+            offeringId: data.prospects.find((p) => p.id === defaultProspectId)?.interestedOfferingId ?? undefined,
+          }
         : {}),
     },
   });
   const prospectId = useWatch({ control, name: "prospectId" });
+  const offeringId = useWatch({ control, name: "offeringId" });
   const prospect = data.prospects.find((p) => p.id === prospectId);
   const field = (
     key: FieldPath<AdmissionCommand>,
@@ -103,12 +107,17 @@ export function AdmissionCommandForm({
             aria-describedby={describedBy}
             aria-invalid={invalid}
             {...register(key, {
-              onChange: () => {
-                if (key === "prospectId")
+              onChange: (event) => {
+                if (key === "prospectId") {
+                  const nextProspect = data.prospects.find((p) => p.id === event.target.value);
+                  setValue("offeringId", nextProspect?.interestedOfferingId ?? "", { shouldDirty: true, shouldValidate: true });
                   setValue("batchId", "", {
                     shouldDirty: true,
                     shouldValidate: true,
                   });
+                }
+                if (key === "offeringId")
+                  setValue("batchId", "", { shouldDirty: true, shouldValidate: true });
               },
             })}
           >
@@ -178,7 +187,10 @@ export function AdmissionCommandForm({
             ? { capacity: data.capacityLimit ?? undefined }
             : {}),
           ...(action === "CREATE" && defaultProspectId
-            ? { prospectId: defaultProspectId }
+            ? {
+                prospectId: defaultProspectId,
+                offeringId: data.prospects.find((p) => p.id === defaultProspectId)?.interestedOfferingId ?? undefined,
+              }
             : {}),
         });
         setMessage({ ok: true, text: result.message ?? "Saved." });
@@ -200,7 +212,7 @@ export function AdmissionCommandForm({
               "Choose the programme offering this batch belongs to.",
               data.offerings.map((o) => ({
                 id: o.id,
-                name: `${o.name} · ${o.className}`,
+                name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}`,
               })),
             )}
             {field(
@@ -235,11 +247,26 @@ export function AdmissionCommandForm({
               })),
             )}
             {field(
+              "offeringId",
+              "Programme offering",
+              prospect?.interestedOfferingId
+                ? "Preselected from the Prospect’s recorded interest. Change only if the applicant confirms a different programme."
+                : prospect?.classId
+                  ? "Choose an active offering for the Prospect’s class."
+                  : "This Prospect has no class or offering on file. Confirm the applicant’s intended programme; the class will be assigned from this offering.",
+              data.offerings
+                .filter((o) =>
+                  (!prospect?.classId || o.classId === prospect.classId) &&
+                  (!prospect?.interestedOfferingId || o.id === prospect.interestedOfferingId),
+                )
+                .map((o) => ({ id: o.id, name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}` })),
+            )}
+            {field(
               "batchId",
               "Batch",
-              "Only batches for this Prospect’s class are offered. Full batches cannot be selected.",
+              "Choose an active batch in the selected offering. Full batches cannot be selected.",
               data.batches
-                .filter((b) => b.isActive && b.classId === prospect?.classId)
+                .filter((b) => b.isActive && b.offeringId === offeringId && (!prospect?.classId || b.classId === prospect.classId))
                 .map((b) => ({
                   id: b.id,
                   name: `${b.name} · ${b.occupied}/${b.capacity} seats`,

@@ -85,6 +85,6 @@ begin
   if not exists(
     select 1 from public.permissions where code='staff.compensation.manage'
   ) then raise exception 'Compensation permission seed missing.'; end if;
-end
-$;
+end;
+$$;
 rollback;
