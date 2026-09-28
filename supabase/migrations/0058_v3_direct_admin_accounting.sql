@@ -491,8 +491,6 @@ begin
       select distinct l.teacher_id
       from public.teacher_compensation_lines l
       where l.run_id=compensation.id
-      from public.teacher_compensation_lines
-      where run_id=compensation.id
     loop
       select coalesce(sum(l.amount),0)
       into teacher_total
@@ -517,7 +515,7 @@ begin
           'TEACHER_COMPENSATION',
           v_teacher_id,
           'COMPENSATION_RUN',
-          compensation.id::text||':'||teacher_id::text,
+          compensation.id::text||':'||v_teacher_id::text,
           (
             select id
             from public.finance_accounts
