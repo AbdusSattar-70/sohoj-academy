@@ -10,6 +10,7 @@ Run these files in filename order:
 2. `0002_v3_admissions_finance_academics.sql`
 3. `0003_v3_academics_public.sql`
 4. `0004_v3_finance_and_current_workflows.sql`
+5. `0005_v3_direct_admin_finance.sql`
 
 The files are generated from the repository's reviewed V2 schema history and the current V3 forward changes. They contain schema objects, permissions, functions, constraints, indexes, triggers and system configuration only.
 
@@ -28,7 +29,7 @@ The old `supabase/migrations/*.sql` files remain available for reference and for
 
 ## Before activation
 
-1. Apply the four baseline files to a disposable clean Supabase database.
+1. Apply the five baseline files to a disposable clean Supabase database.
 2. Run all V3 SQL tests plus RLS/authorization tests.
 3. Generate `types/database.ts` from that clean database.
 4. Run lint, typecheck, production build and browser acceptance.
