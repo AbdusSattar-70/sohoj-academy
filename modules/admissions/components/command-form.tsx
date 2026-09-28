@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useForm, useWatch, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +39,7 @@ export function AdmissionCommandForm({
   onSuccess?: () => void;
   onCancel?: () => void;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
     null,
@@ -171,6 +173,7 @@ export function AdmissionCommandForm({
         }
         request.current = null;
         onSuccess?.();
+        router.refresh();
         reset({
           action,
           admissionId,
