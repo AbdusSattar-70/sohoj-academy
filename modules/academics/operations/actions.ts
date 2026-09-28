@@ -26,11 +26,19 @@ export const CLASS_LOG_PATHS = [
 ] as const;
 
 export async function runAcademicCommand(input: AcademicCommand) {
+  const rpc = [
+    "SAVE_ATTENDANCE",
+    "SUBMIT_ATTENDANCE",
+    "DECIDE_ATTENDANCE",
+  ].includes(input.action)
+    ? "attendance_command"
+    : "academic_command";
+
   return runCommandAction<AcademicCommand, { message: string }>({
     schema: academicCommandSchema,
     input,
     client: academicClient,
-    rpc: "academic_command",
+    rpc,
     permission: "academics.view",
     revalidate: [...ACADEMIC_COMMAND_PATHS],
     revalidateExtra: () =>
