@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [created, setCreated] = useState<{ admissionId: string; admissionNo: string } | null>(null);
   const [offeringId, setOfferingId] = useState("");
   const requestId = useRef("");
   const offering = data.offerings.find((row) => row.id === offeringId);
@@ -45,7 +43,6 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
     const value = (key: string) => String(values.get(key) ?? "");
     startTransition(async () => {
       setError("");
-      setCreated(null);
       const result = await createStaffAdmissionIntake({
         requestId: requestId.current,
         offeringId: value("offeringId"),
@@ -70,7 +67,6 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
         return;
       }
       requestId.current = "";
-      setCreated({ admissionId: result.admissionId, admissionNo: result.admissionNo });
       form.reset();
       setOfferingId("");
       router.push(`/dashboard/admissions/${result.admissionId}`);
@@ -139,14 +135,9 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
     </section>
 
     {error && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
-    {created && <div role="status" className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100">
-      <p className="font-semibold">Admission draft created</p>
-      <p className="mt-1">{created.prospectNo ? `Prospect ${created.prospectNo} · ` : ""}The case is ready for identity and consent review.</p>
-      <Link className="mt-2 inline-block font-medium underline" href={`/dashboard/admissions#${created.admissionId}`}>Open the admission case</Link>
-    </div>}
     <div className="flex flex-wrap items-center gap-3">
-      <Button type="submit" disabled={pending || data.offerings.length === 0}>{pending ? "Creating draft…" : "Create Prospect and admission draft"}</Button>
-      <span className="text-xs text-muted-foreground">No fee is charged and no enrollment is activated at this step.</span>
+      <Button type="submit" disabled={pending || data.offerings.length === 0}>{pending ? "Creating admission draft…" : "Create admission draft"}</Button>
+      <span className="text-xs text-muted-foreground">No CRM Enquiry is created, no fee is charged, and no enrollment is activated at this step.</span>
     </div>
   </form>;
 }
