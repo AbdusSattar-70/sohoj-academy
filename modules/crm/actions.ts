@@ -7,7 +7,11 @@ import {
   recordProspectFollowupSchema,
   type RecordProspectFollowupInput,
 } from "@/modules/crm/schema";
-import { allowedProspectStatuses } from "@/modules/crm/prospect-status";
+import {
+  allowedProspectStatuses,
+  prospectStatuses,
+  type ProspectStatus,
+} from "@/modules/crm/prospect-status";
 
 export async function reviewAdmissionRequirement(input: {
   applicationId: string; prospectId: string; requirementLabel: string;
@@ -24,12 +28,39 @@ export async function reviewAdmissionRequirement(input: {
       (input.status === "FOLLOW_UP" && input.note.trim().length < 5))
     return { ok: false, error: "Check the requirement review details." };
   const supabase = await createClient();
-  const { error } = await supabase.rpc("review_admission_requirement" as never, {
+  const { error } = await supabase.rpc("review_admission_requirement", {
     p_input: {
-      application_id: input.applicationId, requirement_label: input.requirementLabel,
-      status: input.status, note: input.note, expected_revision: input.expectedRevision,
+      application_id: input.applicationId,
+      requirement_label: input.requirementLabel,
+      status: input.status,
+      note: input.note,
+      expected_revision: input.expectedRevision,
     },
-  } as never);
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/dashboard/crm/prospects/${input.prospectId}`);
+  return { ok: true };
+}
+
+export async function reviewApplicantCorrection(input: {
+  correctionId: string;
+  prospectId: string;
+  status: "ACKNOWLEDGED" | "APPLIED" | "REJECTED";
+  staffNote: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const context = await getErpContext();
+  if (!context?.permissions.includes("crm.prospects.manage") && !context?.permissions.includes("admissions.manage"))
+    return { ok: false, error: "Admission correction review permission is required." };
+  if (!/^[0-9a-f-]{36}$/i.test(input.correctionId) || input.staffNote.length > 1000)
+    return { ok: false, error: "Check the correction review details." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("review_applicant_correction", {
+    p_input: {
+      correction_id: input.correctionId,
+      status: input.status,
+      staff_note: input.staffNote,
+    },
+  });
   if (error) return { ok: false, error: error.message };
   revalidatePath(`/dashboard/crm/prospects/${input.prospectId}`);
   return { ok: true };
@@ -97,11 +128,19 @@ export async function recordProspectFollowup(
   if (error) return { ok: false, error: error.message };
 
   const result = data as { status?: string } | null;
+  const rawStatus = result?.status;
+  if (rawStatus && !prospectStatuses.includes(rawStatus as ProspectStatus))
+    return {
+      ok: false,
+      error: "Follow-up returned an unknown prospect status.",
+      field: "newStatus",
+    };
+  const status = (rawStatus as ProspectStatus | undefined) ?? value.newStatus;
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/action-center");
   revalidatePath("/dashboard/crm/prospects");
   revalidatePath(`/dashboard/crm/prospects/${value.prospectId}`);
 
-  return { ok: true, status: result?.status ?? value.newStatus };
+  return { ok: true, status };
 }

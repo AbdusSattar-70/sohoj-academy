@@ -18,6 +18,9 @@ Updated 2026-09-28. Branch: `feature/blueprint_gap_closure`, based on `feature/d
 | Assessment results | Teachers create dated batch/subject assessments, publish their terms, save one mark per eligible student and submit the roster. A different authorized reviewer approves or rejects the immutable revision. Only approved marks are shown as official; corrected rosters retain prior submissions. | SQL suite 0020 covers complete roster, teacher/reviewer separation and official result; typecheck/build |
 | Public placement snapshot | Published cards and admission form show the count of active batches and currently open seats, derived from batch capacity and active enrollments. The copy says placement is confirmed after staff review; applying does not reserve a seat. | SQL suite 0027 covers batch capacity in the public payload |
 | Admission requirement review | Staff record pending, verified or follow-up findings per applicant requirement in CRM. Each correction is a new revision, guarded against stale writes and audited; the original public application is immutable. | SQL suite 0037 checks revisions, stale writes and audit; typecheck/build |
+| Applicant correction return channel | Applicants can submit an account-free correction request using their Prospect reference and submitted mobile number. Requests remain separate from the immutable application and authorized CRM/admissions staff can acknowledge, apply or reject them with audit history. | Migration 0039 added; typecheck/build; live Supabase/RLS acceptance remains pending |
+| Signed-consent acceptance gate | New admission cases require a recorded signed-consent receipt before `ACCEPT`; cases created before the cutover are grandfathered with the gate disabled. | Migration 0040 added; typecheck/build; live migration/concurrency acceptance remains pending |
+| Versioned public content | Offering copy can be snapshotted, submitted for independent review, and published as an immutable version. The live catalogue remains unchanged until publication. | Migration 0041, offering workflow UI and typecheck; live RLS/concurrency acceptance remains pending |
 
 ### Staff print sequence
 
@@ -30,16 +33,16 @@ Updated 2026-09-28. Branch: `feature/blueprint_gap_closure`, based on `feature/d
 
 These items need separate implementation and acceptance work on this branch. Do not describe them as shipped:
 
-1. Public **Apply for Admission** collects the application declarations and terms snapshot. Staff can attach a signed form to an admission case and review individual requirements in CRM. An account-free applicant correction return channel remains.
-2. Programme cards show configured admission requirements, policy, schedule and a current batch seat snapshot. Reviewed publishing/preview controls and a versioned public content contract remain; the seat snapshot does not reserve placement.
-3. Signed form attachment and a versioned receipt exist. Test private bucket access and upload/download on linked Supabase, then enforce receipt before acceptance for new cases with a cutover that preserves older historical cases. A staff attestation and uploaded file cannot automatically prove a genuine signature.
+1. Public **Apply for Admission** collects the application declarations and terms snapshot. Staff can attach a signed form to an admission case and review individual requirements in CRM. The account-free applicant correction return channel is implemented at `/application/correction`; live abuse, privacy and linked-Supabase acceptance remain.
+2. Programme cards show configured admission requirements, policy, schedule and a current batch seat snapshot. Versioned public content snapshots and reviewed publication controls are implemented; live contract/RLS acceptance remains. The seat snapshot does not reserve placement.
+3. Signed form attachment and a versioned receipt exist. Migration 0040 now enforces the receipt before acceptance for new cases while preserving older historical cases; private bucket access and upload/download still require linked-Supabase testing. A staff attestation and uploaded file cannot automatically prove a genuine signature.
 4. Academic operations have plans, sessions, attendance review, submitted class logs, per-student homework follow-up, manually authored question bank review and assessment result approval. Coverage gaps/recovery, question-to-paper assembly, assisted question generation and student progress reports remain.
 5. Finance covers discounts, cancellations, refunds and operator-run recurring invoices. General ledger/journals, advances/payables, expense reconciliation, teacher compensation calculations and settlements remain.
 6. Staff leave/workload, asset/procurement, richer analytics, PWA/offline outbox, observability, browser accessibility/E2E and live Supabase/concurrency acceptance remain.
 
 ## Validation and deployment
 
-- Apply migrations in order through `0037` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
+- Apply migrations in order through `0041` to a **development** Supabase project; inspect `pnpm exec supabase migration list` before `pnpm exec supabase db push`.
 - Run all rollback-only SQL scripts, especially `supabase/tests/0027_v2_public_admissions_workflow.sql`.
 - Run `pnpm lint`, `pnpm typecheck`, `pnpm build`, then verify the homepage, interest and admission paths while signed in as authorized staff where required.
 - Print a real draft with multiple fee components on A4 to check that the declarations, signatures and office-use area remain on the same page. Use the academy's actual letterhead, or print to blank paper and check the 50 mm reserved space.

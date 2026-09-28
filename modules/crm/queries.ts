@@ -32,6 +32,15 @@ type ProspectCoreRow = {
 
 export type SubmissionIntent = "interest" | "admission";
 
+type CorrectionRow = {
+  id: string;
+  requested_changes: string;
+  status: string;
+  staff_note: string;
+  submitted_at: string;
+  reviewed_at: string | null;
+};
+
 type PublicApplication = {
   id: string;
   guardianAddress: string;
@@ -42,6 +51,7 @@ type PublicApplication = {
   feePlanVersionId: string | null;
   publishedTerms: { offering_name?: string; requirements?: string | null; policy?: string | null; schedule?: string | null; applications_open_on?: string | null; applications_close_on?: string | null };
   reviews: Array<{ id: string; requirementLabel: string; status: string; note: string; revision: number; reviewedAt: string }>;
+  corrections: Array<{ id: string; requestedChanges: string; status: string; staffNote: string; submittedAt: string; reviewedAt: string | null }>;
 };
 
 export type ProspectListRow = {
@@ -256,6 +266,26 @@ export async function getProspectDetail(
   ]);
 
   type ReviewRow = { id: string; requirement_label: string; status: string; note: string; revision: number; reviewed_at: string };
+  const correctionsQ: { data: CorrectionRow[] | null } = applicationQ.data
+    ? await (
+        supabase as unknown as {
+          from: (name: string) => {
+            select: (columns: string) => {
+              eq: (column: string, value: string) => {
+                order: (
+                  column: string,
+                  options: { ascending: boolean },
+                ) => Promise<{ data: CorrectionRow[] | null }>;
+              };
+            };
+          };
+        }
+      )
+        .from("public_admission_corrections")
+        .select("id,requested_changes,status,staff_note,submitted_at,reviewed_at")
+        .eq("application_id", applicationQ.data.id)
+        .order("submitted_at", { ascending: false })
+    : { data: [] };
   const reviewsQ: { data: ReviewRow[] | null } = applicationQ.data
     ? await (supabase as unknown as { from: (name: string) => { select: (columns: string) => { eq: (column: string, value: string) => { order: (column: string, options: { ascending: boolean }) => Promise<{ data: ReviewRow[] | null }> } } } })
         .from("admission_requirement_reviews")
@@ -366,11 +396,15 @@ export async function getProspectDetail(
       submittedAt: applicationQ.data.submitted_at,
       feePlanVersionId: applicationQ.data.fee_plan_version_id,
       publishedTerms: applicationQ.data.published_terms_snapshot,
-      reviews: (reviewsQ.data ?? []).map((row) => ({
-        id: row.id, requirementLabel: row.requirement_label, status: row.status,
-        note: row.note, revision: row.revision, reviewedAt: row.reviewed_at,
-      })),
-    } : null,
+        reviews: (reviewsQ.data ?? []).map((row) => ({
+          id: row.id, requirementLabel: row.requirement_label, status: row.status,
+          note: row.note, revision: row.revision, reviewedAt: row.reviewed_at,
+        })),
+        corrections: (correctionsQ.data ?? []).map((row) => ({
+          id: row.id, requestedChanges: row.requested_changes, status: row.status,
+          staffNote: row.staff_note, submittedAt: row.submitted_at, reviewedAt: row.reviewed_at,
+        })),
+      } : null,
     followups: (followupsQ.data ?? []).map((row) => ({
       id: row.id,
       type: row.followup_type,
