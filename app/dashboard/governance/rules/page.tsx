@@ -12,9 +12,9 @@ export default async function BusinessRulesPage() {
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="Governance"
-        title="Business Rules"
-        description="Operational percentages and limits are versioned policies. Active rule content is immutable; changes create a new version instead of rewriting history."
+        eyebrow="Academy Setup"
+        title="Operating Rules"
+        description="Manage the academy’s effective operating rules and policies. Changes create a new version so historical transactions keep the values that governed them."
       />
 
       {rows.length ? (
