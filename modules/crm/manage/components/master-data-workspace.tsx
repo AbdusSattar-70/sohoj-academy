@@ -26,7 +26,7 @@ const sections: {
   {
     entity: "academic_year",
     title: "Academic years",
-    description: "Names, date ranges and which year is currently active for operations.",
+    description: "Names and date ranges. Several years can be active; each offering controls its own public application window.",
   },
   {
     entity: "class",
@@ -545,7 +545,7 @@ function MasterRecordForm({
 
         <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-3 text-sm font-medium">
           <input type="checkbox" className="size-4 rounded border-input" disabled={pending} {...register("isActive")} />
-          Active for new applications
+          {entity === "academic_year" ? "Active academic year" : "Active for new applications"}
         </label>
 
         <ErpFormField

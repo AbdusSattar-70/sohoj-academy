@@ -15,8 +15,8 @@ type Step = {
 const setup: Step[] = [
   {
     title: "Set up the academy directory",
-    do: "In Manage CRM, check the academic year, branch, classes and groups, subjects taught, programme definitions, schools and public form choices. Add missing entries and deactivate outdated choices instead of deleting historical data.",
-    check: "The year, class, subject and programme you need can be selected in the ERP forms.",
+    do: "In Manage CRM, check the academic years, branch, classes and groups, subjects taught, programme definitions, schools and public form choices. Add missing entries and deactivate outdated choices instead of deleting historical data.",
+    check: "The year, class, subject and programme you need can be selected in the ERP forms. More than one academic year may be active while preparing a future intake.",
     href: "/dashboard/crm/manage", page: "Manage CRM", permission: "system.master_data.manage",
   },
   {
