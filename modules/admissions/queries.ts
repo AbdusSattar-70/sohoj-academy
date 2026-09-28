@@ -19,7 +19,7 @@ export async function admissionClient() {
 }
 export async function getAdmissionWorkspace() {
   const db = await admissionClient();
-  const { data, error } = await db.rpc("admission_workspace", {});
+  const { data, error } = await db.rpc("admission_workspace");
   if (error) throw new Error(error.message);
   return workspaceSchema.parse(data);
 }

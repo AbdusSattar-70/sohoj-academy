@@ -18,7 +18,7 @@ export async function assessmentClient() {
 
 export async function getAssessmentWorkspace() {
   const db = await assessmentClient();
-  const { data, error } = await db.rpc("assessment_workspace", {});
+  const { data, error } = await db.rpc("assessment_workspace");
   if (error) throw new Error(error.message);
   return assessmentWorkspaceSchema.parse(data);
 }

@@ -21,7 +21,7 @@ export async function financeClient() {
 }
 export async function getFinanceWorkspace() {
   const db = await financeClient();
-  const { data, error } = await db.rpc("finance_workspace", {});
+  const { data, error } = await db.rpc("finance_workspace");
   if (error) throw new Error(error.message);
   return financeWorkspaceSchema.parse(data);
 }

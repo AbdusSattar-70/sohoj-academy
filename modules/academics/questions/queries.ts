@@ -18,7 +18,7 @@ export async function questionClient() {
 
 export async function getQuestionWorkspace() {
   const db = await questionClient();
-  const { data, error } = await db.rpc("question_bank_workspace", {});
+  const { data, error } = await db.rpc("question_bank_workspace");
   if (error) throw new Error(error.message);
   return questionWorkspaceSchema.parse(data);
 }
