@@ -8,7 +8,6 @@ import { PublicControlsForm } from "@/modules/offerings/components/public-contro
 import { PublicVersionWorkflow } from "@/modules/offerings/components/public-version-workflow";
 import type { OfferingOverview } from "@/modules/offerings/queries";
 
-type Offering=OfferingOverview["offerings"][number];
 type Panel={kind:"CREATE"}|{kind:"EDIT";id:string}|{kind:"PUBLIC";id:string};
 
 export function OfferingRegister({data,canManage,canViewFees}:{data:OfferingOverview;canManage:boolean;canViewFees:boolean}) {

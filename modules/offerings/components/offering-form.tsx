@@ -46,6 +46,10 @@ export function OfferingForm({ data, initialOffering, onSuccess, onCancel }: {
     });
   });
   return <form onSubmit={submit} noValidate className="space-y-5">
+    {isEditing && <>
+      <input type="hidden" {...register("offeringId")} />
+      <input type="hidden" {...register("requestId")} />
+    </>}
     <div className="grid gap-5 md:grid-cols-2">
       {choices.map(choice=><ErpFormField key={choice.key} id={"offering-"+(initialOffering?.id??"new")+"-"+choice.key} label={choice.label} required
         hint={contextLocked?"Academic context is locked after an offering becomes active.":choice.hint} error={errors[choice.key]?.message}>
