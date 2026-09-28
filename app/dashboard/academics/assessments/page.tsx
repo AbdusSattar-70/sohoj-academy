@@ -13,6 +13,12 @@ export default async function AssessmentsPage({
   const data = await getAssessmentWorkspace();
   return <div className="space-y-7">
     <PageHeader eyebrow="Academics" title="Assessments & Results" description="Schedule a batch assessment, save the full roster of marks, and obtain independent review before results become official." />
-    <AssessmentWorkspaceView data={data} actorId={context.profileId} canRecord={context.permissions.includes("academics.assessments.record")} canReview={context.permissions.includes("academics.assessments.approve")} />
+    <AssessmentWorkspaceView
+      data={data}
+      actorId={context.profileId}
+      canRecord={context.permissions.includes("academics.assessments.record")}
+      canReview={context.permissions.includes("academics.assessments.approve")}
+      focusAssessmentId={query.assessment}
+    />
   </div>;
 }
