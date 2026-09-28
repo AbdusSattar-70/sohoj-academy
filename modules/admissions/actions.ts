@@ -6,7 +6,12 @@ import { commandSchema, type AdmissionCommand } from "./schema";
 import type { Json } from "@/types/database";
 export async function runAdmissionCommand(
   input: AdmissionCommand,
-): Promise<{ ok: boolean; message: string; field?: string }> {
+): Promise<{
+  ok: boolean;
+  message: string;
+  field?: string;
+  entityId?: string;
+}> {
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
     return {
@@ -75,8 +80,11 @@ export async function runAdmissionCommand(
     ok: true,
     message: result.receipt_no
       ? `Payment posted. Receipt ${result.receipt_no}.`
-      : v.action === "CREATE_BATCH" ? "Batch created."
-        : v.action === "EDIT_BATCH" ? "Batch updated."
+      : v.action === "CREATE_BATCH"
+        ? "Batch created."
+        : v.action === "EDIT_BATCH"
+          ? "Batch updated."
           : `Saved: ${(result.status ?? "completed").replaceAll("_", " ")}.`,
+    entityId: result.id,
   };
 }
