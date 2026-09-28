@@ -152,7 +152,7 @@ begin
     raise exception 'A request identity and reason are required.';
   end if;
 
-  if action not in ('APPLY_DISCOUNT','CANCEL_ADMISSION','POST_REFUND') then
+  if action not in ('APPLY_DISCOUNT','CANCEL_ADMISSION','REFUND') then
     raise exception 'Unsupported V3 finance action.';
   end if;
 
@@ -164,7 +164,7 @@ begin
     raise exception 'Admission management permission required.';
   end if;
 
-  if action='POST_REFUND' and not public.has_permission('finance.payments.post') then
+  if action='REFUND' and not public.has_permission('finance.payments.post') then
     raise exception 'Payment posting permission required.';
   end if;
 
