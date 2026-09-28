@@ -11,7 +11,8 @@ export type ErpRouteIcon =
   | "rules"
   | "settings"
   | "teacher"
-  | "accounting";
+  | "accounting"
+  | "help";
 
 export type ErpRouteDefinition = {
   id: string;
@@ -82,6 +83,15 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     permission: "dashboard.view",
     icon: "dashboard",
     exact: true,
+  },
+  {
+    id: "help",
+    title: "Help & Workflows",
+    eyebrow: "Getting Started",
+    href: "/dashboard/help",
+    navGroup: "Workspace",
+    permission: "dashboard.view",
+    icon: "help",
   },
   {
     id: "action-center",

@@ -1,6 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { CircleHelp } from "lucide-react";
 import { PreferenceControls } from "@/components/shared/preference-controls";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -22,6 +24,9 @@ export function ErpHeader() {
           {current.title}
         </h1>
       </div>
+      <Link href="/dashboard/help" aria-label="Open ERP help" title="Help & Workflows" className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <CircleHelp className="size-5" aria-hidden="true" />
+      </Link>
       <PreferenceControls
         showLanguage={false}
         compact
