@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { runAssessmentCommand } from "./actions";
 import type { AssessmentCommand, AssessmentWorkspace } from "./schema";
 
@@ -8,10 +8,27 @@ const fieldClass = "min-h-10 w-full rounded-lg border bg-background px-3 py-2 te
 const buttonClass = "min-h-10 rounded-lg border px-3 text-sm font-medium disabled:opacity-50";
 type Assessment = AssessmentWorkspace["assessments"][number];
 
-export function AssessmentWorkspaceView({ data, actorId, canRecord, canReview }: {
-  data: AssessmentWorkspace; actorId: string; canRecord: boolean; canReview: boolean;
+export function AssessmentWorkspaceView({
+  data,
+  actorId,
+  canRecord,
+  canReview,
+  focusAssessmentId,
+}: {
+  data: AssessmentWorkspace;
+  actorId: string;
+  canRecord: boolean;
+  canReview: boolean;
+  focusAssessmentId?: string;
 }) {
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!focusAssessmentId) return;
+    const target = document.getElementById("assessment-" + focusAssessmentId);
+    target?.scrollIntoView({ block: "start" });
+    target?.focus({ preventScroll: true });
+  }, [focusAssessmentId]);
   const [notice, setNotice] = useState("");
   function run(input: AssessmentCommand) {
     setNotice("");
@@ -33,13 +50,28 @@ export function AssessmentWorkspaceView({ data, actorId, canRecord, canReview }:
     </form>}
     <section className="space-y-4"><h2 className="text-lg font-semibold">Assessment register</h2>
       {!data.assessments.length && <p className="rounded-xl border p-5 text-sm text-muted-foreground">No assessments in your teaching or review scope yet.</p>}
-      {data.assessments.map((a) => <AssessmentCard key={a.id} item={a} actorId={actorId} canRecord={canRecord} canReview={canReview} pending={pending} run={run} />)}
+      {data.assessments.map((a) => <AssessmentCard
+          key={a.id}
+          item={a}
+          actorId={actorId}
+          canRecord={canRecord}
+          canReview={canReview}
+          pending={pending}
+          run={run}
+          focusAssessmentId={focusAssessmentId}
+        />)}
     </section>
   </div>;
 }
 
-function AssessmentCard({ item:a, actorId, canRecord, canReview, pending, run }: {
-  item:Assessment;actorId:string;canRecord:boolean;canReview:boolean;pending:boolean;run:(input:AssessmentCommand)=>void;
+function AssessmentCard({ item:a, actorId, canRecord, canReview, pending, run, focusAssessmentId }: {
+  item:Assessment;
+  actorId:string;
+  canRecord:boolean;
+  canReview:boolean;
+  pending:boolean;
+  run:(input:AssessmentCommand)=>void;
+  focusAssessmentId?: string;
 }) {
   const draft = a.submissions.find((r) => r.status==="DRAFT");
   const submitted = a.submissions.find((r) => r.status==="SUBMITTED");
