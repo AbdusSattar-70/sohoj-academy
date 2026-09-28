@@ -1,5 +1,7 @@
 # Sohoj Academy ERP — Development Handoff
 
+> V3 redesign proposal (2026-09-29): read [ERP V3 operator workflow and architecture proposal](ERP_V3_OPERATOR_REFACTOR.md) on `feature/refactor`. This document retains historical V2 implementation checkpoints; the V3 proposal records the current operator blockers, a direct-admission model without a synthetic Prospect, and a safe data transition plan. V3 is not implemented yet.
+
 Last updated: 2026-09-28
 
 This document is the durable handoff for continuing the ERP build in a fresh ChatGPT conversation.
