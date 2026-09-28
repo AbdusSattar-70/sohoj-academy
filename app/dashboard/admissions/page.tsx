@@ -69,7 +69,7 @@ export default async function AdmissionsPage({
         description="Verify the application, record referral and paper consent, then accept. Billing and enrollment follow as separate steps."
       />
       <div className="flex flex-wrap gap-4 text-sm print:hidden">
-        <Link href="/dashboard/crm/prospects" className="underline">Prospects</Link>
+        <Link href="/dashboard/crm/prospects" className="underline">Enquiries</Link>
         <Link href="/dashboard/academics/batches" className="underline">Batch setup</Link>
         <Link href="/dashboard/students" className="underline">Student register</Link>
       </div>
@@ -83,13 +83,13 @@ export default async function AdmissionsPage({
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-xl border bg-card p-4">
               <p className="text-sm font-semibold">New applicant with staff assistance</p>
-              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">Enter the student and guardian details while they are with you. A CRM Prospect and draft are created together.</p>
+              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">Enter the student and guardian details while they are with you. This creates the admission application and draft case directly; it does not create a CRM Enquiry.</p>
               <a className="mt-3 inline-block text-sm font-medium underline" href="#new-applicant">Enter details online</a>
             </div>
             <div className="rounded-xl border bg-card p-4">
-              <p className="text-sm font-semibold">Already in Prospects</p>
+              <p className="text-sm font-semibold">Already an Enquiry</p>
               <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">Continue a verified enquiry. Choose the intended offering and an available batch.</p>
-              <a className="mt-3 inline-block text-sm font-medium underline" href="#from-prospect">Start from a Prospect</a>
+              <a className="mt-3 inline-block text-sm font-medium underline" href="#from-prospect">Continue an Enquiry</a>
             </div>
             <div className="rounded-xl border bg-card p-4">
               <p className="text-sm font-semibold">Paper application</p>
@@ -102,7 +102,7 @@ export default async function AdmissionsPage({
             <div className="mt-4"><StaffAdmissionIntakeForm data={data} /></div>
           </details>
           <details id="from-prospect" open={Boolean(preselected)} className="rounded-xl border bg-card p-4">
-            <summary className="cursor-pointer list-inside font-semibold">Create a draft from an existing Prospect</summary>
+            <summary className="cursor-pointer list-inside font-semibold">Create a draft from an existing Enquiry</summary>
             <div className="mt-4 space-y-3">
               {preselected && <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">Starting from <strong>{preselected.number} · {preselected.name}</strong>. Confirm the correct offering and batch before creating the draft.</p>}
               <AdmissionCommandForm action="CREATE" data={data} defaultProspectId={defaultProspectId} label="Create admission draft" description="Student and guardian identity are inherited from the Prospect. The selected offering and batch are revalidated before the draft is created." />
@@ -115,7 +115,7 @@ export default async function AdmissionsPage({
           <div><h2 className="text-xl font-semibold">Admission cases</h2><p className="mt-1 text-sm text-muted-foreground">Each case shows the next decision and the checks needed to complete it. Financial operations continue in Finance after acceptance.</p></div>
           <p className="text-sm text-muted-foreground">{data.cases.length} {data.cases.length === 1 ? "case" : "cases"}</p>
         </div>
-        {data.cases.length === 0 && <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">No admission cases yet. Start from a new applicant or an existing Prospect above.</p>}
+        {data.cases.length === 0 && <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">No admission cases yet. Start from a new applicant or continue an existing Enquiry above.</p>}
       </section>
       {data.cases.map((a) => {
         const next = nextAction[a.status];
@@ -267,7 +267,7 @@ export default async function AdmissionsPage({
       })}
       {!data.cases.length && (
         <p className="rounded-xl border border-dashed p-6 text-sm">
-          No admission cases yet. Start with a new applicant or select a verified Prospect above. Confirm that the programme has a published Fee Plan and an available batch.
+          No admission cases yet. Start with a new applicant or continue a verified Enquiry above. Confirm that the programme has a published Fee Plan and an available batch.
         </p>
       )}
     </div>
