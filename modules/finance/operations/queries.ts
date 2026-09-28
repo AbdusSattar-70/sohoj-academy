@@ -7,6 +7,7 @@ type FinanceDatabase = Database & {
     Functions: {
       finance_workspace: { Args: Record<string, never>; Returns: Json };
       finance_command: { Args: { p_input: Json }; Returns: Json };
+      finance_v3_command: { Args: { p_input: Json }; Returns: Json };
       post_admission_payment: { Args: { p_input: Json }; Returns: Json };
       billing_preview: {
         Args: { p_period: string; p_term_id?: string };
