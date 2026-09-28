@@ -23,6 +23,20 @@ begin
     'origin', a.origin,
     'originProspectId', a.origin_prospect_id,
     'batchId', a.batch_id,
+    'batchName', b.name,
+    'batchCode', b.code,
+    'batchCapacity', b.capacity,
+    'batchOccupied', (
+      select count(*)
+      from public.enrollments e
+      where e.batch_id = b.id
+        and e.status = 'ACTIVE'
+    ),
+    'offeringId', o.id,
+    'offeringName', o.name,
+    'className', cl.name,
+    'yearName', ay.name,
+    'branchName', br.name,
     'studentNo', s.student_no,
     'studentId', s.id,
     'name', a.identity_snapshot->>'student_name',
@@ -95,6 +109,16 @@ begin
   from public.admission_cases a
   join public.fee_plan_versions f
     on f.id = a.fee_plan_version_id
+  join public.batches b
+    on b.id = a.batch_id
+  join public.programme_offerings o
+    on o.id = b.offering_id
+  join public.classes cl
+    on cl.id = b.class_id
+  join public.academic_years ay
+    on ay.id = b.academic_year_id
+  left join public.branches br
+    on br.id = b.branch_id
   left join public.students s
     on s.id = a.student_id
   left join public.business_rule_versions r
