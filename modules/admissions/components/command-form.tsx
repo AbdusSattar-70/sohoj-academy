@@ -321,8 +321,8 @@ export function AdmissionCommandForm({
         )}
         {field(
           "reason",
-          "Reason",
-          "Short operational reason for the audit trail.",
+          action === "READY" ? "Verification note" : action === "ACCEPT" ? "Acceptance note" : action === "BILL" ? "Billing note" : action === "ACTIVATE" ? "Enrollment decision note" : action === "PAY" ? "Payment note" : "Staff note",
+          action === "READY" ? "For example: Confirmed student identity, guardian contact, batch and published fees." : action === "ACCEPT" ? "For example: Reviewed the verified application and signed paper consent." : action === "BILL" ? "For example: Posted the initial charges from the pinned Fee Plan." : action === "ACTIVATE" ? "For example: Confirmed policy requirements and available batch capacity." : action === "PAY" ? "For example: Cash received at the front desk." : "Briefly record why you are making this change.",
         )}
       </div>
       {prospect && action === "CREATE" && (
