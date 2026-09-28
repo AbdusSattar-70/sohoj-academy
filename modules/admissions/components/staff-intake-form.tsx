@@ -73,7 +73,7 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
       setCreated({ admissionId: result.admissionId, prospectNo: result.prospectNo });
       form.reset();
       setOfferingId("");
-      router.refresh();
+      router.push(`/dashboard/admissions/${result.admissionId}`);
     });
   }
 
