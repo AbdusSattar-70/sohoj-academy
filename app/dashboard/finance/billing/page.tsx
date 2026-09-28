@@ -9,8 +9,8 @@ export default async function BillingPage() {
     <div className="space-y-7">
       <PageHeader
         eyebrow="Finance"
-        title="Billing & Adjustments"
-        description="Manage student balances, approved discounts, cancellations, refund payouts and recurring charges with a complete financial history."
+        title="Student Accounts"
+        description="View and manage student charges, payments, discounts, cancellations, refunds and recurring billing from the student account record."
       />
       <FinanceOperations
         data={data}
