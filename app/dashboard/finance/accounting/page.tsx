@@ -4,7 +4,7 @@ import { getFinanceAccountingWorkspace } from "@/modules/finance/accounting/quer
 import { FinanceAccountingWorkspace } from "@/modules/finance/accounting/workspace";
 
 export default async function FinanceAccountingPage() {
-  await requirePermission("finance.view");
+  await requirePermission("accounting.view");
   const data = await getFinanceAccountingWorkspace();
   return (
     <div className="space-y-7">
