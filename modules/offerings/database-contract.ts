@@ -74,6 +74,7 @@ type ExtendedDatabase = Omit<Database, "public"> & {
     };
     Functions: Database["public"]["Functions"] & {
       create_programme_offering: { Args: { p_input: Json }; Returns: Json };
+      update_programme_offering: { Args: { p_input: Json }; Returns: Json };
       publish_fee_plan: { Args: { p_input: Json }; Returns: Json };
       update_programme_offering_public_controls: { Args: { p_input: Json }; Returns: Json };
       list_public_programme_offerings: { Args: Record<string, never>; Returns: Json };

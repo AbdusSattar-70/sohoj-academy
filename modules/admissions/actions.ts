@@ -8,18 +8,16 @@ export async function runAdmissionCommand(
   input: AdmissionCommand,
 ): Promise<{ ok: boolean; message: string; field?: string }> {
   const parsed = commandSchema.safeParse(input);
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0];
+  if (!parsed.success)
     return {
       ok: false,
-      message: issue?.message ?? "Please check the admission details.",
-      field: issue?.path?.[0]?.toString(),
+      message: parsed.error.issues[0].message,
+      field: parsed.error.issues[0].path[0]?.toString(),
     };
-  }
   const v = parsed.data;
   const context = await getErpContext();
   const permission =
-    v.action === "CREATE_BATCH"
+    v.action === "CREATE_BATCH" || v.action === "EDIT_BATCH"
       ? "academics.manage"
       : v.action === "PAY"
         ? "finance.payments.post"
@@ -54,12 +52,14 @@ export async function runAdmissionCommand(
     if (value !== undefined) payload[column] = value;
   }
   const db = await admissionClient();
-  const { data, error } = await db.rpc(
-    v.action === "PAY" ? "post_admission_payment" : "admission_command",
-    { p_input: payload },
-  );
+  const command = v.action === "PAY"
+    ? "post_admission_payment"
+    : v.action === "CREATE_BATCH" || v.action === "EDIT_BATCH"
+      ? "batch_command"
+      : "admission_command";
+  const { data, error } = await db.rpc(command, { p_input: payload });
   if (error) return { ok: false, message: error.message };
-  const result = (data ?? null) as { status?: string; receipt_no?: string } | null;
+  const result = data as { status?: string; receipt_no?: string };
   for (const path of [
     "/dashboard/admissions",
     "/dashboard/finance/billing",
@@ -72,10 +72,10 @@ export async function runAdmissionCommand(
     revalidatePath(path);
   return {
     ok: true,
-    message: result?.receipt_no
+    message: result.receipt_no
       ? `Payment posted. Receipt ${result.receipt_no}.`
-      : result
-        ? `Saved: ${(result.status ?? "completed").replaceAll("_", " ")}.`
-        : "Saved.",
+      : v.action === "CREATE_BATCH" ? "Batch created."
+        : v.action === "EDIT_BATCH" ? "Batch updated."
+          : `Saved: ${(result.status ?? "completed").replaceAll("_", " ")}.`,
   };
 }

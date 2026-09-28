@@ -48,7 +48,15 @@ export async function receiveSignedConsent(formData: FormData): Promise<{ ok: bo
     guardian_signed_on: parsed.data.guardianSignedOn,
     student_signed: parsed.data.studentSigned,
   } } as never);
-  if (error) return { ok: false, message: `The file uploaded, but its receipt could not be recorded. Contact an administrator with path ${path}. ${error.message}` };
+  if (error) {
+    const { error: cleanupError } = await db.storage.from("admission-consent").remove([path]);
+    return {
+      ok: false,
+      message: cleanupError
+        ? `The file uploaded, but its receipt could not be recorded or removed. Ask an administrator to check the private upload and retry. ${error.message}`
+        : `The signed form was not recorded and the temporary upload was removed. ${error.message}`,
+    };
+  }
   revalidatePath("/dashboard/admissions");
   return { ok: true, message: "Signed consent received and recorded against the admission case." };
 }

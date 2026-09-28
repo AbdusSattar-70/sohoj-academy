@@ -10,7 +10,9 @@ export type ErpRouteIcon =
   | "audit"
   | "rules"
   | "settings"
-  | "teacher";
+  | "teacher"
+  | "accounting"
+  | "help";
 
 export type ErpRouteDefinition = {
   id: string;
@@ -55,6 +57,15 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
   },
 
   {
+    id: "accounting",
+    title: "Accounting & Settlements",
+    eyebrow: "Finance",
+    href: "/dashboard/finance/accounting",
+    navGroup: "Finance",
+    permission: "accounting.view",
+    icon: "accounting",
+  },
+  {
     id: "billing",
     title: "Billing & Adjustments",
     eyebrow: "Finance",
@@ -72,6 +83,15 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     permission: "dashboard.view",
     icon: "dashboard",
     exact: true,
+  },
+  {
+    id: "help",
+    title: "Help & Workflows",
+    eyebrow: "Getting Started",
+    href: "/dashboard/help",
+    navGroup: "Workspace",
+    permission: "dashboard.view",
+    icon: "help",
   },
   {
     id: "action-center",

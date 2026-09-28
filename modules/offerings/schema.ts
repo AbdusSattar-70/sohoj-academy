@@ -12,6 +12,10 @@ export const createOfferingSchema = z.object({
   reason: z.string().trim().min(5, "Explain why this offering is being created.").max(500),
 });
 export type CreateOfferingInput = z.infer<typeof createOfferingSchema>;
+export const offeringFormSchema = createOfferingSchema.extend({ offeringId: id.optional(), requestId: id.optional() });
+export type OfferingFormInput = z.infer<typeof offeringFormSchema>;
+export const updateOfferingSchema = createOfferingSchema.extend({ offeringId: id, requestId: id });
+export type UpdateOfferingInput = z.infer<typeof updateOfferingSchema>;
 
 export const publishFeePlanSchema = z.object({
   offeringId: id,
@@ -48,7 +52,7 @@ export const SHOWCASE_ICON_VALUES = [
   "shield-check",
 ] as const;
 
-export const updateOfferingPublicControlsSchema = z.object({
+const updateOfferingPublicControlsBaseSchema = z.object({
   offeringId: id,
   showcaseTitle: z.string().trim().max(120),
   showcaseTitleBn: z.string().trim().max(120),
@@ -70,7 +74,8 @@ export const updateOfferingPublicControlsSchema = z.object({
   applicationsCloseOn: z.string().optional(),
   subjectIds: z.array(z.string().uuid()).max(30),
   reason: z.string().trim().min(5, "Explain why public controls are changing.").max(500),
-}).superRefine((value, ctx) => {
+});
+export const updateOfferingPublicControlsSchema = updateOfferingPublicControlsBaseSchema.superRefine((value, ctx) => {
   if (value.isWebsiteVisible) {
     if (!value.showcaseTitle) {
       ctx.addIssue({ code: "custom", path: ["showcaseTitle"], message: "English title is required when website visibility is on." });
@@ -90,7 +95,7 @@ export type UpdateOfferingPublicControlsInput = z.infer<typeof updateOfferingPub
 export const publicContentVersionSchema = z.object({
   offeringId: id,
   reason: z.string().trim().min(5).max(500),
-  content: updateOfferingPublicControlsSchema.omit({ offeringId: true, reason: true }),
+  content: updateOfferingPublicControlsBaseSchema.omit({ offeringId: true, reason: true }),
 });
 export type PublicContentVersionInput = z.infer<typeof publicContentVersionSchema>;
 

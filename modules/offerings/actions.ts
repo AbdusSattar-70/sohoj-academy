@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getErpContext } from "@/modules/platform/auth/erp-context";
 import { createOfferingClient } from "@/modules/offerings/database-contract";
 import {
-  createOfferingSchema, publishFeePlanSchema, updateOfferingPublicControlsSchema,
-  type CreateOfferingInput, type PublishFeePlanInput, type UpdateOfferingPublicControlsInput,
+  createOfferingSchema, updateOfferingSchema, publishFeePlanSchema, updateOfferingPublicControlsSchema,
+  type CreateOfferingInput, type UpdateOfferingInput, type PublishFeePlanInput, type UpdateOfferingPublicControlsInput,
   publicContentVersionSchema, type PublicContentVersionInput,
 } from "@/modules/offerings/schema";
 
@@ -40,6 +40,28 @@ export async function createProgrammeOffering(input: CreateOfferingInput): Promi
   if (!result?.offering_id) return { ok: false, error: "Offering creation returned no identity." };
   revalidatePath("/dashboard/academics/offerings");
   revalidatePath("/dashboard/finance/fee-plans");
+  return { ok: true, reference: result.offering_id };
+}
+
+export async function updateProgrammeOffering(input: UpdateOfferingInput): Promise<OfferingMutationResult> {
+  const parsed = updateOfferingSchema.safeParse(input);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return { ok: false, error: issue?.message ?? "Check the offering details.", field: issue?.path[0]?.toString() };
+  }
+  const context = await getErpContext();
+  if (!context?.permissions.includes("academics.manage")) return { ok: false, error: "You are not authorized to edit offerings." };
+  const value = parsed.data;
+  const db = await createOfferingClient();
+  const { data, error } = await db.rpc("update_programme_offering", { p_input: {
+    offering_id: value.offeringId, request_id: value.requestId, branch_id: value.branchId,
+    academic_year_id: value.academicYearId, class_id: value.classId, program_id: value.programId,
+    group_id: value.groupId || null, code: value.code, name: value.name, reason: value.reason,
+  } });
+  if (error) return { ok: false, error: error.message };
+  const result = data as { offering_id?: string } | null;
+  if (!result?.offering_id) return { ok: false, error: "Offering update returned no identity." };
+  for (const path of ["/dashboard/academics/offerings","/dashboard/academics/batches","/dashboard/admissions","/dashboard/finance/fee-plans","/"]) revalidatePath(path);
   return { ok: true, reference: result.offering_id };
 }
 

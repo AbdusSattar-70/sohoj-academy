@@ -4,6 +4,7 @@ export const commandSchema = z
   .object({
     action: z.enum([
       "CREATE_BATCH",
+      "EDIT_BATCH",
       "CREATE",
       "EDIT_DRAFT",
       "READY",
@@ -40,8 +41,10 @@ export const commandSchema = z
     const required =
       v.action === "CREATE_BATCH"
         ? ["offeringId"]
+        : v.action === "EDIT_BATCH"
+          ? ["batchId"]
         : v.action === "CREATE"
-          ? ["prospectId", "batchId"]
+          ? ["prospectId", "offeringId", "batchId"]
           : v.action === "PAY"
             ? ["admissionId", "paymentMethodId"]
             : ["admissionId"];
@@ -52,7 +55,7 @@ export const commandSchema = z
           path: [field],
           message: "Select a valid option.",
         });
-    if (v.action === "CREATE_BATCH") {
+    if (v.action === "CREATE_BATCH" || v.action === "EDIT_BATCH") {
       for (const field of ["code", "name"] as const)
         if ((v[field]?.length ?? 0) < 2)
           ctx.addIssue({
@@ -60,7 +63,7 @@ export const commandSchema = z
             path: [field],
             message: "Enter at least two characters.",
           });
-      if (!v.capacity)
+      if (v.capacity === undefined || Number.isNaN(v.capacity))
         ctx.addIssue({
           code: "custom",
           path: ["capacity"],
@@ -85,21 +88,33 @@ export const commandSchema = z
 export type AdmissionCommand = z.infer<typeof commandSchema>;
 const option = z.object({ id: uuid, name: z.string() });
 export const workspaceSchema = z.object({
-  offerings: z.array(option.extend({ classId: uuid, className: z.string() })),
+  offerings: z.array(option.extend({
+    code: z.string(),
+    classId: uuid,
+    className: z.string(),
+    yearName: z.string(),
+    branchName: z.string().nullable(),
+  })),
   capacityLimit: z.number().nullable(),
   batches: z.array(
     option.extend({
       code: z.string(),
       offeringId: uuid,
+      offeringName: z.string(),
       classId: uuid,
+      className: z.string(),
+      yearName: z.string(),
+      branchName: z.string().nullable(),
       capacity: z.number(),
       occupied: z.number(),
+      isActive: z.boolean(),
     }),
   ),
   prospects: z.array(
     option.extend({
       number: z.string(),
       classId: uuid.nullable(),
+      interestedOfferingId: uuid.nullable(),
       guardian: z.string(),
       mobile: z.string(),
     }),
@@ -124,6 +139,14 @@ export const workspaceSchema = z.object({
       studentNo: z.string().nullable(),
       studentId: uuid.nullable(),
       name: z.string(),
+      nameBn: z.string().nullable(),
+      gender: z.string().nullable(),
+      dateOfBirth: z.string().nullable(),
+      schoolName: z.string().nullable(),
+      schoolRoll: z.string().nullable(),
+      guardianAddress: z.string().nullable(),
+      alternateMobile: z.string().nullable(),
+      guardianRelationship: z.string().nullable(),
       guardian: z.string(),
       mobile: z.string(),
       feeVersion: z.number(),

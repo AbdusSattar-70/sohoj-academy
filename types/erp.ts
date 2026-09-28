@@ -22,7 +22,9 @@ export type ErpNavIcon =
   | "audit"
   | "rules"
   | "settings"
-  | "teacher";
+  | "teacher"
+  | "accounting"
+  | "help";
 
 export type ErpNavItem = {
   id: string;

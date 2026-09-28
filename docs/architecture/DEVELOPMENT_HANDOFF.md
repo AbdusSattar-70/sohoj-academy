@@ -20,6 +20,7 @@ Repository architecture references:
 - `docs/architecture/ERP_INTERACTION_WORKFLOW_STANDARD.md`
 - `docs/architecture/DASHBOARD_INITIALIZATION.md`
 - `docs/architecture/ADR_013_018_FOUNDATION_DECISIONS.md`
+- `docs/architecture/ADMISSIONS_OPERATOR_WORKFLOW.md`
 
 ## Active development branch
 
@@ -380,3 +381,9 @@ See [Blueprint gap closure](BLUEPRINT_GAP_CLOSURE.md) for delivered changes and 
 4. Continue finance/accounting, teacher compensation and the remaining platform acceptance items listed in `BLUEPRINT_GAP_CLOSURE.md`.
 
 For continuation, use `feature/blueprint_gap_closure`; read this checkpoint, the architecture docs and Master Blueprint v1.1 before implementation. Do not revive the old MVP dashboard/schema.
+
+## Admission workflow usability update (2026-09-28)
+
+On the finance-accounting development line, migration `0049_v2_admission_intake_and_batch_eligibility.sql` adds an audited staff-assisted intake that creates the CRM Prospect and admission draft together, complete applicant details on the Prospect and case snapshot, and class completion from an explicitly selected offering for incomplete Prospects. Admissions now has distinct paths for staff-entered applicants, existing Prospects and a printable blank A4 application. Acceptance stays blocked until the signed guardian consent is received; the consent upload refreshes the current case and removes unrecorded temporary uploads when possible.
+
+Use `ADMISSIONS_OPERATOR_WORKFLOW.md` for the staff sequence and linked development acceptance checks. Apply migration 0049 before using the updated workspace contract; perform signed-in browser and linked Supabase acceptance after pulling the branch.
