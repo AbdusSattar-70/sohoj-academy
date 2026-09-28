@@ -196,7 +196,8 @@ begin
       returning id into id_out;
 
       update public.attendance_submissions
-      set status='SUBMITTED'
+      set status='SUBMITTED',
+          approval_id=id_out
       where id=latest.id;
 
       result:=jsonb_build_object(
@@ -348,3 +349,71 @@ $$;
 
 revoke all on function public.attendance_command(jsonb) from public,anon;
 grant execute on function public.attendance_command(jsonb) to authenticated;
+
+
+-- Extend the academic immutability rule with the review metadata owned by V3 attendance.
+create or replace function public.protect_academic_record()
+returns trigger
+language plpgsql
+set search_path=public
+as $$
+begin
+  if tg_op='DELETE' then
+    raise exception 'Academic history cannot be deleted.';
+  end if;
+
+  if tg_table_name='academic_routines' then
+    if (to_jsonb(new)-'retired_at') is distinct from (to_jsonb(old)-'retired_at')
+      or old.retired_at is not null
+      or new.retired_at is null then
+      raise exception 'Routine terms are immutable; retire and create a replacement.';
+    end if;
+  elsif tg_table_name='class_sessions' then
+    if (to_jsonb(new)-array[
+      'status','cancellation_reason','cancelled_by','cancelled_at'
+    ]) is distinct from (to_jsonb(old)-array[
+      'status','cancellation_reason','cancelled_by','cancelled_at'
+    ])
+      or old.status<>'SCHEDULED'
+      or new.status<>'CANCELLED' then
+      raise exception 'Session schedule is immutable; cancel and create a replacement occurrence.';
+    end if;
+  else
+    if (to_jsonb(new)-array[
+      'status','approval_id','reviewer_id','review_note','reviewed_at'
+    ]) is distinct from (to_jsonb(old)-array[
+      'status','approval_id','reviewer_id','review_note','reviewed_at'
+    ]) then
+      raise exception 'Attendance evidence is immutable; create a new revision.';
+    end if;
+
+    if old.status='DRAFT'
+      and new.status='SUBMITTED'
+      and new.approval_id is not null
+      and new.reviewer_id is null
+      and new.reviewed_at is null then
+      return new;
+    end if;
+
+    if old.status='SUBMITTED'
+      and new.status in ('APPROVED','REJECTED')
+      and new.approval_id=old.approval_id
+      and new.reviewer_id is not null
+      and new.reviewed_at is not null
+      and length(btrim(coalesce(new.review_note,'')))>=5 then
+      if new.reviewer_id=old.recorded_by then
+        raise exception 'The submitting teacher cannot review their own attendance.';
+      end if;
+      return new;
+    end if;
+
+    if old.status in ('APPROVED','REJECTED') then
+      raise exception 'Reviewed attendance evidence is immutable; create a new revision.';
+    end if;
+
+    raise exception 'Attendance evidence transition is not allowed.';
+  end if;
+
+  return new;
+end;
+$$;
