@@ -59,7 +59,7 @@ export async function runAdmissionCommand(
       : "admission_command";
   const { data, error } = await db.rpc(command, { p_input: payload });
   if (error) return { ok: false, message: error.message };
-  const result = data as { status?: string; receipt_no?: string };
+  const result = data as { id?: string; status?: string; receipt_no?: string };
   for (const path of [
     "/dashboard/admissions",
     "/dashboard/finance/billing",
@@ -70,6 +70,7 @@ export async function runAdmissionCommand(
     "/dashboard",
   ])
     revalidatePath(path);
+  if (typeof result.id === "string") revalidatePath(`/dashboard/admissions/${result.id}`);
   return {
     ok: true,
     message: result.receipt_no
