@@ -42,6 +42,6 @@ export async function runReferralCommand(input:unknown):Promise<{ok:boolean;mess
   contact_note:v.contactNote,decision:v.decision,
  }});
  if(error)return {ok:false,message:error.message};
- revalidatePath("/dashboard/admissions");revalidatePath("/dashboard/finance/accounting");
+ if(v.action!=="CAPTURE") revalidatePath("/dashboard/finance/accounting");
  return {ok:true,message:(data as {message?:string}|null)?.message??"Referral saved."};
 }

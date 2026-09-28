@@ -40,6 +40,11 @@ begin
  -- The acceptance tests select Organic to isolate their domain behavior from referral qualification.
  perform public.referral_command(jsonb_build_object('action','CAPTURE','request_id',gen_random_uuid(),
    'admission_id',a,'source','ORGANIC','reason','Guardian confirmed organic test source'));
+
+ perform public.record_physical_admission_consent(jsonb_build_object(
+   'request_id',gen_random_uuid(),'admission_id',a,
+   'guardian_signed_on',current_date,'student_signed',false,
+   'reason','Verified test paper consent receipt'));
  perform public.admission_command(jsonb_build_object('action','ACCEPT','request_id',gen_random_uuid(),'reason','Accept reviewed admission','admission_id',a));
  if exists(select 1 from public.enrollments e join public.admission_cases ac on ac.student_id=e.student_id where ac.id=a) then raise exception 'Acceptance activated enrollment early.'; end if;
  perform public.admission_command(jsonb_build_object('action','BILL','request_id',gen_random_uuid(),'reason','Post standard initial billing','admission_id',a));
@@ -71,6 +76,11 @@ begin
  -- The acceptance tests select Organic to isolate their domain behavior from referral qualification.
  perform public.referral_command(jsonb_build_object('action','CAPTURE','request_id',gen_random_uuid(),
    'admission_id',a2,'source','ORGANIC','reason','Guardian confirmed organic test source'));
+
+ perform public.record_physical_admission_consent(jsonb_build_object(
+   'request_id',gen_random_uuid(),'admission_id',a2,
+   'guardian_signed_on',current_date,'student_signed',false,
+   'reason','Verified test paper consent receipt'));
  perform public.admission_command(jsonb_build_object('action','ACCEPT','request_id',gen_random_uuid(),'reason','Accept second admission','admission_id',a2));
  perform public.admission_command(jsonb_build_object('action','BILL','request_id',gen_random_uuid(),'reason','Post second invoice','admission_id',a2));
  -- Later settings must not silently rewrite the accepted case's policy.

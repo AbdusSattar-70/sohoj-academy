@@ -95,6 +95,11 @@ begin
   update public.admission_cases set consent_required=false where id=admission;
   perform public.admission_command(jsonb_build_object('action','READY','request_id',gen_random_uuid(),
     'reason','Verify applicant details and charges','admission_id',admission));
+
+  perform public.record_physical_admission_consent(jsonb_build_object(
+    'request_id',gen_random_uuid(),'admission_id',admission,
+    'guardian_signed_on',current_date,'student_signed',false,
+    'reason','Verified test paper consent receipt'));
   perform public.admission_command(jsonb_build_object('action','ACCEPT','request_id',gen_random_uuid(),
     'reason','Accept verified applicant','admission_id',admission));
   select student_id into student from public.admission_cases where id=admission;
