@@ -1,211 +1,85 @@
-export type ErpRouteIcon =
-  | "dashboard"
-  | "action-center"
-  | "prospects"
-  | "students"
-  | "staff"
-  | "offerings"
-  | "fee-plans"
-  | "approvals"
-  | "audit"
-  | "rules"
-  | "settings"
-  | "teacher";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export type ErpRouteDefinition = {
-  id: string;
-  title: string;
-  eyebrow: string;
-  href: string;
-  navGroup: string;
-  permission: string;
-  icon: ErpRouteIcon;
-  exact?: boolean;
+export type FinanceAccountingWorkspaceData = {
+  accounts: Array<{ id: string; code: string; name: string; accountType: string; subtype: string; balance: number }>;
+  payables: Array<{ id: string; number: string; type: string; beneficiary: string; amount: number; status: string; dueOn: string | null }>;
+  advances: Array<{ id: string; number: string; beneficiary: string; purpose: string; requestedAmount: number; balance: number; status: string; expectedDate: string | null }>;
+  expenses: Array<{ id: string; number: string; date: string; description: string; amount: number; status: string }>;
+  compensation: Array<{ id: string; runNo: string; from: string; to: string; total: number; status: string }>;
 };
 
-export const erpRouteRegistry: ErpRouteDefinition[] = [
-  {
-    id: "question-bank", title: "Question Bank", eyebrow: "Academics",
-    href: "/dashboard/academics/questions", navGroup: "Academics",
-    permission: "academics.view", icon: "offerings",
-  },
-  {
-    id: "assessments", title: "Assessments & Results", eyebrow: "Academics",
-    href: "/dashboard/academics/assessments", navGroup: "Academics",
-    permission: "academics.view", icon: "offerings",
-  },
-  {
-    id: "academic-operations",
-    title: "Academic Operations",
-    eyebrow: "Academics",
-    href: "/dashboard/academics/operations",
-    navGroup: "Academics",
-    permission: "academics.view",
-    icon: "offerings",
-  },
+export async function getFinanceAccountingWorkspace(): Promise<FinanceAccountingWorkspaceData> {
+  const supabase = await createServerSupabaseClient();
+  const [
+    accountsResult,
+    payablesResult,
+    advancesResult,
+    expensesResult,
+    compensationResult,
+  ] = await Promise.all([
+    supabase.from("finance_accounts").select("id,code,name,account_type,account_subtype").eq("is_active", true).order("code"),
+    supabase.from("finance_payables").select("id,payable_no,payable_type,original_amount,status,due_on,staff:staff_id(full_name),vendor:vendor_id(name)").neq("status", "VOIDED").order("due_on"),
+    supabase.from("finance_advances").select("id,advance_no,beneficiary_type,purpose,requested_amount,status,expected_settlement_date,staff:staff_id(full_name),vendor:vendor_id(name)").order("created_at", { ascending: false }),
+    supabase.from("finance_expenses").select("id,expense_no,expense_date,description,amount,status").order("expense_date", { ascending: false }),
+    supabase.from("teacher_compensation_runs").select("id,run_no,period_start,period_end,total_amount,status").order("period_end", { ascending: false }),
+  ]);
 
-  {
-    id: "teacher-dashboard",
-    title: "My Classes",
-    eyebrow: "Teaching",
-    href: "/dashboard/teacher",
-    navGroup: "Academics",
-    permission: "academics.view",
-    icon: "teacher",
-  },
+  for (const result of [accountsResult, payablesResult, advancesResult, expensesResult, compensationResult]) {
+    if (result.error) throw new Error(result.error.message);
+  }
 
-  {
-    id: "billing",
-    title: "Billing & Adjustments",
-    eyebrow: "Finance",
-    href: "/dashboard/finance/billing",
-    navGroup: "Finance",
-    permission: "finance.view",
-    icon: "fee-plans",
-  },
-  {
-    id: "dashboard",
-    title: "Dashboard",
-    eyebrow: "Workspace",
-    href: "/dashboard",
-    navGroup: "Workspace",
-    permission: "dashboard.view",
-    icon: "dashboard",
-    exact: true,
-  },
-  {
-    id: "action-center",
-    title: "Action Center",
-    eyebrow: "Workspace",
-    href: "/dashboard/action-center",
-    navGroup: "Workspace",
-    permission: "action_center.view",
-    icon: "action-center",
-  },
-  {
-    id: "prospects",
-    title: "Prospects",
-    eyebrow: "CRM & Student Bank",
-    href: "/dashboard/crm/prospects",
-    navGroup: "CRM & Students",
-    permission: "crm.prospects.view",
-    icon: "prospects",
-  },
-  {
-    id: "manage-crm",
-    title: "Manage CRM",
-    eyebrow: "CRM & Student Bank",
-    href: "/dashboard/crm/manage",
-    navGroup: "CRM & Students",
-    permission: "system.master_data.manage",
-    icon: "settings",
-  },
-  {
-    id: "students",
-    title: "Students",
-    eyebrow: "Student Core",
-    href: "/dashboard/students",
-    navGroup: "CRM & Students",
-    permission: "students.view",
-    icon: "students",
-  },
-  {
-    id: "admissions",
-    title: "Admissions",
-    eyebrow: "Student Lifecycle",
-    href: "/dashboard/admissions",
-    navGroup: "CRM & Students",
-    permission: "admissions.view",
-    icon: "students",
-  },
-  {
-    id: "batches",
-    title: "Batches",
-    eyebrow: "Academics",
-    href: "/dashboard/academics/batches",
-    navGroup: "Academics",
-    permission: "academics.view",
-    icon: "offerings",
-  },
-  {
-    id: "staff",
-    title: "Staff",
-    eyebrow: "People",
-    href: "/dashboard/staff",
-    navGroup: "People",
-    permission: "staff.view",
-    icon: "staff",
-  },
-  {
-    id: "programme-offerings",
-    title: "Programme Offerings",
-    eyebrow: "Academics",
-    href: "/dashboard/academics/offerings",
-    navGroup: "Academics",
-    permission: "academics.view",
-    icon: "offerings",
-  },
-  {
-    id: "fee-plans",
-    title: "Fee Plans",
-    eyebrow: "Finance / Control Center",
-    href: "/dashboard/finance/fee-plans",
-    navGroup: "Finance",
-    permission: "finance.view",
-    icon: "fee-plans",
-  },
-  {
-    id: "approvals",
-    title: "Approvals",
-    eyebrow: "Governance",
-    href: "/dashboard/governance/approvals",
-    navGroup: "Governance",
-    permission: "approvals.view",
-    icon: "approvals",
-  },
-  {
-    id: "audit",
-    title: "Audit Trail",
-    eyebrow: "Governance",
-    href: "/dashboard/governance/audit",
-    navGroup: "Governance",
-    permission: "audit.view",
-    icon: "audit",
-  },
-  {
-    id: "business-rules",
-    title: "Business Rules",
-    eyebrow: "Governance",
-    href: "/dashboard/governance/rules",
-    navGroup: "Governance",
-    permission: "system.rules.view",
-    icon: "rules",
-  },
-  {
-    id: "settings",
-    title: "Settings",
-    eyebrow: "Control Center",
-    href: "/dashboard/settings",
-    navGroup: "Governance",
-    permission: "system.settings.view",
-    icon: "settings",
-  },
-];
+  const accounts = await Promise.all((accountsResult.data ?? []).map(async (account) => {
+    const { data, error } = await supabase.rpc("finance_account_balance", {
+      p_account_id: account.id,
+      p_as_of: new Date().toISOString().slice(0, 10),
+    });
+    if (error) throw new Error(error.message);
+    return {
+      id: account.id,
+      code: account.code,
+      name: account.name,
+      accountType: account.account_type,
+      subtype: account.account_subtype,
+      balance: Number(data ?? 0),
+    };
+  }));
 
-export function routeMatches(pathname: string, route: ErpRouteDefinition) {
-  if (
-    route.id === "academic-operations" &&
-    pathname.startsWith("/dashboard/academics/sessions/")
-  )
-    return true;
-  if (route.exact) return pathname === route.href;
-  return pathname === route.href || pathname.startsWith(`${route.href}/`);
-}
-
-export function getErpRoute(pathname: string) {
-  return (
-    erpRouteRegistry
-      .filter((route) => routeMatches(pathname, route))
-      .sort((a, b) => b.href.length - a.href.length)[0] ?? erpRouteRegistry[0]
-  );
+  return {
+    accounts,
+    payables: (payablesResult.data ?? []).map((row) => ({
+      id: row.id,
+      number: row.payable_no,
+      type: row.payable_type,
+      beneficiary: row.staff?.full_name ?? row.vendor?.name ?? "Other",
+      amount: Number(row.original_amount),
+      status: row.status,
+      dueOn: row.due_on,
+    })),
+    advances: (advancesResult.data ?? []).map((row) => ({
+      id: row.id,
+      number: row.advance_no,
+      beneficiary: row.staff?.full_name ?? row.vendor?.name ?? row.beneficiary_type,
+      purpose: row.purpose,
+      requestedAmount: Number(row.requested_amount),
+      balance: 0,
+      status: row.status,
+      expectedDate: row.expected_settlement_date,
+    })),
+    expenses: (expensesResult.data ?? []).map((row) => ({
+      id: row.id,
+      number: row.expense_no,
+      date: row.expense_date,
+      description: row.description,
+      amount: Number(row.amount),
+      status: row.status,
+    })),
+    compensation: (compensationResult.data ?? []).map((row) => ({
+      id: row.id,
+      runNo: row.run_no,
+      from: row.period_start,
+      to: row.period_end,
+      total: Number(row.total_amount),
+      status: row.status,
+    })),
+  };
 }
