@@ -4,7 +4,7 @@ A coaching academy operating system built with Next.js, TypeScript and Supabase/
 
 ## Current state
 
-`feature/refactor` is preparing V3. The repository still runs the V2 application and contains its migration chain. **V3 is documented but not implemented.** The existing linked database contains test data, which the owner has authorized resetting once the new baseline and verification path are ready. Do not treat a build or the new docs as proof that V3 is live.
+`feature/refactor` is the active V3 transition branch. The working tree now contains the first V3 operator slice, while the linked database and remaining migration chain are still V2. **Do not treat this branch as a completed V3 cutover.** The existing linked database contains test data, which the owner has authorized resetting once the new baseline and verification path are ready. Do not treat a build or the new docs as proof that V3 is live.
 
 Start with the [V3 documentation](docs/README.md): product and operator workflow, architecture/integrity, then delivery/database transition. The Google Drive [Product Constitution & Master Blueprint v1.1](https://docs.google.com/document/d/178UvETYjbLQchhWWSN1o5oSKTHOiWwSCmwReStbM7BI/edit) is a long-term reference; the repository V3 decisions set this phase's admin/teacher scope.
 
