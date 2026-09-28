@@ -12,6 +12,10 @@ export const createOfferingSchema = z.object({
   reason: z.string().trim().min(5, "Explain why this offering is being created.").max(500),
 });
 export type CreateOfferingInput = z.infer<typeof createOfferingSchema>;
+export const offeringFormSchema = createOfferingSchema.extend({ offeringId: id.optional(), requestId: id.optional() });
+export type OfferingFormInput = z.infer<typeof offeringFormSchema>;
+export const updateOfferingSchema = createOfferingSchema.extend({ offeringId: id, requestId: id });
+export type UpdateOfferingInput = z.infer<typeof updateOfferingSchema>;
 
 export const publishFeePlanSchema = z.object({
   offeringId: id,

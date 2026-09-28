@@ -57,6 +57,10 @@ Structural integrity is not configurable:
 - Long-running work becomes a tracked job.
 - Financial posting remains server-authoritative.
 
+### Register-first Programme Offering interaction
+
+Programme Offerings opens on a register table. Creation and edit forms, and lengthy website/application controls, open from explicit header and row actions. Draft academic context can be corrected before batches reference it; active context is pinned; retired records are read-only. Public settings remain separate from operational identity and Fee Plan publication. See `PROGRAMME_OFFERING_REGISTER_WORKFLOW.md`.
+
 ## 4. Programme Offering and Fee inheritance
 
 Programme, Programme Offering and Fee Plan are separate.
