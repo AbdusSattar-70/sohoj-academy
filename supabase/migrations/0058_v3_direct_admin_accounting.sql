@@ -45,7 +45,7 @@ declare
   policy public.business_rule_versions;
   preview jsonb;
   line jsonb;
-  teacher_id uuid;
+  v_teacher_id uuid;
   teacher_total numeric;
   decision text;
   adjustment_id uuid;
@@ -487,16 +487,18 @@ begin
       on conflict(run_id,source_type,source_id) do nothing;
     end loop;
 
-    for teacher_id in
-      select distinct teacher_id
+    for v_teacher_id in
+      select distinct l.teacher_id
+      from public.teacher_compensation_lines l
+      where l.run_id=compensation.id
       from public.teacher_compensation_lines
       where run_id=compensation.id
     loop
-      select coalesce(sum(amount),0)
+      select coalesce(sum(l.amount),0)
       into teacher_total
-      from public.teacher_compensation_lines
-      where run_id=compensation.id
-        and teacher_id=teacher_id;
+      from public.teacher_compensation_lines l
+      where l.run_id=compensation.id
+        and l.teacher_id=v_teacher_id;
 
       if teacher_total>0 then
         insert into public.finance_payables(
@@ -513,7 +515,7 @@ begin
         values(
           org,
           'TEACHER_COMPENSATION',
-          teacher_id,
+          v_teacher_id,
           'COMPENSATION_RUN',
           compensation.id::text||':'||teacher_id::text,
           (
