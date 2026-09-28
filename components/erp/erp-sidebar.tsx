@@ -15,6 +15,7 @@ import {
   UserRoundSearch,
   UsersRound,
   GraduationCap,
+  Calculator,
 } from "lucide-react";
 import Logo from "@/components/shared/logo";
 import { ErpAccount } from "@/components/erp/erp-account";
@@ -46,6 +47,7 @@ const icons: Record<ErpNavIcon, typeof LayoutDashboard> = {
   rules: ShieldCheck,
   settings: Settings2,
   teacher: GraduationCap,
+  accounting: Calculator,
 };
 
 function isActive(pathname: string, id: string) {
