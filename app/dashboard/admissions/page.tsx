@@ -6,19 +6,19 @@ import { getAdmissionWorkspace } from "@/modules/admissions/queries";
 import { AdmissionCommandForm } from "@/modules/admissions/components/command-form";
 import { PhysicalConsentForm } from "@/modules/admissions/components/physical-consent-form";
 import { ReferralForm } from "@/modules/admissions/components/referral-form";
-import { getAdmissionReferrals } from "@/modules/admissions/referrals";
 import { getConsentDocuments, getPhysicalConsentReceipts } from "@/modules/admissions/consent";
+import { getAdmissionReferrals } from "@/modules/admissions/referrals";
 import { StaffAdmissionIntakeForm } from "@/modules/admissions/components/staff-intake-form";
-import type { AdmissionCommand } from "@/modules/admissions/schema";
+
 const nextAction: Record<
   string,
-  { action: AdmissionCommand["action"]; label: string; description: string }
+  { action: "READY" | "ACCEPT" | "BILL" | "ACTIVATE"; label: string; description: string } | null
 > = {
   DRAFT: {
     action: "READY",
     label: "Mark Ready for Acceptance",
     description:
-      "Verify the student, guardian, academic placement and inherited charges. Receive the signed consent before accepting the admission.",
+      "Confirm the application is complete and verified. Referral source and signed paper consent are recorded next.",
   },
   READY: {
     action: "ACCEPT",
@@ -28,15 +28,15 @@ const nextAction: Record<
   },
   ACCEPTED: {
     action: "BILL",
-    label: "Post Initial Billing",
+    label: "Post Initial Bill",
     description:
-      "Post the first billing cycle plus one-time charges from the pinned Fee Plan. The unpaid amount remains receivable.",
+      "Creates the first invoice from the fee plan reviewed at acceptance. Money is recorded separately when received.",
   },
   BILLING_POSTED: {
     action: "ACTIVATE",
     label: "Evaluate Enrollment Activation",
     description:
-      "Apply the pinned payment policy and current batch capacity. Activation may be allowed with an outstanding balance.",
+      "Checks activation policy and batch capacity. An unpaid receivable can remain when the policy permits activation.",
   },
   PENDING_PAYMENT: {
     action: "ACTIVATE",
@@ -48,10 +48,10 @@ const nextAction: Record<
 export default async function AdmissionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ prospect?: string }>;
+  searchParams: Promise<{ prospect?: string; start?: string }>;
 }) {
   const context = await requirePermission("admissions.view");
-  const { prospect: prospectParam } = await searchParams;
+  const { prospect: prospectParam, start: startParam } = await searchParams;
   const [data, consentDocuments, physicalReceipts, referrals] = await Promise.all([getAdmissionWorkspace(), getConsentDocuments(), getPhysicalConsentReceipts(), getAdmissionReferrals()]);
   const manage = context.permissions.includes("admissions.create");
   const defaultProspectId =
@@ -61,6 +61,12 @@ export default async function AdmissionsPage({
   const preselected = defaultProspectId
     ? data.prospects.find((p) => p.id === defaultProspectId)
     : undefined;
+  const startMode =
+    startParam === "staff" || startParam === "enquiry"
+      ? startParam
+      : defaultProspectId
+        ? "enquiry"
+        : null;
   return (
     <div className="space-y-7">
       <PageHeader
@@ -78,36 +84,142 @@ export default async function AdmissionsPage({
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">Choose how to begin</p>
             <h2 className="mt-1 text-xl font-semibold">Start an admission</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Online entry creates an unconfirmed draft. A blank paper form must be entered by staff before a case exists. Review, signed consent, acceptance, billing, payment and enrollment are separate steps.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Pick a path below. The matching form opens on this page. Online
+              entry creates an unconfirmed draft. A blank paper form must be
+              entered by staff before a case exists.
+            </p>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl border bg-card p-4">
+            <Link
+              href="/dashboard/admissions?start=staff"
+              className={`rounded-xl border bg-card p-4 transition hover:border-primary/60 ${
+                startMode === "staff" ? "border-primary ring-2 ring-primary/20" : ""
+              }`}
+            >
               <p className="text-sm font-semibold">New applicant with staff assistance</p>
-              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">Enter the student and guardian details while they are with you. This creates the admission application and draft case directly; it does not create a CRM Enquiry.</p>
-              <a className="mt-3 inline-block text-sm font-medium underline" href="#new-applicant">Enter details online</a>
-            </div>
-            <div className="rounded-xl border bg-card p-4">
-              <p className="text-sm font-semibold">Already an Enquiry</p>
-              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">Continue a verified enquiry. Choose the intended offering and an available batch.</p>
-              <a className="mt-3 inline-block text-sm font-medium underline" href="#from-prospect">Continue an Enquiry</a>
-            </div>
-            <div className="rounded-xl border bg-card p-4">
+              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">
+                Enter the student and guardian details while they are with you.
+                Creates the admission application and draft case directly; does
+                not create a CRM Enquiry.
+              </p>
+              <span className="mt-3 inline-block text-sm font-medium text-primary underline">
+                {startMode === "staff" ? "Form open below" : "Open staff intake form"}
+              </span>
+            </Link>
+            <Link
+              href={
+                defaultProspectId
+                  ? `/dashboard/admissions?start=enquiry&prospect=${defaultProspectId}`
+                  : "/dashboard/admissions?start=enquiry"
+              }
+              className={`rounded-xl border bg-card p-4 transition hover:border-primary/60 ${
+                startMode === "enquiry" ? "border-primary ring-2 ring-primary/20" : ""
+              }`}
+            >
+              <p className="text-sm font-semibold">Already in Enquiries</p>
+              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">
+                Continue a verified enquiry. Choose the intended offering and an
+                available batch. Identity is inherited from the CRM record.
+              </p>
+              <span className="mt-3 inline-block text-sm font-medium text-primary underline">
+                {startMode === "enquiry" ? "Form open below" : "Open enquiry conversion form"}
+              </span>
+            </Link>
+            <Link
+              href="/dashboard/admissions/application-form"
+              className="rounded-xl border bg-card p-4 transition hover:border-primary/60"
+            >
               <p className="text-sm font-semibold">Paper application</p>
-              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">Print a blank A4 form for the student and guardian to complete and sign in person.</p>
-              <Link className="mt-3 inline-block text-sm font-medium underline" href="/dashboard/admissions/application-form">Print blank application</Link>
-            </div>
+              <p className="mt-1 min-h-10 text-xs leading-5 text-muted-foreground">
+                Print a blank A4 form for the student and guardian to complete
+                and sign in person.
+              </p>
+              <span className="mt-3 inline-block text-sm font-medium text-primary underline">
+                Print blank application
+              </span>
+            </Link>
           </div>
-          <details id="new-applicant" className="rounded-xl border bg-card p-4">
-            <summary className="cursor-pointer list-inside font-semibold">Enter a new applicant online</summary>
-            <div className="mt-4"><StaffAdmissionIntakeForm data={data} /></div>
-          </details>
-          <details id="from-prospect" open={Boolean(preselected)} className="rounded-xl border bg-card p-4">
-            <summary className="cursor-pointer list-inside font-semibold">Create a draft from an existing Enquiry</summary>
-            <div className="mt-4 space-y-3">
-              {preselected && <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">Starting from <strong>{preselected.number} · {preselected.name}</strong>. Confirm the correct offering and batch before creating the draft.</p>}
-              <AdmissionCommandForm action="CREATE" data={data} defaultProspectId={defaultProspectId} label="Create admission draft" description="Student and guardian identity are inherited from the Prospect. The selected offering and batch are revalidated before the draft is created." />
+
+          {startMode === "staff" && (
+            <div
+              id="new-applicant"
+              className="scroll-mt-24 space-y-3 rounded-xl border border-primary/30 bg-card p-4 sm:p-5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                    Staff intake
+                  </p>
+                  <h3 className="mt-1 text-lg font-semibold">Enter a new applicant online</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Complete the form below. On success you are taken to the
+                    admission case workbench.
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/admissions"
+                  className="rounded-lg border px-3 py-1.5 text-sm font-medium"
+                >
+                  Close form
+                </Link>
+              </div>
+              <StaffAdmissionIntakeForm data={data} />
             </div>
-          </details>
+          )}
+
+          {startMode === "enquiry" && (
+            <div
+              id="from-prospect"
+              className="scroll-mt-24 space-y-3 rounded-xl border border-primary/30 bg-card p-4 sm:p-5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                    Enquiry conversion
+                  </p>
+                  <h3 className="mt-1 text-lg font-semibold">
+                    Create a draft from an existing Enquiry
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Select the Prospect, programme offering and batch. The case
+                    opens after the draft is created.
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/admissions"
+                  className="rounded-lg border px-3 py-1.5 text-sm font-medium"
+                >
+                  Close form
+                </Link>
+              </div>
+              {preselected && (
+                <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">
+                  Starting from <strong>{preselected.number} · {preselected.name}</strong>.
+                  Confirm the correct offering and batch before creating the draft.
+                </p>
+              )}
+              {!data.prospects.length && (
+                <p className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+                  No open enquiries are available. Use staff intake for a new
+                  applicant, or continue work in CRM first.
+                </p>
+              )}
+              <AdmissionCommandForm
+                action="CREATE"
+                data={data}
+                defaultProspectId={defaultProspectId}
+                label="Create admission draft"
+                description="Student and guardian identity are inherited from the Prospect. The selected offering and batch are revalidated before the draft is created."
+              />
+            </div>
+          )}
+
+          {!startMode && (
+            <p className="text-sm text-muted-foreground">
+              Select a card above to open the matching form on this page.
+            </p>
+          )}
         </section>
       )}
       <section id="case-register" className="space-y-4">
@@ -118,119 +230,84 @@ export default async function AdmissionsPage({
         {data.cases.length === 0 && <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">No admission cases yet. Start from a new applicant or continue an existing Enquiry above.</p>}
       </section>
       {data.cases.map((a) => {
-        const next = nextAction[a.status];
-        const batch = data.batches.find((item) => item.id === a.batchId);
-        const signedForms = consentDocuments.filter((item) => item.admission_id === a.id);
+        const next = nextAction[a.status] ?? null;
+        const consentDocumentsForCase = consentDocuments.filter((item) => item.admission_id === a.id);
+        const signedForms = consentDocumentsForCase;
         const paperReceipts = physicalReceipts.filter((item) => item.admission_id === a.id);
         const hasConsent = signedForms.length > 0 || paperReceipts.length > 0;
         const referral = referrals.choices.find((item) => item.admission_id === a.id);
-        const referralReady = !!referral;
-        const isVerified = a.status !== "DRAFT" && a.status !== "CANCELLED";
+        const referralReady = Boolean(referral);
+        const isVerified = a.status !== "DRAFT";
         const canAccept = isVerified && hasConsent && referralReady && a.status === "READY";
-        const total = a.components.reduce((sum, component) => sum + component.amount, 0);
+        const batch = data.batches.find((item) => item.id === a.batchId);
         const preAcceptance = ["DRAFT", "READY"].includes(a.status);
-        const accepted = ["ACCEPTED", "BILLING_POSTED", "PENDING_PAYMENT", "ACTIVE_ENROLLMENT"].includes(a.status);
-        const billed = ["BILLING_POSTED", "PENDING_PAYMENT", "ACTIVE_ENROLLMENT"].includes(a.status);
         const requiredRecordsComplete = referralReady && hasConsent;
-        const canContinueFinance = requiredRecordsComplete && accepted;
-        const steps = [
-          { title: "Verify application", done: isVerified, active: a.status === "DRAFT" },
-          { title: "Record referral", done: isVerified && referralReady, active: isVerified && !referralReady },
-          { title: "File paper consent", done: isVerified && referralReady && hasConsent, active: isVerified && referralReady && !hasConsent },
-          { title: "Accept admission", done: accepted && requiredRecordsComplete, active: a.status === "READY" && canAccept },
-          { title: "Post initial bill", done: billed && requiredRecordsComplete, active: a.status === "ACCEPTED" && canContinueFinance },
-          { title: "Activate enrollment", done: a.status === "ACTIVE_ENROLLMENT" && requiredRecordsComplete, active: ["BILLING_POSTED", "PENDING_PAYMENT"].includes(a.status) && canContinueFinance },
-        ];
         return (
-          <article key={a.id} id={a.id} className="rounded-2xl border bg-card p-4 sm:p-6">
-            <header className="flex flex-wrap items-start justify-between gap-4">
+          <article key={a.id} className="rounded-2xl border bg-card p-5 sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Admission case</p>
-                <h2 className="mt-1 text-lg font-semibold">{a.number} · {a.name}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {batch?.name ?? "Batch unavailable"} · {a.studentId ? (
-                    <Link className="underline" href={`/dashboard/students/${a.studentId}`}>{a.studentNo}{a.existingStudent ? " · Existing student" : ""}</Link>
-                  ) : "Student ID issued on acceptance"}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <StatusBadge value={a.status} />
-                <Link href={`/dashboard/admissions/${a.id}`} className="rounded-lg border px-3 py-2 text-sm font-medium underline-offset-2 hover:underline print:hidden">Open case</Link>
-                <Link href={`/dashboard/admissions/${a.id}/print`} className="rounded-lg border px-3 py-2 text-sm font-medium underline-offset-2 hover:underline print:hidden">
-                  Print application &amp; consent
-                </Link>
-              </div>
-            </header>
-
-            <ol aria-label="Admission progress" className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {steps.map((step, index) => (
-                <li key={step.title} className={`flex items-center gap-3 rounded-lg border p-3 text-sm ${step.active ? "border-primary bg-primary/5 font-medium" : step.done ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900" : "text-muted-foreground"}`}>
-                  <span className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${step.done ? "bg-emerald-600 text-white" : step.active ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{step.done ? "✓" : index + 1}</span>
-                  <span>{step.title}</span>
-                </li>
-              ))}
-            </ol>
-
-            {preAcceptance && (
-              <div className="mt-5 space-y-4">
-                <div className="rounded-xl border bg-muted/20 p-4">
-                  <h3 className="font-semibold">{a.status === "DRAFT" ? "Review this application" : "Admission review"}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Confirm the student, guardian, programme placement and published fee plan. Keep the guardian-signed paper in the physical student file. Referral and consent must be recorded before you accept.
-                  </p>
-                  <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                    <p><span className="text-muted-foreground">Guardian:</span> {a.guardian} · {a.mobile}</p>
-                    <p><span className="text-muted-foreground">Placement:</span> {batch?.offeringName ?? "Programme"} · {batch?.name ?? "Batch unavailable"}</p>
-                    <p><span className="text-muted-foreground">Fee plan:</span> Version {a.feeVersion} · initial charges BDT {total.toFixed(2)}</p>
-                    <p><span className="text-muted-foreground">Referral:</span> {referral ? referral.source === "ORGANIC" ? "Organic" : referrals.people.find((person) => person.id === referral.referrer_id)?.full_name ?? "Referred person" : "Not recorded"}</p>
-                  </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-lg font-semibold">{a.number}</h3>
+                  <StatusBadge value={a.status} />
                 </div>
-                {a.status === "READY" && !referralReady && manage && <ReferralForm admissionId={a.id} people={referrals} choice={referral} />}
-                {a.status === "READY" && referralReady && (
-                  <section className="rounded-xl border p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold">3. Signed paper consent</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{hasConsent ? "Receipt recorded. Keep the original in the student file." : "Print the form, have the guardian review and sign it, then confirm receipt here."}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{a.name} · {a.offeringName} · {a.batchName}</p>
+                {a.studentId && (
+                  <p className="mt-1 text-sm">
+                    Student{" "}
+                    <Link className="underline" href={`/dashboard/students/${a.studentId}`}>{a.studentNo}{a.existingStudent ? " · Existing student" : ""}</Link>
+                  </p>
+                )}
+              </div>
+              <Link href={`/dashboard/admissions/${a.id}`} className="rounded-lg border px-3 py-2 text-sm font-medium">
+                Open case workbench
+              </Link>
+            </div>
+            {preAcceptance && manage && (
+              <div className="mt-5 space-y-4">
+                <section className="rounded-xl border bg-muted/20 p-4">
+                  <h3 className="font-semibold">
+                    {a.status === "DRAFT"
+                      ? "Verify application"
+                      : !referralReady
+                        ? "Record referral"
+                        : !hasConsent
+                          ? "File paper consent"
+                          : "Ready for acceptance"}
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {a.status === "DRAFT"
+                      ? "Confirm identity, placement and fee terms. Mark ready only when verification is complete."
+                      : !referralReady
+                        ? "Choose the verified referrer or Organic before acceptance."
+                        : !hasConsent
+                          ? "Record that the signed paper consent is on file."
+                          : "Review once more, then accept to issue the permanent Student ID."}
+                  </p>
+                  {a.status === "DRAFT" && (
+                    <div className="mt-3">
+                      <AdmissionCommandForm action="EDIT_DRAFT" admissionId={a.id} data={data} identity={a} label="Save corrected details" description="Use the guardian-confirmed information from the application." />
                     </div>
-                    {!hasConsent && <Link className="text-sm font-medium underline" href={`/dashboard/admissions/${a.id}/print`}>Print form</Link>}
-                  </div>
-                  {paperReceipts.length > 0 && <ul className="mt-3 space-y-1 text-sm">{paperReceipts.map((receipt) => (
-                    <li key={receipt.id}>Paper copy received · guardian signed {receipt.guardian_signed_on}{receipt.student_signed ? " · student also signed" : ""}{receipt.physical_copy_reference ? ` · Filed: ${receipt.physical_copy_reference}` : ""}</li>
-                  ))}</ul>}
-                  {signedForms.length > 0 && <p className="mt-3 text-sm">Legacy digital consent record exists ({signedForms.map((item) => `v${item.version}`).join(", ")}).</p>}
-                  {!hasConsent && manage && <div className="mt-4"><PhysicalConsentForm admissionId={a.id} /></div>}
-                  </section>
-                )}
-                {manage && !a.existingStudent && (
-                  <details className="rounded-xl border p-4 print:hidden">
-                    <summary className="cursor-pointer font-medium">Correct student or guardian details</summary>
-                    <p className="mt-2 text-sm text-muted-foreground">Corrections return the case to Draft and remain in its audit history.</p>
-                    <div className="mt-3"><AdmissionCommandForm action="EDIT_DRAFT" admissionId={a.id} data={data} identity={a} label="Save corrected details" description="Use the guardian-confirmed information from the application." /></div>
-                  </details>
-                )}
-                {manage && a.status === "DRAFT" && (
-                  <AdmissionCommandForm
-                    key={`${a.id}-READY`}
-                    action="READY"
-                    admissionId={a.id}
-                    data={data}
-                    label="Complete verification"
-                    description="Move this application to the acceptance review queue after checking identity, placement and fees. Referral and signed paper consent are checked before final acceptance."
-                  />
-                )}
-                {a.status === "READY" && (
-                  <section className="rounded-xl border-2 border-primary/20 bg-primary/[0.03] p-4">
-                    <h3 className="font-semibold">Ready for acceptance</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {canAccept ? "The referral source and signed consent are recorded. Review the case once more, then accept to issue the permanent Student ID." : `Still needed: ${[!referralReady && "record the admission source", !hasConsent && "confirm the guardian-signed paper form"].filter(Boolean).join(" and ")}.`}
-                    </p>
-                    {manage && canAccept && next && <div className="mt-4"><AdmissionCommandForm key={`${a.id}-ACCEPT`} {...next} admissionId={a.id} data={data} /></div>}
-                  </section>
-                )}
+                  )}
+                  {a.status === "DRAFT" && next && (
+                    <AdmissionCommandForm
+                      key={`${a.id}-READY`}
+                      action="READY"
+                      admissionId={a.id}
+                      data={data}
+                      label={next.label}
+                      description={next.description}
+                    />
+                  )}
+                  {a.status === "READY" && !referralReady && (
+                    <div className="mt-4"><ReferralForm admissionId={a.id} people={referrals} choice={referral} /></div>
+                  )}
+                  {a.status === "READY" && referralReady && !hasConsent && (
+                    <div className="mt-4"><PhysicalConsentForm admissionId={a.id} /></div>
+                  )}
+                  {manage && canAccept && next && <div className="mt-4"><AdmissionCommandForm key={`${a.id}-ACCEPT`} {...next} admissionId={a.id} data={data} /></div>}
+                </section>
               </div>
             )}
-
             {!preAcceptance && a.status !== "CANCELLED" && (
               <div className="mt-5 space-y-4">
                 <section className="rounded-xl border bg-muted/20 p-4">
@@ -249,27 +326,15 @@ export default async function AdmissionsPage({
                   <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
                     <p><span className="text-muted-foreground">Guardian:</span> {a.guardian} · {a.mobile}</p>
                     <p><span className="text-muted-foreground">Fee plan:</span> Version {a.feeVersion}</p>
-                    <p><span className="text-muted-foreground">Activation policy:</span> {a.policyVersion ? `Version ${a.policyVersion} · ${a.paymentRequirement?.replaceAll("_", " ")}` : "Pinned at acceptance"}</p>
-                    <p><span className="text-muted-foreground">Initial charge total:</span> BDT {total.toFixed(2)}</p>
-                  </div>
-                  {a.invoice && <div className="mt-3 border-t pt-3 text-sm">
-                    <p>{a.invoice.number} · Paid BDT {a.invoice.paid.toFixed(2)} · Outstanding BDT {a.invoice.due.toFixed(2)}</p>
-                    {!!a.receipts.length && <ul className="mt-2 space-y-1">{a.receipts.map((receipt) => <li key={receipt.number}>{receipt.number} · BDT {receipt.amount.toFixed(2)} received · {receipt.method}</li>)}</ul>}
+                    {batch && <p><span className="text-muted-foreground">Seats:</span> {batch.occupied}/{batch.capacity}</p>}
                     <Link href="/dashboard/finance/billing" className="mt-2 inline-block underline">Manage billing, discounts, refunds and receipts</Link>
-                  </div>}
+                  </div>
                 </details>
               </div>
             )}
-
-            {a.status === "CANCELLED" && <p className="mt-4 rounded-xl border p-4 text-sm text-muted-foreground">This case is cancelled and retained in the admission history.</p>}
           </article>
         );
       })}
-      {!data.cases.length && (
-        <p className="rounded-xl border border-dashed p-6 text-sm">
-          No admission cases yet. Start with a new applicant or continue a verified Enquiry above. Confirm that the programme has a published Fee Plan and an available batch.
-        </p>
-      )}
     </div>
   );
 }
