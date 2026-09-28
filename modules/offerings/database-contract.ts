@@ -54,6 +54,13 @@ type Group = {
 type OfferingSubject = {
   offering_id: string; subject_id: string; sort_order: number;
 };
+type PublicVersion = {
+  id: string; offering_id: string; version: number;
+  status: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "RETIRED";
+  content: Json; change_reason: string; created_by: string; created_at: string;
+  submitted_by: string | null; submitted_at: string | null;
+  published_by: string | null; published_at: string | null;
+};
 
 type ExtendedDatabase = Omit<Database, "public"> & {
   public: Omit<Database["public"], "Tables" | "Functions"> & {
@@ -63,6 +70,7 @@ type ExtendedDatabase = Omit<Database, "public"> & {
       fee_plan_versions: ReadonlyTable<Plan>;
       fee_plan_components: ReadonlyTable<Component>;
       programme_offering_subjects: ReadonlyTable<OfferingSubject>;
+      programme_offering_public_versions: ReadonlyTable<PublicVersion>;
     };
     Functions: Database["public"]["Functions"] & {
       create_programme_offering: { Args: { p_input: Json }; Returns: Json };

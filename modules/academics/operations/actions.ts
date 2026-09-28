@@ -1,6 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
-import { getErpContext } from "@/modules/platform/auth/erp-context";
+import { runCommandAction, revalidateDashboard } from "@/modules/platform/command-action";
 import { academicClient } from "./queries";
 import {
   academicCommandSchema,
@@ -8,56 +7,47 @@ import {
   type AcademicCommand,
   type ClassLogCommand,
 } from "./schema";
+
+/** Routes affected by academic command mutations. */
+export const ACADEMIC_COMMAND_PATHS = [
+  "/dashboard/academics/operations",
+  "/dashboard/governance/approvals",
+  "/dashboard/governance/audit",
+  "/dashboard/action-center",
+  "/dashboard",
+  "/dashboard/teacher",
+] as const;
+
+/** Routes affected by class-log mutations. */
+export const CLASS_LOG_PATHS = [
+  "/dashboard/teacher",
+  "/dashboard/academics/operations",
+  "/dashboard/action-center",
+] as const;
+
 export async function runAcademicCommand(input: AcademicCommand) {
-  const parsed = academicCommandSchema.safeParse(input);
-  if (!parsed.success)
-    return { ok: false, message: parsed.error.issues[0].message };
-  const context = await getErpContext();
-  if (!context?.permissions.includes("academics.view"))
-    return { ok: false, message: "Academic access required." };
-  const db = await academicClient();
-  const { data, error } = await db.rpc("academic_command", {
-    p_input: parsed.data,
+  return runCommandAction<AcademicCommand, { message: string }>({
+    schema: academicCommandSchema,
+    input,
+    client: academicClient,
+    rpc: "academic_command",
+    permission: "academics.view",
+    revalidate: [...ACADEMIC_COMMAND_PATHS],
+    revalidateExtra: () =>
+      revalidateDashboard("/dashboard/academics/sessions/[sessionId]"),
   });
-  if (error) return { ok: false, message: error.message };
-  for (const path of [
-    "/dashboard/academics/operations",
-    "/dashboard/governance/approvals",
-    "/dashboard/governance/audit",
-    "/dashboard/action-center",
-    "/dashboard",
-    "/dashboard/teacher",
-  ])
-    revalidatePath(path);
-  revalidatePath("/dashboard/academics/sessions/[sessionId]", "page");
-  const result = data as { id?: string; message: string };
-  return { ok: true, message: result.message };
 }
 
 export async function runClassLogCommand(input: ClassLogCommand) {
-  const parsed = classLogCommandSchema.safeParse(input);
-  if (!parsed.success)
-    return {
-      ok: false,
-      message: parsed.error.issues[0]?.message ?? "Check the class log.",
-    };
-  const context = await getErpContext();
-  if (
-    !context?.permissions.includes("academics.attendance.record") &&
-    !context?.permissions.includes("academics.sessions.manage")
-  )
-    return { ok: false, message: "Class-log permission required." };
-  const db = await academicClient();
-  const { data, error } = await db.rpc("class_log_command", {
-    p_input: parsed.data as import("@/types/database").Json,
+  return runCommandAction<ClassLogCommand, { message: string }>({
+    schema: classLogCommandSchema,
+    input,
+    client: academicClient,
+    rpc: "class_log_command",
+    permission: ["academics.attendance.record", "academics.sessions.manage"],
+    revalidate: [...CLASS_LOG_PATHS],
+    emptyMessage: "Class-log command returned no response.",
+    revalidateExtra: () =>
+      revalidateDashboard("/dashboard/academics/sessions/[sessionId]"),
   });
-  if (error) return { ok: false, message: error.message };
-  for (const path of [
-    "/dashboard/teacher",
-    "/dashboard/academics/operations",
-    "/dashboard/action-center",
-  ])
-    revalidatePath(path);
-  revalidatePath("/dashboard/academics/sessions/[sessionId]", "page");
-  return { ok: true, message: (data as { message: string }).message };
 }

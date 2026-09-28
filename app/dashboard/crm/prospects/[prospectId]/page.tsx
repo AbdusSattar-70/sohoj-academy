@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { ProspectFollowupForm } from "@/modules/crm/components/prospect-followup-form";
 import { AdmissionRequirementReview } from "@/modules/crm/components/admission-requirement-review";
+import { ApplicantCorrectionReview } from "@/modules/crm/components/applicant-correction-review";
 import { getProspectDetail } from "@/modules/crm/queries";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { can } from "@/types/erp";
@@ -190,6 +191,8 @@ export default async function ProspectDetailPage({
               </dl>
               {can(context, "crm.followups.manage") && prospect.status !== "CONVERTED" ?
                 <AdmissionRequirementReview applicationId={prospect.application.id} prospectId={prospect.id} reviews={prospect.application.reviews} /> : null}
+              {can(context, "crm.prospects.manage") || can(context, "admissions.manage") ?
+                <ApplicantCorrectionReview prospectId={prospect.id} corrections={prospect.application.corrections} /> : null}
             </section>
           ) : null}
 

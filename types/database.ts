@@ -6,6 +6,29 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type ManageCrmMasterRecordArgs = {
+  entity: string
+  id: string | null
+  code: string | null
+  name: string | null
+  description: string | null
+  sort_order: number
+  starts_on: string | null
+  ends_on: string | null
+  area_id: string | null
+  is_active: boolean
+  is_verified: boolean
+  reason: string
+}
+
+export type ReviewAdmissionRequirementArgs = {
+  application_id: string
+  requirement_label: string
+  status: "PENDING" | "VERIFIED" | "FOLLOW_UP"
+  note: string
+  expected_revision: number
+}
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -1869,6 +1892,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      manage_crm_master_record: {
+        Args: { p_input: ManageCrmMasterRecordArgs }
+        Returns: { id?: string | null; action?: string | null }[]
+      }
       my_erp_context: { Args: never; Returns: Json }
       publish_business_rule_version: {
         Args: {
@@ -1889,6 +1916,15 @@ export type Database = {
         Returns: Json
       }
       record_prospect_followup: { Args: { p_input: Json }; Returns: Json }
+      review_admission_requirement: {
+        Args: { p_input: ReviewAdmissionRequirementArgs }
+        Returns: Json
+      }
+      submit_applicant_correction: { Args: { p_payload: Json }; Returns: Json }
+      review_applicant_correction: { Args: { p_input: Json }; Returns: Json }
+      create_programme_offering_public_version: { Args: { p_input: Json }; Returns: Json }
+      submit_programme_offering_public_version: { Args: { p_input: Json }; Returns: Json }
+      publish_programme_offering_public_version: { Args: { p_input: Json }; Returns: Json }
       set_role_permissions: {
         Args: {
           p_permission_codes: string[]

@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { OfferingForm } from "@/modules/offerings/components/offering-form";
 import { PublicControlsForm } from "@/modules/offerings/components/public-controls-form";
+import { PublicVersionWorkflow } from "@/modules/offerings/components/public-version-workflow";
 import { getOfferingOverview } from "@/modules/offerings/queries";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { can } from "@/types/erp";
@@ -112,15 +113,17 @@ export default async function ProgrammeOfferingsPage() {
           </div>
           <div className="mt-5 space-y-6">
             {data.offerings.map((offering) => (
-              <PublicControlsForm
-                key={offering.id}
-                offering={offering}
-                subjects={data.subjects}
-                linkedSubjectIds={data.offeringSubjects
+              <div key={offering.id}>
+                <PublicControlsForm
+                  offering={offering}
+                  subjects={data.subjects}
+                  linkedSubjectIds={data.offeringSubjects
                   .filter((row) => row.offering_id === offering.id)
                   .sort((a, b) => a.sort_order - b.sort_order)
-                  .map((row) => row.subject_id)}
-              />
+                    .map((row) => row.subject_id)}
+                />
+                <PublicVersionWorkflow offering={offering} versions={data.publicVersions} />
+              </div>
             ))}
           </div>
         </section>

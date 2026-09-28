@@ -87,6 +87,13 @@ export const updateOfferingPublicControlsSchema = z.object({
 });
 export type UpdateOfferingPublicControlsInput = z.infer<typeof updateOfferingPublicControlsSchema>;
 
+export const publicContentVersionSchema = z.object({
+  offeringId: id,
+  reason: z.string().trim().min(5).max(500),
+  content: updateOfferingPublicControlsSchema.omit({ offeringId: true, reason: true }),
+});
+export type PublicContentVersionInput = z.infer<typeof publicContentVersionSchema>;
+
 /** @deprecated Use updateOfferingPublicControlsSchema — kept so old showcase-form.tsx can be deleted safely. */
 export const updateOfferingShowcaseSchema = updateOfferingPublicControlsSchema;
 /** @deprecated Use UpdateOfferingPublicControlsInput */

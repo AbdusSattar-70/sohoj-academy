@@ -32,14 +32,8 @@ export async function manageCrmMasterRecord(
 
   const value = parsed.data;
   const supabase = await createClient();
-  const rpcClient = supabase as unknown as {
-    rpc: (
-      fn: "manage_crm_master_record",
-      args: { p_input: Record<string, unknown> },
-    ) => Promise<{ data: unknown; error: { message: string } | null }>;
-  };
 
-  const { data, error } = await rpcClient.rpc("manage_crm_master_record", {
+  const { data, error } = await supabase.rpc("manage_crm_master_record", {
     p_input: {
       entity: value.entity,
       id: value.id || null,
@@ -57,7 +51,7 @@ export async function manageCrmMasterRecord(
   });
 
   if (error) return { ok: false, error: error.message };
-  const result = data as { id?: string; action?: string } | null;
+  const result = (data?.[0] ?? null) as { id?: string; action?: string } | null;
   if (!result?.id) return { ok: false, error: "Master-data change returned no identity." };
 
   revalidatePath("/dashboard/crm/manage");

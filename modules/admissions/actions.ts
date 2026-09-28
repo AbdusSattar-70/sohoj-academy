@@ -8,12 +8,14 @@ export async function runAdmissionCommand(
   input: AdmissionCommand,
 ): Promise<{ ok: boolean; message: string; field?: string }> {
   const parsed = commandSchema.safeParse(input);
-  if (!parsed.success)
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
     return {
       ok: false,
-      message: parsed.error.issues[0].message,
-      field: parsed.error.issues[0].path[0]?.toString(),
+      message: issue?.message ?? "Please check the admission details.",
+      field: issue?.path?.[0]?.toString(),
     };
+  }
   const v = parsed.data;
   const context = await getErpContext();
   const permission =
@@ -57,7 +59,7 @@ export async function runAdmissionCommand(
     { p_input: payload },
   );
   if (error) return { ok: false, message: error.message };
-  const result = data as { status?: string; receipt_no?: string };
+  const result = (data ?? null) as { status?: string; receipt_no?: string } | null;
   for (const path of [
     "/dashboard/admissions",
     "/dashboard/finance/billing",
@@ -70,8 +72,10 @@ export async function runAdmissionCommand(
     revalidatePath(path);
   return {
     ok: true,
-    message: result.receipt_no
+    message: result?.receipt_no
       ? `Payment posted. Receipt ${result.receipt_no}.`
-      : `Saved: ${(result.status ?? "completed").replaceAll("_", " ")}.`,
+      : result
+        ? `Saved: ${(result.status ?? "completed").replaceAll("_", " ")}.`
+        : "Saved.",
   };
 }

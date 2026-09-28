@@ -188,7 +188,9 @@ export function TeacherWorkspace({
         >
           Your sign-in is active, but no Staff identity is linked to this profile.
           Session assignment uses the Staff record (not only the TEACHER role).
-          Ask an administrator to link your profile under People → Staff.
+          Staff records link automatically when your confirmed sign-in email matches
+          the email on exactly one active Staff record. Ask an administrator to check
+          the email under People → Staff.
         </div>
       )}
 
