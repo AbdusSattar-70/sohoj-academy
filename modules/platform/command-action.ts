@@ -39,7 +39,10 @@ export type RunCommandActionOptions<TInput, TSuccess> = {
   input: TInput;
   client: () => Promise<SupabaseClient<never> | RpcClient>;
   rpc: string;
-  permission: string | string[];
+  permission:
+    | string
+    | string[]
+    | ((input: TInput) => string | string[]);
   revalidate: string[];
   revalidateType?: "page" | "layout";
   /** Additional revalidation for non-dynamic routes, e.g. revalidateDashboard(...). */
@@ -69,9 +72,13 @@ export async function runCommandAction<TInput, TSuccess = Record<string, never>>
   }
 
   const context = await getErpContext();
-  const required = Array.isArray(options.permission)
-    ? options.permission
-    : [options.permission];
+  const resolvedPermission =
+    typeof options.permission === "function"
+      ? options.permission(parsed.data as TInput)
+      : options.permission;
+  const required = Array.isArray(resolvedPermission)
+    ? resolvedPermission
+    : [resolvedPermission];
   const granted = required.some((p) => context?.permissions.includes(p));
   if (!granted)
     return { ok: false, message: "You do not have permission for this action." };
