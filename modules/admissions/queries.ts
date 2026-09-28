@@ -10,6 +10,7 @@ type AdmissionDatabase = Database & {
       admission_command: { Args: { p_input: Json }; Returns: Json };
       batch_command: { Args: { p_input: Json }; Returns: Json };
       post_admission_payment: { Args: { p_input: Json }; Returns: Json };
+      admission_case_detail: { Args: { p_admission_id: string }; Returns: Json };
     };
   };
 };
