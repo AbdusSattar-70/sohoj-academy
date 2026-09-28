@@ -23,8 +23,8 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="Control Center"
-        title="Settings"
+        eyebrow="Academy Setup"
+        title="Access & Security"
         description="Operational behavior belongs here—not in hard-coded UI logic. Policies are versioned, access is permission-based, and every sensitive change requires a reason and audit trail."
       />
 
