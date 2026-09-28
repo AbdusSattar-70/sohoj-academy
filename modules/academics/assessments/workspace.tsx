@@ -78,7 +78,11 @@ function AssessmentCard({ item:a, actorId, canRecord, canReview, pending, run, f
   const official = a.submissions.find((r) => r.status==="APPROVED");
   const latest = a.submissions[0];
   const [reviewNote, setReviewNote] = useState("");
-  return <article className="space-y-4 rounded-2xl border bg-card p-5">
+  return <article
+    id={"assessment-" + a.id}
+    tabIndex={a.id === focusAssessmentId ? -1 : undefined}
+    className="scroll-mt-24 space-y-4 rounded-2xl border bg-card p-5"
+  >
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-semibold">{a.title}</h3><p className="text-sm text-muted-foreground">{a.batch} · {a.subject} · {a.date} · maximum {a.maxMarks} marks</p></div><span className="rounded-full border px-3 py-1 text-xs font-semibold">{a.status}</span></div>
     {a.status==="DRAFT" && canRecord && a.authorId===actorId && <button type="button" className={buttonClass} disabled={pending} onClick={() => run({ action:"PUBLISH",request_id:crypto.randomUUID(),assessment_id:a.id })}>Publish assessment</button>}
     {a.status==="PUBLISHED" && <>
