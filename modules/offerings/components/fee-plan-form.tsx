@@ -6,12 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
-import { publishFeePlan } from "@/modules/offerings/actions";
-import { publishFeePlanSchema, type PublishFeePlanInput } from "@/modules/offerings/schema";
+import { saveFeePlan } from "@/modules/offerings/actions";
+import { saveFeePlanSchema, type SaveFeePlanInput } from "@/modules/offerings/schema";
 import type { OfferingOverview } from "@/modules/offerings/queries";
 
 const controlClass = "min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring/30 aria-[invalid=true]:border-destructive";
-const initialComponent: PublishFeePlanInput["components"][number] = {
+const initialComponent: SaveFeePlanInput["components"][number] = {
   code: "TUITION", name: "Tuition", amount: 0, chargeType: "TUITION", recurrence: "PER_CYCLE",
 };
 
@@ -53,7 +53,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
   const submit = handleSubmit((input) => {
     setMessage(null);
     startTransition(async () => {
-      const result = await publishFeePlan(input);
+      const result = await saveFeePlan(input);
       if (!result.ok) {
         if (result.field) setError(result.field as FieldPath<PublishFeePlanInput>, { message: result.error });
         setMessage({ ok: false, text: result.error });
@@ -86,7 +86,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         {cycle === "MONTHLY" && <ErpFormField id="fee-due-day" label="Monthly Due Day" required hint="Use a day from 1 to 28 to avoid missing dates in shorter months." error={errors.dueDay?.message}>
           {({ id, describedBy, invalid }) => <input id={id} type="number" min={1} max={28} aria-describedby={describedBy} aria-invalid={invalid} className={controlClass} {...register("dueDay", { setValueAs: (value: string) => value === "" ? null : Number(value) })} />}
         </ErpFormField>}
-        <ErpFormField id="fee-effective" label="Effective Date" required hint="Publication starts today. Future scheduling is a later controlled workflow." error={errors.effectiveFrom?.message}>
+        <ErpFormField id="fee-effective" label="Effective Date" required hint="Changes take effect today. Future scheduling is intentionally not part of this workflow." error={errors.effectiveFrom?.message}>
           {({ id, describedBy, invalid }) => <input id={id} type="date" min={today} max={today} aria-describedby={describedBy} aria-invalid={invalid} className={controlClass} {...register("effectiveFrom")} />}
         </ErpFormField>
       </div>
@@ -122,7 +122,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         <Button type="button" variant="outline" onClick={() => append({ code: "", name: "", amount: 0, chargeType: "OTHER", recurrence: "ONE_TIME" })}>Add Component</Button>
       </fieldset>
 
-      <ErpFormField id="fee-reason" label="Publication Reason" required hint="This explanation is recorded with the new version and audit event." error={errors.reason?.message}>
+      <ErpFormField id="fee-reason" label="Reason for change" required hint="This explanation is recorded with the save and audit event." error={errors.reason?.message}>
         {({ id, describedBy, invalid }) => <textarea id={id} rows={2} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} py-3`} {...register("reason")} />}
       </ErpFormField>
       <div className="flex flex-wrap items-center gap-4">
