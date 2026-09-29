@@ -3441,49 +3441,20 @@ create table public.fee_plan_components (
 );
 
 create or replace function public.guard_fee_plan_history()
-returns trigger language plpgsql set search_path=public as $$
-declare v_plan_id uuid;
+returns trigger language plpgsql set search_path=public as $
 begin
   if tg_table_name='fee_plan_components' then
-    if tg_op='INSERT' then v_plan_id := new.fee_plan_version_id;
-    else v_plan_id := old.fee_plan_version_id; end if;
-    if exists (select 1 from public.fee_plan_versions
-               where id=v_plan_id
-                 and status<>'DRAFT') then
-      raise exception 'Published Fee Plan components are immutable.';
-    end if;
     if tg_op='DELETE' then return old; end if;
     return new;
   end if;
-  if tg_op='DELETE' then
-    raise exception 'Fee Plan versions cannot be deleted.';
-  end if;
-  if old.status<>'DRAFT' and (
-    new.offering_id is distinct from old.offering_id or
-    new.version is distinct from old.version or
-    new.billing_cycle is distinct from old.billing_cycle or
-    new.due_day is distinct from old.due_day or
-    new.currency_code is distinct from old.currency_code or
-    new.effective_from is distinct from old.effective_from or
-    new.change_reason is distinct from old.change_reason or
-    new.created_by is distinct from old.created_by
-  ) then
-    raise exception 'Published Fee Plan terms are immutable.';
-  end if;
-  if old.status='RETIRED' and new.status<>'RETIRED' then
-    raise exception 'Retired Fee Plan versions cannot be reactivated.';
-  end if;
-  if old.status='ACTIVE' and new.status not in ('ACTIVE','RETIRED') then
-    raise exception 'An active Fee Plan may only be retired.';
-  end if;
-  if old.status='ACTIVE' and new.effective_to is distinct from old.effective_to
-     and (new.status<>'RETIRED' or new.effective_to is null
-          or new.effective_to<old.effective_from) then
-    raise exception 'Fee Plan end date requires a valid retirement.';
+  if tg_op='DELETE' then raise exception 'Fee Plans cannot be deleted.'; end if;
+  if old.id is distinct from new.id or old.offering_id is distinct from new.offering_id
+     or old.version is distinct from new.version or old.created_by is distinct from new.created_by then
+    raise exception 'Fee Plan identity fields cannot be changed.';
   end if;
   return new;
 end;
-$$;
+$;
 
 create trigger fee_plan_version_history_guard
 before update or delete on public.fee_plan_versions
@@ -3540,78 +3511,58 @@ end;
 $$;
 
 create or replace function public.publish_fee_plan(p_input jsonb)
-returns jsonb language plpgsql security definer set search_path=public as $$
+returns jsonb language plpgsql security definer set search_path=public as $
 declare
   v_actor uuid := auth.uid();
   v_offering public.programme_offerings;
-  v_previous public.fee_plan_versions;
-  v_new public.fee_plan_versions;
+  v_plan public.fee_plan_versions;
   v_components jsonb := p_input->'components';
   v_component jsonb;
   v_effective date := (p_input->>'effective_from')::date;
+  v_today date;
   v_reason text := btrim(coalesce(p_input->>'reason',''));
   v_correlation uuid := gen_random_uuid();
 begin
-  if v_actor is null or not public.has_permission('finance.billing.manage') then
-    raise exception 'You are not authorized to publish Fee Plans.';
-  end if;
+  if v_actor is null or not public.has_permission('finance.billing.manage') then raise exception 'You are not authorized to manage Fee Plans.'; end if;
   if length(v_reason)<5 then raise exception 'A change reason of at least five characters is required.'; end if;
-  if v_effective is distinct from current_date then
-    raise exception 'Publishing currently requires today as the effective date.';
-  end if;
-  if jsonb_typeof(v_components) is distinct from 'array' then
-    raise exception 'Fee Components must be an array.';
-  end if;
+  if jsonb_typeof(v_components) is distinct from 'array' then raise exception 'Fee Components must be an array.'; end if;
   if jsonb_array_length(v_components)=0 or not exists (
     select 1 from jsonb_array_elements(v_components) c
     where c->>'charge_type'='TUITION' and c->>'recurrence'='PER_CYCLE'
-  ) then
-    raise exception 'A recurring Tuition component is required.';
-  end if;
-  select * into v_offering from public.programme_offerings
-  where id=(p_input->>'offering_id')::uuid and status<>'RETIRED' for update;
+  ) then raise exception 'A recurring Tuition component is required.'; end if;
+  select * into v_offering from public.programme_offerings where id=(p_input->>'offering_id')::uuid and status<>'RETIRED' for update;
   if v_offering.id is null then raise exception 'Offering is not available.'; end if;
-  select * into v_previous from public.fee_plan_versions
-  where offering_id=v_offering.id and status='ACTIVE' for update;
-  -- Admin may supersede the ACTIVE plan the same day. Versions stay immutable history.
-  if v_previous.id is not null then
-    update public.fee_plan_versions
-    set status='RETIRED',
-        effective_to=case
-          when v_effective<=v_previous.effective_from then v_previous.effective_from
-          else v_effective-1
-        end
-    where id=v_previous.id;
+  select (now() at time zone timezone)::date into v_today from public.organizations where id=v_offering.organization_id;
+  if v_effective is distinct from v_today then raise exception 'Fee Plan effective date must be today.'; end if;
+  select * into v_plan from public.fee_plan_versions
+  where offering_id=v_offering.id order by case when status='ACTIVE' then 0 else 1 end, created_at desc limit 1 for update;
+  if v_plan.id is null then
+    insert into public.fee_plan_versions(offering_id,version,status,billing_cycle,due_day,currency_code,effective_from,effective_to,change_reason,created_by)
+    values(v_offering.id,1,'ACTIVE',p_input->>'billing_cycle',(p_input->>'due_day')::integer,
+      (select currency_code from public.organizations where id=v_offering.organization_id),v_effective,null,v_reason,v_actor)
+    returning * into v_plan;
+  else
+    update public.fee_plan_versions set status='ACTIVE',billing_cycle=p_input->>'billing_cycle',
+      due_day=(p_input->>'due_day')::integer,
+      currency_code=(select currency_code from public.organizations where id=v_offering.organization_id),
+      effective_from=v_effective,effective_to=null,change_reason=v_reason
+    where id=v_plan.id returning * into v_plan;
+    delete from public.fee_plan_components where fee_plan_version_id=v_plan.id;
   end if;
-  insert into public.fee_plan_versions(offering_id,version,status,billing_cycle,
-    due_day,currency_code,effective_from,change_reason,created_by)
-  values (v_offering.id,
-    (select coalesce(max(version),0)+1 from public.fee_plan_versions where offering_id=v_offering.id),
-    'DRAFT',p_input->>'billing_cycle',(p_input->>'due_day')::integer,
-    (select currency_code from public.organizations where id=v_offering.organization_id),
-    v_effective,v_reason,v_actor)
-  returning * into v_new;
   for v_component in select value from jsonb_array_elements(v_components) loop
-    insert into public.fee_plan_components(fee_plan_version_id,code,name,amount,
-      charge_type,recurrence,sort_order)
-    values (v_new.id,upper(btrim(v_component->>'code')),btrim(v_component->>'name'),
-      (v_component->>'amount')::numeric,v_component->>'charge_type',
-      v_component->>'recurrence',coalesce((v_component->>'sort_order')::integer,0));
+    insert into public.fee_plan_components(fee_plan_version_id,code,name,amount,charge_type,recurrence,sort_order)
+    values(v_plan.id,upper(btrim(v_component->>'code')),btrim(v_component->>'name'),
+      (v_component->>'amount')::numeric,v_component->>'charge_type',v_component->>'recurrence',
+      coalesce((v_component->>'sort_order')::integer,0));
   end loop;
-  update public.fee_plan_versions set status='ACTIVE' where id=v_new.id;
-  v_new.status := 'ACTIVE';
   update public.programme_offerings set status='ACTIVE' where id=v_offering.id;
-  insert into public.audit_events(correlation_id,actor_profile_id,actor_staff_id,
-    branch_id,entity_type,entity_id,action,reason,before_data,after_data,metadata)
-  values (v_correlation,v_actor,(select id from public.staff where profile_id=v_actor limit 1),
-    v_offering.branch_id,'FEE_PLAN_VERSION',v_new.id::text,'PUBLISH',v_reason,
-    case when v_previous.id is null then null else to_jsonb(v_previous) end,
-    to_jsonb(v_new),jsonb_build_object('offering_id',v_offering.id,
-      'component_count',jsonb_array_length(v_components)));
-  return jsonb_build_object('fee_plan_version_id',v_new.id,
-    'version',v_new.version,'correlation_id',v_correlation);
+  insert into public.audit_events(correlation_id,actor_profile_id,actor_staff_id,branch_id,entity_type,entity_id,action,reason,after_data,metadata)
+  values(v_correlation,v_actor,(select id from public.staff where profile_id=v_actor limit 1),
+    v_offering.branch_id,'FEE_PLAN',v_plan.id::text,'SAVE',v_reason,to_jsonb(v_plan),
+    jsonb_build_object('offering_id',v_offering.id,'component_count',jsonb_array_length(v_components)));
+  return jsonb_build_object('fee_plan_version_id',v_plan.id,'version',1,'correlation_id',v_correlation);
 end;
-$$;
+$;
 
 alter table public.academic_groups enable row level security;
 alter table public.programme_offerings enable row level security;
@@ -3648,12 +3599,11 @@ for select to authenticated using (public.has_permission('finance.view')
 
 -- Fee Plan publication uses the organization local calendar date.
 create or replace function public.publish_fee_plan(p_input jsonb)
-returns jsonb language plpgsql security definer set search_path=public as $$
+returns jsonb language plpgsql security definer set search_path=public as $
 declare
   v_actor uuid := auth.uid();
   v_offering public.programme_offerings;
-  v_previous public.fee_plan_versions;
-  v_new public.fee_plan_versions;
+  v_plan public.fee_plan_versions;
   v_components jsonb := p_input->'components';
   v_component jsonb;
   v_effective date := (p_input->>'effective_from')::date;
@@ -3661,68 +3611,46 @@ declare
   v_reason text := btrim(coalesce(p_input->>'reason',''));
   v_correlation uuid := gen_random_uuid();
 begin
-  if v_actor is null or not public.has_permission('finance.billing.manage') then
-    raise exception 'You are not authorized to publish Fee Plans.';
-  end if;
+  if v_actor is null or not public.has_permission('finance.billing.manage') then raise exception 'You are not authorized to manage Fee Plans.'; end if;
   if length(v_reason)<5 then raise exception 'A change reason of at least five characters is required.'; end if;
-  if jsonb_typeof(v_components) is distinct from 'array' then
-    raise exception 'Fee Components must be an array.';
-  end if;
+  if jsonb_typeof(v_components) is distinct from 'array' then raise exception 'Fee Components must be an array.'; end if;
   if jsonb_array_length(v_components)=0 or not exists (
     select 1 from jsonb_array_elements(v_components) c
     where c->>'charge_type'='TUITION' and c->>'recurrence'='PER_CYCLE'
-  ) then
-    raise exception 'A recurring Tuition component is required.';
-  end if;
-  select * into v_offering from public.programme_offerings
-  where id=(p_input->>'offering_id')::uuid and status<>'RETIRED' for update;
+  ) then raise exception 'A recurring Tuition component is required.'; end if;
+  select * into v_offering from public.programme_offerings where id=(p_input->>'offering_id')::uuid and status<>'RETIRED' for update;
   if v_offering.id is null then raise exception 'Offering is not available.'; end if;
-  select (now() at time zone timezone)::date into v_today
-  from public.organizations where id=v_offering.organization_id;
-  if v_effective is distinct from v_today then
-    raise exception 'Publishing currently requires today as the effective date.';
+  select (now() at time zone timezone)::date into v_today from public.organizations where id=v_offering.organization_id;
+  if v_effective is distinct from v_today then raise exception 'Fee Plan effective date must be today.'; end if;
+  select * into v_plan from public.fee_plan_versions
+  where offering_id=v_offering.id order by case when status='ACTIVE' then 0 else 1 end, created_at desc limit 1 for update;
+  if v_plan.id is null then
+    insert into public.fee_plan_versions(offering_id,version,status,billing_cycle,due_day,currency_code,effective_from,effective_to,change_reason,created_by)
+    values(v_offering.id,1,'ACTIVE',p_input->>'billing_cycle',(p_input->>'due_day')::integer,
+      (select currency_code from public.organizations where id=v_offering.organization_id),v_effective,null,v_reason,v_actor)
+    returning * into v_plan;
+  else
+    update public.fee_plan_versions set status='ACTIVE',billing_cycle=p_input->>'billing_cycle',
+      due_day=(p_input->>'due_day')::integer,
+      currency_code=(select currency_code from public.organizations where id=v_offering.organization_id),
+      effective_from=v_effective,effective_to=null,change_reason=v_reason
+    where id=v_plan.id returning * into v_plan;
+    delete from public.fee_plan_components where fee_plan_version_id=v_plan.id;
   end if;
-  select * into v_previous from public.fee_plan_versions
-  where offering_id=v_offering.id and status='ACTIVE' for update;
-  -- Admin may supersede the ACTIVE plan the same day. Versions stay immutable history.
-  if v_previous.id is not null then
-    update public.fee_plan_versions
-    set status='RETIRED',
-        effective_to=case
-          when v_effective<=v_previous.effective_from then v_previous.effective_from
-          else v_effective-1
-        end
-    where id=v_previous.id;
-  end if;
-  insert into public.fee_plan_versions(offering_id,version,status,billing_cycle,
-    due_day,currency_code,effective_from,change_reason,created_by)
-  values (v_offering.id,
-    (select coalesce(max(version),0)+1 from public.fee_plan_versions where offering_id=v_offering.id),
-    'DRAFT',p_input->>'billing_cycle',(p_input->>'due_day')::integer,
-    (select currency_code from public.organizations where id=v_offering.organization_id),
-    v_effective,v_reason,v_actor)
-  returning * into v_new;
   for v_component in select value from jsonb_array_elements(v_components) loop
-    insert into public.fee_plan_components(fee_plan_version_id,code,name,amount,
-      charge_type,recurrence,sort_order)
-    values (v_new.id,upper(btrim(v_component->>'code')),btrim(v_component->>'name'),
-      (v_component->>'amount')::numeric,v_component->>'charge_type',
-      v_component->>'recurrence',coalesce((v_component->>'sort_order')::integer,0));
+    insert into public.fee_plan_components(fee_plan_version_id,code,name,amount,charge_type,recurrence,sort_order)
+    values(v_plan.id,upper(btrim(v_component->>'code')),btrim(v_component->>'name'),
+      (v_component->>'amount')::numeric,v_component->>'charge_type',v_component->>'recurrence',
+      coalesce((v_component->>'sort_order')::integer,0));
   end loop;
-  update public.fee_plan_versions set status='ACTIVE' where id=v_new.id;
-  v_new.status := 'ACTIVE';
   update public.programme_offerings set status='ACTIVE' where id=v_offering.id;
-  insert into public.audit_events(correlation_id,actor_profile_id,actor_staff_id,
-    branch_id,entity_type,entity_id,action,reason,before_data,after_data,metadata)
-  values (v_correlation,v_actor,(select id from public.staff where profile_id=v_actor limit 1),
-    v_offering.branch_id,'FEE_PLAN_VERSION',v_new.id::text,'PUBLISH',v_reason,
-    case when v_previous.id is null then null else to_jsonb(v_previous) end,
-    to_jsonb(v_new),jsonb_build_object('offering_id',v_offering.id,
-      'component_count',jsonb_array_length(v_components)));
-  return jsonb_build_object('fee_plan_version_id',v_new.id,
-    'version',v_new.version,'correlation_id',v_correlation);
+  insert into public.audit_events(correlation_id,actor_profile_id,actor_staff_id,branch_id,entity_type,entity_id,action,reason,after_data,metadata)
+  values(v_correlation,v_actor,(select id from public.staff where profile_id=v_actor limit 1),
+    v_offering.branch_id,'FEE_PLAN',v_plan.id::text,'SAVE',v_reason,to_jsonb(v_plan),
+    jsonb_build_object('offering_id',v_offering.id,'component_count',jsonb_array_length(v_components)));
+  return jsonb_build_object('fee_plan_version_id',v_plan.id,'version',1,'correlation_id',v_correlation);
 end;
-$$;
+$;
 
 
 
