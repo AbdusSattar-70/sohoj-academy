@@ -193,7 +193,7 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
   },
   {
     id: "access-security",
-    title: "Access & Security",
+    title: "Settings",
     eyebrow: "Academy Setup",
     href: "/dashboard/settings",
     navGroup: "Academy Setup",
