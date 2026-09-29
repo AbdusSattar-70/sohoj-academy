@@ -46,3 +46,8 @@ Do not simply delete applied migration files and run `db push` against the exist
 The Fee Plans page now opens a specific Create or Edit form from a register. Tuition must be a positive recurring charge; a zero one-time admission charge can represent a waived admission fee. The current Fee Plan save command in `09_preserve_fee_terms_on_save.sql` retains prior terms internally when charges change, so existing admissions and posted finance facts keep their original source. No version number is part of the operator action. The initial migration's malformed function quoting was also repaired.
 
 The linked database may still run an older `save_fee_plan` or `publish_fee_plan` function. The message “The next Fee Plan must start after the previous version” comes from that older database path and will persist until the V3 migration line is applied to a clean development database. Do not reset the owner's database based only on these UI changes; complete the V3 cutover checks first.
+
+
+### Fee Plan component guard correction
+
+`10_finalize_fee_plan_after_components.sql` replaces the Fee Plan command for a database that already applied `09`. It inserts components while the replacement plan is DRAFT and activates that plan only after all components exist. The published-component immutability guard stays enabled; existing referenced charge rows are never deleted or modified. On a clean reset, both numbered migrations run in order. On a database that has already applied `09`, migration `10` is the forward fix.
