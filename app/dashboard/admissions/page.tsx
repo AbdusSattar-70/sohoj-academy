@@ -5,7 +5,6 @@ import { requirePermission } from "@/modules/platform/auth/erp-context";
 import { getAdmissionWorkspace } from "@/modules/admissions/queries";
 import { AdmissionCommandForm } from "@/modules/admissions/components/command-form";
 import { StaffAdmissionIntakeForm } from "@/modules/admissions/components/staff-intake-form";
-import type { AdmissionCommand } from "@/modules/admissions/schema";
 const caseGroups = {
   open: {
     label: "In progress",
