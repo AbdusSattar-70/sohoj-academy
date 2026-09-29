@@ -1,100 +1,344 @@
-# Sohoj Academy ERP — Architecture Reset: No Business Versioning
+# Sohoj Academy ERP — No Business Version Control
 
-Status: active architecture direction, 2026-09-29.
+**Status:** Product and architecture requirement  
+**Date:** 2026-09-29  
+**Applies to:** The entire Sohoj Academy application
 
-## Decision
+## 1. Fundamental requirement
 
-Sohoj Academy will not use business version-control models as the normal way to operate the ERP.
+Sohoj Academy does **not** need business version control.
 
-A user edits the current record. Saving changes the current state. The interface does not ask users to publish Version 2, retire Version 1, create a new policy version, or choose among historical versions for routine work.
+This is a product requirement, not a Fee Plan-specific rule.
 
-This applies across the application, not only Fee Plans.
+The application must be designed around the simple operating model:
 
-The system still keeps an immutable audit trail and preserves the historical business facts that legally or financially need to remain reconstructable. History is evidence, not a parallel version-management workflow.
+**Open the current record → Edit it → Save it → Audit the change**
 
-## Core rules
+Users should work with the current state of the business, not with Version 1, Version 2, Version 3, published versions, retired versions, or superseding versions.
 
-1. One current record per business object where the domain requires one current record.
-2. Edit means edit. Normal configuration changes update the current record.
-3. No publish-to-supersede workflow for ordinary master/configuration records.
-4. No user-facing Version N language for operational records.
-5. Audit is separate from the record: actor, timestamp, action, reason, before/after data and correlation ID.
-6. Finalized transactions are not rewritten. Financial postings use reversal, refund, adjustment or compensating entries.
-7. Historical interpretation uses snapshots/effective facts where required, not a general version-control UI.
-8. Approval is a workflow state, not a versioning system.
-9. Archive/inactivate replaces destructive deletion for referenced master data.
-10. Business configuration is editable directly by authorized management.
+Git/GitHub source-code version control is separate and is not affected by this requirement.
 
-## Domain architecture
+## 2. What “no version control” means
 
-### Experience layer
-Role-specific workspaces: Admin, Operator, Teacher, and future Student/Guardian portals.
-The UI is task-first and exposes current records, pending work, approvals and audit/history only where useful.
+Business users must not be required to:
 
-### Workflow layer
-Business workflows remain explicit: Prospect → Admission → Billing → Payment → Enrollment; Teacher draft → submission → admin review → finalization; Discount/adjustment → approval → financial application; Asset request → approval → purchase → receipt → settlement.
-A workflow may retain snapshots of submitted/finalized facts. That does not create a user-managed version-control model.
+- create a new version to change a record;
+- publish a new version to make a change active;
+- retire an old version;
+- choose between business versions;
+- maintain Version 1 / Version 2 / Version 3;
+- provide a “next version” effective date;
+- manage a version history as part of normal operations;
+- understand database version numbers in order to use the system.
 
-### Domain layer
-Canonical current records include students, guardians, prospects, academic directory, programmes, offerings, batches, Fee Plans, fee components, staff, teaching assignments, attendance, assessments, question papers, class logs, charges/invoices, payments, receipts, refunds, adjustments, assets, vendors, procurement and operating settings.
+The application should not present business configuration as a collection of competing versions.
 
-### Integrity layer
-Owns RLS, permissions, validation, approvals, database constraints, concurrency/idempotency, audit events, reversal/void rules and historical snapshots required by finalized transactions. It does not expose business version creation/retirement as the default integrity mechanism.
+Instead, there is one **current business record** wherever the domain requires a current record.
 
-### Intelligence layer
-Dashboards read canonical current data plus finalized historical events for acquisition, enrollment, attendance, academic coverage, dues, collections, compensation, profitability and operational exceptions.
+## 3. What happens when something changes
 
-### Platform layer
-Next.js + Supabase/Postgres + authentication + PWA/offline + notifications + observability + backups + integrations.
+For a normal editable master or configuration record:
 
-## Fee Plan architecture
+1. User opens the current record.
+2. User changes the required fields.
+3. User provides a reason when the domain requires one.
+4. User saves.
+5. The current record is updated.
+6. The system automatically creates an audit event.
 
-The business concept is Programme Offering → Current Fee Plan → Fee Components.
-There is one editable standard Fee Plan for an offering.
+The user's job is to manage the current business state.
 
-Fee Plan editing: select offering; load current charges; edit billing cycle/due rule/effective date; edit/add/remove components; enter a reason; save; audit before/after values.
+The system's job is to preserve evidence of how that state changed.
 
-There is no Version 1 / Version 2, publish-new-version, retire-old-version, next-version date validation, or published-version register.
+## 4. Audit is not version control
 
-Admission reads the current Fee Plan and creates the student's financial facts from it. Once a charge/invoice is finalized, that finalized transaction retains the fee terms/snapshot required to explain the amount later.
+The application still requires a strong audit trail.
 
-## Operating rules
+Audit should record, where applicable:
 
-Settings such as batch capacity, admission activation rules, billing defaults and compensation percentages are current editable settings.
-When a finalized transaction depends on a setting, the transaction stores the relevant values needed to explain its calculation. The settings screen remains simple: edit the current rule and save.
+- who made the change;
+- when it happened;
+- what record was changed;
+- what the previous values were;
+- what the new values are;
+- why the change was made;
+- which workflow or request caused the change;
+- correlation/request identifiers;
+- relevant approval information.
 
-## Academic planning
+This history exists for accountability, investigation, reporting and compliance.
 
-Academic plans can be edited while they are drafts/current working plans.
-Once a teacher/admin submission is finalized, the submitted/finalized snapshot is retained for audit and correction history. The user does not manage Plan Version 1, Plan Version 2, etc.
+It must **not** turn into a user-managed version-control workflow.
 
-## Public programme content
+The distinction is:
 
-Programme public content is part of the current Programme Offering.
-Editing public content updates the current offering. Approval/publication status is a workflow state, not a content-version management UI.
-If the product later needs legal publication snapshots, those snapshots are internal historical evidence and must not become a user-facing version-control model.
+**Version control:** “Create Version 2 and publish it.”
 
-## Historical data
+**Audit:** “The current record changed from A to B at this time, by this user, for this reason.”
 
-History is modeled through audit_events, before/after payloads, immutable financial records, approval records, finalized workflow snapshots and effective dates when a date is itself a business fact.
-History answers: who changed it, when, what was it before, what is it now, why was it changed, and which workflow caused the change.
-It does not require users to maintain parallel versions.
+Sohoj Academy requires the second model.
 
-## API/domain naming
+## 5. Fee Plans
 
-New application APIs should use current-state language: saveFeePlan, getFeePlan, updateOperatingRule, saveProgrammeOffering, updateProgrammePublicContent, submitTeacherWork and approveTeacherWork.
-Avoid new APIs named publishFeePlan, createFeePlanVersion, retireFeePlanVersion, createPolicyVersion, publishPolicyVersion or createPublicContentVersion.
-Legacy database objects may remain temporarily during migration, but they are compatibility internals only and must not leak into the product vocabulary.
+Fee Plans are current commercial settings for a Programme Offering.
 
-## Migration strategy
+The intended model is:
 
-Phase 1 — Contract: adopt this document as the architecture authority; remove versioning terminology from product/docs/UI; define current-state domain contracts.
-Phase 2 — Database: introduce canonical current-state tables where legacy version tables exist; migrate current active data; preserve finalized transaction snapshots and audit events; replace application RPCs with current-state commands; remove legacy version tables/functions after dependent workflows are migrated.
-Phase 3 — Application: replace version-oriented actions, schemas, queries and components; remove version selectors and version lists; make edit/save the primary command; keep approval/reversal/archive where the domain requires it.
-Phase 4 — Verification: no user-facing Version N terminology; no routine publish/retire flow; current edits persist; historical finalized transactions remain explainable; audit is complete; RLS, concurrency and idempotency remain enforced; admission always receives the current Fee Plan; teacher submissions still require admin approval.
+**Programme Offering → Current Fee Plan → Current Fee Components**
 
-## Non-goals
+A user edits the existing Fee Plan and saves the changes.
 
-Removing business versioning does not mean deleting audit history, rewriting posted payments, deleting finalized invoices, bypassing approval, allowing unauthorized edits, removing concurrency protection, or losing the original facts of a finalized workflow.
+There should be no routine:
 
-The goal is simpler operation with stronger traceability: edit the current thing, approve the workflows that need approval, and preserve evidence automatically.
+- Version 1;
+- Version 2;
+- Publish Version;
+- Retire Version;
+- Next Fee Plan;
+- Previous Fee Plan;
+- Published Versions list;
+- version selector;
+- rule saying the next Fee Plan must start after the previous version.
+
+When a Fee Plan changes, the system updates the current Fee Plan and records the change in the audit trail.
+
+If an invoice or other financial transaction has already been finalized, that transaction remains unchanged. It keeps the fee information needed to explain what was charged.
+
+Changing the current Fee Plan must not rewrite finalized financial history.
+
+## 6. Business rules and settings
+
+Operating rules are also current settings.
+
+Examples include:
+
+- admission rules;
+- batch capacity;
+- billing defaults;
+- compensation settings;
+- operational limits;
+- other management configuration.
+
+Authorized users edit the current setting and save it.
+
+Do not create a new “policy version” merely because a setting changes.
+
+If a finalized transaction depends on a value, the finalized transaction should retain the facts needed to explain its original calculation.
+
+The current setting can then change independently.
+
+## 7. Programme Offerings and public content
+
+Programme Offering information is current information.
+
+Public-facing content belongs to the current Programme Offering.
+
+Normal editing should therefore be:
+
+**Open offering → Edit content → Save → Audit**
+
+Do not create a public-content version merely because the title, description, schedule, requirements or other content changes.
+
+If approval or website publication is required, that is a **workflow state**, not version control.
+
+For example:
+
+- Draft
+- Pending Review
+- Approved
+- Published
+- Unpublished
+
+These states describe what is happening to the current record. They do not mean Version 1, Version 2, or Version 3.
+
+If a legal or compliance requirement later requires preservation of exactly what was published at a particular time, the system may keep an internal snapshot. That snapshot is historical evidence, not a user-managed content-version system.
+
+## 8. Academic plans and teacher work
+
+Academic work may legitimately require workflow states.
+
+For example:
+
+**Draft → Submitted → Approved / Rejected → Corrected Submission**
+
+This is not business version control.
+
+The states represent a workflow and responsibility.
+
+When work is submitted or finalized, the system may preserve the submitted/finalized snapshot so that the institution can later establish exactly what was approved.
+
+Teachers and administrators should not have to manage “Academic Plan Version 1” and “Academic Plan Version 2” as normal operating concepts.
+
+## 9. Finance
+
+Removing business version control does **not** mean changing finalized financial records.
+
+Once an invoice, charge, payment, receipt or other financial fact is finalized, it remains immutable.
+
+Corrections use the appropriate financial mechanism:
+
+- reversal;
+- refund;
+- adjustment;
+- compensating entry;
+- other controlled correction workflow.
+
+For example, if the current Fee Plan changes after an invoice was issued, editing the Fee Plan must not silently change that existing invoice.
+
+The current configuration and finalized financial history are separate concerns.
+
+## 10. Master data
+
+Master data should normally have one current record.
+
+Examples:
+
+- students;
+- guardians;
+- staff;
+- programmes;
+- offerings;
+- batches;
+- subjects;
+- Fee Plans;
+- vendors;
+- assets;
+- operating settings.
+
+Where deletion would break historical relationships, use appropriate archive/inactive/retired states rather than creating replacement versions.
+
+An inactive record is not a version.
+
+It simply means the current record is no longer operational.
+
+## 11. User-interface requirement
+
+The UI must be understandable without knowledge of internal database architecture.
+
+Avoid product labels such as:
+
+- Version;
+- Version 1;
+- Version 2;
+- Version History;
+- Published Versions;
+- Create Version;
+- Publish Version;
+- Retire Version;
+- Supersede;
+- Next Version;
+- Previous Version;
+- Start after previous version.
+
+Prefer:
+
+- Current;
+- Active;
+- Edit;
+- Save;
+- Submit;
+- Approve;
+- Reject;
+- Archive;
+- Restore;
+- Audit History;
+- Change History.
+
+**Audit History** is acceptable because it explains changes to the current record. It must not become a version-selection interface.
+
+## 12. API and domain language
+
+Application APIs should describe business actions, not version management.
+
+Preferred examples:
+
+- `getFeePlan`
+- `saveFeePlan`
+- `updateOperatingRule`
+- `saveProgrammeOffering`
+- `updateProgrammePublicContent`
+- `submitTeacherWork`
+- `approveTeacherWork`
+- `archiveRecord`
+
+Avoid introducing new business APIs such as:
+
+- `createFeePlanVersion`
+- `publishFeePlan`
+- `retireFeePlanVersion`
+- `createPolicyVersion`
+- `publishPolicyVersion`
+- `createPublicContentVersion`
+
+Legacy database objects may temporarily contain names associated with old architecture during migration. Those are implementation details and must not define the product model.
+
+## 13. Database principle
+
+The database should ultimately represent the current-state business model directly.
+
+Where historical evidence is needed, use:
+
+- audit events;
+- before/after data;
+- finalized transaction snapshots;
+- approval records;
+- immutable financial records;
+- effective dates when the date itself is a business fact.
+
+Do not use a generic version table as the default solution for every editable business object.
+
+A historical record should answer:
+
+**Who changed it? When? What changed? Why? What was finalized?**
+
+It should not force the user to manage:
+
+**Which version should I publish?**
+
+## 14. Migration principle
+
+Existing version-oriented tables or functions may exist because of earlier architecture.
+
+They should be treated as migration/compatibility concerns, not as the product design.
+
+The long-term direction is:
+
+1. Define the current business record.
+2. Move active/current data into the current-state model.
+3. Preserve audit history.
+4. Preserve finalized transaction facts.
+5. Preserve required workflow snapshots.
+6. Update application commands and queries to operate on current records.
+7. Remove obsolete version-management dependencies once nothing depends on them.
+8. Verify that no version-control workflow remains in the user experience.
+
+## 15. Acceptance criteria
+
+The architecture is aligned with this requirement only when:
+
+- a normal business change can be made by editing the current record;
+- saving does not require creating a new business version;
+- users do not manage Version 1 / Version 2 / Version 3;
+- there is no routine publish-new-version workflow;
+- there is no routine retire-old-version workflow;
+- current configuration is clearly identifiable;
+- audit history remains available;
+- finalized financial records remain immutable;
+- workflow approval remains where the business process requires it;
+- historical finalized facts remain explainable;
+- version terminology does not appear in normal product workflows;
+- internal legacy versioning does not leak into the product contract.
+
+## 16. Final product principle
+
+Sohoj Academy should operate on one simple rule:
+
+> **Manage the current business state. Save changes. Audit automatically.**
+
+Approval is used where a business workflow requires approval.
+
+Snapshots are used where finalized historical facts must be preserved.
+
+Financial corrections use controlled financial entries.
+
+But **business version control is not part of the operating model of Sohoj Academy.**
