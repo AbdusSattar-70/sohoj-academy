@@ -72,7 +72,12 @@ type ExtendedDatabase = Omit<Database, "public"> & {
       programme_offering_subjects: ReadonlyTable<OfferingSubject>;
       programme_offering_public_versions: ReadonlyTable<PublicVersion>;
     };
+    Views: Database["public"]["Views"] & {
+      current_fee_plans: ReadonlyTable<Plan>;
+      current_fee_plan_components: ReadonlyTable<Component>;
+    };
     Functions: Database["public"]["Functions"] & {
+      save_fee_plan: { Args: { p_input: Json }; Returns: Json };
       create_programme_offering: { Args: { p_input: Json }; Returns: Json };
       update_programme_offering: { Args: { p_input: Json }; Returns: Json };
       publish_fee_plan: { Args: { p_input: Json }; Returns: Json };
