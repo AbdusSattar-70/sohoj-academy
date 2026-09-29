@@ -15,13 +15,13 @@ const initialComponent: SaveFeePlanInput["components"][number] = {
   code: "TUITION", name: "Tuition", amount: 0, chargeType: "TUITION", recurrence: "PER_CYCLE",
 };
 
-export function FeePlanForm({ data, today }: { data: OfferingOverview; today: string }) {
+export function FeePlanForm({ data, today, initialOfferingId }: { data: OfferingOverview; today: string; initialOfferingId?: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const { register, handleSubmit, control, reset, setError, setValue, formState: { errors, isDirty, isValid } } = useForm<SaveFeePlanInput>({
     resolver: zodResolver(saveFeePlanSchema), mode: "onChange",
-    defaultValues: { offeringId: "", billingCycle: "MONTHLY", dueDay: null, effectiveFrom: today, reason: "", components: [initialComponent] },
+    defaultValues: { offeringId: initialOfferingId ?? "", billingCycle: "MONTHLY", dueDay: 5, effectiveFrom: today, reason: "", components: [initialComponent] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "components" });
   const cycle = useWatch({ control, name: "billingCycle" });
@@ -29,7 +29,10 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
   const active = data.plans.find((plan) => plan.offering_id === selectedOffering && plan.status === "ACTIVE");
   useEffect(() => {
     if (!selectedOffering) return;
-    if (!active) return;
+    if (!active) {
+      reset({ offeringId: selectedOffering, billingCycle: "MONTHLY", dueDay: 5, effectiveFrom: today, reason: "", components: [initialComponent] });
+      return;
+    }
     const components = data.components
       .filter((item) => item.fee_plan_version_id === active.id)
       .sort((a, b) => a.sort_order - b.sort_order)
@@ -67,7 +70,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
 
   return <section className="rounded-2xl border bg-card p-5 sm:p-6">
     <h2 className="text-lg font-semibold">Standard Fee Plan</h2>
-    <p className="mt-1 text-sm text-muted-foreground">These are the standard charges inherited during Admission. Student-specific discounts will have their own approval workflow.</p>
+    <p className="mt-1 text-sm text-muted-foreground">These are the standard charges inherited during admission. Authorized admin discounts are recorded separately on the student account.</p>
     <form onSubmit={submit} noValidate className="mt-5 space-y-6">
       <div className="grid gap-5 md:grid-cols-2">
         <ErpFormField id="fee-offering" label="Programme Offering" required hint="Choose the exact year, branch, class and programme context." error={errors.offeringId?.message}>
@@ -91,11 +94,11 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         </ErpFormField>
       </div>
 
-      {active && <p className="rounded-xl border bg-muted/40 p-3 text-sm">Current plan: saved on {active.effective_from}. Editing this plan updates the current charges directly.</p>}
+      {active && <p className="rounded-xl border bg-muted/40 p-3 text-sm">Current charges saved on {active.effective_from}. Saving a change affects future work; existing admission and posted billing records retain their original terms.</p>}
 
       <fieldset className="space-y-4 rounded-xl border p-4">
         <legend className="px-2 font-semibold">Fee Components</legend>
-        <p className="text-sm text-muted-foreground">Keep Tuition as a per-cycle component. Add admission, exam or material charges separately. Amounts are in BDT.</p>
+        <p className="text-sm text-muted-foreground">Tuition must be positive and recur with the billing cycle. Add one-time charges only when applicable; a zero amount is allowed for a waived one-time charge.</p>
         {fields.map((field, index) => <div key={field.id} className="grid gap-3 rounded-xl border bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-5">
           <ErpFormField id={`fee-code-${index}`} label="Code" required error={errors.components?.[index]?.code?.message}>
             {({ id, describedBy, invalid }) => <input id={id} aria-describedby={describedBy} aria-invalid={invalid} className={controlClass} {...register(`components.${index}.code`)} />}
@@ -126,7 +129,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         {({ id, describedBy, invalid }) => <textarea id={id} rows={2} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} py-3`} {...register("reason")} />}
       </ErpFormField>
       <div className="flex flex-wrap items-center gap-4">
-        <Button type="submit" disabled={!isDirty || !isValid || pending}>{pending ? "Saving…" : active ? "Save Fee Plan" : "Save Fee Plan"}</Button>
+        <Button type="submit" disabled={!isDirty || !isValid || pending}>{pending ? "Saving…" : "Save Fee Plan"}</Button>
         <ErpFormStatus message={message} />
       </div>
     </form>
