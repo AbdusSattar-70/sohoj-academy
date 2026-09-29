@@ -16,15 +16,19 @@ export default async function AccessSecurityPage() {
     <div className="space-y-7">
       <PageHeader
         eyebrow="Academy Setup"
-        title="Access & Security"
-        description="Manage staff access and teaching roles. Changes are checked by database permissions and recorded in the audit trail. Bootstrap admin recovery access stays protected."
+        title="Settings"
+        description="Choose the area you need to change. Each register saves the current value with an audit trail; access controls stay protected."
       />
-      <div className="rounded-2xl border bg-card p-5 text-sm">
-        Looking for capacity, enrollment or compensation settings?{" "}
-        <Link href="/dashboard/governance/rules" className="font-medium text-primary underline">
-          Open Operating Rules
-        </Link>
-      </div>
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Academy setup</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {can(context, "system.master_data.manage") && <SetupLink href="/dashboard/crm/manage" title="Academic Directory" description="Years, classes, subjects, schools and programmes." />}
+          {can(context, "academics.view") && <SetupLink href="/dashboard/academics/offerings" title="Programme Offerings" description="Academic context, public content and application intake." />}
+          {can(context, "finance.view") && <SetupLink href="/dashboard/finance/fee-plans" title="Fee Plans" description="Current standard charges for each offering." />}
+          {can(context, "system.rules.view") && <SetupLink href="/dashboard/governance/rules" title="Operating Rules" description="Capacity, enrollment and compensation settings." />}
+        </div>
+      </section>
+      <h2 className="text-lg font-semibold">Access & Security</h2>
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Staff access</h2>
         <p className="text-sm text-muted-foreground">
@@ -57,4 +61,11 @@ export default async function AccessSecurityPage() {
       </section>
     </div>
   );
+}
+
+function SetupLink({ href, title, description }: { href: string; title: string; description: string }) {
+  return <Link href={href} className="rounded-2xl border bg-card p-5 transition hover:border-primary/50 hover:bg-muted/30">
+    <span className="font-semibold">{title}</span>
+    <span className="mt-2 block text-sm leading-6 text-muted-foreground">{description}</span>
+  </Link>;
 }
