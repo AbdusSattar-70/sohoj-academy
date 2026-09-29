@@ -95,6 +95,7 @@ export const workspaceSchema = z.object({
     className: z.string(),
     yearName: z.string(),
     branchName: z.string().nullable(),
+    feeReady: z.boolean().optional(),
   })),
   capacityLimit: z.number().nullable(),
   batches: z.array(
