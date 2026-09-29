@@ -39,3 +39,10 @@ Do not simply delete applied migration files and run `db push` against the exist
 - The admission case shows payment methods and can post money received with a receipt without leaving the case. Student Accounts receives a validated admission return route, preselects the case and returns after a successful side action.
 - The current GitHub branch still contains the V2 migration line and maker-checker workflows outside teacher submissions. This UI progress is not a V3 database cutover. Complete the transactional admin commands, clean baseline, case-level Finance adjustments and teacher review scope before the owner resets the test database.
 - No build, database migration or end-to-end test was run for these GitHub changes at the owner's request. Do not claim operational readiness from the UI changes alone.
+
+
+## Fee Plan operator correction (2026-09-29)
+
+The Fee Plans page now opens a specific Create or Edit form from a register. Tuition must be a positive recurring charge; a zero one-time admission charge can represent a waived admission fee. The current Fee Plan save command in `09_preserve_fee_terms_on_save.sql` retains prior terms internally when charges change, so existing admissions and posted finance facts keep their original source. No version number is part of the operator action. The initial migration's malformed function quoting was also repaired.
+
+The linked database may still run an older `save_fee_plan` or `publish_fee_plan` function. The message “The next Fee Plan must start after the previous version” comes from that older database path and will persist until the V3 migration line is applied to a clean development database. Do not reset the owner's database based only on these UI changes; complete the V3 cutover checks first.
