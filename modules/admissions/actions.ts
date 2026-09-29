@@ -43,6 +43,7 @@ export async function runAdmissionCommand(
     mobile: "mobile",
     offeringId: "offering_id",
     prospectId: "prospect_id",
+    confirmPlacementCorrection: "confirm_placement_correction",
     batchId: "batch_id",
     admissionId: "admission_id",
     code: "code",
@@ -61,7 +62,9 @@ export async function runAdmissionCommand(
     ? "post_admission_payment"
     : v.action === "CREATE_BATCH" || v.action === "EDIT_BATCH"
       ? "batch_command"
-      : "admission_command";
+      : v.action === "CREATE"
+        ? "create_prospect_admission"
+        : "admission_command";
   const { data, error } = await db.rpc(command, { p_input: payload });
   if (error) return { ok: false, message: error.message };
   const result = data as { id?: string; status?: string; receipt_no?: string };
