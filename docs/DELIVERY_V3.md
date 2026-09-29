@@ -1,6 +1,6 @@
 # V3 build and database transition
 
-Status: implementation plan; **do not treat current V2 routes/migrations as V3**. Updated 2026-09-29.
+Status: active GitHub refactor; **not ready for the database reset or production**. Updated 2026-09-29.
 
 ## Starting point
 
@@ -31,3 +31,11 @@ Do not simply delete applied migration files and run `db push` against the exist
 - Database constraints, RLS, authorization, idempotency, retries, capacity and financial balancing are tested; teacher self-finalization is denied.
 - SQL migrations and rollback-only domain scenarios run in CI alongside lint, typecheck and production build. Signed-in admin/teacher browser flows, keyboard/touch use and A4 paper form/actual receipt print pass in the linked development environment.
 - Published status docs report **implemented**, **database-tested**, **browser-tested** and **released** separately. Do not call a compiling page operationally complete.
+
+
+## GitHub branch progress (2026-09-29)
+
+- Operating Rules now has a focused editor showing current values and Save Rule; Access & Security handles staff roles and assignments separately. The existing database history remains internal for audit.
+- The admission case shows payment methods and can post money received with a receipt without leaving the case. Student Accounts receives a validated admission return route, preselects the case and returns after a successful side action.
+- The current GitHub branch still contains the V2 migration line and maker-checker workflows outside teacher submissions. This UI progress is not a V3 database cutover. Complete the transactional admin commands, clean baseline, case-level Finance adjustments and teacher review scope before the owner resets the test database.
+- No build, database migration or end-to-end test was run for these GitHub changes at the owner's request. Do not claim operational readiness from the UI changes alone.
