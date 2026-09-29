@@ -89,7 +89,7 @@ begin
     offering_id, version, status, billing_cycle, due_day, currency_code,
     effective_from, effective_to, change_reason, created_by
   ) values (
-    v_offering.id, v_next_version, 'ACTIVE', v_cycle, v_due_day,
+    v_offering.id, v_next_version, 'DRAFT', v_cycle, v_due_day,
     (select currency_code from public.organizations where id = v_offering.organization_id),
     v_today, null, v_reason, v_actor
   ) returning * into v_current;
@@ -105,6 +105,12 @@ begin
       coalesce((v_component->>'sort_order')::integer, 0)
     );
   end loop;
+
+  -- Finalize only after all components have been inserted. Published-plan guards
+  -- must never be bypassed or weakened to permit later component mutation.
+  update public.fee_plan_versions set status = 'ACTIVE'
+  where id = v_current.id
+  returning * into v_current;
 
   update public.programme_offerings set status = 'ACTIVE'
   where id = v_offering.id;
