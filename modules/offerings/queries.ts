@@ -20,7 +20,7 @@ export async function getOfferingOverview() {
     base.from("branches").select("id,name").eq("is_active", true).order("name"),
     base.from("classes").select("id,name,sort_order").eq("is_active", true).order("sort_order"),
     base.from("programs").select("id,name").eq("is_active", true).order("name"),
-    db.from("current_fee_plans").select("*").order("version", { ascending: false }),
+    db.from("current_fee_plans").select("*").order("effective_from", { ascending: false }),
     db.from("current_fee_plan_components").select("*").order("sort_order"),
     base.from("subjects").select("id,code,name").eq("is_active", true).order("name"),
   ]);
