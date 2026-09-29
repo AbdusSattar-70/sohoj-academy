@@ -92,8 +92,8 @@ export async function saveFeePlan(input: SaveFeePlanInput): Promise<OfferingMuta
     })),
   } });
   if (error) return { ok: false, error: error.message };
-  const result = data as { fee_plan_id?: string; fee_plan_version_id?: string } | null;
-  const reference = result?.fee_plan_id ?? result?.fee_plan_version_id;
+  const result = data as { fee_plan_id?: string } | null;
+  const reference = result?.fee_plan_id;
   if (!reference) return { ok: false, error: "Fee Plan save returned no identity." };
   revalidatePath("/dashboard/academics/offerings");
   revalidatePath("/dashboard/finance/fee-plans");
