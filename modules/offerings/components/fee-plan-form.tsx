@@ -37,8 +37,8 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         code: item.code,
         name: item.name,
         amount: Number(item.amount),
-        chargeType: item.charge_type as PublishFeePlanInput["components"][number]["chargeType"],
-        recurrence: item.recurrence as PublishFeePlanInput["components"][number]["recurrence"],
+        chargeType: item.charge_type as SaveFeePlanInput["components"][number]["chargeType"],
+        recurrence: item.recurrence as SaveFeePlanInput["components"][number]["recurrence"],
       }));
     reset({
       offeringId: active.offering_id,
