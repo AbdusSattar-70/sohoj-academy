@@ -31,8 +31,10 @@ begin
      or (v_cycle <> 'MONTHLY' and v_due_day is not null) then
     raise exception 'Monthly plans require a due day from 1 to 28; other plans have no monthly due day.';
   end if;
-  if jsonb_typeof(v_components) is distinct from 'array'
-     or jsonb_array_length(v_components) not between 1 and 30 then
+  if jsonb_typeof(v_components) is distinct from 'array' then
+    raise exception 'Fee components must be a list.';
+  end if;
+  if jsonb_array_length(v_components) not between 1 and 30 then
     raise exception 'Enter between one and thirty fee components.';
   end if;
   if not exists (
