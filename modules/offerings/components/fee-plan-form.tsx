@@ -59,8 +59,8 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         setMessage({ ok: false, text: result.error });
         return;
       }
-      reset();
-      setMessage({ ok: true, text: `${result.reference} saved. The current Fee Plan is now editable directly.` });
+      reset(input);
+      setMessage({ ok: true, text: "Fee Plan saved. You can continue editing the current charges." });
       router.refresh();
     });
   });
