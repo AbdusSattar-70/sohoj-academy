@@ -19,8 +19,8 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const { register, handleSubmit, control, reset, setError, setValue, formState: { errors, isDirty, isValid } } = useForm<PublishFeePlanInput>({
-    resolver: zodResolver(publishFeePlanSchema), mode: "onChange",
+  const { register, handleSubmit, control, reset, setError, setValue, formState: { errors, isDirty, isValid } } = useForm<SaveFeePlanInput>({
+    resolver: zodResolver(saveFeePlanSchema), mode: "onChange",
     defaultValues: { offeringId: "", billingCycle: "MONTHLY", dueDay: null, effectiveFrom: today, reason: "", components: [initialComponent] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "components" });
@@ -55,7 +55,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
     startTransition(async () => {
       const result = await saveFeePlan(input);
       if (!result.ok) {
-        if (result.field) setError(result.field as FieldPath<PublishFeePlanInput>, { message: result.error });
+        if (result.field) setError(result.field as FieldPath<SaveFeePlanInput>, { message: result.error });
         setMessage({ ok: false, text: result.error });
         return;
       }
