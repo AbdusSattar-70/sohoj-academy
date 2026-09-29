@@ -1,58 +1,48 @@
-import { ShieldCheck } from "lucide-react";
-import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
-import { StatusBadge } from "@/components/erp/status-badge";
-import { getBusinessRules } from "@/modules/governance/queries";
+import { PolicyControlCenter } from "@/modules/settings/components/policy-control-center";
+import { getSettingsOverview } from "@/modules/settings/queries";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
+import { can } from "@/types/erp";
 
-export default async function BusinessRulesPage() {
-  await requirePermission("system.rules.view");
-  const rows = await getBusinessRules();
+export default async function OperatingRulesPage() {
+  const context = await requirePermission("system.rules.view");
+  const { rules } = await getSettingsOverview();
+  const editable = can(context, "system.settings.manage");
 
   return (
     <div className="space-y-7">
       <PageHeader
         eyebrow="Academy Setup"
         title="Operating Rules"
-        description="Manage the academy’s effective operating rules and policies. Changes create a new version so historical transactions keep the values that governed them."
+        description="Review the current capacity, enrollment and compensation rules. Authorized changes apply to future work; finalized records retain their original terms."
       />
-
-      {rows.length ? (
+      {rules.length === 0 ? (
+        <p className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
+          No operating rules are configured. Check the academy setup before admitting students.
+        </p>
+      ) : editable ? (
+        <PolicyControlCenter rules={rules} />
+      ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          {rows.map((row) => (
-            <section key={row.id} className="rounded-2xl border bg-card p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                    {row.domain}
-                  </p>
-                  <h2 className="mt-1 font-semibold">{row.rule_key}</h2>
-                </div>
-                <StatusBadge value={row.status} />
-              </div>
-
-              <div className="mt-4 rounded-xl bg-muted/50 p-4">
-                <pre className="overflow-x-auto whitespace-pre-wrap text-xs leading-5">
-                  {JSON.stringify(row.payload, null, 2)}
-                </pre>
-              </div>
-
-              <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-                <p>Version {row.version}</p>
-                <p>Effective {row.effective_from}</p>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {row.change_reason}
-              </p>
+          {rules.map((rule) => (
+            <section key={rule.id} className="rounded-2xl border bg-card p-5">
+              <h2 className="font-semibold">{rule.ruleKey.replaceAll("_", " ")}</h2>
+              <p className="mt-1 text-xs text-muted-foreground">Effective {rule.effectiveFrom}</p>
+              <dl className="mt-4 space-y-2 text-sm">
+                {Object.entries(
+                  rule.payload && typeof rule.payload === "object" && !Array.isArray(rule.payload)
+                    ? rule.payload as Record<string, unknown>
+                    : {}
+                ).map(([key, value]) => (
+                  <div key={key} className="flex justify-between gap-4 border-b pb-2">
+                    <dt>{key.replaceAll("_", " ")}</dt>
+                    <dd className="font-medium">{String(value)}</dd>
+                  </div>
+                ))}
+              </dl>
             </section>
           ))}
         </div>
-      ) : (
-        <EmptyState
-          icon={ShieldCheck}
-          title="No business rules configured"
-          description="Versioned policies such as batch capacity and teacher compensation will appear here."
-        />
       )}
     </div>
   );
