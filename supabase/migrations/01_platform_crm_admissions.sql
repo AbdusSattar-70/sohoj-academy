@@ -3441,7 +3441,7 @@ create table public.fee_plan_components (
 );
 
 create or replace function public.guard_fee_plan_history()
-returns trigger language plpgsql set search_path=public as $
+returns trigger language plpgsql set search_path=public as $$
 begin
   if tg_table_name='fee_plan_components' then
     if tg_op='DELETE' then return old; end if;
@@ -3454,7 +3454,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 create trigger fee_plan_version_history_guard
 before update or delete on public.fee_plan_versions
@@ -3511,7 +3511,7 @@ end;
 $$;
 
 create or replace function public.publish_fee_plan(p_input jsonb)
-returns jsonb language plpgsql security definer set search_path=public as $
+returns jsonb language plpgsql security definer set search_path=public as $$
 declare
   v_actor uuid := auth.uid();
   v_offering public.programme_offerings;
@@ -3562,7 +3562,7 @@ begin
     jsonb_build_object('offering_id',v_offering.id,'component_count',jsonb_array_length(v_components)));
   return jsonb_build_object('fee_plan_version_id',v_plan.id,'version',1,'correlation_id',v_correlation);
 end;
-$;
+$$;
 
 alter table public.academic_groups enable row level security;
 alter table public.programme_offerings enable row level security;
@@ -3599,7 +3599,7 @@ for select to authenticated using (public.has_permission('finance.view')
 
 -- Fee Plan publication uses the organization local calendar date.
 create or replace function public.publish_fee_plan(p_input jsonb)
-returns jsonb language plpgsql security definer set search_path=public as $
+returns jsonb language plpgsql security definer set search_path=public as $$
 declare
   v_actor uuid := auth.uid();
   v_offering public.programme_offerings;
@@ -3650,7 +3650,7 @@ begin
     jsonb_build_object('offering_id',v_offering.id,'component_count',jsonb_array_length(v_components)));
   return jsonb_build_object('fee_plan_version_id',v_plan.id,'version',1,'correlation_id',v_correlation);
 end;
-$;
+$$;
 
 
 
