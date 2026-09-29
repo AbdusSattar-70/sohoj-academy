@@ -111,7 +111,7 @@ export function AdmissionCommandForm({
         ? (() => {
             const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
             const classMatched = data.offerings.filter(
-              (o) => !nextProspect?.classId || o.classId === nextProspect.classId,
+              (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
             );
             const preferred =
               nextProspect?.interestedOfferingId &&
@@ -157,11 +157,11 @@ export function AdmissionCommandForm({
                 if (key === "prospectId") {
                   const nextProspect = data.prospects.find((p) => p.id === event.target.value);
                   const classMatched = data.offerings.filter(
-                    (o) => !nextProspect?.classId || o.classId === nextProspect.classId,
+                    (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
                   );
                   const preferred =
                     nextProspect?.interestedOfferingId &&
-                    data.offerings.some((o) => o.id === nextProspect.interestedOfferingId)
+                    data.offerings.some((o) => o.id === nextProspect.interestedOfferingId && o.feeReady !== false)
                       ? nextProspect.interestedOfferingId
                       : classMatched[0]?.id ?? "";
                   setValue("confirmPlacementCorrection", false);
@@ -266,7 +266,7 @@ export function AdmissionCommandForm({
             ? (() => {
                 const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
                 const classMatched = data.offerings.filter(
-                  (o) => !nextProspect?.classId || o.classId === nextProspect.classId,
+                  (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
                 );
                 const preferred =
                   nextProspect?.interestedOfferingId &&
@@ -343,7 +343,10 @@ export function AdmissionCommandForm({
                   return "Select a Prospect first.";
                 }
                 if (!data.offerings.length) {
-                  return "No programme offerings are loaded. Publish a Fee Plan on an ACTIVE offering under Academics, then refresh this page.";
+                  return "No ACTIVE programme offering exists. Create and activate one under Academics → Offerings.";
+                }
+                if (data.offerings.every((o) => o.feeReady === false)) {
+                  return "Offerings exist, but none has an effective published Fee Plan. Open Finance → Fee Plans to publish charges.";
                 }
                 const classMatched = data.offerings.filter(
                   (o) => !prospect.classId || o.classId === prospect.classId,
@@ -365,9 +368,13 @@ export function AdmissionCommandForm({
                 if (!prospect) return [];
                 return data.offerings.map((o) => ({
                   id: o.id,
-                  name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}`,
+                  name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}${o.feeReady === false ? " · Publish Fee Plan first" : ""}`,
+                  disabled: o.feeReady === false,
                 }));
               })(),
+            )}
+            {prospect && data.offerings.some((o) => o.feeReady === false) && (
+              <a className="text-sm font-medium text-primary underline md:col-span-2" href="/dashboard/finance/fee-plans?returnTo=/dashboard/admissions?start=enquiry">Open Fee Plans to finish setup</a>
             )}
             {prospect && offeringId && (() => {
               const chosen = data.offerings.find((o) => o.id === offeringId);
