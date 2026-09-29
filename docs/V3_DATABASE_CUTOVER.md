@@ -4,8 +4,8 @@ Updated 2026-09-29. Branch: `feature/refactor`.
 
 ## Goal
 
-Replace the long V2 migration chain with seven ordered V3 baseline migrations
-named `01_` … `07_`. This is a **schema reset**, not a data migration.
+Replace the long V2 migration chain with seven ordered V3 baseline migrations plus the current-state architecture boundary
+named `01_` … `07_`, followed by `08_current_state_architecture.sql`. This is a **schema reset**, not a data migration.
 
 ## Prerequisites
 
@@ -25,6 +25,7 @@ supabase/migrations/04_finance_and_current_workflows.sql
 supabase/migrations/05_direct_admin_finance.sql
 supabase/migrations/06_direct_admin_accounting.sql
 supabase/migrations/07_attendance_command.sql
+supabase/migrations/08_current_state_architecture.sql
 ```
 
 Source of truth for schema text remains `supabase/baseline_v3/`.
@@ -36,7 +37,7 @@ git fetch origin
 git switch feature/refactor
 git pull --ff-only origin feature/refactor
 
-# Promote baseline_v3 → supabase/migrations/01_…07_ and archive V2 SQL
+# Promote baseline_v3 → supabase/migrations/01_…07_ plus 08_current_state_architecture.sql and archive V2 SQL
 pnpm run activate:v3-migrations
 pnpm run verify:v3-baseline
 
@@ -52,7 +53,7 @@ pnpm run build
 ```
 
 Commit the activated migrations after a successful push if your working tree shows
-new `01_`–`07_` files and the V2 archive (so the branch records the cutover):
+the active `01_`–`07_` files plus 08_current_state_architecture.sql and the V2 archive (so the branch records the cutover):
 
 ```bash
 git add supabase/migrations supabase/migrations_v2_archive
@@ -89,5 +90,5 @@ pnpm exec supabase db push
 - Re-link the previous project, or restore from backup.
 - To restore the V2 migration path in Git only: copy
   `supabase/migrations_v2_archive/*.sql` back into `supabase/migrations/` and
-  remove the `01_`–`07_` files (prefer a dedicated branch rather than rewriting
+  remove the active `01_`–`07_` files and 08_current_state_architecture.sql (prefer a dedicated branch rather than rewriting
   shared history).
