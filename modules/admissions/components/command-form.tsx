@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useForm, useWatch, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,8 +9,41 @@ import {
   commandSchema,
   type AdmissionCommand,
   type AdmissionWorkspace,
+  type AdmissionCommandFormData,
 } from "../schema";
 import { runAdmissionCommand } from "../actions";
+const REASON_PRESETS: Partial<Record<AdmissionCommand["action"], string[]>> = {
+  READY: [
+    "Confirmed student identity, guardian contact, programme and batch",
+    "Verified public application against supporting documents",
+    "Corrected details with guardian present",
+  ],
+  ACCEPT: [
+    "Accepted after verification and signed paper consent",
+    "Accepted with verified referral and complete file",
+  ],
+  BILL: [
+    "Posted initial charges from the pinned Fee Plan",
+  ],
+  ACTIVATE: [
+    "Activation policy and batch capacity checked",
+    "Activated with outstanding balance allowed by policy",
+  ],
+  PAY: [
+    "Cash received at front desk",
+    "Bank transfer confirmed",
+  ],
+  EDIT_DRAFT: [
+    "Corrected identity details with guardian",
+  ],
+  CREATE: [
+    "Creating draft from verified enquiry",
+  ],
+  CREATE_BATCH: [
+    "Opening a new teaching batch for this offering",
+  ],
+};
+
 const inputClass =
   "min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-destructive";
 type Option = { id: string; name: string; disabled?: boolean };
@@ -27,7 +61,7 @@ export function AdmissionCommandForm({
   onCancel,
 }: {
   action: AdmissionCommand["action"];
-  data: AdmissionWorkspace;
+  data: AdmissionCommandFormData;
   admissionId?: string;
   label: string;
   description: string;
@@ -38,6 +72,7 @@ export function AdmissionCommandForm({
   onSuccess?: () => void;
   onCancel?: () => void;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
     null,
@@ -73,10 +108,21 @@ export function AdmissionCommandForm({
         ? { batchId: initialBatch.id, code: initialBatch.code, name: initialBatch.name, capacity: initialBatch.capacity }
         : {}),
       ...(action === "CREATE" && defaultProspectId
-        ? {
-            prospectId: defaultProspectId,
-            offeringId: data.prospects.find((p) => p.id === defaultProspectId)?.interestedOfferingId ?? undefined,
-          }
+        ? (() => {
+            const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
+            const classMatched = data.offerings.filter(
+              (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
+            );
+            const preferred =
+              nextProspect?.interestedOfferingId &&
+              classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+                ? nextProspect.interestedOfferingId
+                : classMatched[0]?.id;
+            return {
+              prospectId: defaultProspectId,
+              offeringId: preferred,
+            };
+          })()
         : {}),
     },
   });
@@ -110,7 +156,19 @@ export function AdmissionCommandForm({
               onChange: (event) => {
                 if (key === "prospectId") {
                   const nextProspect = data.prospects.find((p) => p.id === event.target.value);
-                  setValue("offeringId", nextProspect?.interestedOfferingId ?? "", { shouldDirty: true, shouldValidate: true });
+                  const classMatched = data.offerings.filter(
+                    (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
+                  );
+                  const preferred =
+                    nextProspect?.interestedOfferingId &&
+                    data.offerings.some((o) => o.id === nextProspect.interestedOfferingId && o.feeReady !== false)
+                      ? nextProspect.interestedOfferingId
+                      : classMatched[0]?.id ?? "";
+                  setValue("confirmPlacementCorrection", false);
+                  setValue("offeringId", preferred, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
                   setValue("batchId", "", {
                     shouldDirty: true,
                     shouldValidate: true,
@@ -122,11 +180,17 @@ export function AdmissionCommandForm({
             })}
           >
             <option value="">Select {title}</option>
-            {options.map((o) => (
-              <option key={o.id} value={o.id} disabled={o.disabled}>
-                {o.name}
+            {options.length === 0 ? (
+              <option value="" disabled>
+                No valid options available
               </option>
-            ))}
+            ) : (
+              options.map((o) => (
+                <option key={o.id} value={o.id} disabled={o.disabled}>
+                  {o.name}
+                </option>
+              ))
+            )}
           </select>
         ) : (
           <input
@@ -160,6 +224,13 @@ export function AdmissionCommandForm({
       const payload = { ...values, requestId: request.current.id };
       setMessage(null);
       startTransition(async () => {
+        if (action === "CREATE" && prospect && offeringId) {
+          const chosen = data.offerings.find((o) => o.id === offeringId);
+          if (chosen && ((prospect.classId && prospect.classId !== chosen.classId) || (prospect.interestedOfferingId && prospect.interestedOfferingId !== chosen.id)) && !values.confirmPlacementCorrection) {
+            setMessage({ ok: false, text: "Confirm the corrected programme and class before creating the draft." });
+            return;
+          }
+        }
         const result = await runAdmissionCommand(payload);
         if (!result.ok) {
           if (result.field)
@@ -171,6 +242,11 @@ export function AdmissionCommandForm({
         }
         request.current = null;
         onSuccess?.();
+        if (action === "CREATE" && typeof result.entityId === "string") {
+          router.push(`/dashboard/admissions/${result.entityId}`);
+          return;
+        }
+        router.refresh();
         reset({
           action,
           admissionId,
@@ -187,10 +263,21 @@ export function AdmissionCommandForm({
             ? { capacity: data.capacityLimit ?? undefined }
             : {}),
           ...(action === "CREATE" && defaultProspectId
-            ? {
-                prospectId: defaultProspectId,
-                offeringId: data.prospects.find((p) => p.id === defaultProspectId)?.interestedOfferingId ?? undefined,
-              }
+            ? (() => {
+                const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
+                const classMatched = data.offerings.filter(
+                  (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
+                );
+                const preferred =
+                  nextProspect?.interestedOfferingId &&
+                  classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+                    ? nextProspect.interestedOfferingId
+                    : classMatched[0]?.id;
+                return {
+                  prospectId: defaultProspectId,
+                  offeringId: preferred,
+                };
+              })()
             : {}),
         });
         setMessage({ ok: true, text: result.message ?? "Saved." });
@@ -240,7 +327,9 @@ export function AdmissionCommandForm({
             {field(
               "prospectId",
               "Prospect",
-              "Select an existing enquiry. Identity and guardian details are inherited.",
+              data.prospects.length
+                ? "Select an existing enquiry. Identity and guardian details are inherited."
+                : "No open enquiries are available. Use staff intake for a new applicant, or continue an enquiry in CRM first.",
               data.prospects.map((p) => ({
                 id: p.id,
                 name: `${p.number} · ${p.name} · ${p.mobile}`,
@@ -249,24 +338,83 @@ export function AdmissionCommandForm({
             {field(
               "offeringId",
               "Programme offering",
-              prospect?.interestedOfferingId
-                ? "Preselected from the Prospect’s recorded interest. Change only if the applicant confirms a different programme."
-                : prospect?.classId
-                  ? "Choose an active offering for the Prospect’s class."
-                  : "This Prospect has no class or offering on file. Confirm the applicant’s intended programme; the class will be assigned from this offering.",
-              data.offerings
-                .filter((o) =>
-                  (!prospect?.classId || o.classId === prospect.classId) &&
-                  (!prospect?.interestedOfferingId || o.id === prospect.interestedOfferingId),
-                )
-                .map((o) => ({ id: o.id, name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}` })),
+              (() => {
+                if (!prospect) {
+                  return "Select a Prospect first.";
+                }
+                if (!data.offerings.length) {
+                  return "No ACTIVE programme offering exists. Create and activate one under Academics → Offerings.";
+                }
+                if (data.offerings.every((o) => o.feeReady === false)) {
+                  return "Offerings exist, but none has an effective published Fee Plan. Open Finance → Fee Plans to publish charges.";
+                }
+                const classMatched = data.offerings.filter(
+                  (o) => !prospect.classId || o.classId === prospect.classId,
+                );
+                if (!classMatched.length) {
+                  return "No offering matches the recorded class. Select the intended active offering below and confirm the placement correction.";
+                }
+                if (
+                  prospect.interestedOfferingId &&
+                  !classMatched.some((o) => o.id === prospect.interestedOfferingId)
+                ) {
+                  return "The recorded interest is unavailable. Select the intended active offering and confirm the change below.";
+                }
+                return prospect.classId
+                  ? "Choose the intended active offering. A different class needs explicit confirmation below."
+                  : "Confirm the intended programme. Class is taken from the offering when the Prospect has none.";
+              })(),
+              (() => {
+                if (!prospect) return [];
+                return data.offerings.map((o) => ({
+                  id: o.id,
+                  name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}${o.feeReady === false ? " · Publish Fee Plan first" : ""}`,
+                  disabled: o.feeReady === false,
+                }));
+              })(),
             )}
+            {prospect && data.offerings.some((o) => o.feeReady === false) && (
+              <a className="text-sm font-medium text-primary underline md:col-span-2" href="/dashboard/finance/fee-plans">Open Fee Plans to finish setup</a>
+            )}
+            {prospect && offeringId && (() => {
+              const chosen = data.offerings.find((o) => o.id === offeringId);
+              const differs = chosen && (
+                (prospect.classId && prospect.classId !== chosen.classId) ||
+                (prospect.interestedOfferingId && prospect.interestedOfferingId !== chosen.id)
+              );
+              return differs ? (
+                <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 p-4 text-sm md:col-span-2">
+                  <input type="checkbox" className="mt-1" {...register("confirmPlacementCorrection")} />
+                  <span>Confirm the selected programme and class differ from this Prospect’s enquiry. I verified the intended placement with the student or guardian; the correction will be recorded in the audit trail.</span>
+                </label>
+              ) : null;
+            })()}
             {field(
               "batchId",
               "Batch",
-              "Choose an active batch in the selected offering. Full batches cannot be selected.",
+              (() => {
+                if (!offeringId) {
+                  return "Select a programme offering first.";
+                }
+                const active = data.batches.filter(
+                  (b) => b.isActive && b.offeringId === offeringId,
+                );
+                if (!active.length) {
+                  return "No active batch exists for this offering. Create one under Academics → Batches, then return here.";
+                }
+                if (
+                  active.every(
+                    (b) =>
+                      b.occupied >=
+                      Math.min(b.capacity, data.capacityLimit ?? b.capacity),
+                  )
+                ) {
+                  return "All batches for this offering are full. Open a new batch or raise capacity, then return here.";
+                }
+                return "Choose an active batch in the selected offering. Full batches cannot be selected.";
+              })(),
               data.batches
-                .filter((b) => b.isActive && b.offeringId === offeringId && (!prospect?.classId || b.classId === prospect.classId))
+                .filter((b) => b.isActive && b.offeringId === offeringId)
                 .map((b) => ({
                   id: b.id,
                   name: `${b.name} · ${b.occupied}/${b.capacity} seats`,
@@ -319,11 +467,73 @@ export function AdmissionCommandForm({
             )}
           </>
         )}
-        {field(
-          "reason",
-          action === "READY" ? "Verification note" : action === "ACCEPT" ? "Acceptance note" : action === "BILL" ? "Billing note" : action === "ACTIVATE" ? "Enrollment decision note" : action === "PAY" ? "Payment note" : "Staff note",
-          action === "READY" ? "For example: Confirmed student identity, guardian contact, batch and published fees." : action === "ACCEPT" ? "For example: Reviewed the verified application and signed paper consent." : action === "BILL" ? "For example: Posted the initial charges from the pinned Fee Plan." : action === "ACTIVATE" ? "For example: Confirmed policy requirements and available batch capacity." : action === "PAY" ? "For example: Cash received at the front desk." : "Briefly record why you are making this change.",
-        )}
+        {(() => {
+          const presets = REASON_PRESETS[action] ?? [];
+          const label =
+            action === "READY"
+              ? "Verification note"
+              : action === "ACCEPT"
+                ? "Acceptance note"
+                : action === "BILL"
+                  ? "Billing note"
+                  : action === "ACTIVATE"
+                    ? "Enrollment decision note"
+                    : action === "PAY"
+                      ? "Payment note"
+                      : "Staff note";
+          return (
+            <ErpFormField
+              id={`${action}-${admissionId ?? "new"}-reason`}
+              label={label}
+              required
+              hint="Choose a standard note. Use Other only when the situation is unusual."
+              error={errors.reason?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <div className="space-y-2">
+                  {presets.length > 0 && (
+                    <select
+                      className={inputClass}
+                      defaultValue=""
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        if (value === "__other__") {
+                          setValue("reason", "", {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                          return;
+                        }
+                        if (value) {
+                          setValue("reason", value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }
+                      }}
+                    >
+                      <option value="">Select a standard note…</option>
+                      {presets.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                      <option value="__other__">Other (type below)</option>
+                    </select>
+                  )}
+                  <input
+                    id={id}
+                    className={inputClass}
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    placeholder="Selected note appears here; type only for Other"
+                    {...register("reason")}
+                  />
+                </div>
+              )}
+            </ErpFormField>
+          );
+        })()}
       </div>
       {prospect && action === "CREATE" && (
         <div className="rounded-xl border bg-muted/30 p-4 text-sm leading-6">

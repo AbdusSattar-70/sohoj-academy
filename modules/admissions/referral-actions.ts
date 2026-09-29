@@ -43,5 +43,6 @@ export async function runReferralCommand(input:unknown):Promise<{ok:boolean;mess
  }});
  if(error)return {ok:false,message:error.message};
  if(v.action!=="CAPTURE") revalidatePath("/dashboard/finance/accounting");
+ if(v.action==="CAPTURE" && v.admissionId) revalidatePath(`/dashboard/admissions/${v.admissionId}`);
  return {ok:true,message:(data as {message?:string}|null)?.message??"Referral saved."};
 }

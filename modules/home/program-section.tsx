@@ -119,8 +119,8 @@ export async function HomeProgramSection() {
             row.showcase_title_bn || row.showcase_title || row.name,
           ] as [string, string],
           description: [
-            row.showcase_description || row.name,
-            row.showcase_description_bn || row.showcase_description || row.name,
+            row.showcase_description || "",
+            row.showcase_description_bn || row.showcase_description || "",
           ] as [string, string],
           icon: SHOWCASE_ICONS[row.showcase_icon ?? ""] ?? GraduationCap,
           offeringId: row.id,
@@ -161,7 +161,7 @@ export async function HomeProgramSection() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 lg:grid-cols-3">
           {programs.length === 0 && (
             <p className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground lg:col-span-3" role={rows === null ? "alert" : "status"}>
               {rows === null ? (
@@ -182,63 +182,81 @@ export async function HomeProgramSection() {
             return (
               <article
                 key={program.key}
-                className="group flex flex-col rounded-3xl border border-border bg-card p-6 text-card-foreground shadow-[0_12px_40px_-28px_rgba(15,23,42,0.35)] transition hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-800"
+                className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-b from-slate-900 to-slate-950 p-6 text-white shadow-[0_22px_65px_-38px_rgba(0,0,0,.85)] transition duration-300 hover:-translate-y-1 hover:border-blue-400/40 hover:shadow-[0_28px_75px_-38px_rgba(37,99,235,.32)]"
               >
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
-                  <program.icon className="size-5" aria-hidden="true" />
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex size-12 items-center justify-center rounded-2xl border border-blue-300/15 bg-blue-400/10 text-blue-200">
+                    <program.icon className="size-5" aria-hidden="true" />
+                  </div>
+                  {program.windowNote ? (
+                    <span className={`rounded-full px-3 py-1 text-[11px] font-semibold ${program.acceptingApplications ? "border border-emerald-300/20 bg-emerald-300/10 text-emerald-200" : "border border-white/10 bg-white/5 text-slate-300"}`}>
+                      <LocalizedText en={program.windowNote[0]} bn={program.windowNote[1]} />
+                    </span>
+                  ) : null}
                 </div>
-                <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-400">
+                <p className="mt-6 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-300">
                   <LocalizedText en={program.eyebrow[0]} bn={program.eyebrow[1]} />
                 </p>
-                <h3 className="mt-2 text-xl font-semibold tracking-tight">
+                <h3 className="mt-2 text-2xl font-semibold tracking-tight text-white">
                   <LocalizedText en={program.title[0]} bn={program.title[1]} />
                 </h3>
-                <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
-                  <LocalizedText en={program.description[0]} bn={program.description[1]} />
-                </p>
-                <div className="mt-3 space-y-1 text-xs leading-5 text-muted-foreground">
-                  <p>{program.academicContext}</p>
-                  {program.subjects.length > 0 && (
-                    <p><LocalizedText en="Subjects" bn="বিষয়সমূহ" />: {program.subjects.join(", ")}</p>
-                  )}
-                  {program.schedule ? <p><LocalizedText en="Schedule" bn="সময়সূচি" />: <LocalizedText en={program.schedule[0]} bn={program.schedule[1]} /></p> : null}
-                  {program.requirements ? <p><LocalizedText en="Requirements" bn="শর্ত" />: <LocalizedText en={program.requirements[0]} bn={program.requirements[1]} /></p> : null}
-                  {program.policy ? <p><LocalizedText en="Admission policy" bn="ভর্তি নীতি" />: <LocalizedText en={program.policy[0]} bn={program.policy[1]} /></p> : null}
-                  <p><LocalizedText en={program.availability[0]} bn={program.availability[1]} /></p>
-                </div>
-                {(program.feeSummary || program.windowNote) && (
-                  <div className="mt-4 space-y-1 text-xs leading-5 text-muted-foreground">
-                    {program.windowNote ? (
-                      <p className="font-medium text-foreground/80">
-                        <LocalizedText en={program.windowNote[0]} bn={program.windowNote[1]} />
-                      </p>
-                    ) : null}
-                    {program.feeSummary ? (
-                      <p>
-                        <LocalizedText en={program.feeSummary[0]} bn={program.feeSummary[1]} />
-                      </p>
-                    ) : null}
+                <p className="mt-2 text-sm leading-6 text-slate-400">{program.academicContext}</p>
+
+                {program.subjects.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2" aria-label="Subjects">
+                    {program.subjects.map((subject) => (
+                      <span key={subject} className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] text-slate-300">{subject}</span>
+                    ))}
                   </div>
                 )}
-                <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+
+                <details className="group/details mt-4 border-t border-white/10 pt-4">
+                  <summary className="cursor-pointer list-none rounded-lg text-sm text-slate-300 outline-none marker:hidden focus-visible:ring-2 focus-visible:ring-blue-400 [&::-webkit-details-marker]:hidden">
+                    {program.description[0] ? (
+                      <span className="mb-2 block line-clamp-2 leading-6 text-slate-300 group-open/details:line-clamp-none">
+                        <LocalizedText en={program.description[0]} bn={program.description[1]} />
+                      </span>
+                    ) : null}
+                    <span className="inline-flex items-center gap-2 font-semibold text-blue-200 transition group-open/details:text-blue-100">
+                      <span className="group-open/details:hidden"><LocalizedText en="Read programme details" bn="প্রোগ্রামের বিস্তারিত" /></span>
+                      <span className="hidden group-open/details:inline"><LocalizedText en="Show less" bn="সংক্ষিপ্ত করুন" /></span>
+                      <span aria-hidden="true" className="transition group-open/details:rotate-180">⌄</span>
+                    </span>
+                  </summary>
+                  <div className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+                  {program.schedule ? <p><span className="font-semibold text-white"><LocalizedText en="Schedule" bn="সময়সূচি" /></span><br /><LocalizedText en={program.schedule[0]} bn={program.schedule[1]} /></p> : null}
+                  {program.requirements ? <p><span className="font-semibold text-white"><LocalizedText en="Requirements" bn="শর্ত" /></span><br /><LocalizedText en={program.requirements[0]} bn={program.requirements[1]} /></p> : null}
+                  {program.policy ? <p><span className="font-semibold text-white"><LocalizedText en="Admission" bn="ভর্তি" /></span><br /><LocalizedText en={program.policy[0]} bn={program.policy[1]} /></p> : null}
+                  <p className="text-slate-400"><LocalizedText en={program.availability[0]} bn={program.availability[1]} /></p>
+                  </div>
+                </details>
+
+                <div className="mt-auto pt-5">
+                  {program.feeSummary ? (
+                    <p className="mb-4 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white">
+                      <LocalizedText en={program.feeSummary[0]} bn={program.feeSummary[1]} />
+                    </p>
+                  ) : null}
+                  <div className="flex flex-col gap-2 sm:flex-row">
                   <Link
                     href={interestHref}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-border bg-background px-3 text-sm font-semibold hover:bg-muted"
+                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-3 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
                     <LocalizedText en="Register Interest" bn="আগ্রহ নিবন্ধন" />
                   </Link>
                   {program.acceptingApplications ? (
                     <Link
                       href={applyHref}
-                      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-blue-700 px-3 text-sm font-semibold text-white hover:bg-blue-800"
+                      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-lg shadow-blue-950/40 transition hover:bg-blue-400"
                     >
                       <LocalizedText en="Apply for Admission" bn="ভর্তির আবেদন" />
                     </Link>
                   ) : (
-                    <span className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-dashed px-3 text-xs font-medium text-muted-foreground">
+                    <span className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-white/10 px-3 text-xs font-medium text-slate-400">
                       <LocalizedText en="Applications closed" bn="আবেদন বন্ধ" />
                     </span>
                   )}
+                  </div>
                 </div>
               </article>
             );

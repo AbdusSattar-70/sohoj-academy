@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [created, setCreated] = useState<{ admissionId: string; prospectNo: string } | null>(null);
   const [offeringId, setOfferingId] = useState("");
   const requestId = useRef("");
   const offering = data.offerings.find((row) => row.id === offeringId);
@@ -45,7 +43,6 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
     const value = (key: string) => String(values.get(key) ?? "");
     startTransition(async () => {
       setError("");
-      setCreated(null);
       const result = await createStaffAdmissionIntake({
         requestId: requestId.current,
         offeringId: value("offeringId"),
@@ -70,17 +67,16 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
         return;
       }
       requestId.current = "";
-      setCreated({ admissionId: result.admissionId, prospectNo: result.prospectNo });
       form.reset();
       setOfferingId("");
-      router.refresh();
+      router.push(`/dashboard/admissions/${result.admissionId}`);
     });
   }
 
   return <form onSubmit={submit} className="space-y-6 rounded-2xl border bg-card p-5 sm:p-6">
     <header>
       <p className="text-sm font-semibold">Enter applicant details with the student or guardian</p>
-      <p className="mt-1 text-sm text-muted-foreground">This creates a CRM Prospect and an admission draft together. Staff can complete this on the family’s behalf; it does not accept admission, post fees, or activate enrollment.</p>
+      <p className="mt-1 text-sm text-muted-foreground">This creates an admission application and draft case directly. It does not create a CRM Enquiry. Staff can complete this on the family’s behalf; it does not accept admission, post fees, or activate enrollment.</p>
     </header>
 
     <section className="space-y-3">
@@ -90,9 +86,9 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
           <span className="font-medium">Programme offering *</span>
           <select name="offeringId" required value={offeringId} onChange={(e) => setOfferingId(e.target.value)} className={input}>
             <option value="">Choose an active programme</option>
-            {data.offerings.map((row) => <option key={row.id} value={row.id}>{row.code} · {row.name} · {row.yearName} · {row.branchName ?? "No branch"} · {row.className}</option>)}
+            {data.offerings.map((row) => <option key={row.id} value={row.id} disabled={row.feeReady === false}>{row.code} · {row.name} · {row.yearName} · {row.branchName ?? "No branch"} · {row.className}{row.feeReady === false ? " · Publish Fee Plan first" : ""}</option>)}
           </select>
-          <span className="block text-xs text-muted-foreground">Only active offerings are available. The class is assigned from the chosen offering.</span>
+          <span className="block text-xs text-muted-foreground">Active offerings appear here. Publish an effective Fee Plan to enable selection; the class is assigned from the chosen offering.</span>
         </label>
         <label className="block space-y-1.5 text-sm">
           <span className="font-medium">Batch *</span>
@@ -125,7 +121,7 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
         <TextField label="Primary mobile" name="mobile" required pattern={phonePattern} hint="11-digit Bangladesh mobile, e.g. 01712345678." />
         <TextField label="Alternate mobile" name="alternateMobile" pattern={`^$|${phonePattern}`} />
         <TextField label="Guardian address" name="guardianAddress" required maxLength={300} className="md:col-span-2" />
-        <TextField label="Referrer or referral note" name="referralNote" maxLength={500} hint="Record the name/contact if shared. Confirm and assign the referral on the case before acceptance." className="md:col-span-2" />
+        <TextField label="Additional intake note" name="referralNote" maxLength={500} hint="Optional context from the family. The official admission source is recorded separately on the case before acceptance." className="md:col-span-2" />
       </div>
     </section>
 
@@ -139,14 +135,9 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
     </section>
 
     {error && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
-    {created && <div role="status" className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100">
-      <p className="font-semibold">Admission draft created</p>
-      <p className="mt-1">{created.prospectNo ? `Prospect ${created.prospectNo} · ` : ""}The case is ready for identity and consent review.</p>
-      <Link className="mt-2 inline-block font-medium underline" href={`/dashboard/admissions#${created.admissionId}`}>Open the admission case</Link>
-    </div>}
     <div className="flex flex-wrap items-center gap-3">
-      <Button type="submit" disabled={pending || data.offerings.length === 0}>{pending ? "Creating draft…" : "Create Prospect and admission draft"}</Button>
-      <span className="text-xs text-muted-foreground">No fee is charged and no enrollment is activated at this step.</span>
+      <Button type="submit" disabled={pending || data.offerings.length === 0}>{pending ? "Creating admission draft…" : "Create admission draft"}</Button>
+      <span className="text-xs text-muted-foreground">No CRM Enquiry is created, no fee is charged, and no enrollment is activated at this step.</span>
     </div>
   </form>;
 }
