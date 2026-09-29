@@ -19,17 +19,17 @@ export default async function FeePlansPage() {
   const offering = (id: string) => data.offerings.find((item) => item.id === id);
 
   return <div className="space-y-7">
-    <PageHeader eyebrow="Finance / Control Center" title="Fee Plans" description="Publish standard charges as versions attached to Programme Offerings. Versions are immutable history; publish again any time (including the same day) to supersede the active plan." />
+    <PageHeader eyebrow="Finance / Control Center" title="Fee Plans" description="Edit the current standard charges attached to Programme Offerings. Saving changes the current Fee Plan directly and records the change in the audit trail." />
     {can(context, "finance.billing.manage") && <FeePlanForm data={data} today={today} />}
     <section className="rounded-2xl border bg-card p-5 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Published Versions</h2><p className="text-sm text-muted-foreground">Amounts shown here are standard fees, before any approved student exception.</p></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Current Fee Plans</h2><p className="text-sm text-muted-foreground">Amounts shown here are current standard fees, before any approved student exception.</p></div>
         {can(context, "academics.view") && <Link href="/dashboard/academics/offerings" className="text-sm font-semibold text-primary underline-offset-4 hover:underline">View Offerings →</Link>}</div>
       {data.plans.length ? <div className="mt-4 space-y-3">{data.plans.map((plan) => <article key={plan.id} className="rounded-xl border p-4">
-        <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{offering(plan.offering_id)?.name ?? "Offering"} · Version {plan.version}</h3>
-          <p className="text-xs text-muted-foreground">{offering(plan.offering_id)?.code} · {plan.billing_cycle.replaceAll("_", " ")} · effective {plan.effective_from}{plan.effective_to ? ` through ${plan.effective_to}` : ""} · {plan.currency_code}</p></div><StatusBadge value={plan.status} /></div>
+        <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{offering(plan.offering_id)?.name ?? "Offering"} · Standard Fee Plan</h3>
+          <p className="text-xs text-muted-foreground">{offering(plan.offering_id)?.code} · {plan.billing_cycle.replaceAll("_", " ")} · effective {plan.effective_from} · {plan.currency_code}</p></div><StatusBadge value={plan.status} /></div>
         <ul className="mt-3 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">{data.components.filter((item) => item.fee_plan_version_id === plan.id).map((item) => <li key={item.id} className="rounded-lg bg-muted/50 px-3 py-2">{item.name} <strong className="float-right">{Number(item.amount).toLocaleString("en-BD", { minimumFractionDigits: 2 })}</strong><span className="block text-xs text-muted-foreground">{item.charge_type} · {item.recurrence.replaceAll("_", " ")}</span></li>)}</ul>
         <p className="mt-3 text-xs text-muted-foreground">Reason: {plan.change_reason}</p>
-      </article>)}</div> : <p className="mt-5 rounded-xl border border-dashed p-6 text-sm text-muted-foreground">No Fee Plans published. Create a Programme Offering, then publish its standard charges.</p>}
+      </article>)}</div> : <p className="mt-5 rounded-xl border border-dashed p-6 text-sm text-muted-foreground">No Fee Plans yet. Create a Programme Offering, then save its standard charges.</p>}
     </section>
   </div>;
 }
