@@ -76,7 +76,7 @@ export async function saveFeePlan(input: SaveFeePlanInput): Promise<OfferingMuta
   }
   const value = parsed.data;
   const db = await createOfferingClient();
-  const { data, error } = await db.rpc("publish_fee_plan", { p_input: {
+  const { data, error } = await db.rpc("save_fee_plan", { p_input: {
     offering_id: value.offeringId,
     billing_cycle: value.billingCycle,
     due_day: value.dueDay,
