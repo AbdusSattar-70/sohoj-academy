@@ -26,7 +26,7 @@ export function FeePlanForm({ data, today, initialOfferingId }: { data: Offering
   const { fields, append, remove } = useFieldArray({ control, name: "components" });
   const addCharge = (chargeType: "ADMISSION" | "EXAM" | "MATERIAL" | "OTHER") => {
     const used = new Set(getValues("components").map((item) => item.code.toUpperCase()));
-    let code = chargeType;
+    let code: string = chargeType;
     let suffix = 2;
     while (used.has(code)) code = `${chargeType}_${suffix++}`;
     const names = { ADMISSION: "Admission Fee", EXAM: "Exam Fee", MATERIAL: "Materials Fee", OTHER: "Other Charge" };
