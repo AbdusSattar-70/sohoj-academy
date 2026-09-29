@@ -22,6 +22,7 @@ export const commandSchema = z
       .max(500),
     offeringId: z.string().optional(),
     prospectId: z.string().optional(),
+    confirmPlacementCorrection: z.boolean().optional(),
     batchId: z.string().optional(),
     admissionId: z.string().optional(),
     studentName: z.string().trim().min(2).max(160).optional(),
