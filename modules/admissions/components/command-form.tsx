@@ -374,7 +374,7 @@ export function AdmissionCommandForm({
               })(),
             )}
             {prospect && data.offerings.some((o) => o.feeReady === false) && (
-              <a className="text-sm font-medium text-primary underline md:col-span-2" href="/dashboard/finance/fee-plans?returnTo=/dashboard/admissions?start=enquiry">Open Fee Plans to finish setup</a>
+              <a className="text-sm font-medium text-primary underline md:col-span-2" href="/dashboard/finance/fee-plans">Open Fee Plans to finish setup</a>
             )}
             {prospect && offeringId && (() => {
               const chosen = data.offerings.find((o) => o.id === offeringId);
