@@ -19,7 +19,7 @@ export default async function FeePlansPage() {
   const offering = (id: string) => data.offerings.find((item) => item.id === id);
 
   return <div className="space-y-7">
-    <PageHeader eyebrow="Finance / Control Center" title="Fee Plans" description="Publish standard charges as versions attached to Programme Offerings. Historical versions remain visible and immutable." />
+    <PageHeader eyebrow="Finance / Control Center" title="Fee Plans" description="Publish standard charges as versions attached to Programme Offerings. Versions are immutable history; publish again any time (including the same day) to supersede the active plan." />
     {can(context, "finance.billing.manage") && <FeePlanForm data={data} today={today} />}
     <section className="rounded-2xl border bg-card p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Published Versions</h2><p className="text-sm text-muted-foreground">Amounts shown here are standard fees, before any approved student exception.</p></div>

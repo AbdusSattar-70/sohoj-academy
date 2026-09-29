@@ -27,7 +27,6 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
   const cycle = useWatch({ control, name: "billingCycle" });
   const selectedOffering = useWatch({ control, name: "offeringId" });
   const active = data.plans.find((plan) => plan.offering_id === selectedOffering && plan.status === "ACTIVE");
-  const sameDay = active?.effective_from === today;
 
   const submit = handleSubmit((input) => {
     setMessage(null);
@@ -70,7 +69,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         </ErpFormField>
       </div>
 
-      {active && <p className="rounded-xl border bg-muted/40 p-3 text-sm">Current plan: version {active.version}, effective {active.effective_from}. {sameDay ? "A second version cannot be published on the same day." : "Publication will retire this version while preserving its history."}</p>}
+      {active && <p className="rounded-xl border bg-muted/40 p-3 text-sm">Current plan: version {active.version}, effective {active.effective_from}. Publishing again retires it immediately (including same day) and keeps the old version in history.</p>}
 
       <fieldset className="space-y-4 rounded-xl border p-4">
         <legend className="px-2 font-semibold">Fee Components</legend>
@@ -105,7 +104,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         {({ id, describedBy, invalid }) => <textarea id={id} rows={2} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} py-3`} {...register("reason")} />}
       </ErpFormField>
       <div className="flex flex-wrap items-center gap-4">
-        <Button type="submit" disabled={!isDirty || !isValid || pending || sameDay}>{pending ? "Publishing…" : "Publish Fee Plan"}</Button>
+        <Button type="submit" disabled={!isDirty || !isValid || pending}>{pending ? "Publishing…" : active ? "Publish New Version" : "Publish Fee Plan"}</Button>
         <ErpFormStatus message={message} />
       </div>
     </form>
