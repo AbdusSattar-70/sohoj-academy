@@ -61,3 +61,8 @@ The admission conversion form lists every ACTIVE programme offering with a curre
 ### Admission offering visibility and build repair
 
 The admission workbench now fetches active offerings separately through `admission_offering_options()` in migration `13_admission_offering_visibility.sql`. An offering lacking an effective ACTIVE Fee Plan remains visible with “Publish Fee Plan first” and cannot be chosen until charges are ready. The existing admission command continues to enforce fee, capacity and organization checks. This avoids a blank select that concealed the difference between missing offerings and incomplete pricing. The previously empty `types/database.ts` was restored from the repository's existing generated contract, and the Fee Plan form once again accepts the register's Edit action. These changes require migration 13 before the updated admission page can load.
+
+
+### Admission register layout
+
+The Admissions landing page keeps the new applicant and enquiry conversion entry points, but presents existing cases as a compact table. The register has In progress, Enrolled and Closed views with counts, programme, batch, status and the next action. Opening a row takes staff to the existing admission case workbench for verification, consent, referral, billing and enrollment; historical records remain available without expanding every case on the landing page. Active enrollment is categorized as Enrolled even if the finance account has a remaining receivable.
