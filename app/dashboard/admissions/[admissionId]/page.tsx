@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
-import { getAdmissionCase } from "@/modules/admissions/queries";
+import { getAdmissionCase, getAdmissionWorkspace } from "@/modules/admissions/queries";
 import {
   getConsentDocuments,
   getPhysicalConsentReceipts,
@@ -11,16 +11,6 @@ import { getAdmissionReferrals } from "@/modules/admissions/referrals";
 import { AdmissionCommandForm } from "@/modules/admissions/components/command-form";
 import { PhysicalConsentForm } from "@/modules/admissions/components/physical-consent-form";
 import { ReferralForm } from "@/modules/admissions/components/referral-form";
-import type { AdmissionCommandFormData } from "@/modules/admissions/schema";
-
-const commandData: AdmissionCommandFormData = {
-  capacityLimit: null,
-  offerings: [],
-  batches: [],
-  prospects: [],
-  paymentMethods: [],
-};
-
 const originLabels = {
   DIRECT_STAFF: "Direct staff intake",
   PROSPECT_CONVERSION: "Enquiry conversion",
@@ -62,9 +52,10 @@ export default async function AdmissionCasePage({
   const context = await requirePermission("admissions.view");
   const { admissionId } = await params;
 
-  const [admission, consentDocuments, physicalReceipts, referrals] =
+  const [admission, workspace, consentDocuments, physicalReceipts, referrals] =
     await Promise.all([
       getAdmissionCase(admissionId),
+      getAdmissionWorkspace(),
       getConsentDocuments(),
       getPhysicalConsentReceipts(),
       getAdmissionReferrals(),
@@ -80,6 +71,8 @@ export default async function AdmissionCasePage({
     (row) => row.admission_id === admission.id,
   );
 
+  const commandData = workspace;
+  const canPostPayment = context.permissions.includes("finance.payments.post");
   const hasReferral = Boolean(referral);
   const hasConsent = signedForms.length > 0 || paperReceipts.length > 0;
   const reviewComplete = hasReferral && hasConsent;
@@ -276,7 +269,7 @@ export default async function AdmissionCasePage({
             />
             <Row
               label="Fee Plan"
-              value={`Version ${admission.feeVersion}`}
+              value="Terms recorded with this admission"
             />
           </dl>
         </article>
@@ -298,12 +291,7 @@ export default async function AdmissionCasePage({
                 Paid {money(admission.invoice.paid)} · outstanding{" "}
                 {money(admission.invoice.due)}
               </p>
-              <Link
-                href="/dashboard/finance/billing"
-                className="mt-2 inline-block font-medium underline"
-              >
-                Open Student Accounts
-              </Link>
+
             </div>
           )}
         </article>
@@ -322,9 +310,7 @@ export default async function AdmissionCasePage({
               {activeStep ? activeStep.title : "Complete the case"}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Finish the current step here. The page stays on this case after
-              every save. Open another register only when the action itself
-              belongs there, then return here.
+              Finish the current step here. After saving, continue on this case.
             </p>
           </div>
 
@@ -397,15 +383,30 @@ export default async function AdmissionCasePage({
             </p>
           )}
 
+          {admission.invoice && admission.invoice.due > 0 && canPostPayment && (
+            <details className="rounded-xl border p-4" open={admission.status === "PENDING_PAYMENT"}>
+              <summary className="cursor-pointer font-semibold">Record payment received</summary>
+              <p className="mt-2 text-sm text-muted-foreground">Only post money actually received. This issues a receipt and updates the balance; it does not change the original invoice.</p>
+              <div className="mt-4"><AdmissionCommandForm
+                key={`${admission.id}-PAY-${admission.invoice.due}`}
+                action="PAY"
+                admissionId={admission.id}
+                data={commandData}
+                maxAmount={admission.invoice.due}
+                label="Post payment and issue receipt"
+                description={`Outstanding balance: ${money(admission.invoice.due)}. Select how the money was received.`}
+              /></div>
+            </details>
+          )}
+
           {admission.status === "ACTIVE_ENROLLMENT" && (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm dark:border-emerald-900 dark:bg-emerald-950/30">
               <p className="font-semibold">Enrollment is active</p>
               <p className="mt-1 text-muted-foreground">
-                The student is now enrolled in the selected batch. Continue
-                payments, discounts or refunds from Student Accounts.
+                The student is now enrolled in the selected batch. Record any remaining payment above, or open Student Accounts for other financial corrections.
               </p>
               <Link
-                href="/dashboard/finance/billing"
+                href={`/dashboard/finance/billing?returnTo=${encodeURIComponent(`/dashboard/admissions/${admission.id}`)}`}
                 className="mt-3 inline-block font-medium underline"
               >
                 Open Student Accounts
@@ -428,19 +429,15 @@ export default async function AdmissionCasePage({
           />
           <Row
             label="Activation policy"
-            value={
-              admission.policyVersion
-                ? `Version ${admission.policyVersion} · ${admission.paymentRequirement?.replaceAll("_", " ") ?? "configured"}`
-                : "Pinned at acceptance"
-            }
+            value={admission.paymentRequirement?.replaceAll("_", " ") ?? "Applied at acceptance"}
           />
           <Row
             label="Consent"
             value={
               paperReceipts.length
-                ? `Paper receipt v${paperReceipts[0]?.version ?? "?"}`
+                ? "Paper form receipt recorded"
                 : signedForms.length
-                  ? `Digital record v${signedForms[0]?.version ?? "?"}`
+                  ? "Digital consent record available"
                   : "Not recorded"
             }
           />
