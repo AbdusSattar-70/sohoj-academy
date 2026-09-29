@@ -17,7 +17,7 @@ export type OfferingFormInput = z.infer<typeof offeringFormSchema>;
 export const updateOfferingSchema = createOfferingSchema.extend({ offeringId: id, requestId: id });
 export type UpdateOfferingInput = z.infer<typeof updateOfferingSchema>;
 
-export const publishFeePlanSchema = z.object({
+export const saveFeePlanSchema = z.object({
   offeringId: id,
   billingCycle: z.enum(["MONTHLY", "ONE_TIME", "TERM"]),
   dueDay: z.number().int().min(1).max(28).nullable(),
@@ -41,7 +41,7 @@ export const publishFeePlanSchema = z.object({
     ctx.addIssue({ code: "custom", path: ["components"], message: "Component codes must be unique." });
   }
 });
-export type PublishFeePlanInput = z.infer<typeof publishFeePlanSchema>;
+export type SaveFeePlanInput = z.infer<typeof saveFeePlanSchema>;
 
 export const SHOWCASE_ICON_VALUES = [
   "clipboard-check",
@@ -92,14 +92,5 @@ export const updateOfferingPublicControlsSchema = updateOfferingPublicControlsBa
 });
 export type UpdateOfferingPublicControlsInput = z.infer<typeof updateOfferingPublicControlsSchema>;
 
-export const publicContentVersionSchema = z.object({
-  offeringId: id,
-  reason: z.string().trim().min(5).max(500),
-  content: updateOfferingPublicControlsBaseSchema.omit({ offeringId: true, reason: true }),
-});
-export type PublicContentVersionInput = z.infer<typeof publicContentVersionSchema>;
 
-/** @deprecated Use updateOfferingPublicControlsSchema — kept so old showcase-form.tsx can be deleted safely. */
-export const updateOfferingShowcaseSchema = updateOfferingPublicControlsSchema;
-/** @deprecated Use UpdateOfferingPublicControlsInput */
-export type UpdateOfferingShowcaseInput = UpdateOfferingPublicControlsInput;
+/** Public content is saved directly on the current Programme Offering. */
