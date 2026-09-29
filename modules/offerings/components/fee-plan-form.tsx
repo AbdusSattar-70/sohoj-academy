@@ -38,13 +38,13 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         return;
       }
       reset();
-      setMessage({ ok: true, text: `${result.reference} published. Earlier versions remain in history.` });
+      setMessage({ ok: true, text: `${result.reference} saved. The current Fee Plan is now editable directly.` });
       router.refresh();
     });
   });
 
   return <section className="rounded-2xl border bg-card p-5 sm:p-6">
-    <h2 className="text-lg font-semibold">Publish Standard Fee Plan</h2>
+    <h2 className="text-lg font-semibold">Standard Fee Plan</h2>
     <p className="mt-1 text-sm text-muted-foreground">These are the standard charges inherited during Admission. Student-specific discounts will have their own approval workflow.</p>
     <form onSubmit={submit} noValidate className="mt-5 space-y-6">
       <div className="grid gap-5 md:grid-cols-2">
@@ -69,7 +69,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         </ErpFormField>
       </div>
 
-      {active && <p className="rounded-xl border bg-muted/40 p-3 text-sm">Current plan: version {active.version}, effective {active.effective_from}. Publishing again retires it immediately (including same day) and keeps the old version in history.</p>}
+      {active && <p className="rounded-xl border bg-muted/40 p-3 text-sm">Current plan: saved on {active.effective_from}. Editing this plan updates the current charges directly.</p>}
 
       <fieldset className="space-y-4 rounded-xl border p-4">
         <legend className="px-2 font-semibold">Fee Components</legend>
@@ -104,7 +104,7 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
         {({ id, describedBy, invalid }) => <textarea id={id} rows={2} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} py-3`} {...register("reason")} />}
       </ErpFormField>
       <div className="flex flex-wrap items-center gap-4">
-        <Button type="submit" disabled={!isDirty || !isValid || pending}>{pending ? "Publishing…" : active ? "Publish New Version" : "Publish Fee Plan"}</Button>
+        <Button type="submit" disabled={!isDirty || !isValid || pending}>{pending ? "Saving…" : active ? "Save Fee Plan" : "Save Fee Plan"}</Button>
         <ErpFormStatus message={message} />
       </div>
     </form>
