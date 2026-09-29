@@ -189,7 +189,7 @@ export function PublicControlsForm({
             <textarea id={id} rows={3} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5.5rem] py-2`} disabled={pending} {...register("publicRequirementsBn")} />
           )}
         </ErpFormField>
-        <ErpFormField id={`${offering.id}-policy`} label="Admission policy (English)" className="sm:col-span-2" hint="Explain verification, placement and when admission becomes confirmed. Fees remain governed by the published plan." error={errors.admissionPolicy?.message}>
+        <ErpFormField id={`${offering.id}-policy`} label="Admission policy (English)" className="sm:col-span-2" hint="Explain verification, placement and when admission becomes confirmed. Fees remain governed by the current Fee Plan." error={errors.admissionPolicy?.message}>
           {({ id, describedBy, invalid }) => (
             <textarea id={id} rows={3} aria-describedby={describedBy} aria-invalid={invalid} className={`${controlClass} min-h-[5.5rem] py-2`} disabled={pending} {...register("admissionPolicy")} />
           )}
@@ -263,7 +263,7 @@ export function PublicControlsForm({
         </Button>
         {!isActive && (
           <p className="text-xs text-muted-foreground">
-            Publish a Fee Plan so this offering becomes ACTIVE before enabling website visibility.
+            Save a Fee Plan so this offering becomes ACTIVE before enabling website visibility.
           </p>
         )}
       </div>
