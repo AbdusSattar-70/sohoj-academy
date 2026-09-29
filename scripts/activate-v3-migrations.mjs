@@ -1,5 +1,5 @@
 /**
- * Promote supabase/baseline_v3 into active supabase/migrations as 01_…07_.
+ * Promote supabase/baseline_v3 into active supabase/migrations as 01_…07_ and retain the current-state architecture migration 08_.
  * Archives existing *.sql migrations into supabase/migrations_v2_archive/.
  *
  * Safe to re-run: re-copies baseline parts and refreshes the archive only when
@@ -30,7 +30,7 @@ const mapping = [
   ["0007_v3_attendance_command.sql", "07_attendance_command.sql"],
 ];
 
-const activeNames = new Set(mapping.map(([, dst]) => dst));
+const activeNames = new Set([...mapping.map(([, dst]) => dst), "08_current_state_architecture.sql"]);
 
 mkdirSync(archiveDir, { recursive: true });
 mkdirSync(migrationsDir, { recursive: true });
