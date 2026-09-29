@@ -71,3 +71,25 @@ grant execute on function public.save_fee_plan(jsonb) to authenticated;
 
 -- Product-facing read access follows the same finance visibility boundary.
 grant select on public.current_fee_plans, public.current_fee_plan_components to authenticated;
+
+-- Current-state compatibility read for management rules.
+-- The version column remains internal migration metadata only; it is not
+-- exposed through the current-state product contract.
+create or replace view public.current_operating_rules
+with (security_invoker = true)
+as
+select distinct on (r.domain, r.rule_key)
+  r.id,
+  r.domain,
+  r.rule_key,
+  r.status,
+  r.payload
+from public.business_rule_versions r
+where r.status in ('ACTIVE','RETIRED','DRAFT')
+order by
+  r.domain,
+  r.rule_key,
+  case when r.status = 'ACTIVE' then 0 else 1 end,
+  r.version desc;
+
+grant select on public.current_operating_rules to authenticated;
