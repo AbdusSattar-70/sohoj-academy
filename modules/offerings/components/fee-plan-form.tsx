@@ -19,11 +19,19 @@ export function FeePlanForm({ data, today, initialOfferingId }: { data: Offering
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const { register, handleSubmit, control, reset, setError, setValue, formState: { errors, isDirty, isValid } } = useForm<SaveFeePlanInput>({
+  const { register, handleSubmit, control, reset, setError, setValue, getValues, formState: { errors, isDirty, isValid } } = useForm<SaveFeePlanInput>({
     resolver: zodResolver(saveFeePlanSchema), mode: "onChange",
     defaultValues: { offeringId: initialOfferingId ?? "", billingCycle: "MONTHLY", dueDay: 5, effectiveFrom: today, reason: "", components: [initialComponent] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "components" });
+  const addCharge = (chargeType: "ADMISSION" | "EXAM" | "MATERIAL" | "OTHER") => {
+    const used = new Set(getValues("components").map((item) => item.code.toUpperCase()));
+    let code = chargeType;
+    let suffix = 2;
+    while (used.has(code)) code = `${chargeType}_${suffix++}`;
+    const names = { ADMISSION: "Admission Fee", EXAM: "Exam Fee", MATERIAL: "Materials Fee", OTHER: "Other Charge" };
+    append({ code, name: names[chargeType], amount: 0, chargeType, recurrence: "ONE_TIME" });
+  };
   const cycle = useWatch({ control, name: "billingCycle" });
   const selectedOffering = useWatch({ control, name: "offeringId" });
   const active = data.plans.find((plan) => plan.offering_id === selectedOffering && plan.status === "ACTIVE");
@@ -122,7 +130,11 @@ export function FeePlanForm({ data, today, initialOfferingId }: { data: Offering
           {fields.length > 1 && <Button type="button" variant="outline" className="w-fit" onClick={() => remove(index)}>Remove component</Button>}
         </div>)}
         {errors.components?.root?.message && <p role="alert" className="text-sm text-destructive">{errors.components.root.message}</p>}
-        <Button type="button" variant="outline" onClick={() => append({ code: "", name: "", amount: 0, chargeType: "OTHER", recurrence: "ONE_TIME" })}>Add Component</Button>
+        <div className="flex flex-wrap gap-2">
+          {(["ADMISSION", "EXAM", "MATERIAL", "OTHER"] as const).map((type) =>
+            <Button key={type} type="button" variant="outline" onClick={() => addCharge(type)}>Add {type === "OTHER" ? "custom charge" : type.toLowerCase() + " fee"}</Button>
+          )}
+        </div>
       </fieldset>
 
       <ErpFormField id="fee-reason" label="Reason for change" required hint="This explanation is recorded with the save and audit event." error={errors.reason?.message}>
