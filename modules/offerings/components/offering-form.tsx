@@ -41,7 +41,7 @@ export function OfferingForm({ data, initialOffering, onSuccess, onCancel }: {
     startTransition(async()=>{
       const result=isEditing?await updateProgrammeOffering(input as UpdateOfferingInput):await createProgrammeOffering(input);
       if(!result.ok){if(result.field)setError(result.field as FieldPath<OfferingFormInput>,{message:result.error});setMessage({ok:false,text:result.error});return;}
-      setMessage({ok:true,text:isEditing?"Offering details saved. Existing placements and public settings stay attached.":"Offering created as a draft. Publish its Fee Plan to activate it."});
+      setMessage({ok:true,text:isEditing?"Offering details saved. Existing placements and public settings stay attached.":"Offering created as a draft. Save its Fee Plan to activate it."});
       router.refresh();onSuccess?.();if(!isEditing)reset();
     });
   });

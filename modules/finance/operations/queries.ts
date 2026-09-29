@@ -7,6 +7,7 @@ type FinanceDatabase = Database & {
     Functions: {
       finance_workspace: { Args: Record<string, never>; Returns: Json };
       finance_command: { Args: { p_input: Json }; Returns: Json };
+      finance_v3_command: { Args: { p_input: Json }; Returns: Json };
       post_admission_payment: { Args: { p_input: Json }; Returns: Json };
       billing_preview: {
         Args: { p_period: string; p_term_id?: string };
@@ -20,7 +21,7 @@ export async function financeClient() {
 }
 export async function getFinanceWorkspace() {
   const db = await financeClient();
-  const { data, error } = await db.rpc("finance_workspace", {});
+  const { data, error } = await db.rpc("finance_workspace");
   if (error) throw new Error(error.message);
   return financeWorkspaceSchema.parse(data);
 }

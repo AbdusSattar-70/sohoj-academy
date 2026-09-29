@@ -5,7 +5,6 @@ import Link from "next/link";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { OfferingForm } from "@/modules/offerings/components/offering-form";
 import { PublicControlsForm } from "@/modules/offerings/components/public-controls-form";
-import { PublicVersionWorkflow } from "@/modules/offerings/components/public-version-workflow";
 import type { OfferingOverview } from "@/modules/offerings/queries";
 
 type Panel={kind:"CREATE"}|{kind:"EDIT";id:string}|{kind:"PUBLIC";id:string};
@@ -39,7 +38,7 @@ export function OfferingRegister({data,canManage,canViewFees}:{data:OfferingOver
             {row.status!=="RETIRED"&&<button type="button" onClick={()=>setPanel({kind:"EDIT",id:row.id})} className="min-h-9 rounded-lg border px-3 text-xs font-semibold hover:bg-muted">Edit offering</button>}
             <button type="button" onClick={()=>setPanel({kind:"PUBLIC",id:row.id})} className="min-h-9 rounded-lg border px-3 text-xs font-semibold hover:bg-muted">Public settings</button>
           </div></td>}
-        </tr>)}</tbody></table></div>:<div className="p-10 text-center"><p className="font-semibold">No programme offerings yet</p><p className="mt-1 text-sm text-muted-foreground">Create a draft offering, then publish its standard Fee Plan to activate it.</p>{canManage&&<button type="button" onClick={()=>setPanel({kind:"CREATE"})} className="mt-4 min-h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">Create offering</button>}</div>}
+        </tr>)}</tbody></table></div>:<div className="p-10 text-center"><p className="font-semibold">No programme offerings yet</p><p className="mt-1 text-sm text-muted-foreground">Create a draft offering, then save its standard Fee Plan to activate it.</p>{canManage&&<button type="button" onClick={()=>setPanel({kind:"CREATE"})} className="mt-4 min-h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">Create offering</button>}</div>}
     </section>
     {panel?.kind==="CREATE"&&<div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)close();}}>
       <section role="dialog" aria-modal="true" aria-labelledby="offering-create-title" className="my-auto max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border bg-background p-5 shadow-2xl sm:p-7">
@@ -60,7 +59,6 @@ export function OfferingRegister({data,canManage,canViewFees}:{data:OfferingOver
         <div className="mb-4 flex items-start justify-between gap-4"><div><h2 id="offering-public-title" className="text-xl font-bold">Website & application settings</h2><p className="mt-1 text-sm text-muted-foreground">{selected.code} · {selected.name}</p></div><button type="button" onClick={close} aria-label="Close public settings" className="flex size-9 shrink-0 items-center justify-center rounded-lg border text-lg hover:bg-muted">×</button></div>
         <p className="mb-4 rounded-xl border bg-muted/30 p-3 text-sm text-muted-foreground">These settings control public visibility, application intake, showcase copy and subject selection. Homepage card design remains unchanged.</p>
         <PublicControlsForm offering={selected} subjects={data.subjects} linkedSubjectIds={linkedSubjectIds}/>
-        <PublicVersionWorkflow offering={selected} versions={data.publicVersions}/>
       </section>
     </div>}
   </>;

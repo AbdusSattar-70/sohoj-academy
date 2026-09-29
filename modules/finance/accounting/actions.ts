@@ -10,21 +10,25 @@ const commands = {
   CREATE_ACCOUNT: "accounting.manage",
   CREATE_VENDOR: "finance.advances.manage",
   REQUEST_ADVANCE: "finance.advances.manage",
+  CREATE_ADVANCE: "finance.advances.manage",
   DECIDE_ADVANCE: "finance.advances.approve",
   PAY_ADVANCE: "finance.advances.manage",
   REQUEST_ADVANCE_SETTLEMENT: "finance.advances.manage",
   DECIDE_ADVANCE_SETTLEMENT: "finance.advances.approve",
   REFUND_ADVANCE: "finance.advances.manage",
   CREATE_EXPENSE: "accounting.expense.manage",
+  CREATE_EXPENSE_DIRECT: "accounting.expense.manage",
   DECIDE_EXPENSE: "accounting.expense.approve",
   POST_EXPENSE: "accounting.expense.manage",
   SETTLE_PAYABLE: "finance.payments.post",
   RECONCILE_EXPENSE: "accounting.reconcile",
   RECONCILE_ACCOUNT: "accounting.reconcile",
   REQUEST_COMPENSATION: "staff.compensation.manage",
+  RUN_COMPENSATION: "staff.compensation.manage",
   DECIDE_COMPENSATION: "staff.compensation.approve",
   SETTLE_COMPENSATION: "staff.compensation.manage",
   REQUEST_COMP_ADJUSTMENT: "staff.compensation.manage",
+  APPLY_COMP_ADJUSTMENT: "staff.compensation.manage",
   DECIDE_COMP_ADJUSTMENT: "staff.compensation.approve",
 } as const;
 
@@ -42,10 +46,19 @@ export async function submitAccountingCommand(input: unknown): Promise<{ ok: boo
   const permission = commands[parsed.data.action];
   if (!context.permissions.includes(permission)) return { ok: false, message: "You do not have permission for this action." };
   const supabase = (await createClient()) as unknown as SupabaseClient;
-  const { data, error } = await supabase.rpc("finance_accounting_command", {
+  const action = parsed.data.action;
+  const rpc = [
+    "CREATE_ADVANCE",
+    "CREATE_EXPENSE_DIRECT",
+    "RUN_COMPENSATION",
+    "APPLY_COMP_ADJUSTMENT",
+  ].includes(action)
+    ? "finance_v3_accounting_command"
+    : "finance_accounting_command";
+  const { data, error } = await supabase.rpc(rpc, {
     p_input: {
       ...parsed.data.values,
-      action: parsed.data.action,
+      action,
       reason: parsed.data.reason,
       request_id: crypto.randomUUID(),
     },

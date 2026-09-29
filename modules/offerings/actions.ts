@@ -4,9 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getErpContext } from "@/modules/platform/auth/erp-context";
 import { createOfferingClient } from "@/modules/offerings/database-contract";
 import {
-  createOfferingSchema, updateOfferingSchema, publishFeePlanSchema, updateOfferingPublicControlsSchema,
-  type CreateOfferingInput, type UpdateOfferingInput, type PublishFeePlanInput, type UpdateOfferingPublicControlsInput,
-  publicContentVersionSchema, type PublicContentVersionInput,
+  createOfferingSchema, updateOfferingSchema, saveFeePlanSchema, updateOfferingPublicControlsSchema,
+  type CreateOfferingInput, type UpdateOfferingInput, type SaveFeePlanInput, type UpdateOfferingPublicControlsInput,
 } from "@/modules/offerings/schema";
 
 export type OfferingMutationResult =
@@ -65,19 +64,19 @@ export async function updateProgrammeOffering(input: UpdateOfferingInput): Promi
   return { ok: true, reference: result.offering_id };
 }
 
-export async function publishFeePlan(input: PublishFeePlanInput): Promise<OfferingMutationResult> {
-  const parsed = publishFeePlanSchema.safeParse(input);
+export async function saveFeePlan(input: SaveFeePlanInput): Promise<OfferingMutationResult> {
+  const parsed = saveFeePlanSchema.safeParse(input);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
     return { ok: false, error: issue?.message ?? "Check the Fee Plan.", field: issue?.path[0]?.toString() };
   }
   const context = await getErpContext();
   if (!context?.permissions.includes("finance.billing.manage")) {
-    return { ok: false, error: "You are not authorized to publish Fee Plans." };
+    return { ok: false, error: "You are not authorized to edit Fee Plans." };
   }
   const value = parsed.data;
   const db = await createOfferingClient();
-  const { data, error } = await db.rpc("publish_fee_plan", { p_input: {
+  const { data, error } = await db.rpc("save_fee_plan", { p_input: {
     offering_id: value.offeringId,
     billing_cycle: value.billingCycle,
     due_day: value.dueDay,
@@ -93,12 +92,13 @@ export async function publishFeePlan(input: PublishFeePlanInput): Promise<Offeri
     })),
   } });
   if (error) return { ok: false, error: error.message };
-  const result = data as { fee_plan_version_id?: string } | null;
-  if (!result?.fee_plan_version_id) return { ok: false, error: "Fee Plan publish returned no identity." };
+  const result = data as { fee_plan_id?: string } | null;
+  const reference = result?.fee_plan_id;
+  if (!reference) return { ok: false, error: "Fee Plan save returned no identity." };
   revalidatePath("/dashboard/academics/offerings");
   revalidatePath("/dashboard/finance/fee-plans");
   revalidatePath("/");
-  return { ok: true, reference: result.fee_plan_version_id };
+  return { ok: true, reference };
 }
 
 export async function updateProgrammeOfferingPublicControls(
@@ -151,47 +151,4 @@ export async function updateProgrammeOfferingPublicControls(
   return { ok: true, reference: result.offering_id };
 }
 
-export async function createPublicContentVersion(input: PublicContentVersionInput): Promise<OfferingMutationResult> {
-  const parsed = publicContentVersionSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check public content." };
-  const context = await getErpContext();
-  if (!context?.permissions.includes("academics.manage")) return { ok: false, error: "Offering management permission required." };
-  const db = await createOfferingClient();
-  const { data, error } = await db.rpc("create_programme_offering_public_version", { p_input: {
-    offering_id: parsed.data.offeringId, reason: parsed.data.reason, content: parsed.data.content,
-  } });
-  if (error) return { ok: false, error: error.message };
-  const result = data as { id?: string } | null;
-  if (!result?.id) return { ok: false, error: "Public content version returned no identity." };
-  revalidatePath("/dashboard/academics/offerings");
-  return { ok: true, reference: result.id };
-}
-
-export async function submitPublicContentVersion(versionId: string): Promise<OfferingMutationResult> {
-  const context = await getErpContext();
-  if (!context?.permissions.includes("academics.manage")) return { ok: false, error: "Offering management permission required." };
-  const db = await createOfferingClient();
-  const { data, error } = await db.rpc("submit_programme_offering_public_version", { p_input: { version_id: versionId } });
-  if (error) return { ok: false, error: error.message };
-  const result = data as { id?: string } | null;
-  if (!result?.id) return { ok: false, error: "Public content submission returned no identity." };
-  revalidatePath("/dashboard/academics/offerings");
-  return { ok: true, reference: result.id };
-}
-
-export async function publishPublicContentVersion(versionId: string, offeringId: string): Promise<OfferingMutationResult> {
-  const context = await getErpContext();
-  if (!context?.permissions.includes("academics.manage")) return { ok: false, error: "Offering management permission required." };
-  const db = await createOfferingClient();
-  const { data, error } = await db.rpc("publish_programme_offering_public_version", { p_input: { version_id: versionId } });
-  if (error) return { ok: false, error: error.message };
-  const result = data as { id?: string } | null;
-  if (!result?.id) return { ok: false, error: "Public content publication returned no identity." };
-  revalidatePath("/dashboard/academics/offerings");
-  revalidatePath("/");
-  revalidatePath("/interest");
-  return { ok: true, reference: offeringId };
-}
-
-/** @deprecated Use updateProgrammeOfferingPublicControls */
-export const updateProgrammeOfferingShowcase = updateProgrammeOfferingPublicControls;
+/** Public programme content is edited directly on the current offering. */

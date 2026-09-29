@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { FinanceForm, inputClass, type FinanceField } from "./command-form";
@@ -11,19 +12,21 @@ const date = (s: string) =>
 export function FinanceOperations({
   data,
   permissions,
-  profileId,
+  returnTo,
 }: {
   data: FinanceWorkspace;
   permissions: string[];
-  profileId: string;
+  returnTo?: string;
 }) {
+  const router = useRouter();
+  const returnAdmissionId = returnTo?.split("/").at(-1);
   const [tab, setTab] = useState("accounts");
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState(returnAdmissionId ?? "");
+  const returnAfterAction = () => { if (returnTo) router.push(returnTo); };
   const [query, setQuery] = useState("");
   const can = (p: string) => permissions.includes(p);
   const admission = data.admissions.find((a) => a.id === selected);
   const invoices = data.invoices.filter((i) => i.admissionId === selected);
-  const pending = data.approvals.filter((a) => a.status === "PENDING");
   const paymentFields: FinanceField[] = [
     {
       key: "payment_method_id",
@@ -45,7 +48,7 @@ export function FinanceOperations({
             "Customer credit",
             money(data.invoices.reduce((s, i) => s + i.credit, 0)),
           ],
-          ["Awaiting decision", pending.length],
+          ["Recorded refunds", data.refunds.filter((refund) => refund.number).length],
         ].map(([label, value]) => (
           <div key={label} className="rounded-2xl border bg-card p-5">
             <p className="text-sm text-muted-foreground">{label}</p>
@@ -56,7 +59,6 @@ export function FinanceOperations({
       <nav aria-label="Finance sections" className="flex flex-wrap gap-2">
         {[
           ["accounts", "Student Accounts"],
-          ["approvals", `Approvals (${pending.length})`],
           ["recurring", "Recurring Billing"],
         ].map(([key, label]) => (
           <button
@@ -118,7 +120,7 @@ export function FinanceOperations({
                 <div>
                   <h2 className="text-xl font-semibold">{admission.name}</h2>
                   <Link
-                    href={`/dashboard/admissions#${admission.id}`}
+                    href={`/dashboard/admissions/${admission.id}`}
                     className="text-sm underline"
                   >
                     {admission.number} · Admission record
@@ -133,7 +135,7 @@ export function FinanceOperations({
                     key={d.id}
                     className="rounded-xl border bg-muted/30 p-4 text-sm"
                   >
-                    Approved tuition discount:{" "}
+                    Recorded tuition discount:{" "}
                     <strong>
                       {d.kind === "PERCENT" ? `${d.value}%` : money(d.value)}
                     </strong>{" "}
@@ -146,16 +148,17 @@ export function FinanceOperations({
                   {can("finance.billing.manage") && (
                     <details className="rounded-xl border p-4">
                       <summary className="cursor-pointer font-medium">
-                        Request a Discount
+                        Apply a Discount
                       </summary>
                       <div className="mt-4">
                         <FinanceForm
+                          onSuccess={returnAfterAction}
                           defaults={{
-                            action: "REQUEST_DISCOUNT",
+                            action: "APPLY_DISCOUNT",
                             admission_id: selected,
                           }}
-                          label="Submit Discount for Approval"
-                          description="Applies only to tuition, capped at the tuition charge. Existing eligible invoices receive credit after independent approval; original charges stay unchanged."
+                          label="Record Tuition Discount"
+                          description="Applies only to tuition and is capped at the tuition charge. Existing eligible invoices receive a compensating credit; original charges stay unchanged."
                           fields={[
                             {
                               key: "kind",
@@ -192,16 +195,17 @@ export function FinanceOperations({
                   {can("admissions.create") && (
                     <details className="rounded-xl border p-4">
                       <summary className="cursor-pointer font-medium">
-                        Request Cancellation
+                        Cancel Admission
                       </summary>
                       <div className="mt-4">
                         <FinanceForm
+                          onSuccess={returnAfterAction}
                           defaults={{
-                            action: "REQUEST_CANCEL",
+                            action: "CANCEL_ADMISSION",
                             admission_id: selected,
                           }}
-                          label="Submit Cancellation for Approval"
-                          description="Approval withdraws enrollment and stops future billing. Credit all charges makes paid money refundable; it does not record a refund payout."
+                          label="Record Cancellation"
+                          description="Cancellation withdraws enrollment and stops future billing. Credit all remaining charges preserves the original charges and creates a compensating credit; it does not itself return money."
                           fields={[
                             {
                               key: "settlement",
@@ -325,16 +329,18 @@ export function FinanceOperations({
                           Math.min(p.remaining, i.credit - i.reserved) > 0 && (
                             <details className="mt-3">
                               <summary className="cursor-pointer text-sm">
-                                Request Refund
+                                Record Refund
                               </summary>
                               <div className="mt-3">
                                 <FinanceForm
+                                  onSuccess={returnAfterAction}
                                   defaults={{
-                                    action: "REQUEST_REFUND",
+                                    action: "REFUND",
+                                    invoice_id: i.id,
                                     payment_id: p.id,
                                   }}
-                                  label="Submit Refund for Approval"
-                                  description={`Maximum available: ${money(Math.min(p.remaining, i.credit - i.reserved))}. Approval reserves the credit; record the actual payout separately.`}
+                                  label="Record Actual Refund"
+                                  description={`Maximum available: ${money(Math.min(p.remaining, i.credit - i.reserved))}. This records the authorization and actual payout together.`}
                                   fields={[
                                     {
                                       key: "amount",
@@ -345,6 +351,7 @@ export function FinanceOperations({
                                         i.credit - i.reserved,
                                       ),
                                     },
+                                    ...paymentFields,
                                   ]}
                                 />
                               </div>
@@ -375,6 +382,7 @@ export function FinanceOperations({
                         </p>
                         {!r.number && can("finance.payments.post") && (
                           <FinanceForm
+                            onSuccess={returnAfterAction}
                             defaults={{
                               action: "POST_REFUND",
                               authorization_id: r.id,
@@ -391,87 +399,6 @@ export function FinanceOperations({
             </div>
           )}
         </>
-      )}
-      {tab === "approvals" && (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold">Independent Review</h2>
-            <p className="text-sm text-muted-foreground">
-              The requester cannot approve or reject their own request.
-              Decisions and reasons remain in the audit trail.
-            </p>
-          </div>
-          {!data.approvals.length && (
-            <p className="rounded-xl border border-dashed p-5">
-              No finance or cancellation requests yet.
-            </p>
-          )}
-          {data.approvals.map((a) => {
-            const account = data.admissions.find((r) => r.id === a.admissionId);
-            const p = a.payload;
-            const permission =
-              a.type === "FINANCE_DISCOUNT"
-                ? "finance.discounts.approve"
-                : a.type === "ADMISSION_CANCEL"
-                  ? "admissions.approve"
-                  : "finance.payments.reverse";
-            const accountInvoices = data.invoices.filter(
-              (i) => i.admissionId === a.admissionId,
-            );
-            return (
-              <article
-                key={a.id}
-                className="space-y-3 rounded-2xl border bg-card p-5"
-              >
-                <div className="flex justify-between gap-3">
-                  <h3 className="font-semibold">
-                    {account?.name} · {a.type.replaceAll("_", " ")}
-                  </h3>
-                  <StatusBadge value={a.status} />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Requested by {a.requester} · {date(a.createdAt)}
-                </p>
-                <p className="text-sm">{a.reason}</p>
-                <p className="rounded-xl bg-muted/40 p-3 text-sm">
-                  {a.type === "FINANCE_DISCOUNT"
-                    ? `${p.kind === "PERCENT" ? `${p.value}%` : money(Number(p.value))} tuition discount per eligible invoice, ${p.starts_on} – ${p.ends_on}.`
-                    : a.type === "ADMISSION_CANCEL"
-                      ? `${p.settlement === "CREDIT_ALL" ? "Credit all remaining charges" : "Keep existing charges payable"}. Current net charges: ${money(accountInvoices.reduce((s, i) => s + i.net, 0))}. Current customer credit: ${money(accountInvoices.reduce((s, i) => s + i.credit, 0))}. Enrollment will be withdrawn and future billing stopped.`
-                      : `Refund ${money(Number(p.amount))} from ${data.payments.find((x) => x.id === p.payment_id)?.number ?? "original payment"}. Approval reserves credit; payout must be recorded separately.`}
-                </p>
-                {a.status === "PENDING" ? (
-                  a.requesterId === profileId ? (
-                    <p className="text-sm text-muted-foreground">
-                      Waiting for a different authorized reviewer.
-                    </p>
-                  ) : (
-                    can(permission) && (
-                      <FinanceForm
-                        defaults={{ action: "DECIDE", approval_id: a.id }}
-                        fields={[
-                          {
-                            key: "decision",
-                            label: "Decision",
-                            options: [
-                              { id: "APPROVED", name: "Approve" },
-                              { id: "REJECTED", name: "Reject" },
-                            ],
-                          },
-                        ]}
-                        label="Record Decision"
-                      />
-                    )
-                  )
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Decision note: {a.decisionNote}
-                  </p>
-                )}
-              </article>
-            );
-          })}
-        </section>
       )}
       {tab === "recurring" && (
         <div className="space-y-5">

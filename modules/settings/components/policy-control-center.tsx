@@ -131,7 +131,7 @@ function BatchCapacityEditor({ rule }: { rule: SettingsPolicyRow }) {
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Batch-capacity policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Operating rule saved for future work.",
       });
       router.refresh();
     });
@@ -141,7 +141,6 @@ function BatchCapacityEditor({ rule }: { rule: SettingsPolicyRow }) {
     <PolicyCard
       title="Batch Capacity"
       description="Maximum students allowed in a normal batch. Capacity enforcement reads the active policy at transaction time."
-      version={rule.version}
     >
       <form onSubmit={submit} noValidate className="grid gap-4">
         <ErpFormField
@@ -255,7 +254,7 @@ function TeacherCompensationEditor({
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Teacher-compensation policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Operating rule saved for future work.",
       });
       router.refresh();
     });
@@ -292,8 +291,7 @@ function TeacherCompensationEditor({
   return (
     <PolicyCard
       title="Teacher Compensation"
-      description="These percentages govern future compensation calculations. Finalized historical settlements retain the policy version they used."
-      version={rule.version}
+      description="These percentages govern future compensation calculations. Finalized historical settlements retain the terms used at calculation."
       className={className}
     >
       <form onSubmit={submit} noValidate className="grid gap-4">
@@ -332,7 +330,7 @@ function TeacherCompensationEditor({
         <ReasonField
           register={register("reason")}
           error={errors.reason?.message}
-          hint="Explain why management is changing compensation terms. The previous version remains in history."
+          hint="Explain why management is changing compensation terms. The change and its reason remain in the audit trail."
         />
 
         <PolicyFooter
@@ -451,7 +449,7 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Admission-activation policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Operating rule saved for future work.",
       });
       router.refresh();
     });
@@ -461,7 +459,6 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
     <PolicyCard
       title="Admission Activation"
       description="Controls when an accepted admission becomes an ACTIVE enrollment. Billing and payment remain separate business facts."
-      version={rule.version}
     >
       <form onSubmit={submit} noValidate className="grid gap-4">
         <div className="grid gap-2">
@@ -561,13 +558,11 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
 function PolicyCard({
   title,
   description,
-  version,
   className,
   children,
 }: {
   title: string;
   description: string;
-  version: number;
   className?: string;
   children: ReactNode;
 }) {
@@ -583,9 +578,6 @@ function PolicyCard({
             {description}
           </p>
         </div>
-        <span className="shrink-0 rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-semibold">
-          v{version}
-        </span>
       </div>
       {children}
     </section>
@@ -666,12 +658,12 @@ function PolicyFooter({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
           {changed
-            ? "A new version will be published; the current version remains in history."
-            : "Change at least one policy value to enable publishing."}
+            ? "Changes apply to future work; recorded transactions keep their original terms."
+            : "Change a value to enable saving."}
         </p>
         <Button type="submit" disabled={!canSubmit} className="min-h-11 shrink-0">
           <Save className="mr-2 size-4" aria-hidden="true" />
-          {pending ? "Publishing…" : "Publish New Version"}
+          {pending ? "Saving…" : "Save Rule"}
         </Button>
       </div>
     </div>

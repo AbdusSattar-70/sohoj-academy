@@ -10,6 +10,7 @@ type AcademicDatabase = Database & {
   public: {
     Functions: {
       academic_command: { Args: { p_input: Json }; Returns: Json };
+      attendance_command: { Args: { p_input: Json }; Returns: Json };
       academic_workspace: {
         Args: { p_from: string; p_to: string };
         Returns: Json;

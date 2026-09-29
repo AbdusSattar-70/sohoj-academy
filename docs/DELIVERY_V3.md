@@ -1,6 +1,6 @@
 # V3 build and database transition
 
-Status: implementation plan; **do not treat current V2 routes/migrations as V3**. Updated 2026-09-29.
+Status: active GitHub refactor; **not ready for the database reset or production**. Updated 2026-09-29.
 
 ## Starting point
 
@@ -31,3 +31,38 @@ Do not simply delete applied migration files and run `db push` against the exist
 - Database constraints, RLS, authorization, idempotency, retries, capacity and financial balancing are tested; teacher self-finalization is denied.
 - SQL migrations and rollback-only domain scenarios run in CI alongside lint, typecheck and production build. Signed-in admin/teacher browser flows, keyboard/touch use and A4 paper form/actual receipt print pass in the linked development environment.
 - Published status docs report **implemented**, **database-tested**, **browser-tested** and **released** separately. Do not call a compiling page operationally complete.
+
+
+## GitHub branch progress (2026-09-29)
+
+- Operating Rules now has a focused editor showing current values and Save Rule; Access & Security handles staff roles and assignments separately. The existing database history remains internal for audit.
+- The admission case shows payment methods and can post money received with a receipt without leaving the case. Student Accounts receives a validated admission return route, preselects the case and returns after a successful side action.
+- The current GitHub branch still contains the V2 migration line and maker-checker workflows outside teacher submissions. This UI progress is not a V3 database cutover. Complete the transactional admin commands, clean baseline, case-level Finance adjustments and teacher review scope before the owner resets the test database.
+- No build, database migration or end-to-end test was run for these GitHub changes at the owner's request. Do not claim operational readiness from the UI changes alone.
+
+
+## Fee Plan operator correction (2026-09-29)
+
+The Fee Plans page now opens a specific Create or Edit form from a register. Tuition must be a positive recurring charge; a zero one-time admission charge can represent a waived admission fee. The current Fee Plan save command in `09_preserve_fee_terms_on_save.sql` retains prior terms internally when charges change, so existing admissions and posted finance facts keep their original source. No version number is part of the operator action. The initial migration's malformed function quoting was also repaired.
+
+The linked database may still run an older `save_fee_plan` or `publish_fee_plan` function. The message “The next Fee Plan must start after the previous version” comes from that older database path and will persist until the V3 migration line is applied to a clean development database. Do not reset the owner's database based only on these UI changes; complete the V3 cutover checks first.
+
+
+### Fee Plan component guard correction
+
+`10_finalize_fee_plan_after_components.sql` replaces the Fee Plan command for a database that already applied `09`. It inserts components while the replacement plan is DRAFT and activates that plan only after all components exist. The published-component immutability guard stays enabled; existing referenced charge rows are never deleted or modified. On a clean reset, both numbered migrations run in order. On a database that has already applied `09`, migration `10` is the forward fix.
+
+
+### Prospect conversion placement correction
+
+The admission conversion form lists every ACTIVE programme offering with a currently effective published Fee Plan, including offerings in another class or year. Selecting a Prospect keeps the recorded interest when available, otherwise suggests an offering in the saved class. The operator chooses an active batch for that offering. If the chosen offering changes the Prospect's recorded class or interested offering, the admin must explicitly confirm the corrected placement. `12_prospect_admission_placement.sql` rechecks authorization, organization, offering and batch, records the Prospect's before/after class and offering in the audit trail, then calls the existing admission command in one transaction. The underlying admission command still enforces fee availability, seat capacity and duplicate-case prevention. The form surfaces missing published fees and batches so the admin can finish setup before conversion.
+
+
+### Admission offering visibility and build repair
+
+The admission workbench now fetches active offerings separately through `admission_offering_options()` in migration `13_admission_offering_visibility.sql`. An offering lacking an effective ACTIVE Fee Plan remains visible with “Publish Fee Plan first” and cannot be chosen until charges are ready. The existing admission command continues to enforce fee, capacity and organization checks. This avoids a blank select that concealed the difference between missing offerings and incomplete pricing. The previously empty `types/database.ts` was restored from the repository's existing generated contract, and the Fee Plan form once again accepts the register's Edit action. These changes require migration 13 before the updated admission page can load.
+
+
+### Admission register layout
+
+The Admissions landing page keeps the new applicant and enquiry conversion entry points, but presents existing cases as a compact table. The register has In progress, Enrolled and Closed views with counts, programme, batch, status and the next action. Opening a row takes staff to the existing admission case workbench for verification, consent, referral, billing and enrollment; historical records remain available without expanding every case on the landing page. Active enrollment is categorized as Enrolled even if the finance account has a remaining receivable.

@@ -20,7 +20,7 @@ export default async function StaffPage() {
     <div className="space-y-7">
       <PageHeader
         eyebrow="People"
-        title="Staff"
+        title="Staff & Teaching Assignments"
         description="Staff is the permanent person identity. Teacher, Academic Director, Operator and other responsibilities are assignments on that identity, not separate person records."
       />
 

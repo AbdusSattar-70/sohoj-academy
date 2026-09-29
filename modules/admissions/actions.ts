@@ -6,7 +6,12 @@ import { commandSchema, type AdmissionCommand } from "./schema";
 import type { Json } from "@/types/database";
 export async function runAdmissionCommand(
   input: AdmissionCommand,
-): Promise<{ ok: boolean; message: string; field?: string }> {
+): Promise<{
+  ok: boolean;
+  message: string;
+  field?: string;
+  entityId?: string;
+}> {
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
     return {
@@ -38,6 +43,7 @@ export async function runAdmissionCommand(
     mobile: "mobile",
     offeringId: "offering_id",
     prospectId: "prospect_id",
+    confirmPlacementCorrection: "confirm_placement_correction",
     batchId: "batch_id",
     admissionId: "admission_id",
     code: "code",
@@ -56,10 +62,12 @@ export async function runAdmissionCommand(
     ? "post_admission_payment"
     : v.action === "CREATE_BATCH" || v.action === "EDIT_BATCH"
       ? "batch_command"
-      : "admission_command";
+      : v.action === "CREATE"
+        ? "create_prospect_admission"
+        : "admission_command";
   const { data, error } = await db.rpc(command, { p_input: payload });
   if (error) return { ok: false, message: error.message };
-  const result = data as { status?: string; receipt_no?: string };
+  const result = data as { id?: string; status?: string; receipt_no?: string };
   for (const path of [
     "/dashboard/admissions",
     "/dashboard/finance/billing",
@@ -70,12 +78,16 @@ export async function runAdmissionCommand(
     "/dashboard",
   ])
     revalidatePath(path);
+  if (typeof result.id === "string") revalidatePath(`/dashboard/admissions/${result.id}`);
   return {
     ok: true,
     message: result.receipt_no
       ? `Payment posted. Receipt ${result.receipt_no}.`
-      : v.action === "CREATE_BATCH" ? "Batch created."
-        : v.action === "EDIT_BATCH" ? "Batch updated."
+      : v.action === "CREATE_BATCH"
+        ? "Batch created."
+        : v.action === "EDIT_BATCH"
+          ? "Batch updated."
           : `Saved: ${(result.status ?? "completed").replaceAll("_", " ")}.`,
+    entityId: result.id,
   };
 }

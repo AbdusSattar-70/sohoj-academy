@@ -31,5 +31,6 @@ export async function receivePhysicalConsent(input: unknown): Promise<{ ok: bool
   } });
   if (error) return { ok: false, message: error.message };
   revalidatePath("/dashboard/admissions");
+  revalidatePath(`/dashboard/admissions/${parsed.data.admissionId}`);
   return { ok: true, message: "Paper consent received and recorded. Keep the signed original in the student file." };
 }

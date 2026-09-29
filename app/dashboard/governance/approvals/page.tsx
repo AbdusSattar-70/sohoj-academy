@@ -3,97 +3,137 @@ import { ClipboardCheck } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
-import { getApprovalList } from "@/modules/governance/queries";
+import { getAdminReviewQueue } from "@/modules/governance/queries";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 
-export default async function ApprovalsPage() {
-  await requirePermission("approvals.view");
-  const rows = await getApprovalList();
+const reviewLabels = {
+  ATTENDANCE: "Attendance",
+  CLASS_LOG: "Class log",
+  ASSESSMENT_RESULTS: "Assessment results",
+  QUESTION: "Question",
+} as const;
+
+export default async function AdminReviewQueuePage() {
+  const context = await requirePermission("approvals.view");
+  const queue = await getAdminReviewQueue();
+
+  const canReviewAttendance = context.permissions.includes(
+    "academics.attendance.approve",
+  );
+  const canReviewAcademic = context.permissions.includes(
+    "academics.assessments.approve",
+  );
+  const items = queue.filter((item) =>
+    item.reviewType === "ATTENDANCE" || item.reviewType === "CLASS_LOG"
+      ? canReviewAttendance
+      : canReviewAcademic,
+  );
 
   return (
     <div className="space-y-7">
       <PageHeader
         eyebrow="Governance"
-        title="Approval Register"
-        description="Sensitive workflows remain traceable from request through decision. The requester cannot approve their own request."
+        title="Admin Review Queue"
+        description="Teacher submissions remain non-final until an authorized admin reviews them. Approve to make the submitted revision official or reject with a reason so the teacher can correct and resubmit."
+        actions={
+          <span className="rounded-full border bg-card px-3 py-1.5 text-xs font-semibold">
+            {items.length} waiting
+          </span>
+        }
       />
 
-      <Link
-        href="/dashboard/finance/billing"
-        className="inline-block text-sm underline"
-      >
-        Review discount, cancellation and refund requests in Billing &
-        Adjustments → Approvals
-      </Link>
-      {rows.length ? (
-        <section className="overflow-hidden rounded-2xl border bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-sm">
-              <thead>
-                <tr className="border-b bg-muted/40 text-left">
-                  <th className="px-4 py-3 font-semibold">Workflow</th>
-                  <th className="px-4 py-3 font-semibold">Entity</th>
-                  <th className="px-4 py-3 font-semibold">Requested action</th>
-                  <th className="px-4 py-3 font-semibold">Requested</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id} className="border-b align-top">
-                    <td className="px-4 py-3 font-medium">
-                      {row.workflow_type}
-                    </td>
-                    <td className="px-4 py-3">
-                      <p>{row.entity_type}</p>
-                      <p className="mt-1 max-w-48 truncate text-xs text-muted-foreground">
-                        {row.entity_id}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      {row.requested_action}
-                      {row.workflow_type === "ATTENDANCE" && (
-                        <Link
-                          className="mt-2 block underline"
-                          href={`/dashboard/academics/sessions/${row.entity_id}`}
-                        >
-                          Review class attendance
-                        </Link>
-                      )}
-                      {["STUDENT_TRANSFER", "STUDENT_MERGE"].includes(
-                        row.workflow_type,
-                      ) && (
-                        <Link
-                          className="mt-2 block underline"
-                          href={`/dashboard/students/${row.entity_id}#reviews`}
-                        >
-                          Review student request
-                        </Link>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {new Date(row.requested_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge value={row.status} />
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {row.decision_note ?? row.request_note ?? "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:p-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <ReviewRule
+            title="Teacher owns the draft"
+            body="A teacher can save and submit assigned work, but cannot finalize their own submission."
+          />
+          <ReviewRule
+            title="Admin owns the decision"
+            body="Only the configured review permission can approve or reject submitted academic work."
+          />
+          <ReviewRule
+            title="History stays intact"
+            body="Rejected and approved revisions remain traceable; corrections become new revisions."
+          />
+        </div>
+      </section>
+
+      {items.length ? (
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold">Waiting for review</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Open the owning academic workspace to inspect the submitted
+              evidence and record the review decision there.
+            </p>
+          </div>
+
+          <div className="grid gap-4">
+            {items.map((item) => (
+              <article
+                key={item.reviewType + ":" + item.id}
+                className="rounded-2xl border bg-card p-5 sm:p-6"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge value="SUBMITTED" />
+                      <span className="rounded-full border px-2.5 py-1 text-xs font-semibold">
+                        {reviewLabels[item.reviewType]}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Revision {item.revision}
+                      </span>
+                    </div>
+                    <h3 className="mt-2 text-lg font-semibold">{item.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {item.teacherName}
+                      {item.teacherStaffNo
+                        ? " · " + item.teacherStaffNo
+                        : ""}
+                      {" · "}
+                      {item.batchName} · {item.subjectName}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Submitted{" "}
+                      {new Date(item.submittedAt).toLocaleString("en-GB", {
+                        timeZone: "Asia/Dhaka",
+                      })}
+                    </p>
+                  </div>
+
+                  <Link
+                    href={item.href}
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                  >
+                    Open review
+                  </Link>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
       ) : (
         <EmptyState
           icon={ClipboardCheck}
-          title="Approval register is empty"
-          description="Approval requests will appear here when a controlled workflow is submitted."
+          title="Review queue is clear"
+          description={
+            canReviewAttendance || canReviewAcademic
+              ? "No teacher submissions are waiting for your configured review permissions."
+              : "Your account can open the queue, but no academic review permission is assigned."
+          }
         />
       )}
+    </div>
+  );
+}
+
+function ReviewRule({ title, body }: { title: string; body: string }) {
+  return (
+    <div>
+      <h2 className="text-sm font-semibold">{title}</h2>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">{body}</p>
     </div>
   );
 }

@@ -26,11 +26,19 @@ export const CLASS_LOG_PATHS = [
 ] as const;
 
 export async function runAcademicCommand(input: AcademicCommand) {
+  const rpc = [
+    "SAVE_ATTENDANCE",
+    "SUBMIT_ATTENDANCE",
+    "DECIDE_ATTENDANCE",
+  ].includes(input.action)
+    ? "attendance_command"
+    : "academic_command";
+
   return runCommandAction<AcademicCommand, { message: string }>({
     schema: academicCommandSchema,
     input,
     client: academicClient,
-    rpc: "academic_command",
+    rpc,
     permission: "academics.view",
     revalidate: [...ACADEMIC_COMMAND_PATHS],
     revalidateExtra: () =>
@@ -44,7 +52,10 @@ export async function runClassLogCommand(input: ClassLogCommand) {
     input,
     client: academicClient,
     rpc: "class_log_command",
-    permission: ["academics.attendance.record", "academics.sessions.manage"],
+    permission: (value) =>
+      value.action === "DECIDE"
+        ? "academics.attendance.approve"
+        : ["academics.attendance.record", "academics.sessions.manage"],
     revalidate: [...CLASS_LOG_PATHS],
     emptyMessage: "Class-log command returned no response.",
     revalidateExtra: () =>
