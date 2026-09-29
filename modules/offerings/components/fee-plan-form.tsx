@@ -15,13 +15,29 @@ const initialComponent: SaveFeePlanInput["components"][number] = {
   code: "TUITION", name: "Tuition", amount: 0, chargeType: "TUITION", recurrence: "PER_CYCLE",
 };
 
-export function FeePlanForm({ data, today, initialOfferingId }: { data: OfferingOverview; today: string; initialOfferingId?: string }) {
+export type EditingFeePlan = {
+  id: string;
+  offeringId: string;
+  version: number;
+  billingCycle: SaveFeePlanInput["billingCycle"];
+  dueDay: number | null;
+  effectiveFrom: string;
+  components: SaveFeePlanInput["components"];
+};
+
+export function FeePlanForm({ data, today, initialOfferingId, editing, onDone }: {
+  data: OfferingOverview;
+  today: string;
+  initialOfferingId?: string;
+  editing?: EditingFeePlan;
+  onDone?: () => void;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const { register, handleSubmit, control, reset, setError, setValue, getValues, formState: { errors, isDirty, isValid } } = useForm<SaveFeePlanInput>({
     resolver: zodResolver(saveFeePlanSchema), mode: "onChange",
-    defaultValues: { offeringId: initialOfferingId ?? "", billingCycle: "MONTHLY", dueDay: 5, effectiveFrom: today, reason: "", components: [initialComponent] },
+    defaultValues: { offeringId: editing?.offeringId ?? initialOfferingId ?? "", billingCycle: "MONTHLY", dueDay: 5, effectiveFrom: today, reason: "", components: [initialComponent] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "components" });
   const addCharge = (chargeType: "ADMISSION" | "EXAM" | "MATERIAL" | "OTHER") => {
@@ -73,11 +89,12 @@ export function FeePlanForm({ data, today, initialOfferingId }: { data: Offering
       reset(input);
       setMessage({ ok: true, text: "Fee Plan saved. You can continue editing the current charges." });
       router.refresh();
+      onDone?.();
     });
   });
 
   return <section className="rounded-2xl border bg-card p-5 sm:p-6">
-    <h2 className="text-lg font-semibold">Standard Fee Plan</h2>
+    <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-semibold">{editing ? "Edit Standard Fee Plan" : "Standard Fee Plan"}</h2>{editing && <Button type="button" variant="outline" onClick={onDone}>Cancel edit</Button>}</div>
     <p className="mt-1 text-sm text-muted-foreground">These are the standard charges inherited during admission. Authorized admin discounts are recorded separately on the student account.</p>
     <form onSubmit={submit} noValidate className="mt-5 space-y-6">
       <div className="grid gap-5 md:grid-cols-2">
