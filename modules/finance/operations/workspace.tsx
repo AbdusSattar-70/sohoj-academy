@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { FinanceForm, inputClass, type FinanceField } from "./command-form";
@@ -11,12 +12,17 @@ const date = (s: string) =>
 export function FinanceOperations({
   data,
   permissions,
+  returnTo,
 }: {
   data: FinanceWorkspace;
   permissions: string[];
+  returnTo?: string;
 }) {
+  const router = useRouter();
+  const returnAdmissionId = returnTo?.split("/").at(-1);
   const [tab, setTab] = useState("accounts");
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState(returnAdmissionId ?? "");
+  const returnAfterAction = () => { if (returnTo) router.push(returnTo); };
   const [query, setQuery] = useState("");
   const can = (p: string) => permissions.includes(p);
   const admission = data.admissions.find((a) => a.id === selected);
@@ -114,7 +120,7 @@ export function FinanceOperations({
                 <div>
                   <h2 className="text-xl font-semibold">{admission.name}</h2>
                   <Link
-                    href={`/dashboard/admissions#${admission.id}`}
+                    href={`/dashboard/admissions/${admission.id}`}
                     className="text-sm underline"
                   >
                     {admission.number} · Admission record
@@ -146,6 +152,7 @@ export function FinanceOperations({
                       </summary>
                       <div className="mt-4">
                         <FinanceForm
+                          onSuccess={returnAfterAction}
                           defaults={{
                             action: "APPLY_DISCOUNT",
                             admission_id: selected,
@@ -192,6 +199,7 @@ export function FinanceOperations({
                       </summary>
                       <div className="mt-4">
                         <FinanceForm
+                          onSuccess={returnAfterAction}
                           defaults={{
                             action: "CANCEL_ADMISSION",
                             admission_id: selected,
@@ -325,6 +333,7 @@ export function FinanceOperations({
                               </summary>
                               <div className="mt-3">
                                 <FinanceForm
+                                  onSuccess={returnAfterAction}
                                   defaults={{
                                     action: "REFUND",
                                     invoice_id: i.id,
@@ -373,6 +382,7 @@ export function FinanceOperations({
                         </p>
                         {!r.number && can("finance.payments.post") && (
                           <FinanceForm
+                            onSuccess={returnAfterAction}
                             defaults={{
                               action: "POST_REFUND",
                               authorization_id: r.id,
