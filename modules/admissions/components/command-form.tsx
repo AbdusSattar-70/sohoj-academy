@@ -161,9 +161,10 @@ export function AdmissionCommandForm({
                   );
                   const preferred =
                     nextProspect?.interestedOfferingId &&
-                    classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+                    data.offerings.some((o) => o.id === nextProspect.interestedOfferingId)
                       ? nextProspect.interestedOfferingId
                       : classMatched[0]?.id ?? "";
+                  setValue("confirmPlacementCorrection", false);
                   setValue("offeringId", preferred, {
                     shouldDirty: true,
                     shouldValidate: true,
@@ -223,6 +224,13 @@ export function AdmissionCommandForm({
       const payload = { ...values, requestId: request.current.id };
       setMessage(null);
       startTransition(async () => {
+        if (action === "CREATE" && prospect && offeringId) {
+          const chosen = data.offerings.find((o) => o.id === offeringId);
+          if (chosen && ((prospect.classId && prospect.classId !== chosen.classId) || (prospect.interestedOfferingId && prospect.interestedOfferingId !== chosen.id)) && !values.confirmPlacementCorrection) {
+            setMessage({ ok: false, text: "Confirm the corrected programme and class before creating the draft." });
+            return;
+          }
+        }
         const result = await runAdmissionCommand(payload);
         if (!result.ok) {
           if (result.field)
@@ -341,36 +349,39 @@ export function AdmissionCommandForm({
                   (o) => !prospect.classId || o.classId === prospect.classId,
                 );
                 if (!classMatched.length) {
-                  return "No active offering matches this Prospect’s class. Open Academics → Offerings, or clear the class on the enquiry.";
+                  return "No offering matches the recorded class. Select the intended active offering below and confirm the placement correction.";
                 }
                 if (
                   prospect.interestedOfferingId &&
                   !classMatched.some((o) => o.id === prospect.interestedOfferingId)
                 ) {
-                  return "The Prospect’s preferred offering is not available. Choose another active offering for their class.";
+                  return "The recorded interest is unavailable. Select the intended active offering and confirm the change below.";
                 }
                 return prospect.classId
-                  ? "Choose an active offering for the Prospect’s class."
+                  ? "Choose the intended active offering. A different class needs explicit confirmation below."
                   : "Confirm the intended programme. Class is taken from the offering when the Prospect has none.";
               })(),
               (() => {
                 if (!prospect) return [];
-                const classMatched = data.offerings.filter(
-                  (o) => !prospect.classId || o.classId === prospect.classId,
-                );
-                // Prefer the recorded interest when still available; otherwise show all class-matched offerings.
-                const preferred = classMatched.filter(
-                  (o) =>
-                    !prospect.interestedOfferingId ||
-                    o.id === prospect.interestedOfferingId,
-                );
-                const list = preferred.length ? preferred : classMatched;
-                return list.map((o) => ({
+                return data.offerings.map((o) => ({
                   id: o.id,
                   name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}`,
                 }));
               })(),
             )}
+            {prospect && offeringId && (() => {
+              const chosen = data.offerings.find((o) => o.id === offeringId);
+              const differs = chosen && (
+                (prospect.classId && prospect.classId !== chosen.classId) ||
+                (prospect.interestedOfferingId && prospect.interestedOfferingId !== chosen.id)
+              );
+              return differs ? (
+                <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 p-4 text-sm md:col-span-2">
+                  <input type="checkbox" className="mt-1" {...register("confirmPlacementCorrection")} />
+                  <span>Confirm the selected programme and class differ from this Prospect’s enquiry. I verified the intended placement with the student or guardian; the correction will be recorded in the audit trail.</span>
+                </label>
+              ) : null;
+            })()}
             {field(
               "batchId",
               "Batch",
