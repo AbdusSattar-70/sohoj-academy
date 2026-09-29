@@ -1,19 +1,6 @@
--- ACTIVE V3 MIGRATION · 01_platform_crm_admissions.sql
--- Source: supabase/baseline_v3/0001_v3_platform_crm_admissions.sql
--- Apply only on a clean database (no prior schema_migrations history).
-
--- SOHOJ ACADEMY V3 CLEAN BASELINE · PART 01
--- Generated from the reviewed V2 schema history for application on a CLEAN database.
--- No production/test data migration is included.
--- Apply baseline parts in filename order.
-
 -- ============================================================
--- SOURCE: 0001_v2_platform.sql
+-- -- ACTIVE V3 MIGRATION · 01_platform_crm_admissions.sql
 -- ============================================================
-
--- Sohoj Academy ERP v2
--- Platform, identity, permissions, audit, approvals, business rules and master data.
--- This is a clean baseline intended for a destructive development reset.
 
 create extension if not exists pgcrypto;
 
