@@ -23,6 +23,7 @@ const expectedActive = [
   "05_direct_admin_finance.sql",
   "06_direct_admin_accounting.sql",
   "07_attendance_command.sql",
+  "08_current_state_architecture.sql",
 ];
 
 // Hard stops only. Function bodies legitimately insert into operational tables.
