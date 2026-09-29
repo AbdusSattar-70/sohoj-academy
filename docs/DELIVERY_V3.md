@@ -51,3 +51,8 @@ The linked database may still run an older `save_fee_plan` or `publish_fee_plan`
 ### Fee Plan component guard correction
 
 `10_finalize_fee_plan_after_components.sql` replaces the Fee Plan command for a database that already applied `09`. It inserts components while the replacement plan is DRAFT and activates that plan only after all components exist. The published-component immutability guard stays enabled; existing referenced charge rows are never deleted or modified. On a clean reset, both numbered migrations run in order. On a database that has already applied `09`, migration `10` is the forward fix.
+
+
+### Prospect conversion placement correction
+
+The admission conversion form lists every ACTIVE programme offering with a currently effective published Fee Plan, including offerings in another class or year. Selecting a Prospect keeps the recorded interest when available, otherwise suggests an offering in the saved class. The operator chooses an active batch for that offering. If the chosen offering changes the Prospect's recorded class or interested offering, the admin must explicitly confirm the corrected placement. `12_prospect_admission_placement.sql` rechecks authorization, organization, offering and batch, records the Prospect's before/after class and offering in the audit trail, then calls the existing admission command in one transaction. The underlying admission command still enforces fee availability, seat capacity and duplicate-case prevention. The form surfaces missing published fees and batches so the admin can finish setup before conversion.
