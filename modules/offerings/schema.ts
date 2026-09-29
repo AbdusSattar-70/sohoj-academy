@@ -37,6 +37,11 @@ export const saveFeePlanSchema = z.object({
   if (!value.components.some((item) => item.chargeType === "TUITION" && item.recurrence === "PER_CYCLE")) {
     ctx.addIssue({ code: "custom", path: ["components"], message: "Add a recurring Tuition component." });
   }
+  value.components.forEach((item, index) => {
+    if (item.chargeType === "TUITION" && item.amount <= 0) {
+      ctx.addIssue({ code: "custom", path: ["components", index, "amount"], message: "Enter a positive Tuition amount. Record a waived admission charge separately." });
+    }
+  });
   if (new Set(value.components.map((item) => item.code.toUpperCase())).size !== value.components.length) {
     ctx.addIssue({ code: "custom", path: ["components"], message: "Component codes must be unique." });
   }
