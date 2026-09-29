@@ -86,9 +86,9 @@ export function StaffAdmissionIntakeForm({ data }: { data: AdmissionWorkspace })
           <span className="font-medium">Programme offering *</span>
           <select name="offeringId" required value={offeringId} onChange={(e) => setOfferingId(e.target.value)} className={input}>
             <option value="">Choose an active programme</option>
-            {data.offerings.map((row) => <option key={row.id} value={row.id}>{row.code} · {row.name} · {row.yearName} · {row.branchName ?? "No branch"} · {row.className}</option>)}
+            {data.offerings.map((row) => <option key={row.id} value={row.id} disabled={row.feeReady === false}>{row.code} · {row.name} · {row.yearName} · {row.branchName ?? "No branch"} · {row.className}{row.feeReady === false ? " · Publish Fee Plan first" : ""}</option>)}
           </select>
-          <span className="block text-xs text-muted-foreground">Only active offerings are available. The class is assigned from the chosen offering.</span>
+          <span className="block text-xs text-muted-foreground">Active offerings appear here. Publish an effective Fee Plan to enable selection; the class is assigned from the chosen offering.</span>
         </label>
         <label className="block space-y-1.5 text-sm">
           <span className="font-medium">Batch *</span>
