@@ -1,38 +1,44 @@
-# V3 implementation status
+# Current implementation status — Architecture Reset
 
 Updated 2026-09-29.
 
-Operator friction from live use is recorded in `OPERATOR_FRICTION_AND_REDESIGN.md`. Database cutover steps are in `V3_DATABASE_CUTOVER.md`. Admission workbench steps are clickable; CREATE offering/batch empty states and standard action reasons landed earlier on this branch.
+The repository is being reset from a version-oriented business architecture to a current-state ERP architecture.
 
-This branch is the V3 transition branch. After `pnpm run activate:v3-migrations`, the active Supabase migration path is the V3 baseline (`01_`–`07_`).
+## Architecture authority
+docs/ARCHITECTURE_NO_VERSIONING.md is the implementation contract for this reset.
+The uploaded Product Constitution remains useful for product scope, auditability, accessibility, workflow separation and modular-monolith principles, but version-control behavior is explicitly superseded by the current-state architecture.
 
-| Area | Status | Notes |
+## Reset status
+
+| Area | Status | Direction |
 | --- | --- | --- |
-| V3 product / architecture / delivery docs | Implemented | Repository docs are the current phase contract. |
-| Operator friction map | Implemented | `OPERATOR_FRICTION_AND_REDESIGN.md` lists live blockers and V3 responses. |
-| Ordered task navigation | Implemented | Sidebar groups follow the V3 operator order. |
-| Focused admission case route | Implemented | `/dashboard/admissions/[admissionId]` workbench. |
-| Clickable admission steps + work panel | Implemented | Progress steps link into `#work-panel`. |
-| Select-first action reasons | Implemented | READY/ACCEPT/BILL/ACTIVATE/PAY standard notes. |
-| Prospect CREATE empty offering/batch messaging | Implemented | Empty states explain missing fee plan or batch. |
-| Admissions start cards | Implemented | `?start=staff` / `?start=enquiry` open dedicated forms. |
-| Direct staff intake → case | Implemented | No synthetic CRM Enquiry. |
-| Prospect conversion → case | Implemented | Preserves enquiry link. |
-| Unified teacher Admin Review Queue | Implemented | Attendance, class logs, assessment results, questions. |
-| V3 clean database baseline | Implemented | `supabase/baseline_v3` + activate script → `migrations/01_`–`07_`. |
-| V3 database cutover/reset | Ready for operator reset | Follow `docs/V3_DATABASE_CUTOVER.md`. Requires disposable DB reset + `db push` + typegen. |
-| Teacher vertical slice | In transition | Class-log and attendance V3; assessments/questions transition. |
-| Finance V3 reconnection | In transition | Direct admin V3 commands; legacy approvals transition-only. |
-| Browser acceptance | Pending | Linked-environment acceptance still required. |
-| Database/RLS acceptance | Pending | After disposable reset and `db push`. |
+| Product architecture | Resetting | Current-state records, workflow approvals and audit evidence |
+| Fee Plans | Resetting | One editable current Fee Plan per Programme Offering |
+| Operating rules | Resetting | Current editable settings; finalized transactions retain needed calculation facts |
+| Programme public content | Resetting | Current offering content; approval is workflow state |
+| Teacher academic work | In transition | Draft/submission/approval workflow, no user-managed versions |
+| Admissions | In transition | Admission inherits current Fee Plan and stores finalized financial facts |
+| Finance | In transition | Immutable posted facts + reversal/refund/adjustment |
+| Audit | Preserved | Before/after evidence remains mandatory |
+| Permissions/RLS | Preserved | Database remains the security boundary |
+| Concurrency/idempotency | Preserved | Critical commands remain transaction-safe |
+| UI terminology | Resetting | Remove Version N, publish-new-version and retire-version language |
+| Database | Planned reset | Replace legacy version-oriented tables/RPCs with current-state contracts |
 
-## Current implementation boundary
+## Implementation order
+1. Freeze the current-state domain contracts.
+2. Remove versioning language and controls from all product surfaces.
+3. Introduce canonical current-state database tables and commands.
+4. Migrate admission/finance dependencies from version IDs to current-state IDs/snapshots.
+5. Remove legacy version tables/functions after dependency migration.
+6. Run lint, typecheck, build, database/RLS tests and browser acceptance.
 
-UI workbench and start-path UX are on the branch. Schema cutover is prepared: run `activate:v3-migrations`, reset a disposable database, then `db push` and regenerate types.
-
-## Next V3 delivery slice
-
-1. Operator: reset disposable Supabase project and run cutover commands in `docs/V3_DATABASE_CUTOVER.md`.
-2. Regenerate `types/database.ts` and fix any compile gaps.
-3. Continue finance reconnection and teacher assessment/question V3 commands.
-4. Browser acceptance of admin admission path end-to-end on one page.
+## Definition of done
+- a normal user never has to create or select a business version;
+- editing a current record updates that record directly;
+- audit history still shows who/when/why/before/after;
+- finalized financial and academic facts remain explainable;
+- approval workflows still protect teacher-submitted work;
+- admission always reads the current Fee Plan;
+- no legacy version terminology leaks into the UI;
+- database constraints, RLS, idempotency and concurrency protections still pass.
