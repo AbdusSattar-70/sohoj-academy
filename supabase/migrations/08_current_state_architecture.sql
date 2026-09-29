@@ -41,8 +41,7 @@ select
   c.amount,
   c.charge_type,
   c.recurrence,
-  c.sort_order,
-  c.created_at
+  c.sort_order
 from public.fee_plan_components c
 join public.current_fee_plans fp on fp.id = c.fee_plan_version_id;
 
