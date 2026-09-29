@@ -3569,12 +3569,14 @@ begin
   if v_offering.id is null then raise exception 'Offering is not available.'; end if;
   select * into v_previous from public.fee_plan_versions
   where offering_id=v_offering.id and status='ACTIVE' for update;
-  if v_previous.id is not null and v_effective<=v_previous.effective_from then
-    raise exception 'The next Fee Plan must start after the previous version.';
-  end if;
+  -- Admin may supersede the ACTIVE plan the same day. Versions stay immutable history.
   if v_previous.id is not null then
     update public.fee_plan_versions
-    set status='RETIRED',effective_to=v_effective-1
+    set status='RETIRED',
+        effective_to=case
+          when v_effective<=v_previous.effective_from then v_previous.effective_from
+          else v_effective-1
+        end
     where id=v_previous.id;
   end if;
   insert into public.fee_plan_versions(offering_id,version,status,billing_cycle,
@@ -3678,12 +3680,14 @@ begin
   end if;
   select * into v_previous from public.fee_plan_versions
   where offering_id=v_offering.id and status='ACTIVE' for update;
-  if v_previous.id is not null and v_effective<=v_previous.effective_from then
-    raise exception 'The next Fee Plan must start after the previous version.';
-  end if;
+  -- Admin may supersede the ACTIVE plan the same day. Versions stay immutable history.
   if v_previous.id is not null then
     update public.fee_plan_versions
-    set status='RETIRED',effective_to=v_effective-1
+    set status='RETIRED',
+        effective_to=case
+          when v_effective<=v_previous.effective_from then v_previous.effective_from
+          else v_effective-1
+        end
     where id=v_previous.id;
   end if;
   insert into public.fee_plan_versions(offering_id,version,status,billing_cycle,
