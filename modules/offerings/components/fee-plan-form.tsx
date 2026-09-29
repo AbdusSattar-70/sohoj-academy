@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
@@ -27,6 +27,28 @@ export function FeePlanForm({ data, today }: { data: OfferingOverview; today: st
   const cycle = useWatch({ control, name: "billingCycle" });
   const selectedOffering = useWatch({ control, name: "offeringId" });
   const active = data.plans.find((plan) => plan.offering_id === selectedOffering && plan.status === "ACTIVE");
+  useEffect(() => {
+    if (!selectedOffering) return;
+    if (!active) return;
+    const components = data.components
+      .filter((item) => item.fee_plan_version_id === active.id)
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((item) => ({
+        code: item.code,
+        name: item.name,
+        amount: Number(item.amount),
+        chargeType: item.charge_type as PublishFeePlanInput["components"][number]["chargeType"],
+        recurrence: item.recurrence as PublishFeePlanInput["components"][number]["recurrence"],
+      }));
+    reset({
+      offeringId: active.offering_id,
+      billingCycle: active.billing_cycle,
+      dueDay: active.due_day,
+      effectiveFrom: today,
+      reason: "",
+      components: components.length ? components : [initialComponent],
+    });
+  }, [selectedOffering, active?.id, today]);
 
   const submit = handleSubmit((input) => {
     setMessage(null);
