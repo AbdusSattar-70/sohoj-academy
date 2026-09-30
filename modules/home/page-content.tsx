@@ -1,10 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
-  BarChart3,
   BookOpenCheck,
   Check,
-  LineChart,
   MessageSquareText,
   ShieldCheck,
   Sparkles,
@@ -51,10 +50,12 @@ const trustPoints = [
 ] as const;
 
 const method = [
-  ["01", "Understand", "বুঝি", "Concept first", "আগে ধারণা পরিষ্কার করি"],
-  ["02", "Practise", "অনুশীলন করি", "Practise deliberately", "উদ্দেশ্যপূর্ণ অনুশীলন করি"],
-  ["03", "Assess", "পরীক্ষা দিই", "Measure learning", "শেখা কতটুকু হয়েছে যাচাই করি"],
-  ["04", "Analyse", "বিশ্লেষণ করি", "Find the gap", "ঘাটতি চিহ্নিত করি"],
+  ["01", "Understand", "বুঝি", "Build the concept", "ধারণা পরিষ্কার করি", "from-blue-500 to-cyan-400"],
+  ["02", "Practise", "অনুশীলন করি", "Work it through", "অনুশীলন করি", "from-violet-500 to-blue-500"],
+  ["03", "Test", "পরীক্ষা দিই", "Check understanding", "বোঝা যাচাই করি", "from-amber-400 to-orange-500"],
+  ["04", "Find mistakes", "ভুল খুঁজি", "Spot what needs work", "কোথায় কাজ দরকার দেখি", "from-rose-500 to-pink-500"],
+  ["05", "Learn again", "আবার শিখি", "Close the learning gap", "শেখার ঘাটতি পূরণ করি", "from-emerald-500 to-teal-400"],
+  ["06", "Improve", "উন্নতি করি", "Move forward with clarity", "আত্মবিশ্বাসে এগিয়ে যাই", "from-blue-600 to-indigo-500"],
 ] as const;
 
 export async function HomePageContent() {
@@ -129,87 +130,26 @@ export async function HomePageContent() {
               </div>
             </div>
 
-            <div className="mx-auto w-full max-w-xl lg:mx-0">
-              <div className="relative overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-950 p-5 text-white shadow-[0_30px_80px_-35px_rgba(15,23,42,0.55)] sm:p-7">
-                <div className="absolute right-0 top-0 size-56 rounded-full bg-blue-600/20 blur-3xl" aria-hidden="true" />
-                <div className="relative">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">
-                        <LocalizedText en="Sohoj Learning Method" bn="সহজ লার্নিং মেথড" />
-                      </p>
-                      <h2 className="mt-2 text-xl font-semibold text-white">
-                        <LocalizedText
-                          en="Learn → practise → measure → improve"
-                          bn="বুঝি → অনুশীলন করি → পরীক্ষা দিই → উন্নতি করি"
-                        />
-                      </h2>
-                    </div>
-                    <div className="rounded-xl bg-white/10 p-2 text-blue-200">
-                      <LineChart className="size-5" aria-hidden="true" />
-                    </div>
-                  </div>
-
-                  <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                    {method.map(([number, enTitle, bnTitle, enDesc, bnDesc]) => (
-                      <div key={number} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-bold text-blue-300">{number}</span>
-                          <span className="font-semibold text-white">
-                            <LocalizedText en={enTitle} bn={bnTitle} />
-                          </span>
-                        </div>
-                        <p className="mt-2 text-xs leading-5 text-slate-400">
-                          <LocalizedText en={enDesc} bn={bnDesc} />
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.08] p-4">
-                    <div className="flex items-center justify-between gap-4 text-sm">
-                      <span className="font-medium text-emerald-100">
-                        <LocalizedText en="80% mastery achieved?" bn="৮০% দক্ষতা অর্জিত?" />
-                      </span>
-                      <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-200">
-                        <LocalizedText en="YES → Move forward" bn="হ্যাঁ → এগিয়ে যাই" />
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs leading-5 text-emerald-100/65">
-                      <LocalizedText
-                        en="If not, return to practice, fix the gap and measure again."
-                        bn="না হলে অনুশীলনে ফিরে গিয়ে ঘাটতি ঠিক করি—তারপর আবার যাচাই করি।"
-                      />
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative -mt-5 ml-auto mr-4 w-[86%] rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-xl sm:mr-8">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      <LocalizedText en="Example progress snapshot" bn="উদাহরণ অগ্রগতি চিত্র" />
-                    </p>
-                    <p className="mt-1 text-sm font-semibold">
-                      <LocalizedText en="Weekly learning review" bn="সাপ্তাহিক শেখার পর্যালোচনা" />
-                    </p>
-                  </div>
-                  <BarChart3 className="size-5 text-blue-700 dark:text-blue-400" aria-hidden="true" />
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                  {[
-                    ["Homework", "হোমওয়ার্ক", "90%"],
-                    ["Participation", "অংশগ্রহণ", "85%"],
-                    ["Weekly Test", "সাপ্তাহিক টেস্ট", "84%"],
-                  ].map(([en, bn, value]) => (
-                    <div key={en} className="rounded-xl bg-muted px-2 py-3">
-                      <p className="text-sm font-bold">{value}</p>
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        <LocalizedText en={en} bn={bn} />
-                      </p>
-                    </div>
-                  ))}
+            <div className="relative mx-auto w-full max-w-2xl lg:mx-0">
+              <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-blue-500/20 via-transparent to-emerald-400/20 blur-2xl" aria-hidden="true" />
+              <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 shadow-[0_35px_90px_-35px_rgba(2,6,23,.8)]">
+                <Image
+                  src="/images/sohoj-classroom.webp"
+                  alt="Illustrative classroom photo of a teacher guiding students through a lesson"
+                  width={1672}
+                  height={941}
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 48vw"
+                  className="aspect-[1.22] w-full object-cover object-center sm:aspect-[1.38]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/10 to-transparent" aria-hidden="true" />
+                <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
+                    <LocalizedText en="LEARNING, MADE CLEAR" bn="সহজভাবে শেখা" />
+                  </p>
+                  <p className="mt-2 max-w-md text-xl font-semibold leading-snug sm:text-2xl">
+                    <LocalizedText en="A classroom where every question gets room." bn="যে শ্রেণিকক্ষে প্রতিটি প্রশ্নের জন্য জায়গা আছে।" />
+                  </p>
                 </div>
               </div>
             </div>
@@ -218,31 +158,56 @@ export async function HomePageContent() {
 
         <HomeProgramSection />
 
-        <section id="method" className="scroll-mt-24 bg-background">
-          <div className="mx-auto grid max-w-7xl gap-12 px-5 py-18 sm:px-6 lg:grid-cols-[.78fr_1.22fr] lg:px-8 lg:py-24">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-700 dark:text-blue-400">
-                <LocalizedText en="Learning Method" bn="শেখার পদ্ধতি" />
+        <section id="method" className="scroll-mt-24 overflow-hidden border-b border-border bg-slate-950 text-white">
+          <div className="mx-auto max-w-7xl px-5 py-18 sm:px-6 lg:px-8 lg:py-24">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">
+                <LocalizedText en="The Sohoj Learning Method" bn="সহজ একাডেমির শেখার পদ্ধতি" />
               </p>
               <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
                 <LocalizedText
-                  en="Progress comes from a repeatable learning cycle."
-                  bn="পুনরাবৃত্ত শেখার চক্র থেকেই স্থায়ী অগ্রগতি আসে।"
+                  en="A clear path from first understanding to steady improvement."
+                  bn="প্রথম ধারণা থেকে ধারাবাহিক উন্নতি—একটি পরিষ্কার শেখার পথ।"
                 />
               </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+                <LocalizedText en="When a test reveals a gap, students return to the concept and practise again. Learning moves forward when understanding is stronger." bn="পরীক্ষায় ঘাটতি ধরা পড়লে শিক্ষার্থী ধারণায় ফিরে গিয়ে আবার অনুশীলন করে। বোঝাপড়া শক্ত হলে শেখা সামনে এগোয়।" />
+              </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {trustPoints.map((point) => (
-                <div key={point.title[0]} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
-                    <point.icon className="size-5" aria-hidden="true" />
+            <div className="relative mx-auto mt-14 max-w-5xl [perspective:1400px]">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {method.map(([number, enTitle, bnTitle, enDesc, bnDesc, color], index) => (
+                  <div
+                    key={number}
+                    className={`group relative rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.11] to-white/[0.035] p-5 shadow-[0_18px_35px_-20px_rgba(0,0,0,.8)] transition duration-300 [transform:rotateX(5deg)_rotateY(-3deg)] hover:-translate-y-1 hover:border-white/25 hover:[transform:rotateX(0deg)_rotateY(0deg)] ${index === 3 ? "lg:col-start-3 lg:row-start-2" : index === 4 ? "lg:col-start-2 lg:row-start-2" : index === 5 ? "lg:col-start-1 lg:row-start-2" : ""}`}
+                  >
+                    <div className={`mb-5 inline-flex size-11 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-sm font-black text-white shadow-lg shadow-black/25`}>
+                      {number}
+                    </div>
+                    <h3 className="text-lg font-semibold"><LocalizedText en={enTitle} bn={bnTitle} /></h3>
+                    <p className="mt-1 text-sm text-slate-300"><LocalizedText en={enDesc} bn={bnDesc} /></p>
+                    {index === 0 || index === 1 ? <ArrowRight className="absolute -right-3 top-1/2 z-10 hidden size-6 -translate-y-1/2 rounded-full border border-white/15 bg-slate-900 p-1 text-blue-200 lg:block" aria-hidden="true" /> : null}
+                    {index === 2 ? <ArrowRight className="absolute -bottom-3 right-5 z-10 hidden size-6 rotate-90 rounded-full border border-white/15 bg-slate-900 p-1 text-blue-200 lg:block" aria-hidden="true" /> : null}
+                    {index === 3 || index === 4 ? <ArrowRight className="absolute -left-3 top-1/2 z-10 hidden size-6 rotate-180 -translate-y-1/2 rounded-full border border-white/15 bg-slate-900 p-1 text-blue-200 lg:block" aria-hidden="true" /> : null}
                   </div>
-                  <h3 className="mt-4 font-semibold">
-                    <LocalizedText en={point.title[0]} bn={point.title[1]} />
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    <LocalizedText en={point.description[0]} bn={point.description[1]} />
-                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="why-sohoj" className="scroll-mt-24 bg-background">
+          <div className="mx-auto max-w-7xl px-5 py-18 sm:px-6 lg:px-8 lg:py-20">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-700 dark:text-blue-400"><LocalizedText en="Why Sohoj" bn="কেন সহজ একাডেমি" /></p>
+              <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl"><LocalizedText en="Attention you can see in the learning." bn="শেখার অগ্রগতিতে স্পষ্ট মনোযোগ।" /></h2>
+            </div>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {trustPoints.map((point) => (
+                <div key={point.title[0]} className="rounded-2xl border border-border bg-card p-5">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"><point.icon className="size-5" aria-hidden="true" /></div>
+                  <h3 className="mt-4 font-semibold"><LocalizedText en={point.title[0]} bn={point.title[1]} /></h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground"><LocalizedText en={point.description[0]} bn={point.description[1]} /></p>
                 </div>
               ))}
             </div>
@@ -254,11 +219,8 @@ export async function HomePageContent() {
             <div>
               <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">SOHOJ ACADEMY</p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-                <LocalizedText en="Focused learning. Visible progress." bn="মনোযোগী শেখা। দৃশ্যমান অগ্রগতি।" />
+                <LocalizedText en="Find the right next step for your student." bn="আপনার শিক্ষার্থীর জন্য সঠিক পরবর্তী পদক্ষেপটি খুঁজুন।" />
               </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                <LocalizedText en="Learning should be easy and enjoyable" bn="শিক্ষা হোক সহজ ও আনন্দময়" />
-              </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
@@ -287,6 +249,11 @@ export async function HomePageContent() {
               bn="© সহজ একাডেমি। একাডেমিক সহায়তা ও ডিজিটাল ক্যাম্পাস।"
             />
           </p>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <Link href="/about" className="hover:text-foreground"><LocalizedText en="About" bn="পরিচিতি" /></Link>
+            <Link href="/faq" className="hover:text-foreground"><LocalizedText en="FAQ" bn="প্রশ্নোত্তর" /></Link>
+            <Link href="/journal" className="hover:text-foreground"><LocalizedText en="Journal" bn="শিক্ষা-জার্নাল" /></Link>
+          </div>
         </div>
       </footer>
     </div>

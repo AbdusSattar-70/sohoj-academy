@@ -39,7 +39,7 @@ export async function createStaffAdmissionIntake(input: StaffAdmissionIntake) {
     },
   } as never);
   if (error) return { ok: false as const, message: error.message };
-  const result = data as { admission_id?: string; prospect_no?: string } | null;
+  const result = data as { admission_id?: string; admission_no?: string } | null;
   if (!result?.admission_id)
     return { ok: false as const, message: "The admission service did not return a case reference. Refresh Admissions and check for the new draft before retrying." };
 
@@ -49,5 +49,5 @@ export async function createStaffAdmissionIntake(input: StaffAdmissionIntake) {
     "/dashboard/students",
     "/dashboard/action-center",
   ]) revalidatePath(path);
-  return { ok: true as const, admissionId: result.admission_id, prospectNo: result.prospect_no ?? "" };
+  return { ok: true as const, admissionId: result.admission_id, admissionNo: result.admission_no ?? "" };
 }
