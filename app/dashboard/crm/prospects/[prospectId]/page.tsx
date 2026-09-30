@@ -1,3 +1,5 @@
+import { ProspectAssignmentForm } from "@/modules/crm/components/prospect-assignment-form";
+import { platformClient } from "@/modules/platform/rpc-client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -28,6 +30,11 @@ export default async function ProspectDetailPage({
   const prospect = await getProspectDetail(prospectId);
 
   if (!prospect) notFound();
+  const db = await platformClient();
+  const assignment = can(context, "crm.prospects.manage")
+    ? await db.rpc("prospect_assignment_options")
+    : null;
+  if (assignment?.error) throw new Error(assignment.error.message);
 
   return (
     <div className="space-y-7">
@@ -79,6 +86,13 @@ export default async function ProspectDetailPage({
         }
       />
 
+      {assignment && (
+        <ProspectAssignmentForm
+          prospectId={prospect.id}
+          selected={prospect.assignedStaffId}
+          staff={assignment.data}
+        />
+      )}
       <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
         <section className="rounded-2xl border bg-card p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -163,7 +177,7 @@ export default async function ProspectDetailPage({
 
           <div className="mt-6 grid gap-4 border-t pt-5 sm:grid-cols-2">
             <Detail label="Lead Source" value={prospect.sourceName} />
-            <Detail label="Assigned Owner" value={prospect.assignedTo} />
+            <Detail label="Follow-up staff" value={prospect.assignedTo} />
             <Detail
               label="Preferred Schedule"
               value={prospect.preferredSchedule?.replaceAll("_", " ") ?? "—"}

@@ -22,7 +22,12 @@ const statuses = [
 
 const intents = ["ALL", "interest", "admission"] as const;
 
-const QUEUE_STATUSES = new Set(["NEW", "CONTACTED", "COUNSELLING", "FUTURE_FOLLOW_UP"]);
+const QUEUE_STATUSES = new Set([
+  "NEW",
+  "CONTACTED",
+  "COUNSELLING",
+  "FUTURE_FOLLOW_UP",
+]);
 
 export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
   const [query, setQuery] = useState("");
@@ -40,8 +45,7 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
           : status === "QUEUE"
             ? QUEUE_STATUSES.has(row.status)
             : row.status === status;
-      const matchesIntent =
-        intent === "ALL" || row.submissionIntent === intent;
+      const matchesIntent = intent === "ALL" || row.submissionIntent === intent;
       const matchesReview = !needsReviewOnly || row.schoolNeedsReview;
       const matchesQuery =
         !needle ||
@@ -62,7 +66,9 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
     });
   }, [intent, needsReviewOnly, query, rows, status]);
 
-  const queueCount = rows.filter((row) => QUEUE_STATUSES.has(row.status)).length;
+  const queueCount = rows.filter((row) =>
+    QUEUE_STATUSES.has(row.status),
+  ).length;
   const reviewCount = rows.filter((row) => row.schoolNeedsReview).length;
 
   return (
@@ -149,7 +155,7 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
               <th className="px-4 py-3 font-medium">Class / School</th>
               <th className="px-4 py-3 font-medium">Intent / Offering</th>
               <th className="px-4 py-3 font-medium">Source</th>
-              <th className="px-4 py-3 font-medium">Owner</th>
+              <th className="px-4 py-3 font-medium">Follow-up staff</th>
               <th className="px-4 py-3 font-medium">Next follow-up</th>
               <th className="px-4 py-3 font-medium">Status</th>
             </tr>
@@ -191,7 +197,9 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
                   ) : null}
                 </td>
                 <td className="px-4 py-3">
-                  <p className="font-medium capitalize">{row.submissionIntent}</p>
+                  <p className="font-medium capitalize">
+                    {row.submissionIntent}
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {row.offeringLabel}
                   </p>

@@ -92,6 +92,7 @@ export type ProspectListRow = {
   schoolNeedsReview: boolean;
   sourceName: string;
   assignedTo: string;
+  assignedStaffId: string | null;
   status: ProspectStatus;
   nextFollowUpAt: string | null;
   createdAt: string;
@@ -171,6 +172,7 @@ export async function getProspectList(): Promise<ProspectListRow[]> {
       schoolName,
       schoolNeedsReview,
       sourceName: row.source_id ? (sourceNames.get(row.source_id) ?? "—") : "—",
+      assignedStaffId: row.assigned_to_staff_id,
       assignedTo: row.assigned_to_staff_id
         ? (staffNames.get(row.assigned_to_staff_id) ?? "Unassigned")
         : "Unassigned",
@@ -209,6 +211,7 @@ export type ProspectDetail = {
   notes: string | null;
   status: ProspectStatus;
   assignedTo: string;
+  assignedStaffId: string | null;
   nextFollowUpAt: string | null;
   lostReason: string | null;
   createdAt: string;
@@ -462,6 +465,7 @@ export async function getProspectDetail(
     referralNote: prospect.referral_note ?? null,
     notes: prospect.notes ?? null,
     status: prospect.status as ProspectStatus,
+    assignedStaffId: prospect.assigned_to_staff_id,
     assignedTo: prospect.assigned_to_staff_id
       ? (staffNames.get(prospect.assigned_to_staff_id) ?? "Unassigned")
       : "Unassigned",
