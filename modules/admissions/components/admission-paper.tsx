@@ -1,3 +1,4 @@
+import { admissionPrintStyles } from "./document-styles";
 import type { ReactNode } from "react";
 type PaperData = {
   discountPercent?: number;
@@ -67,18 +68,7 @@ export function AdmissionPaper({
   const receipt = a.receipts?.find((r) => r.number === receiptOnly);
   return (
     <>
-      <style>{`
- .admission-paper{color:#111;background:#fff;max-width:210mm;margin:auto;font:10pt/1.4 Arial,sans-serif}
- .paper-page{min-height:275mm;padding:12mm 14mm;box-sizing:border-box;background:white;margin-bottom:16px;border:1px solid #ddd}
- .paper-header{display:flex;justify-content:space-between;align-items:start;border-bottom:2px solid #222;padding-bottom:4mm;margin-bottom:5mm}
- .paper-header h1{font-size:20pt;font-weight:700;margin:0}.paper-header p{margin:1mm 0;font-size:9pt}.paper-photo{border:1px solid #888;width:25mm;height:30mm;text-align:center;padding-top:10mm;font-size:8pt}
- .paper-title{font-size:14pt;font-weight:700;margin:0 0 4mm}.paper-section{margin:4mm 0;break-inside:avoid}.paper-section h2{font-size:10pt;font-weight:700;background:#eee;padding:2mm 3mm;margin-bottom:3mm}
- .paper-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm 6mm}.paper-field span{display:block;font-size:8pt;color:#444}.paper-field>div{min-height:7mm;border-bottom:1px solid #888;padding:1mm 0;overflow-wrap:anywhere}.paper-wide{grid-column:1/-1}
- .paper-note{font-size:8pt;margin-top:2mm}.paper-signatures{display:grid;grid-template-columns:1fr 1fr;gap:9mm;margin-top:10mm}.paper-signatures>div{border-top:1px solid #333;padding-top:2mm;font-size:8pt}
- .paper-page:last-child{font-size:9pt;line-height:1.3}.paper-page:last-child .paper-header h1{font-size:16pt}.paper-page:last-child .paper-section{margin:3mm 0}.paper-page:last-child .paper-field>div{min-height:5mm}.paper-page:last-child .paper-field span{font-size:7.5pt}.paper-page:last-child .paper-grid{gap:2mm 5mm}.paper-page:last-child .paper-signatures{margin-top:6mm}.paper-page:last-child .paper-receipt{margin-top:4mm;padding-top:3mm}
- .paper-table{width:100%;border-collapse:collapse;font-size:9pt}.paper-table th,.paper-table td{border:1px solid #aaa;padding:2mm;text-align:left}.paper-receipt{border-top:2px dashed #555;margin-top:6mm;padding-top:4mm;break-inside:avoid}.paper-receipt h2{font-size:12pt;font-weight:700;margin:0 0 2mm}
- @media print{body *{visibility:hidden}.admission-paper,.admission-paper *{visibility:visible}.admission-paper{position:absolute;left:0;top:0;width:100%;max-width:none}.paper-page{height:277mm;min-height:0;padding:0;border:0;margin:0;break-after:page;overflow:visible}.paper-page:last-child{break-after:auto}.paper-section{break-inside:avoid}@page{size:A4;margin:10mm 14mm}}
- `}</style>
+      <style>{admissionPrintStyles}</style>
       <article className="admission-paper">
         {!receiptOnly && (
           <section className="paper-page">
@@ -182,6 +172,12 @@ export function AdmissionPaper({
               Please complete the guardian declaration on page 2. The Student ID
               and academy roll are assigned by the ERP, not by the applicant.
             </p>
+            <footer className="paper-footer">
+              <span>
+                Admission desk · {a.number || "Reference assigned on ERP entry"}
+              </span>
+              <span>Student / guardian details · 1 / 2</span>
+            </footer>
           </section>
         )}
         <section className="paper-page">
@@ -362,6 +358,12 @@ export function AdmissionPaper({
                 : "Manual receipt must be entered once in ERP using this paper reference. A blank or unpaid application is not a money receipt."}
             </p>
           </section>
+          <footer className="paper-footer">
+            <span>{a.number || "Keep signed original in academy records"}</span>
+            <span>
+              {receiptOnly ? "Payment receipt" : "Office record · 2 / 2"}
+            </span>
+          </footer>
         </section>
       </article>
     </>
