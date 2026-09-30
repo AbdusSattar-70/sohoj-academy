@@ -63,9 +63,10 @@ export default async function AdmissionCasePage({
       "BILLING_POSTED",
       "PENDING_PAYMENT",
       "ACTIVE_ENROLLMENT",
+      "CLOSED_ENROLLMENT",
     ].includes(a.status),
     accepted = finished || a.status === "ACCEPTED",
-    cancelled = a.status === "CANCELLED";
+    cancelled = ["CANCELLED", "CLOSED_ENROLLMENT"].includes(a.status);
   const total = a.components.reduce((n, c) => n + c.amount, 0);
   const steps = [
     {
@@ -318,7 +319,8 @@ export default async function AdmissionCasePage({
         <CaseStepNavigation steps={steps} panels={panels} />
       ) : (
         <p className="rounded-xl border p-5">
-          This case is cancelled. Its record and financial history are retained.
+          This admission is closed. Its application, enrollment history and
+          financial balances are retained.
         </p>
       )}
       <details className="rounded-xl border p-5">

@@ -78,6 +78,10 @@ begin
  delete from public.admission_cases where id=direct_case;
  raise exception 'Permanent admission deletion was accepted.';
  exception when others then if sqlerrm='Permanent admission deletion was accepted.' then raise; end if; end;
+ perform public.admission_command(jsonb_build_object('action','ACTIVATE','request_id',gen_random_uuid(),'admission_id',direct_case,'reason','Activate under unpaid enrollment policy'));
+ perform public.close_student_enrollment(jsonb_build_object('student_id',(detail->>'studentId')::uuid,'enrollment_id',(select enrollment_id from public.admission_cases where id=direct_case),'mode','WITHDRAWN','reason','Guardian requested withdrawal from programme'));
+ if (select status from public.admission_cases where id=direct_case)<>'CLOSED_ENROLLMENT' then raise exception 'Closed case must leave active recurring billing.'; end if;
+ if (public.admission_case_detail(direct_case)->'invoice'->>'due')::numeric<>2800 then raise exception 'Closing enrollment must retain dues.'; end if;
  perform public.record_lifecycle_command(jsonb_build_object('entity','batch','id',batch,'active',false,'reason','Close batch for new intake'));
  if (select is_active from public.batches where id=batch) then raise exception 'Batch was not marked inactive.'; end if;
 end $test$;

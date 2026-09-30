@@ -1,3 +1,4 @@
+import { CloseEnrollmentForm } from "@/modules/students/lifecycle/close-enrollment-form";
 import { RecordStateButton } from "@/components/erp/record-state-button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -167,7 +168,7 @@ export default async function StudentProfilePage({
                 {can("admissions.view") ? (
                   <Link
                     className="font-semibold underline"
-                    href={`/dashboard/admissions#${a.id}`}
+                    href={`/dashboard/admissions/${a.id}`}
                   >
                     {a.number}
                   </Link>
@@ -247,6 +248,12 @@ export default async function StudentProfilePage({
                   <td>{e.endsOn ?? "—"}</td>
                   <td>
                     <StatusBadge value={e.status} />
+                    {e.status === "ACTIVE" && can("students.manage") && (
+                      <CloseEnrollmentForm
+                        studentId={s.id}
+                        enrollmentId={e.id}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
