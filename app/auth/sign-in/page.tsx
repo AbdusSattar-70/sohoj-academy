@@ -45,10 +45,12 @@ export default function SignInPage() {
     setError("");
 
     const supabase = createClient();
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword(
+      {
+        email: email.trim(),
+        password,
+      },
+    );
 
     if (signInError || !data.session) {
       setError(signInError?.message ?? copy.failed);
@@ -85,12 +87,19 @@ export default function SignInPage() {
               <LockKeyhole className="size-5" aria-hidden="true" />
             </div>
 
-            <h1 className="mt-6 text-2xl font-bold tracking-[-0.03em]">{copy.title}</h1>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.subtitle}</p>
+            <h1 className="mt-6 text-2xl font-bold tracking-[-0.03em]">
+              {copy.title}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {copy.subtitle}
+            </p>
 
             <form onSubmit={signIn} className="mt-7 space-y-5">
               <div>
-                <label htmlFor="email" className="mb-2 block text-sm font-medium">
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-medium"
+                >
                   {copy.email}
                 </label>
                 <input
@@ -112,7 +121,9 @@ export default function SignInPage() {
                   <label htmlFor="password" className="text-sm font-medium">
                     {copy.password}
                   </label>
-                  <span className="text-xs text-muted-foreground">{copy.required}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {copy.required}
+                  </span>
                 </div>
                 <div className="relative">
                   <input
@@ -129,7 +140,9 @@ export default function SignInPage() {
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
                     className="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+                    aria-label={
+                      showPassword ? copy.hidePassword : copy.showPassword
+                    }
                     aria-pressed={showPassword}
                   >
                     {showPassword ? (
@@ -161,7 +174,21 @@ export default function SignInPage() {
             </form>
 
             <div className="mt-6 border-t border-border pt-5">
-              <p className="text-xs leading-5 text-muted-foreground">{copy.support}</p>
+              <Link
+                href="/auth/forgot-password"
+                className="mb-3 block text-sm underline"
+              >
+                Forgot password?
+              </Link>
+              <Link
+                href="/auth/sign-up"
+                className="mb-3 block text-sm underline"
+              >
+                Request staff access
+              </Link>
+              <p className="text-xs leading-5 text-muted-foreground">
+                {copy.support}
+              </p>
             </div>
           </div>
         </div>

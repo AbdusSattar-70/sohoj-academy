@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { finishWorkflow } from "@/modules/platform/navigation/workflow-return";
 import { useId, useRef, useState, useTransition, type FormEvent } from "react";
 import { useForm, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +32,7 @@ export function FinanceForm({
   description?: string;
   onSuccess?: () => void;
 }) {
+  const router = useRouter();
   const formId = useId();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
@@ -77,6 +80,7 @@ export function FinanceForm({
             request.current = null;
             reset();
             onSuccess?.();
+            finishWorkflow(router);
           }
         } catch {
           setMessage({

@@ -59,7 +59,10 @@ export default function AuthHomePage() {
 
           <div className="relative my-auto max-w-2xl py-16">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">
-              <LocalizedText en="Sohoj Academy Digital Campus" bn="সহজ একাডেমি ডিজিটাল ক্যাম্পাস" />
+              <LocalizedText
+                en="Sohoj Academy Digital Campus"
+                bn="সহজ একাডেমি ডিজিটাল ক্যাম্পাস"
+              />
             </p>
             <h1 className="mt-5 text-4xl font-bold tracking-[-0.04em] xl:text-5xl">
               <LocalizedText
@@ -76,7 +79,10 @@ export default function AuthHomePage() {
 
             <div className="mt-10 grid gap-3">
               {workspaceFeatures.map((item) => (
-                <div key={item.title[0]} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div
+                  key={item.title[0]}
+                  className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                >
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-400/10 text-blue-200">
                     <item.icon className="size-5" aria-hidden="true" />
                   </div>
@@ -85,7 +91,10 @@ export default function AuthHomePage() {
                       <LocalizedText en={item.title[0]} bn={item.title[1]} />
                     </h2>
                     <p className="mt-1 text-sm leading-6 text-slate-400">
-                      <LocalizedText en={item.description[0]} bn={item.description[1]} />
+                      <LocalizedText
+                        en={item.description[0]}
+                        bn={item.description[1]}
+                      />
                     </p>
                   </div>
                 </div>
@@ -93,7 +102,9 @@ export default function AuthHomePage() {
             </div>
           </div>
 
-          <p className="relative text-xs text-slate-500">শিক্ষা হোক সহজ ও আনন্দময়</p>
+          <p className="relative text-xs text-slate-500">
+            শিক্ষা হোক সহজ ও আনন্দময়
+          </p>
         </section>
 
         <section className="flex min-h-screen flex-col bg-background">
@@ -120,7 +131,10 @@ export default function AuthHomePage() {
               </div>
 
               <h1 className="mt-6 text-3xl font-bold tracking-[-0.03em]">
-                <LocalizedText en="Welcome to Digital Campus" bn="ডিজিটাল ক্যাম্পাসে স্বাগতম" />
+                <LocalizedText
+                  en="Welcome to Digital Campus"
+                  bn="ডিজিটাল ক্যাম্পাসে স্বাগতম"
+                />
               </h1>
               <p className="mt-3 text-sm leading-7 text-muted-foreground">
                 <LocalizedText
@@ -131,7 +145,10 @@ export default function AuthHomePage() {
 
               <div className="mt-8 rounded-2xl border border-border bg-muted/50 p-4">
                 <p className="text-sm font-semibold">
-                  <LocalizedText en="Who can sign in?" bn="কারা সাইন ইন করতে পারবেন?" />
+                  <LocalizedText
+                    en="Who can sign in?"
+                    bn="কারা সাইন ইন করতে পারবেন?"
+                  />
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   <LocalizedText
@@ -145,10 +162,19 @@ export default function AuthHomePage() {
                 href={ROUTES.SIGN_IN}
                 className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <LocalizedText en="Continue to Sign In" bn="সাইন ইন করতে এগিয়ে যান" />
+                <LocalizedText
+                  en="Continue to Sign In"
+                  bn="সাইন ইন করতে এগিয়ে যান"
+                />
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
 
+              <Link
+                href="/auth/sign-up"
+                className="mt-4 block text-center text-sm underline"
+              >
+                Request staff access / স্টাফ প্রবেশাধিকার চাই
+              </Link>
               <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
                 <LocalizedText
                   en="Access is for authorised users. Public interest registration is separate from account sign-in."

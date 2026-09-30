@@ -1,3 +1,6 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getAcademySetup } from "@/modules/platform/setup/queries";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ShieldX } from "lucide-react";
@@ -18,7 +21,9 @@ export default async function DashboardLayout({
           <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted">
             <ShieldX className="size-6" aria-hidden="true" />
           </div>
-          <h1 className="mt-5 text-2xl font-bold">ERP access is not configured</h1>
+          <h1 className="mt-5 text-2xl font-bold">
+            ERP access is not configured
+          </h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             Your sign-in is valid, but this account does not yet have an active
             Sohoj Academy ERP profile and permission assignment.
@@ -55,5 +60,27 @@ export default async function DashboardLayout({
     );
   }
 
-  return <ErpShell context={context}>{children}</ErpShell>;
+  const setup = await getAcademySetup();
+  if (!setup.completed) {
+    const path = (await headers()).get("x-erp-pathname") ?? "/dashboard";
+    const first = setup.steps.findIndex((step) => !step.done);
+    const unlocked =
+      first === -1 ? setup.steps : setup.steps.slice(0, first + 1);
+    const allowed = [
+      "/dashboard/setup",
+      "/dashboard/settings",
+      "/dashboard/account",
+      "/dashboard/help",
+      ...unlocked.map((step) => step.href),
+    ];
+    if (
+      !allowed.some((route) => path === route || path.startsWith(`${route}/`))
+    )
+      redirect("/dashboard/setup");
+  }
+  return (
+    <ErpShell context={context} setupPending={!setup.completed}>
+      {children}
+    </ErpShell>
+  );
 }

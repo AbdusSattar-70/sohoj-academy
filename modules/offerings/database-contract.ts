@@ -10,10 +10,17 @@ type ReadonlyTable<T> = {
 };
 
 type Offering = {
-  id: string; organization_id: string; branch_id: string;
-  academic_year_id: string; class_id: string; program_id: string;
-  group_id: string | null; code: string; name: string;
+  id: string;
+  organization_id: string;
+  branch_id: string;
+  academic_year_id: string;
+  class_id: string;
+  program_id: string;
+  group_id: string | null;
+  code: string;
+  name: string;
   status: "DRAFT" | "ACTIVE" | "RETIRED";
+  allowed_discount_percentages: number[];
   showcase_title: string | null;
   showcase_title_bn: string | null;
   showcase_description: string | null;
@@ -34,32 +41,59 @@ type Offering = {
   public_requirements_bn: string | null;
   admission_policy: string | null;
   admission_policy_bn: string | null;
-  created_by: string; created_at: string; updated_at: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 };
 type Plan = {
-  id: string; offering_id: string; version: number;
+  id: string;
+  offering_id: string;
+  version: number;
   status: "DRAFT" | "ACTIVE" | "RETIRED";
   billing_cycle: "ONE_TIME" | "MONTHLY" | "TERM";
-  due_day: number | null; currency_code: string;
-  effective_from: string; effective_to: string | null;
-  change_reason: string; created_by: string; created_at: string;
+  due_day: number | null;
+  currency_code: string;
+  effective_from: string;
+  effective_to: string | null;
+  change_reason: string;
+  created_by: string;
+  created_at: string;
 };
 type Component = {
-  id: string; fee_plan_version_id: string; code: string; name: string;
-  amount: number; charge_type: string; recurrence: string; sort_order: number;
+  id: string;
+  fee_plan_version_id: string;
+  code: string;
+  name: string;
+  amount: number;
+  charge_type: string;
+  recurrence: string;
+  sort_order: number;
 };
 type Group = {
-  id: string; organization_id: string; code: string; name: string; is_active: boolean;
+  id: string;
+  organization_id: string;
+  code: string;
+  name: string;
+  is_active: boolean;
 };
 type OfferingSubject = {
-  offering_id: string; subject_id: string; sort_order: number;
+  offering_id: string;
+  subject_id: string;
+  sort_order: number;
 };
 type PublicVersion = {
-  id: string; offering_id: string; version: number;
+  id: string;
+  offering_id: string;
+  version: number;
   status: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "RETIRED";
-  content: Json; change_reason: string; created_by: string; created_at: string;
-  submitted_by: string | null; submitted_at: string | null;
-  published_by: string | null; published_at: string | null;
+  content: Json;
+  change_reason: string;
+  created_by: string;
+  created_at: string;
+  submitted_by: string | null;
+  submitted_at: string | null;
+  published_by: string | null;
+  published_at: string | null;
 };
 
 type ExtendedDatabase = Omit<Database, "public"> & {
@@ -76,8 +110,14 @@ type ExtendedDatabase = Omit<Database, "public"> & {
       create_programme_offering: { Args: { p_input: Json }; Returns: Json };
       update_programme_offering: { Args: { p_input: Json }; Returns: Json };
       publish_fee_plan: { Args: { p_input: Json }; Returns: Json };
-      update_programme_offering_public_controls: { Args: { p_input: Json }; Returns: Json };
-      list_public_programme_offerings: { Args: Record<string, never>; Returns: Json };
+      update_programme_offering_public_controls: {
+        Args: { p_input: Json };
+        Returns: Json;
+      };
+      list_public_programme_offerings: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
     };
   };
 };

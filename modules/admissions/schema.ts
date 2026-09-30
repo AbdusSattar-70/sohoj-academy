@@ -13,6 +13,9 @@ export const commandSchema = z
       "BILL",
       "ACTIVATE",
       "PAY",
+      "FINALIZE",
+      "RETURN_TO_DRAFT",
+      "SAVE_DISCOUNT",
     ]),
     requestId: uuid,
     reason: z
@@ -37,6 +40,8 @@ export const commandSchema = z
     amount: z.number().positive().max(9999999999.99).optional(),
     paymentMethodId: z.string().optional(),
     externalReference: z.string().trim().max(120).optional(),
+    discountPercent: z.number().int().min(0).max(30).optional(),
+    discountReason: z.string().max(80).optional(),
   })
   .superRefine((v, ctx) => {
     const required =
@@ -44,11 +49,11 @@ export const commandSchema = z
         ? ["offeringId"]
         : v.action === "EDIT_BATCH"
           ? ["batchId"]
-        : v.action === "CREATE"
-          ? ["prospectId", "offeringId", "batchId"]
-          : v.action === "PAY"
-            ? ["admissionId", "paymentMethodId"]
-            : ["admissionId"];
+          : v.action === "CREATE"
+            ? ["prospectId", "offeringId", "batchId"]
+            : v.action === "PAY"
+              ? ["admissionId", "paymentMethodId"]
+              : ["admissionId"];
     for (const field of required)
       if (!uuid.safeParse(v[field as keyof typeof v]).success)
         ctx.addIssue({
@@ -89,14 +94,19 @@ export const commandSchema = z
 export type AdmissionCommand = z.infer<typeof commandSchema>;
 const option = z.object({ id: uuid, name: z.string() });
 export const workspaceSchema = z.object({
-  offerings: z.array(option.extend({
-    code: z.string(),
-    classId: uuid,
-    className: z.string(),
-    yearName: z.string(),
-    branchName: z.string().nullable(),
-    feeReady: z.boolean().optional(),
-  })),
+  directory: z
+    .object({ schools: z.array(option), relationships: z.array(option) })
+    .default({ schools: [], relationships: [] }),
+  offerings: z.array(
+    option.extend({
+      code: z.string(),
+      classId: uuid,
+      className: z.string(),
+      yearName: z.string(),
+      branchName: z.string().nullable(),
+      feeReady: z.boolean().optional(),
+    }),
+  ),
   capacityLimit: z.number().nullable(),
   batches: z.array(
     option.extend({
@@ -188,6 +198,20 @@ export const workspaceSchema = z.object({
   ),
 });
 export const admissionCaseDetailSchema = z.object({
+  additionalCharges: z
+    .array(
+      z.object({
+        id: uuid,
+        name: z.string(),
+        amount: z.number(),
+        is_active: z.boolean(),
+      }),
+    )
+    .default([]),
+  discountPercent: z.number().optional(),
+  discountReason: z.string().nullable().optional(),
+  academyRoll: z.string().nullable().optional(),
+  additionalDetails: z.record(z.string(), z.string().nullable()).optional(),
   id: uuid,
   number: z.string(),
   status: z.enum([
@@ -235,31 +259,41 @@ export const admissionCaseDetailSchema = z.object({
   feePlanId: uuid,
   policyVersion: z.number().nullable(),
   paymentRequirement: z.string().nullable(),
-  components: z.array(z.object({
-    name: z.string(),
-    amount: z.number(),
-    recurrence: z.string(),
-  })),
-  invoice: z.object({
-    number: z.string(),
-    total: z.number(),
-    dueOn: z.string(),
-    paid: z.number(),
-    credits: z.number(),
-    net: z.number(),
-    refunded: z.number(),
-    due: z.number(),
-    credit: z.number(),
-  }).nullable(),
-  receipts: z.array(z.object({
-    number: z.string(),
-    amount: z.number(),
-    postedAt: z.string(),
-    method: z.string(),
-    refunded: z.number(),
-  })),
+  tuitionTotal: z.number().default(0),
+  components: z.array(
+    z.object({
+      name: z.string(),
+      amount: z.number(),
+      recurrence: z.string(),
+    }),
+  ),
+  invoice: z
+    .object({
+      number: z.string(),
+      total: z.number(),
+      dueOn: z.string(),
+      paid: z.number(),
+      credits: z.number(),
+      net: z.number(),
+      refunded: z.number(),
+      due: z.number(),
+      credit: z.number(),
+    })
+    .nullable(),
+  receipts: z.array(
+    z.object({
+      number: z.string(),
+      amount: z.number(),
+      postedAt: z.string(),
+      method: z.string(),
+      refunded: z.number(),
+    }),
+  ),
 });
 
 export type AdmissionWorkspace = z.infer<typeof workspaceSchema>;
-export type AdmissionCommandFormData = Pick<AdmissionWorkspace, "capacityLimit" | "offerings" | "batches" | "prospects" | "paymentMethods">;
+export type AdmissionCommandFormData = Pick<
+  AdmissionWorkspace,
+  "capacityLimit" | "offerings" | "batches" | "prospects" | "paymentMethods"
+>;
 export type AdmissionCase = AdmissionWorkspace["cases"][number];

@@ -1,3 +1,5 @@
+import { RecordStateButton } from "@/components/erp/record-state-button";
+import { StaffEditButton } from "@/components/erp/staff-edit-button";
 import { UsersRound } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
@@ -66,6 +68,20 @@ export default async function StaffPage() {
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge value={row.status} />
+                      {can(context, "staff.manage") && (
+                        <div className="mt-2 space-y-2">
+                          <StaffEditButton
+                            id={row.id}
+                            name={row.fullName}
+                            mobile={row.mobile}
+                          />
+                          <RecordStateButton
+                            entity="staff"
+                            id={row.id}
+                            active={row.status !== "ARCHIVED"}
+                          />
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

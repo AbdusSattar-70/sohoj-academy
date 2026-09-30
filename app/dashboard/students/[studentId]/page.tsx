@@ -1,3 +1,4 @@
+import { RecordStateButton } from "@/components/erp/record-state-button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -54,6 +55,13 @@ export default async function StudentProfilePage({
           </Link>
         )}
         <StatusBadge value={s.status} />
+        {can("students.manage") && canonical && (
+          <RecordStateButton
+            entity="student"
+            id={s.id}
+            active={s.status === "ACTIVE"}
+          />
+        )}
       </div>
       {!canonical && (
         <p className="rounded-xl border bg-muted/40 p-5 text-sm">
