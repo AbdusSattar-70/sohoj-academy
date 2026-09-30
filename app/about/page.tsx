@@ -33,7 +33,7 @@ export default function AboutPage() {
     <PublicPageShell
       eyebrow={["About Sohoj Academy", "সহজ একাডেমি সম্পর্কে"]}
       title={["A focused place to learn with confidence.", "আত্মবিশ্বাস নিয়ে শেখার একটি মনোযোগী পরিবেশ।"]}
-      description={["Sohoj Academy supports students in Classes 8–10 with clear teaching, purposeful practice and a steady view of progress.", "সহজ একাডেমি ৮–১০ম শ্রেণির শিক্ষার্থীদের স্পষ্ট পাঠদান, উদ্দেশ্যপূর্ণ অনুশীলন এবং অগ্রগতির নিয়মিত ধারণা দিয়ে সহায়তা করে।"]}
+      description={["Sohoj Academy supports students in Classes 8–12 with clear teaching, purposeful practice and a steady view of progress.", "সহজ একাডেমি ৮–১২ম শ্রেণির শিক্ষার্থীদের স্পষ্ট পাঠদান, উদ্দেশ্যপূর্ণ অনুশীলন এবং অগ্রগতির নিয়মিত ধারণা দিয়ে সহায়তা করে।"]}
     >
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-6 lg:grid-cols-[1fr_1fr] lg:items-center lg:px-8 lg:py-16">
         <div className="relative overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-blue-950/30">

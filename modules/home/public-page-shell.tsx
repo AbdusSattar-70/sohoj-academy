@@ -19,7 +19,7 @@ export function PublicPageShell({
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <main id="main-content">
-        <header className="border-b border-border bg-gradient-to-b from-blue-950/50 to-background">
+        <header className="border-b border-border bg-linear-to-b from-blue-950/50 to-background">
           <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
             <Link href="/" className="text-sm font-medium text-muted-foreground transition hover:text-foreground">
               <LocalizedText en="← Home" bn="← মূল পাতা" />

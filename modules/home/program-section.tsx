@@ -182,7 +182,7 @@ export async function HomeProgramSection() {
             return (
               <article
                 key={program.key}
-                className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-b from-slate-900 to-slate-950 p-6 text-white shadow-[0_22px_65px_-38px_rgba(0,0,0,.85)] transition duration-300 hover:-translate-y-1 hover:border-blue-400/40 hover:shadow-[0_28px_75px_-38px_rgba(37,99,235,.32)]"
+                className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-linear-to-b from-slate-900 to-slate-950 p-6 text-white shadow-[0_22px_65px_-38px_rgba(0,0,0,.85)] transition duration-300 hover:-translate-y-1 hover:border-blue-400/40 hover:shadow-[0_28px_75px_-38px_rgba(37,99,235,.32)]"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex size-12 items-center justify-center rounded-2xl border border-blue-300/15 bg-blue-400/10 text-blue-200">
@@ -205,7 +205,7 @@ export async function HomeProgramSection() {
                 {program.subjects.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2" aria-label="Subjects">
                     {program.subjects.map((subject) => (
-                      <span key={subject} className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] text-slate-300">{subject}</span>
+                      <span key={subject} className="rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[11px] text-slate-300">{subject}</span>
                     ))}
                   </div>
                 )}
@@ -233,14 +233,14 @@ export async function HomeProgramSection() {
 
                 <div className="mt-auto pt-5">
                   {program.feeSummary ? (
-                    <p className="mb-4 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-white">
+                    <p className="mb-4 rounded-xl border border-white/10 bg-white/4 px-3 py-2.5 text-sm font-semibold text-white">
                       <LocalizedText en={program.feeSummary[0]} bn={program.feeSummary[1]} />
                     </p>
                   ) : null}
                   <div className="flex flex-col gap-2 sm:flex-row">
                   <Link
                     href={interestHref}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-white/15 bg-white/4 px-3 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
                     <LocalizedText en="Register Interest" bn="আগ্রহ নিবন্ধন" />
                   </Link>
