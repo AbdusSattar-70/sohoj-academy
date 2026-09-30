@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Info, ShieldCheck } from "lucide-react";
+import { House, Info, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/home-navbar/navbar";
 import { PublicInterestForm } from "@/components/public/interest-form";
 import Logo from "@/components/shared/logo";
@@ -67,8 +67,8 @@ export default async function InterestPage({
               href="/"
               className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              <LocalizedText en="Back to Sohoj Academy" bn="সহজ একাডেমিতে ফিরুন" />
+              <House className="size-4" aria-hidden="true" />
+              <LocalizedText en="Go to homepage" bn="মূল পাতায় ফিরুন" />
             </Link>
 
             <div className="mt-8 max-w-3xl">

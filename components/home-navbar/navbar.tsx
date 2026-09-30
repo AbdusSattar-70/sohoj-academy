@@ -10,11 +10,12 @@ export default function Navbar() {
   const { t } = useLanguage();
 
   const links = [
-    [t("programs"), "#programs"],
-    [t("learningMethod"), "#method"],
-    [t("whySohoj"), "#why-sohoj"],
-    [t("digitalCampus"), "#digital-campus"],
-    [t("registerInterest"), "/interest"],
+    [t("programs"), "/#programs"],
+    [t("learningMethod"), "/#method"],
+    [t("whySohoj"), "/#why-sohoj"],
+    [t("aboutUs"), "/about"],
+    [t("faq"), "/faq"],
+    [t("journal"), "/journal"],
   ] as const;
 
   return (
@@ -73,6 +74,7 @@ export default function Navbar() {
                 <Link
                   key={href}
                   href={href}
+                  onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")}
                   className="rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   {label}
@@ -80,6 +82,7 @@ export default function Navbar() {
               ))}
               <Link
                 href="/auth"
+                onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")}
                 className="mt-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
               >
                 {t("openDigitalCampus")}
