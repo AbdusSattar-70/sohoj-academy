@@ -12,13 +12,15 @@ export function FinanceOperations({
   data,
   permissions,
   profileId,
+  initialAdmissionId = "",
 }: {
   data: FinanceWorkspace;
   permissions: string[];
   profileId: string;
+  initialAdmissionId?: string;
 }) {
   const [tab, setTab] = useState("accounts");
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState(initialAdmissionId);
   const [query, setQuery] = useState("");
   const can = (p: string) => permissions.includes(p);
   const admission = data.admissions.find((a) => a.id === selected);
@@ -73,28 +75,69 @@ export function FinanceOperations({
       {tab === "accounts" && (
         <>
           <section className="space-y-3 rounded-2xl border bg-card p-5">
-            <h2 className="font-semibold">Open a Student Account</h2>
+            <h2 className="font-semibold">Search student accounts</h2>
             <input
               aria-label="Search student accounts"
-              placeholder="Search student name or admission number"
+              placeholder="Search name, Student ID, admission number or mobile"
               className={inputClass}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
+            {query.trim() && (
+              <div aria-label="Matching student accounts" className="space-y-2">
+                <p role="status" className="text-xs text-muted-foreground">
+                  {
+                    data.admissions.filter((a) =>
+                      `${a.name} ${a.number} ${a.studentNo ?? ""} ${a.mobile ?? ""}`
+                        .toLowerCase()
+                        .includes(query.trim().toLowerCase()),
+                    ).length
+                  }{" "}
+                  matching admission accounts
+                </p>
+                {data.admissions
+                  .filter((a) =>
+                    `${a.name} ${a.number} ${a.studentNo ?? ""} ${a.mobile ?? ""}`
+                      .toLowerCase()
+                      .includes(query.trim().toLowerCase()),
+                  )
+                  .slice(0, 20)
+                  .map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      className="block w-full rounded-lg border p-3 text-left text-sm hover:bg-muted"
+                      aria-pressed={selected === a.id}
+                      onClick={() => setSelected(a.id)}
+                    >
+                      <strong>{a.name}</strong> · {a.studentNo ?? "ID pending"}{" "}
+                      · {a.number}
+                      <span className="block text-xs text-muted-foreground">
+                        {a.mobile ?? ""} · {a.status.replaceAll("_", " ")} · Due{" "}
+                        {money(
+                          data.invoices
+                            .filter((i) => i.admissionId === a.id)
+                            .reduce((sum, i) => sum + i.due, 0),
+                        )}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+            )}
             <select
               aria-label="Student account"
               className={inputClass}
               value={selected}
               onChange={(e) => setSelected(e.target.value)}
             >
-              <option value="">Select an admission</option>
+              <option value="">Select an existing admission account</option>
               {data.admissions
                 .filter(
                   (a) =>
                     a.id === selected ||
-                    `${a.name} ${a.number}`
+                    `${a.name} ${a.number} ${a.studentNo ?? ""} ${a.mobile ?? ""}`
                       .toLowerCase()
-                      .includes(query.toLowerCase()),
+                      .includes(query.trim().toLowerCase()),
                 )
                 .map((a) => (
                   <option key={a.id} value={a.id}>
@@ -118,7 +161,7 @@ export function FinanceOperations({
                 <div>
                   <h2 className="text-xl font-semibold">{admission.name}</h2>
                   <Link
-                    href={`/dashboard/admissions#${admission.id}`}
+                    href={`/dashboard/admissions/${admission.id}`}
                     className="text-sm underline"
                   >
                     {admission.number} · Admission record

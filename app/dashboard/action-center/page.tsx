@@ -1,3 +1,4 @@
+import { platformClient } from "@/modules/platform/rpc-client";
 import Link from "next/link";
 import { ClipboardCheck, PhoneCall, UserRoundSearch } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
@@ -9,8 +10,16 @@ import { requirePermission } from "@/modules/platform/auth/erp-context";
 export default async function ActionCenterPage() {
   const context = await requirePermission("action_center.view");
   const data = await getActionCenterData(context);
+  const db = await platformClient();
+  const staffRequests = context.permissions.includes("system.users.manage")
+    ? await db
+        .from("staff_access_requests")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["PENDING", "VERIFIED"])
+    : null;
+  if (staffRequests?.error) throw new Error(staffRequests.error.message);
   const schoolReviewCount = data.verificationQueue.filter(
-    (item) => item.schoolNeedsReview
+    (item) => item.schoolNeedsReview,
   ).length;
 
   return (
@@ -21,6 +30,17 @@ export default async function ActionCenterPage() {
         description="Approvals, public-admission verification, and CRM follow-ups that need a person — not reports that can wait."
       />
 
+      {staffRequests && (
+        <Link
+          className="block rounded-2xl border bg-card p-5"
+          href="/dashboard/settings/access-requests"
+        >
+          <strong>{staffRequests.count ?? 0} staff access requests</strong>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Verify role and identity, then send a Supabase setup link.
+          </p>
+        </Link>
+      )}
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="overflow-hidden rounded-2xl border bg-card">
           <div className="border-b px-5 py-4">
@@ -80,8 +100,8 @@ export default async function ActionCenterPage() {
               <div>
                 <h2 className="font-semibold">Verification queue</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Recent public interest and admission submissions still in early
-                  CRM states.
+                  Recent public interest and admission submissions still in
+                  early CRM states.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 text-xs">

@@ -1,3 +1,5 @@
+import { ProspectAssignmentForm } from "@/modules/crm/components/prospect-assignment-form";
+import { platformClient } from "@/modules/platform/rpc-client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -28,9 +30,35 @@ export default async function ProspectDetailPage({
   const prospect = await getProspectDetail(prospectId);
 
   if (!prospect) notFound();
+  const db = await platformClient();
+  const assignment = can(context, "crm.prospects.manage")
+    ? await db.rpc("prospect_assignment_options")
+    : null;
+  if (assignment?.error) throw new Error(assignment.error.message);
 
   return (
     <div className="space-y-7">
+      {prospect.applicationSnapshot && (
+        <section className="rounded-xl border border-amber-500/30 bg-card p-5">
+          <h2 className="font-semibold">
+            Applicant choices — not verified placement
+          </h2>
+          <p className="mt-2 text-sm">
+            Class: {prospect.applicationSnapshot.class_label ?? "Not provided"}{" "}
+            · Programme:{" "}
+            {prospect.applicationSnapshot.offering_label ?? "General interest"}
+          </p>
+          <p className="mt-1 text-sm">
+            Subjects:{" "}
+            {prospect.applicationSnapshot.subject_labels?.join(", ") ||
+              "Not provided"}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            These statements are preserved separately. Verify identity and
+            choose the correct programme and batch when starting admission.
+          </p>
+        </section>
+      )}
       <PageHeader
         eyebrow="CRM & Student Bank"
         title={prospect.studentName}
@@ -58,6 +86,13 @@ export default async function ProspectDetailPage({
         }
       />
 
+      {assignment && (
+        <ProspectAssignmentForm
+          prospectId={prospect.id}
+          selected={prospect.assignedStaffId}
+          staff={assignment.data}
+        />
+      )}
       <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
         <section className="rounded-2xl border bg-card p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -87,8 +122,8 @@ export default async function ProspectDetailPage({
               <p className="mt-1 leading-6">
                 Submitted as free text:{" "}
                 <span className="font-semibold">{prospect.schoolName}</span>.
-                Confirm or create the school in Manage CRM, then continue follow-up
-                or admission.
+                Confirm or create the school in Manage CRM, then continue
+                follow-up or admission.
               </p>
               <Link
                 href="/dashboard/crm/manage"
@@ -142,14 +177,18 @@ export default async function ProspectDetailPage({
 
           <div className="mt-6 grid gap-4 border-t pt-5 sm:grid-cols-2">
             <Detail label="Lead Source" value={prospect.sourceName} />
-            <Detail label="Assigned Owner" value={prospect.assignedTo} />
+            <Detail label="Follow-up staff" value={prospect.assignedTo} />
             <Detail
               label="Preferred Schedule"
               value={prospect.preferredSchedule?.replaceAll("_", " ") ?? "—"}
             />
             <Detail
               label="Preferred Days"
-              value={prospect.preferredDays?.length ? prospect.preferredDays.join(", ") : "—"}
+              value={
+                prospect.preferredDays?.length
+                  ? prospect.preferredDays.join(", ")
+                  : "—"
+              }
             />
             <Detail
               label="Trial Interest"
@@ -157,11 +196,15 @@ export default async function ProspectDetailPage({
             />
             <Detail
               label="Interested Programs"
-              value={prospect.programs.length ? prospect.programs.join(", ") : "—"}
+              value={
+                prospect.programs.length ? prospect.programs.join(", ") : "—"
+              }
             />
             <Detail
               label="Interested Subjects"
-              value={prospect.subjects.length ? prospect.subjects.join(", ") : "—"}
+              value={
+                prospect.subjects.length ? prospect.subjects.join(", ") : "—"
+              }
             />
             <Detail label="Referral" value={prospect.referralNote ?? "—"} />
           </div>
@@ -178,21 +221,74 @@ export default async function ProspectDetailPage({
           {prospect.application ? (
             <section className="mt-6 space-y-3 rounded-xl border bg-muted/30 p-4">
               <h2 className="font-semibold">Submitted admission application</h2>
-              <p className="text-xs text-muted-foreground">Received {new Date(prospect.application.submittedAt).toLocaleString()} · Review the original declarations before admitting.</p>
+              <p className="text-xs text-muted-foreground">
+                Received{" "}
+                {new Date(prospect.application.submittedAt).toLocaleString()} ·
+                Review the original declarations before admitting.
+              </p>
               <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                <Detail label="Guardian address" value={prospect.application.guardianAddress} />
-                <Detail label="Academic background" value={prospect.application.academicBackground || "—"} />
-                <Detail label="Offering at submission" value={prospect.application.publishedTerms.offering_name || prospect.offeringLabel} />
-                <Detail label="Fee plan version" value={prospect.application.feePlanVersionId || "—"} />
-                <Detail label="Programme requirements" value={prospect.application.publishedTerms.requirements || "No additional requirements published"} />
-                <Detail label="Admission policy" value={prospect.application.publishedTerms.policy || "Staff verification required"} />
-                <Detail label="Schedule" value={prospect.application.publishedTerms.schedule || "—"} />
-                <Detail label="Declarations" value={prospect.application.requirementsAcknowledged && prospect.application.policyAcknowledged ? "Requirements and policy acknowledged" : "Incomplete"} />
+                <Detail
+                  label="Guardian address"
+                  value={prospect.application.guardianAddress}
+                />
+                <Detail
+                  label="Academic background"
+                  value={prospect.application.academicBackground || "—"}
+                />
+                <Detail
+                  label="Offering at submission"
+                  value={
+                    prospect.application.publishedTerms.offering_name ||
+                    prospect.offeringLabel
+                  }
+                />
+                <Detail
+                  label="Fee plan version"
+                  value={prospect.application.feePlanVersionId || "—"}
+                />
+                <Detail
+                  label="Programme requirements"
+                  value={
+                    prospect.application.publishedTerms.requirements ||
+                    "No additional requirements published"
+                  }
+                />
+                <Detail
+                  label="Admission policy"
+                  value={
+                    prospect.application.publishedTerms.policy ||
+                    "Staff verification required"
+                  }
+                />
+                <Detail
+                  label="Schedule"
+                  value={prospect.application.publishedTerms.schedule || "—"}
+                />
+                <Detail
+                  label="Declarations"
+                  value={
+                    prospect.application.requirementsAcknowledged &&
+                    prospect.application.policyAcknowledged
+                      ? "Requirements and policy acknowledged"
+                      : "Incomplete"
+                  }
+                />
               </dl>
-              {can(context, "crm.followups.manage") && prospect.status !== "CONVERTED" ?
-                <AdmissionRequirementReview applicationId={prospect.application.id} prospectId={prospect.id} reviews={prospect.application.reviews} /> : null}
-              {can(context, "crm.prospects.manage") || can(context, "admissions.manage") ?
-                <ApplicantCorrectionReview prospectId={prospect.id} corrections={prospect.application.corrections} /> : null}
+              {can(context, "crm.followups.manage") &&
+              prospect.status !== "CONVERTED" ? (
+                <AdmissionRequirementReview
+                  applicationId={prospect.application.id}
+                  prospectId={prospect.id}
+                  reviews={prospect.application.reviews}
+                />
+              ) : null}
+              {can(context, "crm.prospects.manage") ||
+              can(context, "admissions.manage") ? (
+                <ApplicantCorrectionReview
+                  prospectId={prospect.id}
+                  corrections={prospect.application.corrections}
+                />
+              ) : null}
             </section>
           ) : null}
 
@@ -210,7 +306,8 @@ export default async function ProspectDetailPage({
           <div className="border-b px-5 py-4">
             <h2 className="font-semibold">Follow-up Timeline</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Newest activity first. Existing timeline records are not rewritten.
+              Newest activity first. Existing timeline records are not
+              rewritten.
             </p>
           </div>
 
@@ -251,12 +348,13 @@ export default async function ProspectDetailPage({
         </section>
       </div>
 
-      {can(context, "crm.followups.manage") && prospect.status !== "CONVERTED" && (
-        <ProspectFollowupForm
-          prospectId={prospect.id}
-          currentStatus={prospect.status}
-        />
-      )}
+      {can(context, "crm.followups.manage") &&
+        prospect.status !== "CONVERTED" && (
+          <ProspectFollowupForm
+            prospectId={prospect.id}
+            currentStatus={prospect.status}
+          />
+        )}
     </div>
   );
 }

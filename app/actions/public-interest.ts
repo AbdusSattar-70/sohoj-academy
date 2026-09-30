@@ -11,7 +11,7 @@ export type PublicInterestResult =
   | { ok: false; error: string; field?: string | null };
 
 export async function submitPublicInterest(
-  input: PublicInterestInput
+  input: PublicInterestInput,
 ): Promise<PublicInterestResult> {
   const parsed = publicInterestSchema.safeParse(input);
 
@@ -35,6 +35,17 @@ export async function submitPublicInterest(
   // Keep the client receiver: Supabase rpc() reads this.rest internally.
   const { data: result, error } = await supabase.rpc("submit_public_interest", {
     p_payload: {
+      date_of_birth: data.dateOfBirth || "",
+      gender: data.gender || "",
+      school_roll: data.schoolRoll || "",
+      father_name: data.fatherName || "",
+      mother_name: data.motherName || "",
+      birth_registration: data.birthRegistration || "",
+      permanent_address: data.permanentAddress || "",
+      emergency_contact: data.emergencyContact || "",
+      emergency_mobile: data.emergencyMobile || "",
+      previous_result: data.previousResult || "",
+      learning_needs: data.learningNeeds || "",
       student_name: data.studentName,
       student_name_bn: data.studentNameBn || "",
       guardian_name: data.guardianName,
@@ -85,7 +96,9 @@ export async function submitPublicInterest(
       "Review and acknowledge the programme requirements and admission policy.",
     ];
 
-    const known = knownMessages.find((message) => error.message.includes(message));
+    const known = knownMessages.find((message) =>
+      error.message.includes(message),
+    );
     return {
       ok: false,
       error:
@@ -97,7 +110,9 @@ export async function submitPublicInterest(
   return {
     ok: true,
     prospectNo:
-      result && typeof result === "object" && !Array.isArray(result) &&
+      result &&
+      typeof result === "object" &&
+      !Array.isArray(result) &&
       typeof result.prospect_no === "string"
         ? result.prospect_no
         : null,

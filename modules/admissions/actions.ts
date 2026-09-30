@@ -4,9 +4,7 @@ import { getErpContext } from "@/modules/platform/auth/erp-context";
 import { admissionClient } from "./queries";
 import { commandSchema, type AdmissionCommand } from "./schema";
 import type { Json } from "@/types/database";
-export async function runAdmissionCommand(
-  input: AdmissionCommand,
-): Promise<{
+export async function runAdmissionCommand(input: AdmissionCommand): Promise<{
   ok: boolean;
   message: string;
   field?: string;
@@ -52,19 +50,22 @@ export async function runAdmissionCommand(
     amount: "amount",
     paymentMethodId: "payment_method_id",
     externalReference: "external_reference",
+    discountPercent: "discount_percent",
+    discountReason: "discount_reason",
   } as const;
   for (const [key, column] of Object.entries(fields)) {
     const value = v[key as keyof typeof fields];
     if (value !== undefined) payload[column] = value;
   }
   const db = await admissionClient();
-  const command = v.action === "PAY"
-    ? "post_admission_payment"
-    : v.action === "CREATE_BATCH" || v.action === "EDIT_BATCH"
-      ? "batch_command"
-      : v.action === "CREATE"
-        ? "create_prospect_admission"
-        : "admission_command";
+  const command =
+    v.action === "PAY"
+      ? "post_admission_payment"
+      : v.action === "CREATE_BATCH" || v.action === "EDIT_BATCH"
+        ? "batch_command"
+        : v.action === "CREATE"
+          ? "create_prospect_admission"
+          : "admission_command";
   const { data, error } = await db.rpc(command, { p_input: payload });
   if (error) return { ok: false, message: error.message };
   const result = data as { id?: string; status?: string; receipt_no?: string };
@@ -78,7 +79,8 @@ export async function runAdmissionCommand(
     "/dashboard",
   ])
     revalidatePath(path);
-  if (typeof result.id === "string") revalidatePath(`/dashboard/admissions/${result.id}`);
+  if (typeof result.id === "string")
+    revalidatePath(`/dashboard/admissions/${result.id}`);
   return {
     ok: true,
     message: result.receipt_no

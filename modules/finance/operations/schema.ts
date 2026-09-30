@@ -87,7 +87,13 @@ export type FinanceCommand = z.infer<typeof financeCommandSchema>;
 const option = z.object({ id, name: z.string() });
 export const financeWorkspaceSchema = z.object({
   admissions: z.array(
-    option.extend({ number: z.string(), status: z.string() }),
+    option.extend({
+      number: z.string(),
+      status: z.string(),
+      studentId: z.string().uuid().nullable(),
+      studentNo: z.string().nullable(),
+      mobile: z.string().nullable(),
+    }),
   ),
   years: z.array(option),
   terms: z.array(

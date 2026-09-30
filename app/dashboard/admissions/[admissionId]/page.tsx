@@ -1,459 +1,361 @@
+import { AdmissionPlacementEditor } from "@/modules/admissions/components/placement-editor";
+import { ExtraChargeForm } from "@/modules/admissions/components/extra-charge-form";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { z } from "zod";
 import { PageHeader } from "@/components/erp/page-header";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
-import { getAdmissionCase, getAdmissionWorkspace } from "@/modules/admissions/queries";
+import { platformClient } from "@/modules/platform/rpc-client";
 import {
-  getConsentDocuments,
-  getPhysicalConsentReceipts,
-} from "@/modules/admissions/consent";
+  getAdmissionCase,
+  getAdmissionWorkspace,
+} from "@/modules/admissions/queries";
 import { getAdmissionReferrals } from "@/modules/admissions/referrals";
 import { AdmissionCommandForm } from "@/modules/admissions/components/command-form";
 import { PhysicalConsentForm } from "@/modules/admissions/components/physical-consent-form";
 import { ReferralForm } from "@/modules/admissions/components/referral-form";
-const originLabels = {
-  DIRECT_STAFF: "Direct staff intake",
+import { AdmissionIdentityEditor } from "@/modules/admissions/components/identity-editor";
+import { AdmissionDiscountForm } from "@/modules/admissions/components/discount-form";
+import { CaseStepNavigation } from "@/modules/admissions/components/case-step-navigation";
+import { FinalSubmissionReview } from "@/modules/admissions/components/final-submission-review";
+const labels = {
+  DIRECT_STAFF: "Direct admission",
   PROSPECT_CONVERSION: "Enquiry conversion",
   PUBLIC_APPLICATION: "Public application",
-  EXISTING_STUDENT: "Existing Student",
-} as const;
-
-const statusOrder = [
-  "DRAFT",
-  "READY",
-  "ACCEPTED",
-  "BILLING_POSTED",
-  "PENDING_PAYMENT",
-  "ACTIVE_ENROLLMENT",
-] as const;
-
-function money(value: number) {
-  return new Intl.NumberFormat("en-BD", {
-    style: "currency",
-    currency: "BDT",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-right font-medium">{value}</dd>
-    </div>
-  );
-}
-
+  EXISTING_STUDENT: "Existing student",
+};
 export default async function AdmissionCasePage({
   params,
 }: {
   params: Promise<{ admissionId: string }>;
 }) {
-  const context = await requirePermission("admissions.view");
-  const { admissionId } = await params;
-
-  const [admission, workspace, consentDocuments, physicalReceipts, referrals] =
-    await Promise.all([
-      getAdmissionCase(admissionId),
-      getAdmissionWorkspace(),
-      getConsentDocuments(),
-      getPhysicalConsentReceipts(),
-      getAdmissionReferrals(),
-    ]);
-
-  const referral = referrals.choices.find(
-    (row) => row.admission_id === admission.id,
-  );
-  const signedForms = consentDocuments.filter(
-    (row) => row.admission_id === admission.id,
-  );
-  const paperReceipts = physicalReceipts.filter(
-    (row) => row.admission_id === admission.id,
-  );
-
-  const commandData = workspace;
-  const canPostPayment = context.permissions.includes("finance.payments.post");
-  const hasReferral = Boolean(referral);
-  const hasConsent = signedForms.length > 0 || paperReceipts.length > 0;
-  const reviewComplete = hasReferral && hasConsent;
-  const manage = context.permissions.includes("admissions.create");
-  const isCancelled = admission.status === "CANCELLED";
-  const currentIndex = statusOrder.indexOf(
-    admission.status as (typeof statusOrder)[number],
-  );
-
-  const initialCharges = admission.components.reduce(
-    (sum, component) => sum + component.amount,
-    0,
-  );
-
-  const nextAction =
-    admission.status === "DRAFT"
-      ? {
-          action: "READY" as const,
-          label: "Complete verification",
-          description:
-            "Confirm identity, guardian details, placement and effective Fee Plan terms before moving the case to acceptance review.",
-        }
-      : admission.status === "READY" && reviewComplete
-        ? {
-            action: "ACCEPT" as const,
-            label: "Accept admission",
-            description:
-              "Record the admission decision and issue or retain the permanent Student ID. Acceptance is separate from payment.",
-          }
-        : admission.status === "ACCEPTED"
-          ? {
-              action: "BILL" as const,
-              label: "Post initial bill",
-              description:
-                "Create the initial invoice from the Fee Plan pinned to this admission. Actual money received is recorded separately in Student Accounts.",
-            }
-            : admission.status === "BILLING_POSTED" ||
-                admission.status === "PENDING_PAYMENT"
-              ? {
-                  action: "ACTIVATE" as const,
-                  label: "Evaluate enrollment activation",
-                  description:
-                    "Apply the pinned activation policy and current batch capacity. An unpaid receivable can remain when the policy permits activation.",
-                }
-              : null;
-
+  const context = await requirePermission("admissions.view"),
+    { admissionId } = await params;
+  if (!z.string().uuid().safeParse(admissionId).success) notFound();
+  const db = await platformClient();
+  const [a, data, referrals, discountQ, checksQ] = await Promise.all([
+    getAdmissionCase(admissionId),
+    getAdmissionWorkspace(),
+    getAdmissionReferrals(),
+    db.rpc("admission_discount_options", { p_admission_id: admissionId }),
+    db.rpc("admission_review_checks", { p_admission_id: admissionId }),
+  ]);
+  if (discountQ.error || checksQ.error)
+    throw new Error(discountQ.error?.message ?? checksQ.error?.message);
+  const discount = z
+    .object({
+      allowed: z.array(z.number()),
+      selected: z.number(),
+      reason: z.string().nullable(),
+    })
+    .parse(discountQ.data);
+  const checks = z
+    .object({ hasConsent: z.boolean(), identityRevision: z.number() })
+    .parse(checksQ.data);
+  const referral = referrals.choices.find((r) => r.admission_id === a.id),
+    hasReferral = Boolean(referral),
+    hasConsent = checks.hasConsent;
+  const manage = context.permissions.includes("admissions.create"),
+    canBill = context.permissions.includes("finance.billing.manage"),
+    canPay = context.permissions.includes("finance.payments.post");
+  const finished = [
+      "BILLING_POSTED",
+      "PENDING_PAYMENT",
+      "ACTIVE_ENROLLMENT",
+      "CLOSED_ENROLLMENT",
+    ].includes(a.status),
+    accepted = finished || a.status === "ACCEPTED",
+    cancelled = ["CANCELLED", "CLOSED_ENROLLMENT"].includes(a.status);
+  const total = a.components.reduce((n, c) => n + c.amount, 0);
   const steps = [
     {
-      id: "step-verify",
-      title: "Verify identity and placement",
-      complete: admission.status !== "DRAFT" && !isCancelled,
-      active: admission.status === "DRAFT",
+      id: "verify",
+      title: "Verify application and placement",
+      complete: a.status !== "DRAFT",
+      active: a.status === "DRAFT",
     },
     {
-      id: "step-referral",
-      title: "Record admission source",
+      id: "source",
+      title: "Record Organic or referrer",
       complete: hasReferral,
-      active: admission.status === "READY" && !hasReferral,
+      active: a.status === "READY" && !hasReferral,
     },
     {
-      id: "step-consent",
-      title: "File paper consent",
+      id: "consent",
+      title: "Receive signed paper consent",
       complete: hasConsent,
-      active: admission.status === "READY" && hasReferral && !hasConsent,
+      active: a.status !== "DRAFT" && hasReferral && !hasConsent,
     },
     {
-      id: "step-accept",
-      title: "Accept admission",
-      complete: currentIndex >= 2 && reviewComplete,
-      active: admission.status === "READY" && reviewComplete,
-    },
-    {
-      id: "step-bill",
-      title: "Post initial bill",
-      complete: currentIndex >= 3 && reviewComplete,
-      active: admission.status === "ACCEPTED",
-    },
-    {
-      id: "step-activate",
-      title: "Activate enrollment",
-      complete: admission.status === "ACTIVE_ENROLLMENT" && reviewComplete,
+      id: "submit",
+      title: "Review fees and confirm admission",
+      complete: finished,
       active:
-        reviewComplete &&
-        ["BILLING_POSTED", "PENDING_PAYMENT"].includes(admission.status),
+        (a.status === "READY" && hasReferral && hasConsent) ||
+        a.status === "ACCEPTED",
+    },
+    {
+      id: "enroll",
+      title: "Payment and enrollment",
+      complete: a.status === "ACTIVE_ENROLLMENT",
+      active: finished,
     },
   ];
-  const activeStep =
-    steps.find((step) => step.active) ?? steps.find((step) => !step.complete);
-
+  const history = (
+    <p className="text-sm text-muted-foreground">
+      This step is complete. The recorded application remains below; financial
+      records retain their original amounts and audit history.
+    </p>
+  );
+  const command = (
+    action: "READY" | "RETURN_TO_DRAFT" | "BILL" | "ACTIVATE",
+    label: string,
+    description: string,
+  ) => (
+    <AdmissionCommandForm
+      action={action}
+      admissionId={a.id}
+      data={data}
+      label={label}
+      description={description}
+    />
+  );
+  const panels = {
+    verify: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Verify application</h2>
+        {manage && <AdmissionIdentityEditor admission={a} />}
+        {manage && ["DRAFT", "READY"].includes(a.status) && (
+          <AdmissionPlacementEditor
+            admissionId={a.id}
+            batchId={a.batchId}
+            data={data}
+          />
+        )}
+        <p className="text-sm text-muted-foreground">
+          Confirm the actual student class, offering and batch. Public
+          selections are preferences until staff verify them.
+        </p>
+        {a.status === "DRAFT" && manage
+          ? command(
+              "READY",
+              "Details verified — continue",
+              "Review the information above, correct anything necessary, then continue. This saves the draft; it does not confirm admission.",
+            )
+          : history}
+      </div>
+    ),
+    source: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Admission source</h2>
+        {a.status === "READY" && manage ? (
+          <ReferralForm
+            admissionId={a.id}
+            people={referrals}
+            choice={referral}
+          />
+        ) : (
+          <p>
+            {referral?.source === "ORGANIC"
+              ? "Organic — no referrer"
+              : "Verified referral recorded"}
+          </p>
+        )}
+      </div>
+    ),
+    consent: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Signed consent</h2>
+        <Link
+          className="inline-block rounded-lg border px-4 py-2 text-sm"
+          href={`/dashboard/admissions/${a.id}/print`}
+        >
+          Print two-page application and consent
+        </Link>
+        {a.status !== "DRAFT" && !hasConsent && manage ? (
+          <PhysicalConsentForm admissionId={a.id} />
+        ) : (
+          <p className="text-sm">
+            {hasConsent
+              ? "Signed paper form received for the current application details. Keep the original in the student file."
+              : "Complete verification and source first."}
+          </p>
+        )}
+      </div>
+    ),
+    submit: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Fees and final review</h2>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left">
+              <th className="py-2">Charge</th>
+              <th>Frequency</th>
+              <th className="text-right">BDT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {a.components.map((c, i) => (
+              <tr key={i} className="border-b">
+                <td className="py-2">{c.name}</td>
+                <td>{c.recurrence.replaceAll("_", " ")}</td>
+                <td className="text-right">{c.amount.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {a.status === "READY" && manage && canBill ? (
+          <>
+            <ExtraChargeForm admissionId={a.id} charges={a.additionalCharges} />
+            <AdmissionDiscountForm admissionId={a.id} {...discount} />
+            <FinalSubmissionReview
+              key={`${a.id}:${discount.selected}:${checks.identityRevision}`}
+              admissionId={a.id}
+              total={total}
+              discountPercent={discount.selected}
+              tuitionTotal={a.tuitionTotal}
+            />
+            {command(
+              "RETURN_TO_DRAFT",
+              "Go back to correct application",
+              "Returns this case to Draft. Existing audit and signed records remain in history.",
+            )}
+          </>
+        ) : a.status === "ACCEPTED" && manage ? (
+          command(
+            "BILL",
+            "Recover missing initial invoice",
+            "Complete billing for this previously accepted case. No payment is recorded.",
+          )
+        ) : (
+          history
+        )}
+        {a.status === "READY" && !canBill && (
+          <p>
+            Billing management permission is needed to confirm admission and
+            post the invoice.
+          </p>
+        )}
+      </div>
+    ),
+    enroll: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Payment and enrollment</h2>
+        {a.invoice && (
+          <div className="rounded-xl bg-muted/40 p-4 text-sm">
+            <p className="font-semibold">{a.invoice.number}</p>
+            <p>
+              Invoice: BDT {a.invoice.total.toFixed(2)} · Paid: BDT{" "}
+              {a.invoice.paid.toFixed(2)} · Due: BDT {a.invoice.due.toFixed(2)}
+            </p>
+          </div>
+        )}
+        {a.invoice && a.invoice.due > 0 && canPay && (
+          <AdmissionCommandForm
+            action="PAY"
+            admissionId={a.id}
+            data={data}
+            maxAmount={a.invoice.due}
+            label="Record actual payment and issue receipt"
+            description="Only record money actually received. You can leave the invoice unpaid; enrollment follows the configured policy."
+          />
+        )}
+        {["BILLING_POSTED", "PENDING_PAYMENT"].includes(a.status) &&
+          manage &&
+          command(
+            "ACTIVATE",
+            "Activate enrollment",
+            "Check batch capacity and the configured payment requirement. Unpaid fees stay due when credit enrollment is permitted.",
+          )}
+        {a.status === "ACTIVE_ENROLLMENT" && (
+          <p className="rounded-xl border p-4 text-sm">
+            Enrollment is active. Any outstanding invoice remains collectible.
+          </p>
+        )}
+        {a.receipts.map((r) => (
+          <Link
+            key={r.number}
+            className="block text-sm underline"
+            href={`/dashboard/admissions/${a.id}/print?receipt=${encodeURIComponent(r.number)}`}
+          >
+            Print receipt {r.number} · BDT {r.amount.toFixed(2)}
+          </Link>
+        ))}
+        <Link
+          className="inline-block text-sm underline"
+          href={`/dashboard/finance/billing?returnTo=${encodeURIComponent(`/dashboard/admissions/${a.id}`)}`}
+        >
+          Other financial adjustments — return to this case afterwards
+        </Link>
+      </div>
+    ),
+  };
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <PageHeader
-        eyebrow="Admissions & Students"
-        title={admission.number}
-        description="Complete this admission from one working page. Each action records a separate business fact and keeps the case context visible."
+        eyebrow={labels[a.origin]}
+        title={`${a.number} · ${a.name}`}
+        description={`${a.offeringName} · ${a.batchName}${a.studentNo ? ` · ${a.studentNo}` : " · Student ID is issued at final submission"}`}
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             <Link
+              className="rounded-lg border px-4 py-2 text-sm"
               href="/dashboard/admissions"
-              className="rounded-lg border px-3 py-2 text-sm font-medium"
             >
-              Back to Admissions
+              Admission register
             </Link>
             <Link
-              href={`/dashboard/admissions/${admission.id}/print`}
-              className="rounded-lg border px-3 py-2 text-sm font-medium"
+              className="rounded-lg border px-4 py-2 text-sm"
+              href={`/dashboard/admissions/${a.id}/print`}
             >
               Print form
             </Link>
+            <StatusBadge value={a.status} />
           </div>
         }
       />
-
-      <section className="rounded-2xl border bg-card p-5 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              {originLabels[admission.origin]}
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold">{admission.name}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {admission.offeringName} · {admission.batchName}
-              {admission.studentNo ? ` · ${admission.studentNo}` : ""}
-            </p>
-          </div>
-          <StatusBadge value={admission.status} />
-        </div>
-
-        <ol
-          aria-label="Admission progress"
-          className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {steps.map((step, index) => (
-            <li key={step.id}>
-              <a
-                href="#work-panel"
-                className={`flex items-center gap-3 rounded-xl border p-3 text-sm transition hover:border-primary/60 ${
-                  step.active
-                    ? "border-primary bg-primary/5 font-medium"
-                    : step.complete
-                      ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900"
-                      : "text-muted-foreground"
-                }`}
-              >
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                  {step.complete ? "✓" : index + 1}
-                </span>
-                <span className="min-w-0">
-                  <span className="block">{step.title}</span>
-                  {step.active ? (
-                    <span className="mt-0.5 block text-xs font-normal text-primary">
-                      Current — open work panel
-                    </span>
-                  ) : step.complete ? (
-                    <span className="mt-0.5 block text-xs font-normal text-emerald-700 dark:text-emerald-300">
-                      Done
-                    </span>
-                  ) : (
-                    <span className="mt-0.5 block text-xs font-normal">
-                      Waiting
-                    </span>
-                  )}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-2xl border bg-card p-5">
-          <h2 className="font-semibold">Identity & guardian</h2>
-          <dl className="mt-4 space-y-3 text-sm">
-            <Row label="Student" value={admission.name} />
-            <Row label="Guardian" value={admission.guardian} />
-            <Row label="Mobile" value={admission.mobile} />
-            <Row
-              label="Relationship"
-              value={admission.guardianRelationship ?? "—"}
-            />
-            <Row label="School" value={admission.schoolName ?? "—"} />
-          </dl>
-        </article>
-
-        <article className="rounded-2xl border bg-card p-5">
-          <h2 className="font-semibold">Placement</h2>
-          <dl className="mt-4 space-y-3 text-sm">
-            <Row label="Programme" value={admission.offeringName} />
-            <Row label="Class" value={admission.className} />
-            <Row label="Batch" value={admission.batchName} />
-            <Row
-              label="Seats"
-              value={`${admission.batchOccupied}/${admission.batchCapacity} occupied`}
-            />
-            <Row
-              label="Fee Plan"
-              value="Terms recorded with this admission"
-            />
-          </dl>
-        </article>
-
-        <article className="rounded-2xl border bg-card p-5">
-          <h2 className="font-semibold">Initial charges</h2>
-          <p className="mt-4 text-2xl font-bold">{money(initialCharges)}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Pinned Fee Plan terms. Discounts and financial corrections remain
-            separate records.
-          </p>
-          {admission.invoice && (
-            <div className="mt-4 border-t pt-4 text-sm">
-              <p>
-                {admission.invoice.number} · billed{" "}
-                {money(admission.invoice.total)}
-              </p>
-              <p className="mt-1 text-muted-foreground">
-                Paid {money(admission.invoice.paid)} · outstanding{" "}
-                {money(admission.invoice.due)}
-              </p>
-
-            </div>
-          )}
-        </article>
-      </section>
-
-      {!isCancelled && (
-        <section
-          id="work-panel"
-          className="scroll-mt-24 space-y-4 rounded-2xl border bg-card p-5 sm:p-6"
-        >
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              Work panel
-            </p>
-            <h2 className="mt-1 text-xl font-semibold">
-              {activeStep ? activeStep.title : "Complete the case"}
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Finish the current step here. After saving, continue on this case.
-            </p>
-          </div>
-
-          {admission.status === "DRAFT" && manage && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Confirm student and guardian details before marking verification
-                complete. Correct anything captured incorrectly on the public form
-                or staff intake.
-              </p>
-              <AdmissionCommandForm
-                action="EDIT_DRAFT"
-                admissionId={admission.id}
-                data={commandData}
-                identity={{
-                  name: admission.name,
-                  guardian: admission.guardian,
-                  mobile: admission.mobile,
-                }}
-                label="Save verified identity"
-                description="Updates stay on this draft. Mark verification complete as the next action when ready."
-              />
-            </div>
-          )}
-
-          {admission.status === "READY" && !hasReferral && manage && (
-            <ReferralForm
-              admissionId={admission.id}
-              people={referrals}
-              choice={referral}
-            />
-          )}
-
-          {admission.status === "READY" &&
-            hasReferral &&
-            !hasConsent &&
-            manage && <PhysicalConsentForm admissionId={admission.id} />}
-
-          {admission.status === "READY" && !reviewComplete && (
-            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
-              <p className="font-semibold">Acceptance is blocked</p>
-              <p className="mt-1">
-                Complete{" "}
-                {[
-                  !hasReferral ? "the admission source" : null,
-                  !hasConsent ? "the signed paper consent" : null,
-                ]
-                  .filter(Boolean)
-                  .join(" and ")}{" "}
-                before acceptance.
-              </p>
-            </div>
-          )}
-
-          {nextAction && manage && (
-            <AdmissionCommandForm
-              key={`${admission.id}-${nextAction.action}`}
-              action={nextAction.action}
-              admissionId={admission.id}
-              data={commandData}
-              label={nextAction.label}
-              description={nextAction.description}
-            />
-          )}
-
-          {admission.status === "READY" && !manage && (
-            <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-              Admission management permission is required to continue this
-              case.
-            </p>
-          )}
-
-          {admission.invoice && admission.invoice.due > 0 && canPostPayment && (
-            <details className="rounded-xl border p-4" open={admission.status === "PENDING_PAYMENT"}>
-              <summary className="cursor-pointer font-semibold">Record payment received</summary>
-              <p className="mt-2 text-sm text-muted-foreground">Only post money actually received. This issues a receipt and updates the balance; it does not change the original invoice.</p>
-              <div className="mt-4"><AdmissionCommandForm
-                key={`${admission.id}-PAY-${admission.invoice.due}`}
-                action="PAY"
-                admissionId={admission.id}
-                data={commandData}
-                maxAmount={admission.invoice.due}
-                label="Post payment and issue receipt"
-                description={`Outstanding balance: ${money(admission.invoice.due)}. Select how the money was received.`}
-              /></div>
-            </details>
-          )}
-
-          {admission.status === "ACTIVE_ENROLLMENT" && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm dark:border-emerald-900 dark:bg-emerald-950/30">
-              <p className="font-semibold">Enrollment is active</p>
-              <p className="mt-1 text-muted-foreground">
-                The student is now enrolled in the selected batch. Record any remaining payment above, or open Student Accounts for other financial corrections.
-              </p>
-              <Link
-                href={`/dashboard/finance/billing?returnTo=${encodeURIComponent(`/dashboard/admissions/${admission.id}`)}`}
-                className="mt-3 inline-block font-medium underline"
-              >
-                Open Student Accounts
-              </Link>
-            </div>
-          )}
-        </section>
+      {!cancelled ? (
+        <CaseStepNavigation steps={steps} panels={panels} />
+      ) : (
+        <p className="rounded-xl border p-5">
+          This admission is closed. Its application, enrollment history and
+          financial balances are retained.
+        </p>
       )}
-
-      <details className="rounded-2xl border bg-card p-5">
+      <details className="rounded-xl border p-5">
         <summary className="cursor-pointer font-semibold">
-          Application record and history
+          Application record
         </summary>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-          <Row label="Admission reference" value={admission.number} />
-          <Row label="Origin" value={originLabels[admission.origin]} />
-          <Row
-            label="Prospect origin"
-            value={admission.originProspectId ? "Linked to CRM Enquiry" : "Not applicable"}
-          />
-          <Row
-            label="Activation policy"
-            value={admission.paymentRequirement?.replaceAll("_", " ") ?? "Applied at acceptance"}
-          />
-          <Row
-            label="Consent"
-            value={
-              paperReceipts.length
-                ? "Paper form receipt recorded"
-                : signedForms.length
-                  ? "Digital consent record available"
-                  : "Not recorded"
-            }
-          />
-          <Row label="Created" value={new Date(admission.createdAt).toLocaleString()} />
+          {[
+            ["Student", a.name],
+            ["Guardian", a.guardian],
+            ["Mobile", a.mobile],
+            ["Address", a.guardianAddress ?? "—"],
+            ["School", a.schoolName ?? "—"],
+            ["Relationship", a.guardianRelationship ?? "—"],
+            ["Programme", a.offeringName],
+            ["Batch", a.batchName],
+            [
+              "Consent",
+              hasConsent
+                ? "Current signed original on file"
+                : "Not recorded for current details",
+            ],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <dt className="text-muted-foreground">{label}</dt>
+              <dd className="font-medium">{value}</dd>
+            </div>
+          ))}
         </dl>
+        {accepted && manage && (
+          <div className="mt-4">
+            <AdmissionIdentityEditor admission={a} />
+          </div>
+        )}
       </details>
-
-      {isCancelled && (
-        <section className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
-          <p className="font-semibold">This admission is cancelled</p>
-          <p className="mt-1">
-            The case remains available as historical evidence. No new
-            enrollment or future billing work should be started from it.
-          </p>
-        </section>
-      )}
     </div>
   );
 }

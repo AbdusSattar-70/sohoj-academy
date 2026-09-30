@@ -1,4 +1,5 @@
 "use client";
+import { finishWorkflow } from "@/modules/platform/navigation/workflow-return";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useForm, useWatch, type FieldPath } from "react-hook-form";
@@ -13,6 +14,10 @@ import {
 } from "../schema";
 import { runAdmissionCommand } from "../actions";
 const REASON_PRESETS: Partial<Record<AdmissionCommand["action"], string[]>> = {
+  FINALIZE: [
+    "Reviewed verified details, placement, fees, referral and signed consent",
+  ],
+  RETURN_TO_DRAFT: ["Return to draft to correct application details"],
   READY: [
     "Confirmed student identity, guardian contact, programme and batch",
     "Verified public application against supporting documents",
@@ -22,26 +27,15 @@ const REASON_PRESETS: Partial<Record<AdmissionCommand["action"], string[]>> = {
     "Accepted after verification and signed paper consent",
     "Accepted with verified referral and complete file",
   ],
-  BILL: [
-    "Posted initial charges from the pinned Fee Plan",
-  ],
+  BILL: ["Posted initial charges from the pinned Fee Plan"],
   ACTIVATE: [
     "Activation policy and batch capacity checked",
     "Activated with outstanding balance allowed by policy",
   ],
-  PAY: [
-    "Cash received at front desk",
-    "Bank transfer confirmed",
-  ],
-  EDIT_DRAFT: [
-    "Corrected identity details with guardian",
-  ],
-  CREATE: [
-    "Creating draft from verified enquiry",
-  ],
-  CREATE_BATCH: [
-    "Opening a new teaching batch for this offering",
-  ],
+  PAY: ["Cash received at front desk", "Bank transfer confirmed"],
+  EDIT_DRAFT: ["Corrected identity details with guardian"],
+  CREATE: ["Creating draft from verified enquiry"],
+  CREATE_BATCH: ["Opening a new teaching batch for this offering"],
 };
 
 const inputClass =
@@ -105,17 +99,28 @@ export function AdmissionCommandForm({
         ? { capacity: data.capacityLimit ?? undefined }
         : {}),
       ...(action === "EDIT_BATCH" && initialBatch
-        ? { batchId: initialBatch.id, code: initialBatch.code, name: initialBatch.name, capacity: initialBatch.capacity }
+        ? {
+            batchId: initialBatch.id,
+            code: initialBatch.code,
+            name: initialBatch.name,
+            capacity: initialBatch.capacity,
+          }
         : {}),
       ...(action === "CREATE" && defaultProspectId
         ? (() => {
-            const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
+            const nextProspect = data.prospects.find(
+              (p) => p.id === defaultProspectId,
+            );
             const classMatched = data.offerings.filter(
-              (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
+              (o) =>
+                o.feeReady !== false &&
+                (!nextProspect?.classId || o.classId === nextProspect.classId),
             );
             const preferred =
               nextProspect?.interestedOfferingId &&
-              classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+              classMatched.some(
+                (o) => o.id === nextProspect.interestedOfferingId,
+              )
                 ? nextProspect.interestedOfferingId
                 : classMatched[0]?.id;
             return {
@@ -155,15 +160,24 @@ export function AdmissionCommandForm({
             {...register(key, {
               onChange: (event) => {
                 if (key === "prospectId") {
-                  const nextProspect = data.prospects.find((p) => p.id === event.target.value);
+                  const nextProspect = data.prospects.find(
+                    (p) => p.id === event.target.value,
+                  );
                   const classMatched = data.offerings.filter(
-                    (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
+                    (o) =>
+                      o.feeReady !== false &&
+                      (!nextProspect?.classId ||
+                        o.classId === nextProspect.classId),
                   );
                   const preferred =
                     nextProspect?.interestedOfferingId &&
-                    data.offerings.some((o) => o.id === nextProspect.interestedOfferingId && o.feeReady !== false)
+                    data.offerings.some(
+                      (o) =>
+                        o.id === nextProspect.interestedOfferingId &&
+                        o.feeReady !== false,
+                    )
                       ? nextProspect.interestedOfferingId
-                      : classMatched[0]?.id ?? "";
+                      : (classMatched[0]?.id ?? "");
                   setValue("confirmPlacementCorrection", false);
                   setValue("offeringId", preferred, {
                     shouldDirty: true,
@@ -175,7 +189,10 @@ export function AdmissionCommandForm({
                   });
                 }
                 if (key === "offeringId")
-                  setValue("batchId", "", { shouldDirty: true, shouldValidate: true });
+                  setValue("batchId", "", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
               },
             })}
           >
@@ -226,12 +243,26 @@ export function AdmissionCommandForm({
       startTransition(async () => {
         if (action === "CREATE" && prospect && offeringId) {
           const chosen = data.offerings.find((o) => o.id === offeringId);
-          if (chosen && ((prospect.classId && prospect.classId !== chosen.classId) || (prospect.interestedOfferingId && prospect.interestedOfferingId !== chosen.id)) && !values.confirmPlacementCorrection) {
-            setMessage({ ok: false, text: "Confirm the corrected programme and class before creating the draft." });
+          if (
+            chosen &&
+            ((prospect.classId && prospect.classId !== chosen.classId) ||
+              (prospect.interestedOfferingId &&
+                prospect.interestedOfferingId !== chosen.id)) &&
+            !values.confirmPlacementCorrection
+          ) {
+            setMessage({
+              ok: false,
+              text: "Confirm the corrected programme and class before creating the draft.",
+            });
             return;
           }
         }
-        const result = await runAdmissionCommand(payload);
+        const result = await runAdmissionCommand(payload).catch(() => ({
+          ok: false as const,
+          message:
+            "Could not confirm the result. Your entries remain; retry the same values safely.",
+          field: undefined as string | undefined,
+        }));
         if (!result.ok) {
           if (result.field)
             setError(result.field as FieldPath<AdmissionCommand>, {
@@ -246,7 +277,7 @@ export function AdmissionCommandForm({
           router.push(`/dashboard/admissions/${result.entityId}`);
           return;
         }
-        router.refresh();
+        finishWorkflow(router);
         reset({
           action,
           admissionId,
@@ -264,13 +295,20 @@ export function AdmissionCommandForm({
             : {}),
           ...(action === "CREATE" && defaultProspectId
             ? (() => {
-                const nextProspect = data.prospects.find((p) => p.id === defaultProspectId);
+                const nextProspect = data.prospects.find(
+                  (p) => p.id === defaultProspectId,
+                );
                 const classMatched = data.offerings.filter(
-                  (o) => o.feeReady !== false && (!nextProspect?.classId || o.classId === nextProspect.classId),
+                  (o) =>
+                    o.feeReady !== false &&
+                    (!nextProspect?.classId ||
+                      o.classId === nextProspect.classId),
                 );
                 const preferred =
                   nextProspect?.interestedOfferingId &&
-                  classMatched.some((o) => o.id === nextProspect.interestedOfferingId)
+                  classMatched.some(
+                    (o) => o.id === nextProspect.interestedOfferingId,
+                  )
                     ? nextProspect.interestedOfferingId
                     : classMatched[0]?.id;
                 return {
@@ -293,15 +331,16 @@ export function AdmissionCommandForm({
       <div className="grid gap-4 md:grid-cols-2">
         {(action === "CREATE_BATCH" || action === "EDIT_BATCH") && (
           <>
-            {action === "CREATE_BATCH" && field(
-              "offeringId",
-              "Offering",
-              "Choose the programme offering this batch belongs to.",
-              data.offerings.map((o) => ({
-                id: o.id,
-                name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}`,
-              })),
-            )}
+            {action === "CREATE_BATCH" &&
+              field(
+                "offeringId",
+                "Offering",
+                "Choose the programme offering this batch belongs to.",
+                data.offerings.map((o) => ({
+                  id: o.id,
+                  name: `${o.name} · ${o.yearName} · ${o.branchName ?? "No branch"} · ${o.className}`,
+                })),
+              )}
             {field(
               "code",
               "Batch Code",
@@ -319,7 +358,9 @@ export function AdmissionCommandForm({
               undefined,
               true,
             )}
-            {action === "EDIT_BATCH" && <input type="hidden" {...register("batchId")} />}
+            {action === "EDIT_BATCH" && (
+              <input type="hidden" {...register("batchId")} />
+            )}
           </>
         )}
         {action === "CREATE" && (
@@ -356,7 +397,9 @@ export function AdmissionCommandForm({
                 }
                 if (
                   prospect.interestedOfferingId &&
-                  !classMatched.some((o) => o.id === prospect.interestedOfferingId)
+                  !classMatched.some(
+                    (o) => o.id === prospect.interestedOfferingId,
+                  )
                 ) {
                   return "The recorded interest is unavailable. Select the intended active offering and confirm the change below.";
                 }
@@ -374,21 +417,38 @@ export function AdmissionCommandForm({
               })(),
             )}
             {prospect && data.offerings.some((o) => o.feeReady === false) && (
-              <a className="text-sm font-medium text-primary underline md:col-span-2" href="/dashboard/finance/fee-plans">Open Fee Plans to finish setup</a>
+              <a
+                className="text-sm font-medium text-primary underline md:col-span-2"
+                href="/dashboard/finance/fee-plans"
+              >
+                Open Fee Plans to finish setup
+              </a>
             )}
-            {prospect && offeringId && (() => {
-              const chosen = data.offerings.find((o) => o.id === offeringId);
-              const differs = chosen && (
-                (prospect.classId && prospect.classId !== chosen.classId) ||
-                (prospect.interestedOfferingId && prospect.interestedOfferingId !== chosen.id)
-              );
-              return differs ? (
-                <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 p-4 text-sm md:col-span-2">
-                  <input type="checkbox" className="mt-1" {...register("confirmPlacementCorrection")} />
-                  <span>Confirm the selected programme and class differ from this Prospect’s enquiry. I verified the intended placement with the student or guardian; the correction will be recorded in the audit trail.</span>
-                </label>
-              ) : null;
-            })()}
+            {prospect &&
+              offeringId &&
+              (() => {
+                const chosen = data.offerings.find((o) => o.id === offeringId);
+                const differs =
+                  chosen &&
+                  ((prospect.classId && prospect.classId !== chosen.classId) ||
+                    (prospect.interestedOfferingId &&
+                      prospect.interestedOfferingId !== chosen.id));
+                return differs ? (
+                  <label className="flex items-start gap-3 rounded-xl border border-amber-500/40 p-4 text-sm md:col-span-2">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      {...register("confirmPlacementCorrection")}
+                    />
+                    <span>
+                      Confirm the selected programme and class differ from this
+                      Prospect’s enquiry. I verified the intended placement with
+                      the student or guardian; the correction will be recorded
+                      in the audit trail.
+                    </span>
+                  </label>
+                ) : null;
+              })()}
             {field(
               "batchId",
               "Batch",
@@ -559,7 +619,12 @@ export function AdmissionCommandForm({
           {pending ? "Working…" : label}
         </Button>
         {onCancel && (
-          <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={pending}
+            onClick={onCancel}
+          >
             Cancel
           </Button>
         )}

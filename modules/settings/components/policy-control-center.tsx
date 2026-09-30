@@ -1,4 +1,5 @@
 "use client";
+import { finishWorkflow } from "@/modules/platform/navigation/workflow-return";
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -49,24 +50,52 @@ function stringValue(payload: Payload, key: string, fallback: string) {
   return typeof value === "string" ? value : fallback;
 }
 
-export function PolicyControlCenter({
-  rules,
-}: {
-  rules: SettingsPolicyRow[];
-}) {
-  const batchRule = rules.find(
-    (rule) =>
-      rule.domain === "academics" && rule.ruleKey === "batch_capacity_policy"
-  );
-  const compensationRule = rules.find(
-    (rule) =>
-      rule.domain === "teacher_compensation" &&
-      rule.ruleKey === "default_policy"
-  );
-  const admissionRule = rules.find(
-    (rule) =>
-      rule.domain === "admissions" && rule.ruleKey === "activation_policy"
-  );
+export function PolicyControlCenter({ rules }: { rules: SettingsPolicyRow[] }) {
+  const draft = (
+    domain: string,
+    ruleKey: string,
+    payload: Payload,
+  ): SettingsPolicyRow => ({
+    id: "unsaved",
+    domain,
+    ruleKey,
+    version: 0,
+    status: "DRAFT",
+    payload,
+    changeReason: "Not configured",
+    effectiveFrom: "",
+  });
+  const batchRule =
+    rules.find(
+      (rule) =>
+        rule.domain === "academics" && rule.ruleKey === "batch_capacity_policy",
+    ) ?? draft("academics", "batch_capacity_policy", { max_students: 12 });
+  const compensationRule =
+    rules.find(
+      (rule) =>
+        rule.domain === "teacher_compensation" &&
+        rule.ruleKey === "default_policy",
+    ) ??
+    draft("teacher_compensation", "default_policy", {
+      teaching_pool_percent: 30,
+      teaching_pool_review_max_percent: 40,
+      acquisition_bonus_percent: 50,
+      retention_3_month_percent: 15,
+      retention_6_month_percent: 20,
+    });
+  const admissionRule =
+    rules.find(
+      (rule) =>
+        rule.domain === "admissions" && rule.ruleKey === "activation_policy",
+    ) ??
+    draft("admissions", "activation_policy", {
+      requires_admission_acceptance: true,
+      requires_initial_billing_posted: true,
+      payment_requirement: "FULL",
+      minimum_payment_percent: 100,
+      allow_credit_enrollment: false,
+      count_student_active_only_when_enrollment_active: true,
+    });
 
   return (
     <div className="grid gap-5 xl:grid-cols-2">
@@ -88,7 +117,7 @@ function BatchCapacityEditor({ rule }: { rule: SettingsPolicyRow }) {
   const currentMax = numberValue(payload, "max_students", 1);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
-    null
+    null,
   );
 
   const {
@@ -110,13 +139,19 @@ function BatchCapacityEditor({ rule }: { rule: SettingsPolicyRow }) {
 
   const maxStudents = useWatch({ control, name: "maxStudents" });
   const reason = useWatch({ control, name: "reason" });
-  const hasChange = maxStudents !== currentMax;
-  const canSubmit = hasChange && isValid && reason.trim().length >= 5 && !pending;
+  const hasChange = rule.version === 0 || maxStudents !== currentMax;
+  const canSubmit =
+    hasChange && isValid && reason.trim().length >= 5 && !pending;
 
   const submit = handleSubmit((input) => {
     setMessage(null);
     startTransition(async () => {
-      const result = await publishPolicy(input);
+      const result = await publishPolicy(input).catch(() => ({
+        ok: false as const,
+        field: undefined as string | undefined,
+        error:
+          "Could not save settings. Your entries remain; retry when connected.",
+      }));
       if (!result.ok) {
         if (result.field) {
           setError(result.field as FieldPath<BatchCapacityPolicyInput>, {
@@ -131,9 +166,9 @@ function BatchCapacityEditor({ rule }: { rule: SettingsPolicyRow }) {
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Batch-capacity policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Batch capacity settings saved.",
       });
-      router.refresh();
+      finishWorkflow(router);
     });
   });
 
@@ -196,7 +231,7 @@ function TeacherCompensationEditor({
     teachingPoolPercent: numberValue(payload, "teaching_pool_percent"),
     teachingPoolReviewMaxPercent: numberValue(
       payload,
-      "teaching_pool_review_max_percent"
+      "teaching_pool_review_max_percent",
     ),
     acquisitionBonusPercent: numberValue(payload, "acquisition_bonus_percent"),
     retention3MonthPercent: numberValue(payload, "retention_3_month_percent"),
@@ -205,7 +240,7 @@ function TeacherCompensationEditor({
 
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
-    null
+    null,
   );
 
   const {
@@ -228,6 +263,7 @@ function TeacherCompensationEditor({
   const values = useWatch({ control });
   const reason = useWatch({ control, name: "reason" });
   const hasChange =
+    rule.version === 0 ||
     values.teachingPoolPercent !== current.teachingPoolPercent ||
     values.teachingPoolReviewMaxPercent !==
       current.teachingPoolReviewMaxPercent ||
@@ -235,12 +271,18 @@ function TeacherCompensationEditor({
     values.retention3MonthPercent !== current.retention3MonthPercent ||
     values.retention6MonthPercent !== current.retention6MonthPercent;
 
-  const canSubmit = hasChange && isValid && reason.trim().length >= 5 && !pending;
+  const canSubmit =
+    hasChange && isValid && reason.trim().length >= 5 && !pending;
 
   const submit = handleSubmit((input) => {
     setMessage(null);
     startTransition(async () => {
-      const result = await publishPolicy(input);
+      const result = await publishPolicy(input).catch(() => ({
+        ok: false as const,
+        field: undefined as string | undefined,
+        error:
+          "Could not save settings. Your entries remain; retry when connected.",
+      }));
       if (!result.ok) {
         if (result.field) {
           setError(result.field as FieldPath<TeacherCompensationPolicyInput>, {
@@ -255,9 +297,9 @@ function TeacherCompensationEditor({
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Teacher-compensation policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Teacher compensation settings saved. Historic settlements keep their recorded terms.",
       });
-      router.refresh();
+      finishWorkflow(router);
     });
   });
 
@@ -332,7 +374,7 @@ function TeacherCompensationEditor({
         <ReasonField
           register={register("reason")}
           error={errors.reason?.message}
-          hint="Explain why management is changing compensation terms. The previous version remains in history."
+          hint="Explain why management is changing compensation terms. Earlier settings remain in history."
         />
 
         <PolicyFooter
@@ -349,41 +391,38 @@ function TeacherCompensationEditor({
 function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
   const router = useRouter();
   const payload = asPayload(rule.payload);
-  const current: Omit<
-    AdmissionActivationPolicyInput,
-    "policy" | "reason"
-  > = {
+  const current: Omit<AdmissionActivationPolicyInput, "policy" | "reason"> = {
     requiresAdmissionAcceptance: booleanValue(
       payload,
       "requires_admission_acceptance",
-      true
+      true,
     ),
     requiresInitialBillingPosted: booleanValue(
       payload,
       "requires_initial_billing_posted",
-      true
+      true,
     ),
     paymentRequirement: stringValue(
       payload,
       "payment_requirement",
-      "NONE"
+      "NONE",
     ) as AdmissionActivationPolicyInput["paymentRequirement"],
     minimumPaymentPercent: numberValue(payload, "minimum_payment_percent"),
     allowCreditEnrollment: booleanValue(
       payload,
       "allow_credit_enrollment",
-      true
+      true,
     ),
     countStudentActiveOnlyWhenEnrollmentActive: booleanValue(
       payload,
       "count_student_active_only_when_enrollment_active",
-      true
+      true,
     ),
   };
 
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
-    null
+    null,
   );
 
   const {
@@ -423,20 +462,29 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
   }, [paymentRequirement, setValue]);
 
   const hasChange =
-    values.requiresAdmissionAcceptance !== current.requiresAdmissionAcceptance ||
-    values.requiresInitialBillingPosted !== current.requiresInitialBillingPosted ||
+    rule.version === 0 ||
+    values.requiresAdmissionAcceptance !==
+      current.requiresAdmissionAcceptance ||
+    values.requiresInitialBillingPosted !==
+      current.requiresInitialBillingPosted ||
     values.paymentRequirement !== current.paymentRequirement ||
     values.minimumPaymentPercent !== current.minimumPaymentPercent ||
     values.allowCreditEnrollment !== current.allowCreditEnrollment ||
     values.countStudentActiveOnlyWhenEnrollmentActive !==
       current.countStudentActiveOnlyWhenEnrollmentActive;
 
-  const canSubmit = hasChange && isValid && reason.trim().length >= 5 && !pending;
+  const canSubmit =
+    hasChange && isValid && reason.trim().length >= 5 && !pending;
 
   const submit = handleSubmit((input) => {
     setMessage(null);
     startTransition(async () => {
-      const result = await publishPolicy(input);
+      const result = await publishPolicy(input).catch(() => ({
+        ok: false as const,
+        field: undefined as string | undefined,
+        error:
+          "Could not save settings. Your entries remain; retry when connected.",
+      }));
       if (!result.ok) {
         if (result.field) {
           setError(result.field as FieldPath<AdmissionActivationPolicyInput>, {
@@ -451,9 +499,9 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Admission-activation policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Admission activation settings saved. Historic admissions keep their recorded terms.",
       });
-      router.refresh();
+      finishWorkflow(router);
     });
   });
 
@@ -484,7 +532,7 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
             label="Count only ACTIVE enrollments as active students"
             description="Protects dashboard student counts from drafts and admission-only records."
             registration={register(
-              "countStudentActiveOnlyWhenEnrollmentActive"
+              "countStudentActiveOnlyWhenEnrollmentActive",
             )}
           />
         </div>
@@ -531,7 +579,9 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
                   aria-describedby={describedBy}
                   aria-invalid={invalid}
                   className={`${inputClass} pr-9 disabled:cursor-not-allowed disabled:opacity-60`}
-                  {...register("minimumPaymentPercent", { valueAsNumber: true })}
+                  {...register("minimumPaymentPercent", {
+                    valueAsNumber: true,
+                  })}
                 />
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   %
@@ -572,11 +622,16 @@ function PolicyCard({
   children: ReactNode;
 }) {
   return (
-    <section className={`rounded-2xl border bg-card p-5 sm:p-6 ${className ?? ""}`}>
-      <div className="mb-5 flex items-start justify-between gap-4">
+    <details
+      className={`rounded-2xl border bg-card p-5 sm:p-6 ${className ?? ""}`}
+    >
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="size-4 text-blue-700 dark:text-blue-300" aria-hidden="true" />
+            <ShieldCheck
+              className="size-4 text-blue-700 dark:text-blue-300"
+              aria-hidden="true"
+            />
             <h3 className="font-semibold">{title}</h3>
           </div>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -584,11 +639,11 @@ function PolicyCard({
           </p>
         </div>
         <span className="shrink-0 rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-semibold">
-          v{version}
+          {version === 0 ? "Create settings" : "Edit settings"}
         </span>
-      </div>
-      {children}
-    </section>
+      </summary>
+      <div className="mt-5">{children}</div>
+    </details>
   );
 }
 
@@ -666,12 +721,16 @@ function PolicyFooter({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
           {changed
-            ? "A new version will be published; the current version remains in history."
-            : "Change at least one policy value to enable publishing."}
+            ? "Changes apply to future operations. Earlier settings remain in history."
+            : "Change an operating value and record why."}
         </p>
-        <Button type="submit" disabled={!canSubmit} className="min-h-11 shrink-0">
+        <Button
+          type="submit"
+          disabled={!canSubmit}
+          className="min-h-11 shrink-0"
+        >
           <Save className="mr-2 size-4" aria-hidden="true" />
-          {pending ? "Publishing…" : "Publish New Version"}
+          {pending ? "Saving…" : "Save settings"}
         </Button>
       </div>
     </div>
