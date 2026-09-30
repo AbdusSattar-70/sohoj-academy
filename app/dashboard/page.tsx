@@ -24,24 +24,29 @@ export default async function DashboardPage({
   const cards = [
     overview.activeProspects !== null && {
       label: "Active prospects",
+      href: "/dashboard/crm/prospects",
       value: overview.activeProspects,
       description: "Open CRM opportunities not yet converted or lost.",
       icon: UserRoundSearch,
     },
     overview.activeStudents !== null && {
       label: "Active students",
+      href: "/dashboard/students",
       value: overview.activeStudents,
-      description: "Current Student Master records with active lifecycle status.",
+      description:
+        "Current Student Master records with active lifecycle status.",
       icon: GraduationCap,
     },
     overview.pendingApprovals !== null && {
-      label: "Pending approvals",
+      label: "Pending reviews",
+      href: "/dashboard/governance/approvals",
       value: overview.pendingApprovals,
-      description: "Maker-checker decisions waiting for an authorized reviewer.",
+      description: "Teacher submissions and any outstanding review decisions.",
       icon: ClipboardCheck,
     },
     overview.activeStaff !== null && {
       label: "Active staff",
+      href: "/dashboard/staff",
       value: overview.activeStaff,
       description: "Active and on-leave Staff identities in the organization.",
       icon: UsersRound,
@@ -51,6 +56,7 @@ export default async function DashboardPage({
     value: number;
     description: string;
     icon: typeof UserRoundSearch;
+    href: string;
   }>;
 
   return (
@@ -64,7 +70,12 @@ export default async function DashboardPage({
       {context.permissions.includes("system.settings.view") && (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-card px-5 py-4 text-sm">
           <span className="font-medium">Manage academy setup</span>
-          <Link href="/dashboard/settings" className="rounded-lg border px-3 py-2 font-semibold text-primary hover:bg-muted">Open Settings</Link>
+          <Link
+            href="/dashboard/settings"
+            className="rounded-lg border px-3 py-2 font-semibold text-primary hover:bg-muted"
+          >
+            Open Settings
+          </Link>
         </div>
       )}
 
@@ -78,6 +89,45 @@ export default async function DashboardPage({
         </div>
       )}
 
+      <nav aria-label="Quick actions" className="flex flex-wrap gap-3">
+        {[
+          [
+            "admissions.create",
+            "/dashboard/admissions?start=staff",
+            "New admission",
+          ],
+          [
+            "crm.prospects.view",
+            "/dashboard/crm/prospects",
+            "Verify applications",
+          ],
+          [
+            "finance.view",
+            "/dashboard/finance/billing",
+            "Find student account",
+          ],
+          [
+            "academics.manage",
+            "/dashboard/academics/offerings",
+            "Manage offerings",
+          ],
+          [
+            "system.users.manage",
+            "/dashboard/settings/access-requests",
+            "Staff access requests",
+          ],
+        ]
+          .filter(([permission]) => context.permissions.includes(permission))
+          .map(([, href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="rounded-lg border px-4 py-3 text-sm hover:bg-muted"
+            >
+              {label}
+            </Link>
+          ))}
+      </nav>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
           <StatCard key={card.label} {...card} />
@@ -106,9 +156,10 @@ export default async function DashboardPage({
           <div className="divide-y">
             {overview.recentProspects.length ? (
               overview.recentProspects.map((prospect) => (
-                <div
+                <Link
+                  href={`/dashboard/crm/prospects/${prospect.id}`}
                   key={prospect.id}
-                  className="flex items-center justify-between gap-4 px-5 py-4"
+                  className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-muted"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">
@@ -120,7 +171,7 @@ export default async function DashboardPage({
                     </p>
                   </div>
                   <StatusBadge value={prospect.status} />
-                </div>
+                </Link>
               ))
             ) : (
               <p className="px-5 py-8 text-sm text-muted-foreground">
@@ -138,30 +189,36 @@ export default async function DashboardPage({
             <div>
               <h2 className="font-semibold">Action Center</h2>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Exceptions and due work are surfaced here instead of being hidden
-                inside individual modules.
+                Exceptions and due work are surfaced here instead of being
+                hidden inside individual modules.
               </p>
             </div>
           </div>
 
           <div className="mt-5 space-y-3">
             {overview.dueFollowups !== null && (
-              <div className="rounded-xl border p-4">
+              <Link
+                href="/dashboard/action-center"
+                className="block rounded-xl border p-4 hover:bg-muted"
+              >
                 <p className="text-2xl font-bold">{overview.dueFollowups}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   CRM follow-ups due
                 </p>
-              </div>
+              </Link>
             )}
             {overview.pendingApprovals !== null && (
-              <div className="rounded-xl border p-4">
+              <Link
+                href="/dashboard/governance/approvals"
+                className="block rounded-xl border p-4 hover:bg-muted"
+              >
                 <p className="text-2xl font-bold">
                   {overview.pendingApprovals}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  approval decisions pending
+                  review decisions pending
                 </p>
-              </div>
+              </Link>
             )}
           </div>
 
