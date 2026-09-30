@@ -191,6 +191,8 @@ export function MasterDataWorkspace({
 }) {
   const [entity, setEntity] = useState<MasterEntity>("class");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [notice, setNotice] = useState("");
   const rows = useMemo(() => rowsFor(entity, data), [entity, data]);
   const section = sections.find((item) => item.entity === entity)!;
 
@@ -204,6 +206,8 @@ export function MasterDataWorkspace({
             onClick={() => {
               setEntity(item.entity);
               setEditingId(null);
+              setFormOpen(false);
+              setNotice("");
             }}
             className={`min-h-11 rounded-xl border px-3 text-sm font-medium transition ${
               entity === item.entity
@@ -224,7 +228,25 @@ export function MasterDataWorkspace({
               {section.description}
             </p>
           </div>
-          <p className="text-sm text-muted-foreground">{rows.length} records</p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              {rows.length} records
+            </p>
+            {canManage && (
+              <button
+                type="button"
+                aria-expanded={formOpen}
+                onClick={() => {
+                  setEditingId(null);
+                  setFormOpen(!formOpen);
+                  setNotice("");
+                }}
+                className="rounded-lg border px-4 py-2 text-sm"
+              >
+                {formOpen && !editingId ? "Close create form" : "Create record"}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="mt-4 overflow-x-auto">
@@ -258,7 +280,7 @@ export function MasterDataWorkspace({
                   </td>
                   {entity === "academic_year" && (
                     <td className="p-3 text-muted-foreground">
-                      {row.starts_on} \u2192 {row.ends_on}
+                      {row.starts_on} → {row.ends_on}
                     </td>
                   )}
                   {entity === "class" && (
@@ -287,7 +309,11 @@ export function MasterDataWorkspace({
                       <button
                         type="button"
                         className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
-                        onClick={() => setEditingId(row.id)}
+                        onClick={() => {
+                          setEditingId(row.id);
+                          setFormOpen(true);
+                          setNotice("");
+                        }}
                       >
                         Edit
                       </button>
@@ -298,7 +324,7 @@ export function MasterDataWorkspace({
               {!rows.length && (
                 <tr>
                   <td className="p-6 text-sm text-muted-foreground" colSpan={6}>
-                    No records yet. Create the first entry below.
+                    No records yet. Click Create record to add the first entry.
                   </td>
                 </tr>
               )}
@@ -306,7 +332,12 @@ export function MasterDataWorkspace({
           </table>
         </div>
 
-        {canManage && (
+        {notice && (
+          <p role="status" className="mt-4 rounded-lg border p-3 text-sm">
+            {notice}
+          </p>
+        )}
+        {canManage && formOpen && (
           <MasterRecordForm
             key={`${entity}:${editingId ?? "new"}`}
             entity={entity}
@@ -319,7 +350,15 @@ export function MasterDataWorkspace({
                   )
                 : emptyDefaults(entity)
             }
-            onCancelEdit={() => setEditingId(null)}
+            onCancelEdit={() => {
+              setEditingId(null);
+              setFormOpen(false);
+            }}
+            onSuccess={(text) => {
+              setNotice(text);
+              setEditingId(null);
+              setFormOpen(false);
+            }}
           />
         )}
       </section>
@@ -332,11 +371,13 @@ function MasterRecordForm({
   areas,
   initial,
   onCancelEdit,
+  onSuccess,
 }: {
   entity: MasterEntity;
   areas: ManageCrmOverview["areas"];
   initial: ManageMasterRecordInput;
   onCancelEdit: () => void;
+  onSuccess: (text: string) => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -379,7 +420,11 @@ function MasterRecordForm({
           : "Master record created.",
       });
       reset(emptyDefaults(entity));
-      onCancelEdit();
+      onSuccess(
+        isEdit
+          ? "Master record updated. History remains available."
+          : "Master record created.",
+      );
       finishWorkflow(router);
     });
   });
@@ -390,7 +435,7 @@ function MasterRecordForm({
         <h3 className="font-semibold">
           {isEdit ? "Edit record" : "Create record"}
         </h3>
-        {isEdit && (
+        {
           <button
             type="button"
             className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
@@ -399,9 +444,9 @@ function MasterRecordForm({
               onCancelEdit();
             }}
           >
-            Cancel edit
+            Close editor
           </button>
-        )}
+        }
       </div>
 
       <input type="hidden" {...register("entity")} />
