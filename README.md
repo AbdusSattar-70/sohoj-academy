@@ -30,7 +30,7 @@ pnpm build
 pnpm dev
 ```
 
-This branch uses migrations `01–22`. For a database already on rollback `01–13`, apply only the new migrations `14–22`. If migration history differs, reconcile the actual schema and branch first; do not mark unapplied files applied or reset automatically.
+This branch uses migrations `01–28`. For a database already on rollback `01–13`, apply only the new migrations `14–28`. If migration history differs, reconcile the actual schema and branch first; do not mark unapplied files applied or reset automatically.
 
 Required public environment: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL`. Staff invitation delivery additionally requires server-only `SUPABASE_SERVICE_ROLE_KEY`. Configure Supabase Auth redirects and email templates as described in the workflow guide. Never expose the service key using a `NEXT_PUBLIC_` name.
 

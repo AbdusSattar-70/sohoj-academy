@@ -69,7 +69,7 @@ Setup and admission links carry a validated same-origin `returnTo`. Successful s
 
 ## Deployment
 
-Apply additive migrations `14–22` after the rollback baseline `01–13`; do not reset a working database or mark missing migrations applied blindly. Migration history must match this branch.
+Apply additive migrations `14–28` after the rollback baseline `01–13`; do not reset a working database or mark missing migrations applied blindly. Migration history must match this branch.
 
 Server environment:
 

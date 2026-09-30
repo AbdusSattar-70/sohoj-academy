@@ -10,7 +10,7 @@ Read [Redesign workflow](REDESIGN_REFACTOR_WORKFLOW.md) before changing operatio
 
 Feature modules contain client forms, server actions, schema validation and queries. Supabase RLS protects reads; controlled RPCs validate permission and business invariants, perform transactional mutations and append audit events. New contracts use `modules/platform/rpc-client.ts` or explicit domain types until generated database types are refreshed. Do not bind/unbind Supabase methods without their receiver.
 
-Migrations `01–13` are the rollback baseline. Additive migrations `14–22` implement unverified public intake, admission discounts/finalization, setup/lifecycle controls, staff requests, correction-aware paper consent, generated academy rolls, first-run integrity and additional admission charges. Old migration files are not rewritten.
+Migrations `01–13` are the rollback baseline. Additive migrations `14–28` implement unverified public intake, admission discounts/finalization, setup/lifecycle controls, staff requests, correction-aware paper consent, generated academy rolls, first-run integrity and additional admission charges. Old migration files are not rewritten.
 
 Internal fee snapshots protect past admissions. The product edits current Fee Plans; do not expose storage version management or same-day publication restrictions again.
 

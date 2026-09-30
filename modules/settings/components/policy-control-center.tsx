@@ -51,19 +51,51 @@ function stringValue(payload: Payload, key: string, fallback: string) {
 }
 
 export function PolicyControlCenter({ rules }: { rules: SettingsPolicyRow[] }) {
-  const batchRule = rules.find(
-    (rule) =>
-      rule.domain === "academics" && rule.ruleKey === "batch_capacity_policy",
-  );
-  const compensationRule = rules.find(
-    (rule) =>
-      rule.domain === "teacher_compensation" &&
-      rule.ruleKey === "default_policy",
-  );
-  const admissionRule = rules.find(
-    (rule) =>
-      rule.domain === "admissions" && rule.ruleKey === "activation_policy",
-  );
+  const draft = (
+    domain: string,
+    ruleKey: string,
+    payload: Payload,
+  ): SettingsPolicyRow => ({
+    id: "unsaved",
+    domain,
+    ruleKey,
+    version: 0,
+    status: "DRAFT",
+    payload,
+    changeReason: "Not configured",
+    effectiveFrom: "",
+  });
+  const batchRule =
+    rules.find(
+      (rule) =>
+        rule.domain === "academics" && rule.ruleKey === "batch_capacity_policy",
+    ) ?? draft("academics", "batch_capacity_policy", { max_students: 12 });
+  const compensationRule =
+    rules.find(
+      (rule) =>
+        rule.domain === "teacher_compensation" &&
+        rule.ruleKey === "default_policy",
+    ) ??
+    draft("teacher_compensation", "default_policy", {
+      teaching_pool_percent: 30,
+      teaching_pool_review_max_percent: 40,
+      acquisition_bonus_percent: 50,
+      retention_3_month_percent: 15,
+      retention_6_month_percent: 20,
+    });
+  const admissionRule =
+    rules.find(
+      (rule) =>
+        rule.domain === "admissions" && rule.ruleKey === "activation_policy",
+    ) ??
+    draft("admissions", "activation_policy", {
+      requires_admission_acceptance: true,
+      requires_initial_billing_posted: true,
+      payment_requirement: "FULL",
+      minimum_payment_percent: 100,
+      allow_credit_enrollment: false,
+      count_student_active_only_when_enrollment_active: true,
+    });
 
   return (
     <div className="grid gap-5 xl:grid-cols-2">
@@ -107,14 +139,19 @@ function BatchCapacityEditor({ rule }: { rule: SettingsPolicyRow }) {
 
   const maxStudents = useWatch({ control, name: "maxStudents" });
   const reason = useWatch({ control, name: "reason" });
-  const hasChange = maxStudents !== currentMax;
+  const hasChange = rule.version === 0 || maxStudents !== currentMax;
   const canSubmit =
     hasChange && isValid && reason.trim().length >= 5 && !pending;
 
   const submit = handleSubmit((input) => {
     setMessage(null);
     startTransition(async () => {
-      const result = await publishPolicy(input);
+      const result = await publishPolicy(input).catch(() => ({
+        ok: false as const,
+        field: undefined as string | undefined,
+        error:
+          "Could not save settings. Your entries remain; retry when connected.",
+      }));
       if (!result.ok) {
         if (result.field) {
           setError(result.field as FieldPath<BatchCapacityPolicyInput>, {
@@ -129,7 +166,7 @@ function BatchCapacityEditor({ rule }: { rule: SettingsPolicyRow }) {
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Batch-capacity policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Batch capacity settings saved.",
       });
       finishWorkflow(router);
     });
@@ -226,6 +263,7 @@ function TeacherCompensationEditor({
   const values = useWatch({ control });
   const reason = useWatch({ control, name: "reason" });
   const hasChange =
+    rule.version === 0 ||
     values.teachingPoolPercent !== current.teachingPoolPercent ||
     values.teachingPoolReviewMaxPercent !==
       current.teachingPoolReviewMaxPercent ||
@@ -239,7 +277,12 @@ function TeacherCompensationEditor({
   const submit = handleSubmit((input) => {
     setMessage(null);
     startTransition(async () => {
-      const result = await publishPolicy(input);
+      const result = await publishPolicy(input).catch(() => ({
+        ok: false as const,
+        field: undefined as string | undefined,
+        error:
+          "Could not save settings. Your entries remain; retry when connected.",
+      }));
       if (!result.ok) {
         if (result.field) {
           setError(result.field as FieldPath<TeacherCompensationPolicyInput>, {
@@ -254,7 +297,7 @@ function TeacherCompensationEditor({
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Teacher-compensation policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Teacher compensation settings saved. Historic settlements keep their recorded terms.",
       });
       finishWorkflow(router);
     });
@@ -331,7 +374,7 @@ function TeacherCompensationEditor({
         <ReasonField
           register={register("reason")}
           error={errors.reason?.message}
-          hint="Explain why management is changing compensation terms. The previous version remains in history."
+          hint="Explain why management is changing compensation terms. Earlier settings remain in history."
         />
 
         <PolicyFooter
@@ -419,6 +462,7 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
   }, [paymentRequirement, setValue]);
 
   const hasChange =
+    rule.version === 0 ||
     values.requiresAdmissionAcceptance !==
       current.requiresAdmissionAcceptance ||
     values.requiresInitialBillingPosted !==
@@ -435,7 +479,12 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
   const submit = handleSubmit((input) => {
     setMessage(null);
     startTransition(async () => {
-      const result = await publishPolicy(input);
+      const result = await publishPolicy(input).catch(() => ({
+        ok: false as const,
+        field: undefined as string | undefined,
+        error:
+          "Could not save settings. Your entries remain; retry when connected.",
+      }));
       if (!result.ok) {
         if (result.field) {
           setError(result.field as FieldPath<AdmissionActivationPolicyInput>, {
@@ -450,7 +499,7 @@ function AdmissionActivationEditor({ rule }: { rule: SettingsPolicyRow }) {
       reset({ ...input, reason: "" });
       setMessage({
         ok: true,
-        text: `Admission-activation policy published as version ${result.version ?? rule.version + 1}.`,
+        text: "Admission activation settings saved. Historic admissions keep their recorded terms.",
       });
       finishWorkflow(router);
     });
@@ -573,10 +622,10 @@ function PolicyCard({
   children: ReactNode;
 }) {
   return (
-    <section
+    <details
       className={`rounded-2xl border bg-card p-5 sm:p-6 ${className ?? ""}`}
     >
-      <div className="mb-5 flex items-start justify-between gap-4">
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <ShieldCheck
@@ -590,11 +639,11 @@ function PolicyCard({
           </p>
         </div>
         <span className="shrink-0 rounded-full border bg-muted/40 px-2.5 py-1 text-xs font-semibold">
-          v{version}
+          {version === 0 ? "Create settings" : "Edit settings"}
         </span>
-      </div>
-      {children}
-    </section>
+      </summary>
+      <div className="mt-5">{children}</div>
+    </details>
   );
 }
 
@@ -672,8 +721,8 @@ function PolicyFooter({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
           {changed
-            ? "A new version will be published; the current version remains in history."
-            : "Change at least one policy value to enable publishing."}
+            ? "Changes apply to future operations. Earlier settings remain in history."
+            : "Change an operating value and record why."}
         </p>
         <Button
           type="submit"
@@ -681,7 +730,7 @@ function PolicyFooter({
           className="min-h-11 shrink-0"
         >
           <Save className="mr-2 size-4" aria-hidden="true" />
-          {pending ? "Publishing…" : "Publish New Version"}
+          {pending ? "Saving…" : "Save settings"}
         </Button>
       </div>
     </div>

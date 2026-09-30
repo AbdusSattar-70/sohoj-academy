@@ -13,3 +13,19 @@ Implement and publish each item as a separate commit on `feature/redesign_refact
 9. Business rules: edit current operating settings in a friendly form while retaining immutable historical snapshots internally.
 
 Invitation deployment requires a server-only Supabase service-role key, an explicit site URL, allowed Auth callbacks and working invitation/recovery email templates. Secrets must never use a NEXT_PUBLIC prefix. No real email or live database changes are performed by this source implementation.
+
+## Implemented delivery
+
+All nine items above now have separate commits. Migrations 23–28 add audit identity snapshots and linked traces, account search identities, audited enrollment closure, CRM follow-up assignment, programme-name defaults, and editable operating-rule setup.
+
+Audit history is never backfilled by altering events. Historical actor identities without snapshots are labelled as historical lookup. Future FINALIZE events share a correlation ID across acceptance, discount and billing. Actor profile UUID and staff UUID/number remain inspectable.
+
+Owner now means **Follow-up staff**. It does not mean referrer. A verified conversion assigns its handling staff when responsibility was unassigned. Referrer compensation stays in the admission workflow.
+
+Withdrawal/completion runs directly from Enrollment History on the student page. Closing stops future recurring billing, releases the seat and retains all existing dues; cancellation credits/refund payouts are separate financial decisions.
+
+Offering/batch forms use inline editors. Titles default to the programme name in the database as well as the UI. Master-data create/edit is opened on demand. Failed save attempts retain values; successful saves close the working panel with a register-level message.
+
+The monochrome form/invoice layout follows the supplied acknowledgement slip's header, numbered sections and bordered information rows. It does not assert a signature, seal or unreceived payment. Browser printing was unavailable in this execution environment; verify blank/populated admission forms at A4, 100% scale and browser headers/footers off. Long content must remain readable, and the admission form must occupy two pages.
+
+Operating-rule editors expose current capacity, admission requirements and compensation settings. Missing supported rules can be created. Earlier snapshots stay internal for historical accounting/admission integrity; no separate administrator approval is introduced.

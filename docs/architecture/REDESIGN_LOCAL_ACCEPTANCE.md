@@ -17,3 +17,13 @@ Use test identities and a test Supabase project. Apply this branch's actual migr
 13. Browser print preview: blank and populated applications should occupy two A4 pages with no application chrome. Page 2 must include guardian/student signatures, office placement, charges/discount, actual collection fields and detachable seal receipt. Receipt-only printing must describe an actual posted payment. Check long names and addresses at 100% scale; switch off browser headers/footers.
 
 Emails and real Supabase RLS behavior must be exercised locally; static compilation or an embedded database test does not establish email delivery or production acceptance.
+
+## Operator usability regression checks
+
+- Perform an admin mutation, then find the actor name/role/profile ID/staff ID in Audit. Trace a final submission's correlation and inspect ACCEPT, BILL and FINALIZE together.
+- Search billing by name, mobile, Student ID and admission number; click a result and confirm its invoices and balances.
+- Withdraw/complete an active enrollment from the student page. Confirm it appears in closed admissions, releases capacity, excludes recurring billing and preserves outstanding invoices.
+- Open an invoice print page; return to the same student account. Check black-and-white document print preview.
+- Assign and unassign CRM follow-up staff. Confirm referral rewards are independent of responsibility assignment.
+- Open/create/edit each master-data type and offering/batch. Cause a validation error and a duplicate code error: values must remain. Successful saves should close the editor and show feedback.
+- Open Business Rules, change a supported rule and save; confirm the current values and retained prior history. Anonymous/teacher mutations must remain forbidden.
