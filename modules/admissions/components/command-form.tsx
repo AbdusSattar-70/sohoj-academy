@@ -257,7 +257,12 @@ export function AdmissionCommandForm({
             return;
           }
         }
-        const result = await runAdmissionCommand(payload);
+        const result = await runAdmissionCommand(payload).catch(() => ({
+          ok: false as const,
+          message:
+            "Could not confirm the result. Your entries remain; retry the same values safely.",
+          field: undefined as string | undefined,
+        }));
         if (!result.ok) {
           if (result.field)
             setError(result.field as FieldPath<AdmissionCommand>, {

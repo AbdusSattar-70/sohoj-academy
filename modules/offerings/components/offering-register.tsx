@@ -1,6 +1,7 @@
 "use client";
 
 import { RecordStateButton } from "@/components/erp/record-state-button";
+import { InlineWorkPanel } from "@/components/erp/inline-work-panel";
 import { useState } from "react";
 import Link from "next/link";
 import { StatusBadge } from "@/components/erp/status-badge";
@@ -23,6 +24,7 @@ export function OfferingRegister({
   canManage: boolean;
   canViewFees: boolean;
 }) {
+  const [notice, setNotice] = useState("");
   const [panel, setPanel] = useState<Panel | null>(null);
   const selected =
     panel && panel.kind !== "CREATE"
@@ -202,140 +204,68 @@ export function OfferingRegister({
           </div>
         )}
       </section>
+
+      {notice && (
+        <p role="status" className="rounded-xl border p-4 text-sm">
+          {notice}
+        </p>
+      )}
       {panel?.kind === "CREATE" && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) close();
-          }}
+        <InlineWorkPanel
+          key="create"
+          title="Create programme offering"
+          description="Select the academic context. The programme name supplies the default title; an optional custom title can distinguish a particular intake."
+          onClose={close}
         >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="offering-create-title"
-            className="my-auto max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border bg-background p-5 shadow-2xl sm:p-7"
-          >
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
-                <h2 id="offering-create-title" className="text-xl font-bold">
-                  Create Programme Offering
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Set the academic context and staff-facing identity. Fee Plans
-                  and public presentation are managed separately.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close create offering form"
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg border text-lg hover:bg-muted"
-              >
-                ×
-              </button>
-            </div>
-            <OfferingForm data={data} onSuccess={close} onCancel={close} />
-          </section>
-        </div>
+          <OfferingForm
+            data={data}
+            onSuccess={(text) => {
+              setNotice(text);
+              close();
+            }}
+            onCancel={close}
+          />
+        </InlineWorkPanel>
       )}
       {panel?.kind === "EDIT" && selected && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) close();
-          }}
+        <InlineWorkPanel
+          key={`edit:${selected.id}`}
+          title="Edit programme offering"
+          description={`${selected.code} · ${selected.name}. Used academic context remains attached to historical admissions.`}
+          onClose={close}
         >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="offering-edit-title"
-            className="my-auto max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border bg-background p-5 shadow-2xl sm:p-7"
-          >
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
-                <h2 id="offering-edit-title" className="text-xl font-bold">
-                  Edit Programme Offering
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {selected.code} · {selected.name}
-                </p>
-                {selected.status === "ACTIVE" && (
-                  <p className="mt-2 rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
-                    Active offerings keep their original year, branch, class,
-                    programme and group so batches and admissions retain their
-                    context. Update the staff-facing code or name here.
-                  </p>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close edit offering form"
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg border text-lg hover:bg-muted"
-              >
-                ×
-              </button>
-            </div>
-            <OfferingForm
-              key={selected.id}
-              data={data}
-              initialOffering={selected}
-              onSuccess={close}
-              onCancel={close}
-            />
-          </section>
-        </div>
+          <OfferingForm
+            data={data}
+            initialOffering={selected}
+            onSuccess={(text) => {
+              setNotice(text);
+              close();
+            }}
+            onCancel={close}
+          />
+        </InlineWorkPanel>
       )}
       {panel?.kind === "PUBLIC" && selected && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) close();
-          }}
+        <InlineWorkPanel
+          key={`public:${selected.id}`}
+          title="Website and application settings"
+          description={`${selected.code} · ${selected.name}`}
+          onClose={close}
         >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="offering-public-title"
-            className="my-auto max-h-[94vh] w-full max-w-4xl overflow-y-auto rounded-2xl border bg-background p-5 shadow-2xl sm:p-7"
-          >
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <div>
-                <h2 id="offering-public-title" className="text-xl font-bold">
-                  Website & application settings
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {selected.code} · {selected.name}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close public settings"
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg border text-lg hover:bg-muted"
-              >
-                ×
-              </button>
-            </div>
-            <p className="mb-4 rounded-xl border bg-muted/30 p-3 text-sm text-muted-foreground">
-              These settings control public visibility, application intake,
-              showcase copy and subject selection. Homepage card design remains
-              unchanged.
-            </p>
-            <PublicControlsForm
-              offering={selected}
-              subjects={data.subjects}
-              linkedSubjectIds={linkedSubjectIds}
-            />
-            <PublicVersionWorkflow
-              offering={selected}
-              versions={data.publicVersions}
-            />
-          </section>
-        </div>
+          <PublicControlsForm
+            offering={selected}
+            subjects={data.subjects}
+            linkedSubjectIds={linkedSubjectIds}
+            onSuccess={() => {
+              setNotice("Website and application settings saved.");
+              close();
+            }}
+          />
+          <PublicVersionWorkflow
+            offering={selected}
+            versions={data.publicVersions}
+          />
+        </InlineWorkPanel>
       )}
     </>
   );

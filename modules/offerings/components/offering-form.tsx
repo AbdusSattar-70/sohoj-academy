@@ -4,7 +4,7 @@ import { finishWorkflow } from "@/modules/platform/navigation/workflow-return";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type FieldPath } from "react-hook-form";
+import { useForm, useWatch, type FieldPath } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
 import {
@@ -30,7 +30,7 @@ export function OfferingForm({
 }: {
   data: OfferingOverview;
   initialOffering?: OfferingRow;
-  onSuccess?: () => void;
+  onSuccess?: (text: string) => void;
   onCancel?: () => void;
 }) {
   const router = useRouter();
@@ -44,6 +44,7 @@ export function OfferingForm({
   );
   const {
     register,
+    control,
     handleSubmit,
     reset,
     setError,
@@ -75,6 +76,9 @@ export function OfferingForm({
           reason: "",
         },
   });
+  const programId = useWatch({ control, name: "programId" });
+  const programmeName =
+    data.programs.find((p) => p.id === programId)?.name ?? "Programme name";
   const choices = [
     {
       key: "branchId",
@@ -105,8 +109,20 @@ export function OfferingForm({
     setMessage(null);
     startTransition(async () => {
       const result = isEditing
-        ? await updateProgrammeOffering(input as UpdateOfferingInput)
-        : await createProgrammeOffering(input);
+        ? await updateProgrammeOffering(input as UpdateOfferingInput).catch(
+            () => ({
+              ok: false as const,
+              field: undefined as string | undefined,
+              error:
+                "Could not save. Your entries are retained; check connection and retry.",
+            }),
+          )
+        : await createProgrammeOffering(input).catch(() => ({
+            ok: false as const,
+            field: undefined as string | undefined,
+            error:
+              "Could not create. Your entries are retained; check connection and retry.",
+          }));
       if (!result.ok) {
         if (result.field)
           setError(result.field as FieldPath<OfferingFormInput>, {
@@ -122,7 +138,11 @@ export function OfferingForm({
           : "Offering created as a draft. Publish its Fee Plan to activate it.",
       });
       finishWorkflow(router);
-      onSuccess?.();
+      onSuccess?.(
+        isEditing
+          ? "Offering details saved."
+          : "Offering created. Set fees and permitted discounts next.",
+      );
       if (!isEditing) reset();
     });
   });
@@ -214,9 +234,8 @@ export function OfferingForm({
         </ErpFormField>
         <ErpFormField
           id={"offering-" + (initialOffering?.id ?? "new") + "-name"}
-          label="Display Name"
-          required
-          hint="The name staff recognize in admissions and schedules."
+          label="Custom offering title"
+          hint={`Optional. Leave blank to use ${programmeName}.`}
           error={errors.name?.message}
         >
           {({ id, describedBy, invalid }) => (
@@ -225,6 +244,7 @@ export function OfferingForm({
               aria-describedby={describedBy}
               aria-invalid={invalid}
               className={controlClass}
+              placeholder={programmeName}
               {...register("name")}
             />
           )}

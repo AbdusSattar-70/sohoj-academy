@@ -14,8 +14,9 @@ begin
  select id into class_id from public.classes where organization_id=org and is_active order by sort_order desc limit 1;
  select id into another_class from public.classes where organization_id=org and is_active and id<>class_id limit 1;
  select id into program from public.programs where organization_id=org and is_active limit 1;
- result:=public.create_programme_offering(jsonb_build_object('branch_id',branch,'academic_year_id',year,'class_id',class_id,'program_id',program,'code','REDESIGN_TEST','name','Redesign Test Programme','reason','Create workflow test offering'));
+ result:=public.create_programme_offering(jsonb_build_object('branch_id',branch,'academic_year_id',year,'class_id',class_id,'program_id',program,'code','REDESIGN_TEST','reason','Create workflow test offering'));
  offering:=(result->>'offering_id')::uuid;
+ if (select name from public.programme_offerings where id=offering) is distinct from (select name from public.programs where id=program) then raise exception 'Offering must use the programme name when no custom title is supplied.'; end if;
  perform public.save_fee_plan(jsonb_build_object('offering_id',offering,'billing_cycle','MONTHLY','due_day',10,'effective_from',local_today,'reason','Initial standard charges',
  'components',jsonb_build_array(jsonb_build_object('code','TUITION','name','Tuition','amount',3000,'charge_type','TUITION','recurrence','PER_CYCLE'),jsonb_build_object('code','ADMISSION','name','Admission fee','amount',0,'charge_type','ADMISSION','recurrence','ONE_TIME'))));
  perform public.save_fee_plan(jsonb_build_object('offering_id',offering,'billing_cycle','MONTHLY','due_day',10,'effective_from',local_today,'reason','Correct current charges on the same day',

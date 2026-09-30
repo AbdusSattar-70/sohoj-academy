@@ -1,6 +1,7 @@
 "use client";
 
 import { RecordStateButton } from "@/components/erp/record-state-button";
+import { InlineWorkPanel } from "@/components/erp/inline-work-panel";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdmissionCommandForm } from "./command-form";
@@ -15,6 +16,7 @@ export function BatchRegister({
   canManage: boolean;
 }) {
   const router = useRouter();
+  const [notice, setNotice] = useState("");
   const [form, setForm] = useState<{
     action: "CREATE_BATCH" | "EDIT_BATCH";
     id?: string;
@@ -149,72 +151,40 @@ export function BatchRegister({
         )}
       </section>
 
+      {notice && (
+        <p role="status" className="rounded-xl border p-4 text-sm">
+          {notice}
+        </p>
+      )}
       {form && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) close();
-          }}
+        <InlineWorkPanel
+          key={`${form.action}:${form.id ?? "new"}`}
+          title={form.action === "CREATE_BATCH" ? "Create batch" : "Edit batch"}
+          description="Set the cohort name, short code and available capacity."
+          onClose={close}
         >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="batch-dialog-title"
-            className="my-auto max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border bg-background p-4 shadow-2xl sm:p-6"
-          >
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <div>
-                <h2 id="batch-dialog-title" className="text-xl font-bold">
-                  {form.action === "CREATE_BATCH"
-                    ? "Create batch"
-                    : "Edit batch"}
-                </h2>
-                {selected && (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {selected.offeringName} · {selected.yearName} ·{" "}
-                    {selected.className}
-                  </p>
-                )}
-                {form.action === "CREATE_BATCH" && (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Choose an active programme offering, then define the cohort
-                    name, code and seat capacity.
-                  </p>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close batch form"
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg border text-lg hover:bg-muted"
-              >
-                ×
-              </button>
-            </div>
-            <AdmissionCommandForm
-              key={`${form.action}:${form.id ?? "new"}`}
-              action={form.action}
-              data={data}
-              label={
-                form.action === "CREATE_BATCH"
-                  ? "Create batch"
-                  : "Save batch changes"
-              }
-              description={
-                form.action === "CREATE_BATCH"
-                  ? `Capacity cannot exceed the active policy limit of ${data.capacityLimit ?? "not configured"} students.`
-                  : `Capacity cannot be below ${selected?.occupied ?? 0} students already enrolled or above the current policy limit of ${data.capacityLimit ?? "not configured"}. Programme, year and class stay attached to the batch.`
-              }
-              initialBatch={selected}
-              onSuccess={() => {
-                close();
-                router.refresh();
-              }}
-              onCancel={close}
-            />
-          </section>
-        </div>
+          <AdmissionCommandForm
+            key={`${form.action}:${form.id ?? "new"}`}
+            action={form.action}
+            data={data}
+            label={
+              form.action === "CREATE_BATCH"
+                ? "Create batch"
+                : "Save batch changes"
+            }
+            description={
+              form.action === "CREATE_BATCH"
+                ? `Capacity cannot exceed the active policy limit of ${data.capacityLimit ?? "not configured"} students.`
+                : `Capacity cannot be below ${selected?.occupied ?? 0} students already enrolled or above the current policy limit of ${data.capacityLimit ?? "not configured"}. Programme, year and class stay attached to the batch.`
+            }
+            initialBatch={selected}
+            onSuccess={() => {
+              close();
+              router.refresh();
+            }}
+            onCancel={close}
+          />
+        </InlineWorkPanel>
       )}
     </div>
   );
