@@ -4,6 +4,8 @@ import {
   ArrowRight,
   BookOpenCheck,
   Check,
+  LineChart,
+  BarChart3,
   MessageSquareText,
   ShieldCheck,
   Sparkles,
@@ -50,12 +52,10 @@ const trustPoints = [
 ] as const;
 
 const method = [
-  ["01", "Understand", "বুঝি", "Build the concept", "ধারণা পরিষ্কার করি", "from-blue-500 to-cyan-400"],
-  ["02", "Practise", "অনুশীলন করি", "Work it through", "অনুশীলন করি", "from-violet-500 to-blue-500"],
-  ["03", "Test", "পরীক্ষা দিই", "Check understanding", "বোঝা যাচাই করি", "from-amber-400 to-orange-500"],
-  ["04", "Find mistakes", "ভুল খুঁজি", "Spot what needs work", "কোথায় কাজ দরকার দেখি", "from-rose-500 to-pink-500"],
-  ["05", "Learn again", "আবার শিখি", "Close the learning gap", "শেখার ঘাটতি পূরণ করি", "from-emerald-500 to-teal-400"],
-  ["06", "Improve", "উন্নতি করি", "Move forward with clarity", "আত্মবিশ্বাসে এগিয়ে যাই", "from-blue-600 to-indigo-500"],
+  ["01", "Understand", "বুঝি", "Concept first", "আগে ধারণা পরিষ্কার করি"],
+  ["02", "Practise", "অনুশীলন করি", "Practise deliberately", "উদ্দেশ্যপূর্ণ অনুশীলন করি"],
+  ["03", "Assess", "পরীক্ষা দিই", "Measure learning", "শেখা কতটুকু হয়েছে যাচাই করি"],
+  ["04", "Analyse", "বিশ্লেষণ করি", "Find the gap", "ঘাটতি চিহ্নিত করি"],
 ] as const;
 
 export async function HomePageContent() {
@@ -116,7 +116,7 @@ export async function HomePageContent() {
 
               <div className="mt-8 grid max-w-2xl gap-3 text-sm text-muted-foreground sm:grid-cols-3">
                 {[
-                  ["Class 8–10 focus", "ক্লাস ৮–১০ ফোকাস"],
+                  ["Class 8–12 focus", "ক্লাস ৮–১২ ফোকাস"],
                   ["12 students per batch", "প্রতি ব্যাচে ১২ জন"],
                   ["Regular progress review", "নিয়মিত অগ্রগতি পর্যালোচনা"],
                 ].map(([en, bn]) => (
@@ -131,7 +131,7 @@ export async function HomePageContent() {
             </div>
 
             <div className="relative mx-auto w-full max-w-2xl lg:mx-0">
-              <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-blue-500/20 via-transparent to-emerald-400/20 blur-2xl" aria-hidden="true" />
+              <div className="absolute -inset-4 rounded-[2.5rem] bg-linear-to-br from-blue-500/20 via-transparent to-emerald-400/20 blur-2xl" aria-hidden="true" />
               <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 shadow-[0_35px_90px_-35px_rgba(2,6,23,.8)]">
                 <Image
                   src="/images/sohoj-classroom.webp"
@@ -142,7 +142,7 @@ export async function HomePageContent() {
                   sizes="(max-width: 1024px) 100vw, 48vw"
                   className="aspect-[1.22] w-full object-cover object-center sm:aspect-[1.38]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/10 to-transparent" aria-hidden="true" />
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-slate-950/10 to-transparent" aria-hidden="true" />
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
                     <LocalizedText en="LEARNING, MADE CLEAR" bn="সহজভাবে শেখা" />
@@ -155,46 +155,176 @@ export async function HomePageContent() {
             </div>
           </div>
         </section>
-
         <HomeProgramSection />
+       <section
+  id="method"
+  className="relative scroll-mt-24 overflow-hidden border-b border-border bg-slate-950 text-white"
+>
+  <div
+    className="pointer-events-none absolute inset-0"
+    aria-hidden="true"
+    style={{
+      background:
+        "radial-gradient(circle at 80% 15%, rgba(37,99,235,0.18), transparent 32%), radial-gradient(circle at 15% 80%, rgba(14,165,233,0.12), transparent 28%)",
+    }}
+  />
 
-        <section id="method" className="scroll-mt-24 overflow-hidden border-b border-border bg-slate-950 text-white">
-          <div className="mx-auto max-w-7xl px-5 py-18 sm:px-6 lg:px-8 lg:py-24">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">
-                <LocalizedText en="The Sohoj Learning Method" bn="সহজ একাডেমির শেখার পদ্ধতি" />
-              </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
-                <LocalizedText
-                  en="A clear path from first understanding to steady improvement."
-                  bn="প্রথম ধারণা থেকে ধারাবাহিক উন্নতি—একটি পরিষ্কার শেখার পথ।"
-                />
-              </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300">
-                <LocalizedText en="When a test reveals a gap, students return to the concept and practise again. Learning moves forward when understanding is stronger." bn="পরীক্ষায় ঘাটতি ধরা পড়লে শিক্ষার্থী ধারণায় ফিরে গিয়ে আবার অনুশীলন করে। বোঝাপড়া শক্ত হলে শেখা সামনে এগোয়।" />
-              </p>
-            </div>
-            <div className="relative mx-auto mt-14 max-w-5xl [perspective:1400px]">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {method.map(([number, enTitle, bnTitle, enDesc, bnDesc, color], index) => (
-                  <div
-                    key={number}
-                    className={`group relative rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.11] to-white/[0.035] p-5 shadow-[0_18px_35px_-20px_rgba(0,0,0,.8)] transition duration-300 [transform:rotateX(5deg)_rotateY(-3deg)] hover:-translate-y-1 hover:border-white/25 hover:[transform:rotateX(0deg)_rotateY(0deg)] ${index === 3 ? "lg:col-start-3 lg:row-start-2" : index === 4 ? "lg:col-start-2 lg:row-start-2" : index === 5 ? "lg:col-start-1 lg:row-start-2" : ""}`}
-                  >
-                    <div className={`mb-5 inline-flex size-11 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-sm font-black text-white shadow-lg shadow-black/25`}>
-                      {number}
-                    </div>
-                    <h3 className="text-lg font-semibold"><LocalizedText en={enTitle} bn={bnTitle} /></h3>
-                    <p className="mt-1 text-sm text-slate-300"><LocalizedText en={enDesc} bn={bnDesc} /></p>
-                    {index === 0 || index === 1 ? <ArrowRight className="absolute -right-3 top-1/2 z-10 hidden size-6 -translate-y-1/2 rounded-full border border-white/15 bg-slate-900 p-1 text-blue-200 lg:block" aria-hidden="true" /> : null}
-                    {index === 2 ? <ArrowRight className="absolute -bottom-3 right-5 z-10 hidden size-6 rotate-90 rounded-full border border-white/15 bg-slate-900 p-1 text-blue-200 lg:block" aria-hidden="true" /> : null}
-                    {index === 3 || index === 4 ? <ArrowRight className="absolute -left-3 top-1/2 z-10 hidden size-6 rotate-180 -translate-y-1/2 rounded-full border border-white/15 bg-slate-900 p-1 text-blue-200 lg:block" aria-hidden="true" /> : null}
-                  </div>
-                ))}
+  <div className="relative mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-24">
+    {/* header */}
+    <div className="mx-auto max-w-3xl text-center">
+      <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">
+        <LocalizedText
+          en="The Sohoj Learning Method"
+          bn="সহজ একাডেমির শেখার পদ্ধতি"
+        />
+      </p>
+      <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
+        <LocalizedText
+          en="A clear path from first understanding to steady improvement."
+          bn="প্রথম ধারণা থেকে ধারাবাহিক উন্নতি—একটি পরিষ্কার শেখার পথ।"
+        />
+      </h2>
+      <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+        <LocalizedText
+          en="When a test reveals a gap, students return to the concept and practise again. Learning moves forward when understanding is stronger."
+          bn="পরীক্ষায় ঘাটতি ধরা পড়লে শিক্ষার্থী ধারণায় ফিরে গিয়ে আবার অনুশীলন করে। বোঝাপড়া শক্ত হলে শেখা সামনে এগোয়।"
+        />
+      </p>
+    </div>
+
+    {/* matched two-column body */}
+    <div className="mt-12 grid gap-8 lg:mt-16 lg:grid-cols-2 lg:items-stretch lg:gap-12">
+      {/* LEFT — image fills column height */}
+      <div className="relative min-h-[320px] sm:min-h-[380px] lg:min-h-0">
+        <div
+          className="absolute -inset-3 rounded-[2rem] bg-linear-to-br from-blue-500/25 via-transparent to-emerald-400/20 blur-2xl"
+          aria-hidden="true"
+        />
+        <div className="relative h-full overflow-hidden rounded-[1.75rem] border border-white/10 bg-slate-950 shadow-[0_30px_80px_-30px_rgba(2,6,23,0.75)]">
+          <Image
+            src="/images/sohoj-learning.webp"
+            alt="Teacher guiding students through a focused lesson"
+            width={1672}
+            height={941}
+            sizes="(max-width: 1024px) 100vw, 42vw"
+            className="h-full w-full object-cover object-center"
+          />
+          <div
+            className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-slate-950/20 to-transparent"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
+              <LocalizedText
+                en="Understand → Practise → Improve"
+                bn="বুঝি → অনুশীলন → উন্নতি"
+              />
+            </p>
+            <p className="mt-2 max-w-sm text-lg font-semibold leading-snug sm:text-xl">
+              <LocalizedText
+                en="Every gap becomes the next practice target."
+                bn="প্রতিটি ঘাটতিই পরবর্তী অনুশীলনের লক্ষ্য।"
+              />
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT — method card + snapshot, stretched to match image */}
+      <div className="flex flex-col">
+        <div className="relative flex flex-1 flex-col overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-950/90 p-5 sm:p-6">
+          <div
+            className="absolute right-0 top-0 size-48 rounded-full bg-blue-600/20 blur-3xl"
+            aria-hidden="true"
+          />
+          <div className="relative flex flex-1 flex-col">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">
+                  <LocalizedText en="Sohoj Learning Method" bn="সহজ লার্নিং মেথড" />
+                </p>
+                <h3 className="mt-2 text-lg font-semibold text-white sm:text-xl">
+                  <LocalizedText
+                    en="Learn → practise → measure → improve"
+                    bn="বুঝি → অনুশীলন করি → পরীক্ষা দিই → উন্নতি করি"
+                  />
+                </h3>
+              </div>
+              <div className="shrink-0 rounded-xl bg-white/10 p-2 text-blue-200">
+                <LineChart className="size-5" aria-hidden="true" />
               </div>
             </div>
+
+            <div className="mt-5 grid flex-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
+              {method.map(([number, enTitle, bnTitle, enDesc, bnDesc]) => (
+                <div
+                  key={number}
+                  className="rounded-xl border border-white/10 bg-white/[0.06] p-3.5"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xs font-bold text-blue-300">{number}</span>
+                    <span className="text-sm font-semibold text-white">
+                      <LocalizedText en={enTitle} bn={bnTitle} />
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-xs leading-5 text-slate-400">
+                    <LocalizedText en={enDesc} bn={bnDesc} />
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.08] p-3.5">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="font-medium text-emerald-100">
+                  <LocalizedText en="80% mastery achieved?" bn="৮০% দক্ষতা অর্জিত?" />
+                </span>
+                <span className="shrink-0 rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-200">
+                  <LocalizedText en="YES → Move forward" bn="হ্যাঁ → এগিয়ে যাই" />
+                </span>
+              </div>
+              <p className="mt-1.5 text-xs leading-5 text-emerald-100/65">
+                <LocalizedText
+                  en="If not, return to practice, fix the gap and measure again."
+                  bn="না হলে অনুশীলনে ফিরে গিয়ে ঘাটতি ঠিক করি—তারপর আবার যাচাই করি।"
+                />
+              </p>
+            </div>
           </div>
-        </section>
+        </div>
+
+        {/* progress snapshot — overlaps bottom of method card */}
+        <div className="relative z-10 -mt-4 ml-auto w-[90%] rounded-xl border border-border bg-card p-3.5 text-card-foreground shadow-xl sm:w-[85%]">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                <LocalizedText en="Example progress snapshot" bn="উদাহরণ অগ্রগতি চিত্র" />
+              </p>
+              <p className="mt-0.5 text-sm font-semibold">
+                <LocalizedText en="Weekly learning review" bn="সাপ্তাহিক শেখার পর্যালোচনা" />
+              </p>
+            </div>
+            <BarChart3 className="size-4.5 text-blue-700 dark:text-blue-400" aria-hidden="true" />
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            {[
+              ["Homework", "হোমওয়ার্ক", "90%"],
+              ["Participation", "অংশগ্রহণ", "85%"],
+              ["Weekly Test", "সাপ্তাহিক টেস্ট", "84%"],
+            ].map(([en, bn, value]) => (
+              <div key={en} className="rounded-lg bg-muted px-2 py-2.5">
+                <p className="text-sm font-bold">{value}</p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  <LocalizedText en={en} bn={bn} />
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
         <section id="why-sohoj" className="scroll-mt-24 bg-background">
           <div className="mx-auto max-w-7xl px-5 py-18 sm:px-6 lg:px-8 lg:py-20">
