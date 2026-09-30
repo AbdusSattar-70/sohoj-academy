@@ -6,7 +6,7 @@ select set_config('request.jwt.claim.sub','91000000-0000-0000-0000-000000000001'
 do $test$
 declare org uuid; branch uuid; year uuid; class_id uuid; another_class uuid; program uuid;
  offering uuid; batch uuid; replacement_batch uuid; direct_case uuid; converted_case uuid; prospect uuid; result jsonb; count_before integer;
- local_today date; detail jsonb; extra_id uuid:=gen_random_uuid(); inactive_id uuid:=gen_random_uuid(); extra_input jsonb;
+ local_today date; detail jsonb; extra_id uuid:=gen_random_uuid(); inactive_id uuid:=gen_random_uuid(); extra_input jsonb; final_request uuid:=gen_random_uuid();
 begin
  select id,timezone(timezone,now())::date into org,local_today from public.organizations where code='SOHOJ';
  select id into branch from public.branches where organization_id=org and code='MAIN';
@@ -67,7 +67,9 @@ begin
  perform public.save_admission_extra_charge(extra_input);
  perform public.save_admission_extra_charge(jsonb_build_object('request_id',inactive_id,'admission_id',direct_case,'name','Extra test fee','charge_type','EXAM','amount',200));
  perform public.deactivate_admission_extra_charge(direct_case,inactive_id);
- perform public.admission_command(jsonb_build_object('action','FINALIZE','request_id',gen_random_uuid(),'admission_id',direct_case,'reason','Reviewed admission details fees and signed paper consent'));
+ perform public.admission_command(jsonb_build_object('action','FINALIZE','request_id',final_request,'admission_id',direct_case,'reason','Reviewed admission details fees and signed paper consent'));
+ if (select count(*) from public.audit_events where correlation_id=final_request and action in('ACCEPT','BILL','FINALIZE'))<>3 then raise exception 'Final submission events must share a workflow trace.'; end if;
+ if exists(select 1 from public.audit_events where correlation_id=final_request and (actor_profile_id is null or actor_role_code not like '%ADMIN%' or metadata->>'actor_name' is null)) then raise exception 'Staff audit attribution missing.'; end if;
  detail:=public.admission_case_detail(direct_case);
  if detail->>'studentNo' is null or detail->>'academyRoll' is null then raise exception 'Student ID and roll must be assigned by the system.'; end if;
  if (detail->'invoice'->>'due')::numeric<>2800 then raise exception 'Expected unpaid invoice of 2800 after tuition discount, got %',detail->'invoice'; end if;
