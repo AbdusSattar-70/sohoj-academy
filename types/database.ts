@@ -3966,6 +3966,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_purchases: {
+        Row: {
+          id: string;
+          purchase_no: string;
+          organization_id: string;
+          vendor_id: string;
+          category_id: string;
+          description: string;
+          items: Json;
+          total: number;
+          expected_on: string | null;
+          status: string;
+          revision: number;
+          invoice_reference: string | null;
+          received_on: string | null;
+          expense_id: string | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          purchase_no?: string;
+          organization_id: string;
+          vendor_id: string;
+          category_id: string;
+          description: string;
+          items: Json;
+          total: number;
+          expected_on?: string | null;
+          status?: string;
+          revision?: number;
+          invoice_reference?: string | null;
+          received_on?: string | null;
+          expense_id?: string | null;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          purchase_no?: string;
+          organization_id?: string;
+          vendor_id?: string;
+          category_id?: string;
+          description?: string;
+          items?: Json;
+          total?: number;
+          expected_on?: string | null;
+          status?: string;
+          revision?: number;
+          invoice_reference?: string | null;
+          received_on?: string | null;
+          expense_id?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -4679,6 +4739,20 @@ export type Database = {
       finance_period_command: {
         Args: {
           p_input: Json;
+        };
+        Returns: Json;
+      };
+      purchase_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      purchase_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_status?: string | null;
+          p_search?: string | null;
         };
         Returns: Json;
       };

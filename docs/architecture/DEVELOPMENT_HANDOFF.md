@@ -45,3 +45,12 @@ Migration 20 adds cash denomination counts, statement comparison, explained vari
 ## Monthly accounts and period lock
 
 Migration 21 supplies monthly P&L, balance sheet, trial balance, cash movement, CSV/print and audited close/reopen. Posting guards enforce closed months on journal headers and lines. Fixed payroll expense is dated at month end; payments retain actual payment dates. Month-end cash/bank/mobile verification and balanced reports are required before close. Read the period-control section of [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md).
+
+
+### Next committed delivery: purchases and supplier expense workflow
+
+Migration `22_purchase_drafts_receipt_and_expense_posting.sql` and `/dashboard/finance/purchases` add a paginated/searchable purchase register. On-demand draft creation/edit/cancellation, inline supplier creation, verified full receipt, paid-now expense or supplier payable, and partial supplier payment reuse the current ledger engine. Drafts do not post; finalized evidence cannot be overwritten. Stable request identities, revision checks, active-account permission boundaries and normalized supplier invoice uniqueness protect posting.
+
+SQL fixture `12_purchasing_receipt_supplier_settlement.sql` checks retry safety, stale revision rejection, receipt journals, partial-payment balance, overpayment rejection, duplicate invoice rollback, paid-now treatment, edit/cancel and outsider denial. No live database reset or mutation is part of this delivery.
+
+Next: private expense-document evidence and supplier/category maintenance; then procurement returns/corrections and staff reimbursements. Asset register/capitalization/depreciation follows as a distinct workflow. Monthly period locks already apply to the expense/payable journal calls.
