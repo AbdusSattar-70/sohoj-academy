@@ -3793,6 +3793,54 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_payroll_records: {
+        Row: {
+          id: string;
+          payroll_no: string;
+          staff_id: string;
+          month: string;
+          payable_id: string;
+          snapshot: Json;
+          gross: number;
+          corrections: number;
+          net: number;
+          due_on: string;
+          posted_by: string;
+          posted_at: string;
+          reason: string;
+        };
+        Insert: {
+          id?: string;
+          payroll_no?: string;
+          staff_id: string;
+          month: string;
+          payable_id: string;
+          snapshot: Json;
+          gross: number;
+          corrections: number;
+          net: number;
+          due_on: string;
+          posted_by: string;
+          posted_at?: string;
+          reason: string;
+        };
+        Update: {
+          id?: string;
+          payroll_no?: string;
+          staff_id?: string;
+          month?: string;
+          payable_id?: string;
+          snapshot?: Json;
+          gross?: number;
+          corrections?: number;
+          net?: number;
+          due_on?: string;
+          posted_by?: string;
+          posted_at?: string;
+          reason?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -4446,6 +4494,29 @@ export type Database = {
           p_history?: boolean | null;
           p_page?: number | null;
         };
+        Returns: Json;
+      };
+      staff_payroll_preview: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      staff_payroll_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      staff_payroll_workspace: {
+        Args: {
+          p_id?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      my_salary_summary: {
+        Args: Record<string, never>;
         Returns: Json;
       };
     };

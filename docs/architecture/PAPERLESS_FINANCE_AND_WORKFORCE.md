@@ -10,7 +10,7 @@ Branch: `feature/finance_accounting_management`. Base: redesign_refactor, migrat
 | P0 | Personal workspace | Teacher class lists and own referral statement | A common staff page for attendance, tasks and financial position; teacher shortcuts must lead directly to student attendance. |
 | P0 | Compensation terms | Revenue-share teacher policy and approved runs | Fixed/hourly/hybrid terms, agreed pay day and a clearly labelled estimate. Never present an estimate as approved debt or promise payment. |
 | P0 | Tasks and accountability | Academic workflow review | Staff assignments, due dates, progress, blocker explanation, completion submission and admin acceptance. Completion percentage is declared progress, not a salary deduction formula. |
-| P0 | Payroll | Teacher approved runs, payables, settlements | Monthly fixed/hourly payroll with term/attendance snapshots; unpaid leave rules; itemised deductions; preview, admin posting, payslip, payment and advance offset. No second acquisition accrual. |
+| P0 | Payroll | Migration 19: fixed/hourly/hybrid salary preview, posting, payslips and cash/advance settlement | Historical contract recovery, statutory deduction policies and documented payroll corrections remain. No automatic task/absence deduction or second acquisition accrual. |
 | P0 | Daily close | Balanced journals, actual collections and account reconciliation | Cash count, till/opening float, expected/actual/difference, cashier handover and unresolved variance register. |
 | P0 | Month close | Ledger and accounting summary | Trial balance, period locking, authorised reopen, P&L, balance sheet and cash flow with date/account filters. Current all-time summary is not a monthly management report. |
 | P1 | Expenses and procurement | Vendors, expenses, advances and payables | Inline vendor/category selection, attachments with private storage, reimbursements, recurring rent/utilities, purchase order and receipt matching. |
@@ -38,7 +38,7 @@ Configure compensation per staff: fixed monthly, hourly, revenue share or hybrid
 
 Prepare payroll preview → review attendance, leave and approved workload → add explained allowances/deductions → admin posts once → liability and expense journal → settle cash/bank or advance offset → personal itemised payslip and statement. Staff academic completion review remains; authorised admin financial posting does not require a second administrator. A draft estimate, posted entitlement, settled amount and scheduled pay date must have distinct labels. Scheduled pay date is not a bank payment confirmation.
 
-Revenue-share acquisition must be shown once in referral statements. Teaching/retention pay is separate. Salary plus bonus can be shown as a combined total only after both are posted, for the same period and with no overlapping acquisition entries. Until fixed/hourly payroll is delivered, explicitly show that it has not been posted; do not display zero as proof of payment.
+Revenue-share acquisition must be shown once in referral statements. Teaching/retention pay is separate. Salary plus bonus can be shown as a combined total only after both are posted, for the same period and with no overlapping acquisition entries. If fixed/hourly salary has not been posted, say so explicitly; zero recorded payments are not proof that a person was paid.
 
 ## Month close and management accounts
 
@@ -58,7 +58,8 @@ Paperless readiness requires actual end-to-end consent, receipts, payslips, expe
 - Attendance and own workforce workspace: implemented in migration 17, with own-only reads, corrections, overlap checks and retry protection.
 - Tasks and completion accountability: implemented in migration 18, with own reports, administrative acceptance/return, cancellation, audit and paginated current/history lists.
 - Accounting save recovery: implemented stable request IDs for unchanged retries, inline action forms, preserved invalid input and signed compensation adjustments. The all-time operating result is labelled explicitly.
-- Fixed/hourly payroll, daily close, reporting/period lock, assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
+- Fixed/hourly payroll: implemented in migration 19, with month/staff uniqueness, stale-preview rejection, immutable term/attendance snapshot, balanced expense/liability posting, cash payment, partial settlement, advance recovery and own-only printable payslips.
+- Daily close, reporting/period lock, assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
 
 ## Start using this delivery
 
@@ -70,3 +71,15 @@ Paperless readiness requires actual end-to-end consent, receipts, payslips, expe
 6. Accounting actions open inline; failed validation retains input. After an uncertain network outcome inspect the record; an unchanged retry keeps the same database request identity.
 
 Local acceptance still needed: hosted Supabase Auth/RLS integration, real browser form behaviour, mobile/tablet layout, and complete accounting posting/settlement against your development database. Isolated SQL fixtures cover own-only reads, attendance hour arithmetic, permission denial, idempotent task creation and completion review. TypeScript checks cover the added routes and contracts. No live database has been changed.
+
+## Monthly fixed/hourly payroll (migration 19)
+
+Open Finance → Payroll & payslips → Prepare monthly payroll. Select staff and month; optional allowances and explained earning corrections appear separately. Fixed base is prorated by eligible calendar days from the later of the current agreement or join date. Hourly pay uses recorded PRESENT intervals less breaks. Missing records and task progress do not cause automatic deductions. Corrections reduce remuneration expense; tax, loan liability and advance recovery must not be entered as earning corrections.
+
+Current-month preview is provisional. Post a completed month only after reviewing the frozen preview; changed attendance/terms require a fresh preview. One staff/month can be posted once. Posting creates salary expense and salary payable, not a cash payment. Previously posted evidence cannot be edited/deleted. If the currently configured agreement does not cover the month, stop and resolve historical terms rather than extrapolating a newer salary backwards.
+
+Record actual cash/bank payment and an optional paid staff advance offset in one transaction. Partial payment leaves the remainder due. Paid advances must belong to this staff member and have enough remaining balance. Salary payment debits the payable, not salary expense again. The printable black/white payslip includes earnings, corrections, amount in words, actual payments, offsets and remaining balance; no branding header is printed over letterhead.
+
+FIXED/HOURLY contracts are excluded from teaching-pool remuneration; HYBRID explicitly allows both agreed salary and teaching pool. Acquisition and retention remain separate rewards. Existing teaching-pool posting blocks conflicting fixed/hourly salary posting for the same period. A staff advance creation defect from a nonexistent staff.organization_id reference is corrected by checking branch scope. Payroll records and teaching/referral evidence retain separate detail views. My work combines their posted outstanding liabilities once and shows advances separately; do not add cash and offset totals indiscriminately.
+
+Before production: verify real browser navigation/printing and hosted auth permissions. Isolated tests exercise stale preview rejection, once-only posting, balanced journal creation, partial cash plus advance recovery, unchanged retries and teacher privilege denial. Payroll correction/reversal and historic agreement restoration need a separate controlled feature; do not rewrite posted records.
