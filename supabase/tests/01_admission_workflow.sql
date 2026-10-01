@@ -10,10 +10,12 @@ declare org uuid; branch uuid; year uuid; class_id uuid; another_class uuid; pro
 begin
  select id,timezone(timezone,now())::date into org,local_today from public.organizations where code='SOHOJ';
  select id into branch from public.branches where organization_id=org and code='MAIN';
- select id into year from public.academic_years where organization_id=org and is_active limit 1;
- select id into class_id from public.classes where organization_id=org and is_active order by sort_order desc limit 1;
- select id into another_class from public.classes where organization_id=org and is_active and id<>class_id limit 1;
- select id into program from public.programs where organization_id=org and is_active limit 1;
+ insert into public.academic_years(organization_id,name,starts_on,ends_on,is_active)
+ values(org,'Fixture academic year',date_trunc('year',local_today)::date,(date_trunc('year',local_today)+interval '1 year - 1 day')::date,true) returning id into year;
+ insert into public.classes(organization_id,code,name,sort_order) values(org,'FIXTURE_10','Fixture Class 10',10) returning id into class_id;
+ insert into public.classes(organization_id,code,name,sort_order) values(org,'FIXTURE_8','Fixture Class 8',8) returning id into another_class;
+ insert into public.programs(organization_id,code,name) values(org,'FIXTURE_PROGRAM','Fixture programme') returning id into program;
+ insert into public.subjects(organization_id,code,name) values(org,'FIXTURE_SUBJECT','Fixture subject');
  result:=public.create_programme_offering(jsonb_build_object('branch_id',branch,'academic_year_id',year,'class_id',class_id,'program_id',program,'code','REDESIGN_TEST','reason','Create workflow test offering'));
  offering:=(result->>'offering_id')::uuid;
  if (select name from public.programme_offerings where id=offering) is distinct from (select name from public.programs where id=program) then raise exception 'Offering must use the programme name when no custom title is supplied.'; end if;

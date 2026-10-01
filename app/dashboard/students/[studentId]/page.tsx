@@ -66,7 +66,7 @@ export default async function StudentProfilePage({
       </div>
       {!canonical && (
         <p className="rounded-xl border bg-muted/40 p-5 text-sm">
-          This duplicate identity was archived after independent approval. Use{" "}
+          This duplicate identity was archived after authorized identity verification. Use{" "}
           <Link
             className="font-semibold underline"
             href={`/dashboard/students/${s.canonicalId}`}
@@ -187,12 +187,12 @@ export default async function StudentProfilePage({
               can("students.manage") && (
                 <details>
                   <summary className="cursor-pointer text-sm font-medium">
-                    Request Batch Transfer
+                    Transfer Batch
                   </summary>
                   <div className="mt-3">
                     <StudentForm
                       defaults={{
-                        action: "REQUEST_TRANSFER",
+                        action: "TRANSFER",
                         student_id: s.id,
                         admission_id: a.id,
                       }}
@@ -211,7 +211,7 @@ export default async function StudentProfilePage({
                         },
                       ]}
                       label="Submit Transfer for Approval"
-                      description="Choose a different batch in the same offering. An independent reviewer must approve. Capacity is checked again; Fee Plan, invoices and payment history are preserved."
+                      description="Choose a different batch in the same offering. Capacity is checked before posting; Fee Plan, invoices and payment history are preserved."
                     />
                   </div>
                 </details>
@@ -362,11 +362,11 @@ export default async function StudentProfilePage({
             <p className="text-sm">
               This identity has an open admission or active enrollment. Resolve
               those through the controlled cancellation workflow before
-              requesting to archive this identity as a duplicate.
+              archiving this identity as a duplicate.
             </p>
           ) : (
             <StudentForm
-              defaults={{ action: "REQUEST_MERGE", student_id: s.id }}
+              defaults={{ action: "MERGE", student_id: s.id }}
               fields={[
                 {
                   key: "target_id",
@@ -377,100 +377,12 @@ export default async function StudentProfilePage({
                   })),
                 },
               ]}
-              label="Submit Duplicate Resolution"
-              description={`Approval archives ${s.number} and links its history to the selected Student ID. No original invoice, payment, guardian link or number is deleted or reassigned. Explain the identity evidence in your reason. This merge cannot be undone through this screen.`}
+              label="Confirm Duplicate Resolution"
+              description={`Confirmation archives ${s.number} and links its history to the selected Student ID. No original invoice, payment, guardian link or number is deleted or reassigned. Explain the identity evidence in your reason. This merge cannot be undone through this screen.`}
             />
           )}
         </section>
       )}
-      <section id="reviews" className="space-y-4">
-        <h2 className="font-semibold">Lifecycle Requests & Decisions</h2>
-        {!data.approvals.length && (
-          <p className="text-sm text-muted-foreground">
-            No transfer or duplicate-resolution requests yet.
-          </p>
-        )}
-        {data.approvals.map((r) => {
-          const p = r.payload;
-          const source = p.source_snapshot as
-            { student_no?: string; full_name?: string } | undefined;
-          const target = p.target_snapshot as
-            { student_no?: string; full_name?: string } | undefined;
-          return (
-            <article
-              key={r.id}
-              className="space-y-3 rounded-xl border bg-card p-5"
-            >
-              <div className="flex flex-wrap justify-between gap-3">
-                <h3 className="font-semibold">
-                  {r.type === "STUDENT_TRANSFER"
-                    ? "Batch transfer"
-                    : "Duplicate resolution"}
-                </h3>
-                <StatusBadge value={r.status} />
-              </div>
-              <p className="text-sm">
-                {r.type === "STUDENT_TRANSFER"
-                  ? `${p.student_no} · ${p.from_batch_name} → ${p.to_batch_name}`
-                  : `Archive ${source?.student_no} (${source?.full_name}) → keep ${target?.student_no} (${target?.full_name})`}
-              </p>
-              <p className="text-sm">{r.reason}</p>
-              <p className="text-xs text-muted-foreground">
-                Requested by {r.requester} · {when(r.createdAt)}
-              </p>
-              {r.type === "STUDENT_MERGE" && (
-                <div className="flex gap-4 text-sm">
-                  <Link
-                    className="underline"
-                    href={`/dashboard/students/${String(p.student_id)}`}
-                  >
-                    Review source profile
-                  </Link>
-                  <Link
-                    className="underline"
-                    href={`/dashboard/students/${String(p.target_id)}`}
-                  >
-                    Review retained profile
-                  </Link>
-                </div>
-              )}
-              {r.status === "PENDING" ? (
-                r.requesterId === context.profileId ? (
-                  <p className="text-sm text-muted-foreground">
-                    A different authorized person must review this request.
-                  </p>
-                ) : (
-                  can(
-                    r.type === "STUDENT_MERGE"
-                      ? "students.merge.approve"
-                      : "admissions.approve",
-                  ) && (
-                    <StudentForm
-                      defaults={{ action: "DECIDE", approval_id: r.id }}
-                      fields={[
-                        {
-                          key: "decision",
-                          label: "Decision",
-                          options: [
-                            { id: "APPROVED", name: "Approve" },
-                            { id: "REJECTED", name: "Reject" },
-                          ],
-                        },
-                      ]}
-                      label="Record Independent Decision"
-                      description="Verify the identities and impact before approving. The database rechecks eligibility when the decision is posted."
-                    />
-                  )
-                )
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Decision: {r.decisionNote}
-                </p>
-              )}
-            </article>
-          );
-        })}
-      </section>
     </div>
   );
 }

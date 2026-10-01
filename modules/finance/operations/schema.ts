@@ -4,11 +4,9 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a date.");
 export const financeCommandSchema = z
   .object({
     action: z.enum([
-      "REQUEST_DISCOUNT",
-      "REQUEST_CANCEL",
-      "REQUEST_REFUND",
-      "DECIDE",
-      "POST_REFUND",
+      "APPLY_DISCOUNT",
+      "CANCEL_ADMISSION",
+      "REFUND",
       "RUN_BILLING",
       "CREATE_TERM",
       "PAY",
@@ -22,8 +20,6 @@ export const financeCommandSchema = z
     admission_id: id.optional(),
     invoice_id: id.optional(),
     payment_id: id.optional(),
-    approval_id: id.optional(),
-    authorization_id: id.optional(),
     kind: z.enum(["PERCENT", "FIXED"]).optional(),
     value: z.number().positive().multipleOf(0.01).optional(),
     starts_on: date.optional(),
@@ -33,7 +29,6 @@ export const financeCommandSchema = z
     amount: z.number().positive().multipleOf(0.01).optional(),
     payment_method_id: id.optional(),
     external_reference: z.string().trim().max(120).optional(),
-    decision: z.enum(["APPROVED", "REJECTED"]).optional(),
     period: date.optional(),
     term_id: id.optional(),
     preview_token: z.string().optional(),
@@ -42,17 +37,15 @@ export const financeCommandSchema = z
   })
   .superRefine((v, ctx) => {
     const required: Record<typeof v.action, string[]> = {
-      REQUEST_DISCOUNT: [
+      APPLY_DISCOUNT: [
         "admission_id",
         "kind",
         "value",
         "starts_on",
         "ends_on",
       ],
-      REQUEST_CANCEL: ["admission_id", "settlement"],
-      REQUEST_REFUND: ["payment_id", "amount"],
-      DECIDE: ["approval_id", "decision"],
-      POST_REFUND: ["authorization_id", "payment_method_id"],
+      CANCEL_ADMISSION: ["admission_id", "settlement"],
+      REFUND: ["payment_id", "amount", "payment_method_id"],
       RUN_BILLING: ["period", "preview_token"],
       CREATE_TERM: [
         "academic_year_id",
@@ -133,20 +126,6 @@ export const financeWorkspaceSchema = z.object({
       postedAt: z.string(),
       method: z.string(),
       remaining: z.number(),
-    }),
-  ),
-  approvals: z.array(
-    z.object({
-      id,
-      admissionId: id,
-      type: z.string(),
-      status: z.string(),
-      requesterId: id,
-      requester: z.string(),
-      reason: z.string(),
-      decisionNote: z.string().nullable(),
-      payload: z.record(z.string(), z.unknown()),
-      createdAt: z.string(),
     }),
   ),
   discounts: z.array(

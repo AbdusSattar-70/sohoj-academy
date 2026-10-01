@@ -8,7 +8,7 @@ select public.request_staff_access('{"full_name":"Requested Teacher","email":"re
 do $test$
 begin
  if exists(select 1 from public.user_role_assignments where profile_id='92000000-0000-0000-0000-000000000002') then raise exception 'Requested role must not grant access.'; end if;
- if has_function_privilege('authenticated','public.admission_lifecycle_command(jsonb)','EXECUTE') then raise exception 'Internal admission engine is callable by client.'; end if;
+ if has_function_privilege('authenticated','public.execute_admission_stage(jsonb)','EXECUTE') then raise exception 'Internal admission engine is callable by client.'; end if;
  if has_function_privilege('anon','public.review_staff_access(jsonb)','EXECUTE') then raise exception 'Anonymous user may review access.'; end if;
 end $test$;
 select set_config('request.jwt.claim.sub','92000000-0000-0000-0000-000000000001',true);

@@ -9,23 +9,17 @@ import { createClient } from "@/lib/supabase/server";
 const commands = {
   CREATE_ACCOUNT: "accounting.manage",
   CREATE_VENDOR: "finance.advances.manage",
-  REQUEST_ADVANCE: "finance.advances.manage",
-  DECIDE_ADVANCE: "finance.advances.approve",
+  CREATE_ADVANCE: "finance.advances.manage",
   PAY_ADVANCE: "finance.advances.manage",
-  REQUEST_ADVANCE_SETTLEMENT: "finance.advances.manage",
-  DECIDE_ADVANCE_SETTLEMENT: "finance.advances.approve",
+  APPLY_ADVANCE: "finance.advances.manage",
   REFUND_ADVANCE: "finance.advances.manage",
-  CREATE_EXPENSE: "accounting.expense.manage",
-  DECIDE_EXPENSE: "accounting.expense.approve",
-  POST_EXPENSE: "accounting.expense.manage",
+  CREATE_EXPENSE_DIRECT: "accounting.expense.manage",
   SETTLE_PAYABLE: "finance.payments.post",
   RECONCILE_EXPENSE: "accounting.reconcile",
   RECONCILE_ACCOUNT: "accounting.reconcile",
-  REQUEST_COMPENSATION: "staff.compensation.manage",
-  DECIDE_COMPENSATION: "staff.compensation.approve",
+  RUN_COMPENSATION: "staff.compensation.manage",
   SETTLE_COMPENSATION: "staff.compensation.manage",
-  REQUEST_COMP_ADJUSTMENT: "staff.compensation.manage",
-  DECIDE_COMP_ADJUSTMENT: "staff.compensation.approve",
+  APPLY_COMP_ADJUSTMENT: "staff.compensation.manage",
 } as const;
 
 type Command = keyof typeof commands;

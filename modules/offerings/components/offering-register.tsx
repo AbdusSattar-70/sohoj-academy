@@ -7,7 +7,6 @@ import Link from "next/link";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { OfferingForm } from "@/modules/offerings/components/offering-form";
 import { PublicControlsForm } from "@/modules/offerings/components/public-controls-form";
-import { PublicVersionWorkflow } from "@/modules/offerings/components/public-version-workflow";
 import type { OfferingOverview } from "@/modules/offerings/queries";
 
 type Panel =
@@ -260,10 +259,6 @@ export function OfferingRegister({
               setNotice("Website and application settings saved.");
               close();
             }}
-          />
-          <PublicVersionWorkflow
-            offering={selected}
-            versions={data.publicVersions}
           />
         </InlineWorkPanel>
       )}

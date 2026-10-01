@@ -1,7 +1,7 @@
 # Redesign and operational workflow
 
-Branch: `feature/redesign_refactor`, based on `feature/rollback` (`67b83a5`).
-This document supersedes conflicting older workflow descriptions. Do not restore a parallel MVP schema or generic second-person admission approval.
+Branch: `feature/redesign_refactor`, fresh database baseline.
+This document is the current workflow contract. Do not restore a parallel MVP schema or generic second-person admission approval.
 
 ## Data boundaries
 
@@ -69,7 +69,7 @@ Setup and admission links carry a validated same-origin `returnTo`. Successful s
 
 ## Deployment
 
-Apply additive migrations `14–28` after the rollback baseline `01–13`; do not reset a working database or mark missing migrations applied blindly. Migration history must match this branch.
+Install the new migrations `01–13` on an empty application schema. For the authorized test-data reset, follow [Fresh database setup](FRESH_DATABASE_SETUP.md). Do not push this replacement baseline onto the old schema or repair history to pretend it was applied.
 
 Server environment:
 
@@ -93,4 +93,4 @@ Run locally after applying the branch:
 
 ## Draft placement recovery
 
-The case verification panel can correct an unconfirmed offering/batch or refresh its current fee plan without creating another admission. This returns the case to Draft, clears the selected discount, marks earlier supplemental charges inactive, and requires renewed paper consent. Accepted placements use the existing enrollment transfer workflow; historic invoices are never rewritten. Staff can request password recovery from the sign-in page without changing their assigned permissions.
+The case verification panel can correct an unconfirmed offering/batch or refresh its current fee plan without creating another admission. This returns the case to Draft, clears the selected discount, marks earlier supplemental charges inactive, and requires renewed paper consent. Accepted placements use the direct authorized enrollment transfer workflow; historic invoices are never rewritten. Staff can request password recovery from the sign-in page without changing their assigned permissions.

@@ -12,8 +12,6 @@ import {
   type UpdateOfferingInput,
   type PublishFeePlanInput,
   type UpdateOfferingPublicControlsInput,
-  publicContentVersionSchema,
-  type PublicContentVersionInput,
 } from "@/modules/offerings/schema";
 
 export type OfferingMutationResult =
@@ -212,84 +210,3 @@ export async function updateProgrammeOfferingPublicControls(
   return { ok: true, reference: result.offering_id };
 }
 
-export async function createPublicContentVersion(
-  input: PublicContentVersionInput,
-): Promise<OfferingMutationResult> {
-  const parsed = publicContentVersionSchema.safeParse(input);
-  if (!parsed.success)
-    return {
-      ok: false,
-      error: parsed.error.issues[0]?.message ?? "Check public content.",
-    };
-  const context = await getErpContext();
-  if (!context?.permissions.includes("academics.manage"))
-    return { ok: false, error: "Offering management permission required." };
-  const db = await createOfferingClient();
-  const { data, error } = await db.rpc(
-    "create_programme_offering_public_version",
-    {
-      p_input: {
-        offering_id: parsed.data.offeringId,
-        reason: parsed.data.reason,
-        content: parsed.data.content,
-      },
-    },
-  );
-  if (error) return { ok: false, error: error.message };
-  const result = data as { id?: string } | null;
-  if (!result?.id)
-    return { ok: false, error: "Public content version returned no identity." };
-  revalidatePath("/dashboard/academics/offerings");
-  return { ok: true, reference: result.id };
-}
-
-export async function submitPublicContentVersion(
-  versionId: string,
-): Promise<OfferingMutationResult> {
-  const context = await getErpContext();
-  if (!context?.permissions.includes("academics.manage"))
-    return { ok: false, error: "Offering management permission required." };
-  const db = await createOfferingClient();
-  const { data, error } = await db.rpc(
-    "submit_programme_offering_public_version",
-    { p_input: { version_id: versionId } },
-  );
-  if (error) return { ok: false, error: error.message };
-  const result = data as { id?: string } | null;
-  if (!result?.id)
-    return {
-      ok: false,
-      error: "Public content submission returned no identity.",
-    };
-  revalidatePath("/dashboard/academics/offerings");
-  return { ok: true, reference: result.id };
-}
-
-export async function publishPublicContentVersion(
-  versionId: string,
-  offeringId: string,
-): Promise<OfferingMutationResult> {
-  const context = await getErpContext();
-  if (!context?.permissions.includes("academics.manage"))
-    return { ok: false, error: "Offering management permission required." };
-  const db = await createOfferingClient();
-  const { data, error } = await db.rpc(
-    "publish_programme_offering_public_version",
-    { p_input: { version_id: versionId } },
-  );
-  if (error) return { ok: false, error: error.message };
-  const result = data as { id?: string } | null;
-  if (!result?.id)
-    return {
-      ok: false,
-      error: "Public content publication returned no identity.",
-    };
-  revalidatePath("/dashboard/academics/offerings");
-  revalidatePath("/");
-  revalidatePath("/interest");
-  return { ok: true, reference: offeringId };
-}
-
-/** @deprecated Use updateProgrammeOfferingPublicControls */
-export const updateProgrammeOfferingShowcase =
-  updateProgrammeOfferingPublicControls;

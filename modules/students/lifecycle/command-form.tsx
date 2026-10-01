@@ -154,7 +154,7 @@ export function StudentForm({
           </ErpFormField>
         ))}
       </fieldset>
-      {defaults.action === "REQUEST_MERGE" && (
+      {defaults.action === "MERGE" && (
         <label className="flex items-start gap-3 text-sm">
           <input
             type="checkbox"
