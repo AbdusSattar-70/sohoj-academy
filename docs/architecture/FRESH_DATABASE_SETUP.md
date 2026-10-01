@@ -2,6 +2,8 @@
 
 This branch replaces the old migration history. All existing application data is test data and its reset is authorized. The earlier project implementation exists on another branch; this branch contains no archive.
 
+# Production Supabase DB is used sohoj.aca@gmail.com supabase account
+
 ## Get the branch
 
 ```bash
