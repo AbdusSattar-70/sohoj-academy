@@ -26,6 +26,7 @@ export type ErpRouteDefinition = {
 };
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
+  { id: "referrals", title: "Referrers / My referrals", eyebrow: "People", href: "/dashboard/referrals", navGroup: "People", permission: "referrals.portal.view", icon: "students" },
   // Workspace
   {
     id: "dashboard",

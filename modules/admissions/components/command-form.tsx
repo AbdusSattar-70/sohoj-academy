@@ -615,14 +615,14 @@ export function AdmissionCommandForm({
       )}
       <ErpFormStatus message={message} />
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending || !isDirty}>
+        <Button type="submit" disabled={pending || !isDirty} loading={pending}>
           {pending ? "Working…" : label}
         </Button>
         {onCancel && (
           <Button
             type="button"
             variant="outline"
-            disabled={pending}
+            disabled={pending} loading={pending}
             onClick={onCancel}
           >
             Cancel

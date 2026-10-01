@@ -13,7 +13,7 @@ export const createClient = cache(async () => {
     throw new Error("Missing Supabase environment variables");
   }
 
-  return createServerClient<Database>(url, key, {
+  const client = createServerClient<Database>(url, key, {
     global: { fetch: boundedFetch },
     cookies: {
       getAll: () => cookieStore.getAll(),
@@ -28,4 +28,18 @@ export const createClient = cache(async () => {
       },
     },
   });
+  // Validate the cookie-backed user on this instance before it is used for data calls.
+  // No stored session.user is ever used as an authorization decision.
+  if (cookieStore.getAll().some(c => c.name.startsWith("sb-") && c.name.includes("auth-token"))) {
+    await getVerifiedUser(client);
+  }
+  return client;
 });
+
+const verifiedUsers = new WeakMap<object, ReturnType<ReturnType<typeof createServerClient<Database>>["auth"]["getUser"]>>();
+export function getVerifiedUser(client: ReturnType<typeof createServerClient<Database>>) {
+  let verification = verifiedUsers.get(client);
+  if (!verification) { verification = client.auth.getUser(); verifiedUsers.set(client, verification); }
+  return verification;
+}
+

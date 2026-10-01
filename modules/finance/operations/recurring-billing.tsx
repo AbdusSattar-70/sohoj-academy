@@ -58,7 +58,7 @@ export function RecurringBilling({
           </select>
         </label>
         <Button
-          disabled={pending || (!month && !term)}
+          disabled={pending || (!month && !term)} loading={pending}
           onClick={() =>
             start(async () => {
               setError("");

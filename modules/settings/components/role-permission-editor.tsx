@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -199,7 +200,7 @@ export function RolePermissionEditor({
         </div>
       </div>
 
-      <form onSubmit={submit} noValidate className="grid gap-5">
+      <ActionPanel title="Edit role permissions"><form onSubmit={submit} noValidate className="grid gap-5">
         <input type="hidden" {...register("roleCode")} />
 
         <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -359,7 +360,7 @@ export function RolePermissionEditor({
             {pending ? "Saving Access…" : "Save Role Permissions"}
           </Button>
         </div>
-      </form>
+      </form></ActionPanel>
     </div>
   );
 }

@@ -17,8 +17,9 @@
 | 11 | Teacher academic commands |
 | 12 | RLS, grants, audit and integrity triggers |
 | 13 | Essential system seed and Auth profile synchronization |
+| 14 | Scoped referrer accounts, collection-based acquisition rewards, instant discounts/scholarships and full staff/intake contracts |
 
-The baseline contains 90 application tables and 113 functions. It installs final definitions directly: no dynamic pg_get_functiondef rewriting or historical rename-and-wrap chain. Private helpers implement transactional stages; only intended RPC entry points receive client execution grants.
+The 01–13 baseline contains 90 application tables and 113 functions. After refinement 14 the current contract has 92 application tables and 125 functions. It installs final definitions directly: no dynamic pg_get_functiondef rewriting or historical rename-and-wrap chain. Private helpers implement transactional stages; only intended RPC entry points receive client execution grants.
 
 ## Removed duplication
 
@@ -34,4 +35,10 @@ Seed only organization/campus placeholders, staff roles/permissions, essential p
 
 No direct application INSERT/UPDATE/DELETE grants for anonymous/authenticated clients. Controlled RPCs enforce permission, scope, business transitions and audit. Financial corrections preserve posted evidence; journals remain balanced. Internal fee/policy snapshots preserve historical agreements without exposing version queues to administrators.
 
-After a deployed fresh baseline, append migration 14_<task>.sql and subsequent files. Update generated types and contract consumers together. Do not introduce a second financial/admission model.
+After a deployed fresh baseline, append migration 15_<task>.sql and subsequent files. Update generated types and contract consumers together. Do not introduce a second financial/admission model.
+
+## Referral and collection controls
+
+Referral reward contracts pin the applicable rate and first qualifying billing month. Immutable reward entries record signed accrual/correction deltas; refunds and late tuition reductions adjust liability and expense. Staff and external referrers share this contract. Own-account portal reads are controlled RPCs: no guardian/address or arbitrary student access, and no operational ERP grants.
+
+Invoice adjustments retain distinct DISCOUNT/SCHOLARSHIP labels while balanced contra-revenue journals preserve accounting evidence. Payment and optional adjustment commit atomically. Acquisition is removed from new teacher compensation previews to prevent double expense. Profit/loss uses posted revenue less contra-revenue and expense, including accrued referral rewards.

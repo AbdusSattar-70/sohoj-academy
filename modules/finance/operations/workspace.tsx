@@ -1,4 +1,5 @@
 "use client";
+import { CollectionForm } from "./collection-form";
 import Link from "next/link";
 import { useState } from "react";
 import { StatusBadge } from "@/components/erp/status-badge";
@@ -296,12 +297,14 @@ export function FinanceOperations({
                   <div className="grid gap-3 sm:grid-cols-4">
                     {[
                       ["Original charges", i.gross],
-                      ["Approved credits", i.credits],
+                      ["Discount", i.discountAmount],
+                      ["Scholarship", i.scholarshipAmount],
+                      ["Other adjustments", i.otherAdjustments],
                       ["Net charges", i.net],
                       ["Money received", i.paid],
                       ["Actual refunds", i.refunded],
                       ["Outstanding", i.due],
-                      ["Customer credit", i.credit],
+                      ["Overpayment balance", i.credit],
                       ["Reserved refunds", i.reserved],
                     ].map(([label, amount]) => (
                       <div key={label}>
@@ -324,31 +327,7 @@ export function FinanceOperations({
                     </ul>
                   </details>
                   {i.due > 0 && can("finance.payments.post") && (
-                    <details>
-                      <summary className="cursor-pointer text-sm font-medium">
-                        Collect Payment
-                      </summary>
-                      <div className="mt-3">
-                        <FinanceForm
-                          defaults={{
-                            action: "PAY",
-                            admission_id: selected,
-                            invoice_id: i.id,
-                          }}
-                          label="Post Actual Payment"
-                          description={`Enter only money actually received. Outstanding: ${money(i.due)}.`}
-                          fields={[
-                            {
-                              key: "amount",
-                              label: "Amount Received (BDT)",
-                              type: "number",
-                              max: i.due,
-                            },
-                            ...paymentFields,
-                          ]}
-                        />
-                      </div>
-                    </details>
+                    <CollectionForm admissionId={selected} invoiceId={i.id} due={i.due} methods={data.paymentMethods} />
                   )}
                   {data.payments
                     .filter((p) => p.invoiceId === i.id)

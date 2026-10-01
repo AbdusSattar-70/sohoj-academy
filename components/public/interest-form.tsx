@@ -1,4 +1,5 @@
 "use client";
+import { AcknowledgementSlip } from "./acknowledgement-slip";
 
 import {
   useMemo,
@@ -68,110 +69,7 @@ function Field({
   return <div className={cn("flex flex-col gap-2", className)}>{children}</div>;
 }
 
-/** Build a simple single-page PDF (Latin text; works for reference codes & English names). */
-function buildAcknowledgementPdf(data: {
-  prospectNo: string;
-  studentName: string;
-  intentLabel: string;
-  body: string;
-  dateLabel: string;
-  footerNote: string;
-  title: string;
-  badge: string;
-}): Blob {
-  const escapePdf = (s: string) =>
-    s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
 
-  const lines: string[] = [];
-  const add = (text: string, size = 11) => {
-    lines.push(`${size}::${text}`);
-  };
-
-  add("SOHOJ ACADEMY", 16);
-  add(data.title, 13);
-  add(data.badge, 10);
-  add("", 11);
-  add(data.body, 10);
-  add("", 11);
-  add(`Reference: ${data.prospectNo}`, 12);
-  add(`Student: ${data.studentName}`, 11);
-  add(`Type: ${data.intentLabel}`, 11);
-  add(`Date: ${data.dateLabel}`, 11);
-  add("", 11);
-  add(data.footerNote, 9);
-  add("", 11);
-  add("© Sohoj Academy  ·  www.sohoj.outlinerz.com", 9);
-
-  // PDF content stream
-  let y = 800;
-  const contentParts: string[] = ["BT", "/F1 11 Tf", "50 800 Td"];
-  let currentSize = 11;
-
-  for (const raw of lines) {
-    const sep = raw.indexOf("::");
-    const size = sep >= 0 ? Number(raw.slice(0, sep)) : 11;
-    const text = sep >= 0 ? raw.slice(sep + 2) : raw;
-
-    if (size !== currentSize) {
-      contentParts.push(`/F1 ${size} Tf`);
-      currentSize = size;
-    }
-
-    if (text === "") {
-      contentParts.push("0 -16 Td");
-      y -= 16;
-      continue;
-    }
-
-    // Simple wrap ~90 chars
-    const chunks: string[] = [];
-    let rest = text;
-    while (rest.length > 90) {
-      chunks.push(rest.slice(0, 90));
-      rest = rest.slice(90);
-    }
-    chunks.push(rest);
-
-    for (const chunk of chunks) {
-      contentParts.push(`(${escapePdf(chunk)}) Tj`);
-      contentParts.push("0 -16 Td");
-      y -= 16;
-    }
-  }
-
-  contentParts.push("ET");
-  const stream = contentParts.join("\n");
-  const streamLength = new TextEncoder().encode(stream).length;
-
-  const objects: string[] = [];
-  objects.push("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
-  objects.push("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
-  objects.push(
-    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n",
-  );
-  objects.push(
-    `4 0 obj\n<< /Length ${streamLength} >>\nstream\n${stream}\nendstream\nendobj\n`,
-  );
-  objects.push(
-    "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n",
-  );
-
-  let pdf = "%PDF-1.4\n";
-  const offsets: number[] = [0];
-  for (const obj of objects) {
-    offsets.push(new TextEncoder().encode(pdf).length);
-    pdf += obj;
-  }
-  const xrefPos = new TextEncoder().encode(pdf).length;
-  pdf += `xref\n0 ${objects.length + 1}\n`;
-  pdf += "0000000000 65535 f \n";
-  for (let i = 1; i < offsets.length; i++) {
-    pdf += `${String(offsets[i]).padStart(10, "0")} 00000 n \n`;
-  }
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF`;
-
-  return new Blob([pdf], { type: "application/pdf" });
-}
 
 export function PublicInterestForm({
   classes,
@@ -204,6 +102,7 @@ export function PublicInterestForm({
   );
   const visibleSubjects = subjects; // Preferences are reverified by staff; do not filter out other subjects.
 
+  const [sameAddress,setSameAddress]=useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [formVersion, setFormVersion] = useState(0);
@@ -213,11 +112,13 @@ export function PublicInterestForm({
     prospectNo?: string | null;
     studentName?: string;
     intentLabel?: string;
+    details?:Record<string,string>;
   } | null>(null);
 
   function submit(formData: FormData) {
     setMessage(null);
     const input = {
+      studentMobile:String(formData.get("studentMobile")??""),studentEmail:String(formData.get("studentEmail")??""),presentLandmark:String(formData.get("presentLandmark")??""),permanentSameAsPresent:sameAddress,
       dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
       gender: String(formData.get("gender") ?? ""),
       schoolRoll: String(formData.get("schoolRoll") ?? ""),
@@ -270,6 +171,7 @@ export function PublicInterestForm({
           ok: true,
           prospectNo: result.prospectNo,
           studentName: input.studentName,
+          details:{guardian:input.guardianName,mobile:input.mobile,email:input.studentEmail,address:input.guardianAddress,programme:selectedOffering?.name??programs.filter(p=>input.programIds.includes(p.id)).map(p=>p.name).join(", "),subjects:subjects.filter(s=>input.subjectIds.includes(s.id)).map(s=>s.name).join(", "),submitted:new Date().toLocaleString("en-GB",{timeZone:"Asia/Dhaka"})},
           intentLabel:
             input.intent === "admission"
               ? bn
@@ -297,43 +199,7 @@ export function PublicInterestForm({
     });
   }
 
-  function downloadPdf() {
-    if (!message?.ok) return;
-
-    const prospectNo = message.prospectNo || "—";
-    const studentName = message.studentName || "—";
-    const intentLabel = message.intentLabel || "—";
-    const dateLabel = new Date().toLocaleDateString(bn ? "bn-BD" : "en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
-    const blob = buildAcknowledgementPdf({
-      prospectNo,
-      studentName,
-      intentLabel,
-      body: message.text,
-      dateLabel,
-      title: bn
-        ? "Acknowledgement Slip / প্রাপ্তি স্বীকারপত্র"
-        : "Acknowledgement Slip",
-      badge: bn ? "Not yet admitted / এখনো ভর্তি নয়" : "Not yet admitted",
-      footerNote: bn
-        ? "Keep this reference number. Sohoj Academy will contact you after verification."
-        : "Keep this reference number. Sohoj Academy will contact you after verification.",
-    });
-
-    const filename = `sohoj-acknowledgement-${prospectNo.replace(/[^\w-]+/g, "") || "slip"}.pdf`;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
+  function downloadPdf(){window.print();}
 
   // ── Success only: no form ──────────────────────────────────────────
   if (message?.ok) {
@@ -355,88 +221,7 @@ export function PublicInterestForm({
           </div>
         </div>
 
-        <div
-          id="interest-acknowledgement-slip"
-          className="rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm sm:p-8"
-        >
-          <div className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <Logo size={72} />
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Sohoj Academy
-                </p>
-                <p className="text-sm font-medium text-foreground">
-                  {bn ? "প্রাপ্তি স্বীকারপত্র" : "Acknowledgement slip"}
-                </p>
-              </div>
-            </div>
-            <div className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-800 dark:text-amber-200">
-              {bn ? "এখনো ভর্তি নয়" : "Not yet admitted"}
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-4">
-            <p className="text-sm leading-6 text-muted-foreground">
-              {message.text}
-            </p>
-
-            <dl className="grid gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:grid-cols-2">
-              {message.prospectNo ? (
-                <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {bn ? "রেফারেন্স" : "Reference"}
-                  </dt>
-                  <dd className="mt-1 text-base font-bold tracking-wide">
-                    {message.prospectNo}
-                  </dd>
-                </div>
-              ) : null}
-              {message.studentName ? (
-                <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {bn ? "শিক্ষার্থী" : "Student"}
-                  </dt>
-                  <dd className="mt-1 text-sm font-semibold">
-                    {message.studentName}
-                  </dd>
-                </div>
-              ) : null}
-              {message.intentLabel ? (
-                <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {bn ? "ধরন" : "Type"}
-                  </dt>
-                  <dd className="mt-1 text-sm font-medium">
-                    {message.intentLabel}
-                  </dd>
-                </div>
-              ) : null}
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {bn ? "তারিখ" : "Date"}
-                </dt>
-                <dd className="mt-1 text-sm font-medium">
-                  {new Date().toLocaleDateString(bn ? "bn-BD" : "en-GB", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </dd>
-              </div>
-            </dl>
-
-            <p className="text-xs leading-5 text-muted-foreground">
-              {bn
-                ? "এই রেফারেন্স নম্বরটি সংরক্ষণ করুন। সহজ একাডেমি যাচাই শেষে যোগাযোগ করবে।"
-                : "Keep this reference number. Sohoj Academy will contact you after verification."}
-            </p>
-          </div>
-
-          <div className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
-            <p>© Sohoj Academy · www.sohoj.outlinerz.com</p>
-          </div>
-        </div>
+        <AcknowledgementSlip message={message} bn={bn} />
 
         <div className="flex flex-wrap gap-3">
           <button
@@ -445,7 +230,7 @@ export function PublicInterestForm({
             className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800"
           >
             <Download className="size-4" aria-hidden="true" />
-            {bn ? "PDF ডাউনলোড" : "Download PDF"}
+            {bn ? "প্রিন্ট / PDF সংরক্ষণ" : "Print / Save PDF"}
           </button>
           <Link
             href="/"
@@ -461,7 +246,7 @@ export function PublicInterestForm({
   // ── Form (only when not successful) ────────────────────────────────
   return (
     <div className="space-y-6" key={formVersion}>
-      <form ref={formRef} action={submit} className="space-y-8">
+      <form ref={formRef} onSubmit={event=>{event.preventDefault();submit(new FormData(event.currentTarget));}} className="space-y-8">
         <div className="sr-only" aria-hidden="true">
           <label htmlFor="website">Website</label>
           <input id="website" name="website" tabIndex={-1} autoComplete="off" />
@@ -585,6 +370,8 @@ export function PublicInterestForm({
                 className="h-11"
               />
             </Field>
+            <Field><Label htmlFor="student-mobile">{bn?"শিক্ষার্থীর মোবাইল (ঐচ্ছিক)":"Student mobile (optional)"}</Label><Input id="student-mobile" name="studentMobile" type="tel" pattern="01[3-9][0-9]{8}" className="h-11"/></Field>
+            <Field><Label htmlFor="student-email">{bn?"শিক্ষার্থীর ইমেইল (ঐচ্ছিক)":"Student email (optional)"}</Label><Input id="student-email" name="studentEmail" type="email" className="h-11"/></Field>
             <Field>
               <Label htmlFor="interest-class">
                 {bn ? "বর্তমান ক্লাস" : "Current Class"} *
@@ -847,6 +634,9 @@ export function PublicInterestForm({
                   className="mt-2 min-h-11 w-full rounded-xl border bg-background px-3"
                 />
               </label>
+              <label className="block text-sm">Gender / লিঙ্গ<select name="gender" className={`${selectClass} mt-2`}><option value="">Not provided / উল্লেখ নেই</option><option>Female</option><option>Male</option><option>Other</option></select></label>
+              <label className="block text-sm">Birth registration (optional) / জন্ম নিবন্ধন<input name="birthRegistration" maxLength={80} className="mt-2 min-h-11 w-full rounded-xl border bg-background px-3"/></label>
+              <label className="block text-sm">Previous exam / result (optional) / আগের ফলাফল<input name="previousResult" maxLength={160} className="mt-2 min-h-11 w-full rounded-xl border bg-background px-3"/></label>
               <label className="block text-sm">
                 Father’s name / পিতার নাম
                 <input
@@ -911,7 +701,7 @@ export function PublicInterestForm({
             </h2>
             <Field>
               <Label htmlFor="guardian-address">
-                {bn ? "অভিভাবকের ঠিকানা" : "Guardian address"} *
+                {bn ? "বর্তমান ঠিকানা: গ্রাম/রাস্তা, ডাকঘর, উপজেলা ও জেলা" : "Present address: village/road, post, upazila and district"} *
               </Label>
               <textarea
                 id="guardian-address"
@@ -923,6 +713,9 @@ export function PublicInterestForm({
                 className={`${selectClass} min-h-20 py-2`}
               />
             </Field>
+            <Field><Label htmlFor="present-landmark">{bn?"কাছের পরিচিত স্থান / বিশেষ লোকেশন":"Nearby landmark / special location"}</Label><Input id="present-landmark" name="presentLandmark" maxLength={160} className="h-11"/></Field>
+            <label className="flex gap-2 text-sm"><input type="checkbox" checked={sameAddress} onChange={e=>setSameAddress(e.target.checked)}/>{bn?"স্থায়ী ঠিকানা বর্তমান ঠিকানার মতো":"Permanent address is the same as present address"}</label>
+            <Field className={sameAddress?"hidden":""}><Label htmlFor="permanent-address">{bn?"স্থায়ী ঠিকানা (আলাদা হলে)":"Permanent address (if different)"}</Label><textarea id="permanent-address" name="permanentAddress" disabled={sameAddress} maxLength={300} rows={3} className={`${selectClass} min-h-24 py-2`}/></Field>
             <Field>
               <Label htmlFor="academic-background">
                 {bn ? "পূর্ববর্তী শিক্ষাগত তথ্য" : "Academic background"}

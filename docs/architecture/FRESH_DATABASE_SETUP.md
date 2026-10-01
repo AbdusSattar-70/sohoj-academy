@@ -31,11 +31,15 @@ pnpm exec supabase db reset --linked
 pnpm exec supabase migration list
 ```
 
-The linked reset is destructive for application data. Do not use db push against the old schema, or mark old/new files applied via migration repair. All 13 local baseline files should match the new remote history after reset. If a CLI reset reports an error, stop and inspect it before bootstrapping.
+The linked reset is destructive for application data. Do not use db push against the old schema, or mark old/new files applied via migration repair. All local migration files (01–14) should match the new remote history after a fresh install. If a CLI reset reports an error, stop and inspect it before bootstrapping.
 
 Supabase-managed Auth identities and Storage contents are separate from the application schema. Delete unwanted test Auth users and unused uploaded-consent objects/buckets through their Supabase management APIs/dashboard if a completely empty service is required. Custom database roles may also survive a remote reset. Alternatively a newly created project starts without these leftovers. Never manually delete Storage metadata while leaving its objects behind.
 
 Local-only development: start Docker, then run pnpm exec supabase start and pnpm exec supabase db reset (without --linked). Use the local project credentials shown by the CLI.
+
+## Updating an already installed clean baseline
+
+If migrations 01–13 are already applied, keep the database and run `pnpm exec supabase db push` to apply migration 14. Do not reset the database for this refinement. It preserves admissions, posted charges/payments, journals and previous referral evidence. Configure `/dashboard/governance/rules` and manage verified accounts through `/dashboard/referrals`.
 
 ## Bootstrap and operate
 

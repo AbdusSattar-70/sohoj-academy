@@ -1,4 +1,5 @@
 "use client";
+import { announceSaved } from "@/components/erp/action-panel";
 
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ export function PhysicalConsentForm({ admissionId }: { admissionId: string }) {
       if (result.ok) {
         requestId.current = crypto.randomUUID();
         formElement.reset();
+        announceSaved();
         router.refresh();
       }
     });

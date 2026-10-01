@@ -46,9 +46,12 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  loading = false,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
+    loading?: boolean
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
@@ -60,7 +63,12 @@ function Button({
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    />
+      disabled={props.disabled || loading}
+      aria-busy={loading || undefined}
+    >
+      {loading && !asChild && <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />}
+      {children}
+    </Comp>
   )
 }
 

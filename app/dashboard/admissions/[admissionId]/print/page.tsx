@@ -1,3 +1,4 @@
+import { getPrintCatalogue } from "@/modules/admissions/print-catalogue";
 import { getAcademySetup } from "@/modules/platform/setup/queries";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,7 +20,7 @@ export default async function AdmissionDocument({
   if (!z.string().uuid().safeParse(admissionId).success) notFound();
   const a = await getAdmissionCase(admissionId);
   if (receipt && !a.receipts.some((r) => r.number === receipt)) notFound();
-  const setup = await getAcademySetup();
+  const [setup,catalogue] = await Promise.all([getAcademySetup(),getPrintCatalogue()]);
   return (
     <div className="space-y-5">
       <div className="flex gap-3 print:hidden">
@@ -34,7 +35,7 @@ export default async function AdmissionDocument({
       <AdmissionPaper
         data={a}
         receiptOnly={receipt}
-        academyName={setup.academyName}
+        catalogue={catalogue} academyName={setup.academyName}
       />
     </div>
   );

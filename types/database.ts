@@ -486,6 +486,57 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_access_requests: {
+        Row: {
+          id: string;
+          full_name: string;
+          email: string;
+          mobile: string;
+          requested_role: string;
+          purpose: string;
+          status: string;
+          assigned_role: string | null;
+          profile_id: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          invitation_sent_at: string | null;
+          review_note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          full_name: string;
+          email: string;
+          mobile: string;
+          requested_role: string;
+          purpose: string;
+          status?: string;
+          assigned_role?: string | null;
+          profile_id?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          invitation_sent_at?: string | null;
+          review_note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          full_name?: string;
+          email?: string;
+          mobile?: string;
+          requested_role?: string;
+          purpose?: string;
+          status?: string;
+          assigned_role?: string | null;
+          profile_id?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          invitation_sent_at?: string | null;
+          review_note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       academic_years: {
         Row: {
           id: string;
@@ -720,14 +771,13 @@ export type Database = {
         };
         Relationships: [];
       };
-      payment_methods: {
+      academic_groups: {
         Row: {
           id: string;
           organization_id: string;
           code: string;
           name: string;
           is_active: boolean;
-          created_at: string;
         };
         Insert: {
           id?: string;
@@ -735,7 +785,6 @@ export type Database = {
           code: string;
           name: string;
           is_active?: boolean;
-          created_at?: string;
         };
         Update: {
           id?: string;
@@ -743,7 +792,207 @@ export type Database = {
           code?: string;
           name?: string;
           is_active?: boolean;
+        };
+        Relationships: [];
+      };
+      programme_offerings: {
+        Row: {
+          id: string;
+          organization_id: string;
+          branch_id: string;
+          academic_year_id: string;
+          class_id: string;
+          program_id: string;
+          group_id: string | null;
+          code: string;
+          name: string;
+          status: Database["public"]["Enums"]["offering_status"];
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+          showcase_title: string | null;
+          showcase_title_bn: string | null;
+          showcase_description: string | null;
+          showcase_description_bn: string | null;
+          showcase_eyebrow: string | null;
+          showcase_eyebrow_bn: string | null;
+          showcase_icon: string | null;
+          showcase_sort_order: number;
+          is_website_visible: boolean;
+          is_accepting_applications: boolean;
+          applications_open_on: string | null;
+          applications_close_on: string | null;
+          public_schedule: string | null;
+          public_requirements: string | null;
+          admission_policy: string | null;
+          public_schedule_bn: string | null;
+          public_requirements_bn: string | null;
+          admission_policy_bn: string | null;
+          allowed_discount_percentages: number[];
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          branch_id: string;
+          academic_year_id: string;
+          class_id: string;
+          program_id: string;
+          group_id?: string | null;
+          code: string;
+          name: string;
+          status?: Database["public"]["Enums"]["offering_status"];
+          created_by: string;
           created_at?: string;
+          updated_at?: string;
+          showcase_title?: string | null;
+          showcase_title_bn?: string | null;
+          showcase_description?: string | null;
+          showcase_description_bn?: string | null;
+          showcase_eyebrow?: string | null;
+          showcase_eyebrow_bn?: string | null;
+          showcase_icon?: string | null;
+          showcase_sort_order?: number;
+          is_website_visible?: boolean;
+          is_accepting_applications?: boolean;
+          applications_open_on?: string | null;
+          applications_close_on?: string | null;
+          public_schedule?: string | null;
+          public_requirements?: string | null;
+          admission_policy?: string | null;
+          public_schedule_bn?: string | null;
+          public_requirements_bn?: string | null;
+          admission_policy_bn?: string | null;
+          allowed_discount_percentages?: number[];
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          branch_id?: string;
+          academic_year_id?: string;
+          class_id?: string;
+          program_id?: string;
+          group_id?: string | null;
+          code?: string;
+          name?: string;
+          status?: Database["public"]["Enums"]["offering_status"];
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+          showcase_title?: string | null;
+          showcase_title_bn?: string | null;
+          showcase_description?: string | null;
+          showcase_description_bn?: string | null;
+          showcase_eyebrow?: string | null;
+          showcase_eyebrow_bn?: string | null;
+          showcase_icon?: string | null;
+          showcase_sort_order?: number;
+          is_website_visible?: boolean;
+          is_accepting_applications?: boolean;
+          applications_open_on?: string | null;
+          applications_close_on?: string | null;
+          public_schedule?: string | null;
+          public_requirements?: string | null;
+          admission_policy?: string | null;
+          public_schedule_bn?: string | null;
+          public_requirements_bn?: string | null;
+          admission_policy_bn?: string | null;
+          allowed_discount_percentages?: number[];
+        };
+        Relationships: [];
+      };
+      fee_plan_versions: {
+        Row: {
+          id: string;
+          offering_id: string;
+          version: number;
+          status: Database["public"]["Enums"]["rule_status"];
+          billing_cycle: string;
+          due_day: number | null;
+          currency_code: string;
+          effective_from: string;
+          effective_to: string | null;
+          change_reason: string;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          offering_id: string;
+          version: number;
+          status?: Database["public"]["Enums"]["rule_status"];
+          billing_cycle: string;
+          due_day?: number | null;
+          currency_code?: string;
+          effective_from: string;
+          effective_to?: string | null;
+          change_reason: string;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          offering_id?: string;
+          version?: number;
+          status?: Database["public"]["Enums"]["rule_status"];
+          billing_cycle?: string;
+          due_day?: number | null;
+          currency_code?: string;
+          effective_from?: string;
+          effective_to?: string | null;
+          change_reason?: string;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      fee_plan_components: {
+        Row: {
+          id: string;
+          fee_plan_version_id: string;
+          code: string;
+          name: string;
+          amount: number;
+          charge_type: string;
+          recurrence: string;
+          sort_order: number;
+        };
+        Insert: {
+          id?: string;
+          fee_plan_version_id: string;
+          code: string;
+          name: string;
+          amount: number;
+          charge_type: string;
+          recurrence: string;
+          sort_order?: number;
+        };
+        Update: {
+          id?: string;
+          fee_plan_version_id?: string;
+          code?: string;
+          name?: string;
+          amount?: number;
+          charge_type?: string;
+          recurrence?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      programme_offering_subjects: {
+        Row: {
+          offering_id: string;
+          subject_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          offering_id: string;
+          subject_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          offering_id?: string;
+          subject_id?: string;
+          sort_order?: number;
         };
         Relationships: [];
       };
@@ -971,6 +1220,8 @@ export type Database = {
           updated_at: string;
           merged_into_id: string | null;
           academy_roll: number;
+          mobile: string | null;
+          email: string | null;
         };
         Insert: {
           id?: string;
@@ -990,6 +1241,8 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           merged_into_id?: string | null;
+          mobile?: string | null;
+          email?: string | null;
         };
         Update: {
           id?: string;
@@ -1009,6 +1262,8 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           merged_into_id?: string | null;
+          mobile?: string | null;
+          email?: string | null;
         };
         Relationships: [];
       };
@@ -1186,246 +1441,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      staff_subject_assignments: {
-        Row: {
-          id: string;
-          staff_id: string;
-          subject_id: string;
-          effective_from: string;
-          effective_to: string | null;
-          is_primary: boolean;
-          assigned_by: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          staff_id: string;
-          subject_id: string;
-          effective_from?: string;
-          effective_to?: string | null;
-          is_primary?: boolean;
-          assigned_by?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          staff_id?: string;
-          subject_id?: string;
-          effective_from?: string;
-          effective_to?: string | null;
-          is_primary?: boolean;
-          assigned_by?: string | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      academic_groups: {
-        Row: {
-          id: string;
-          organization_id: string;
-          code: string;
-          name: string;
-          is_active: boolean;
-        };
-        Insert: {
-          id?: string;
-          organization_id: string;
-          code: string;
-          name: string;
-          is_active?: boolean;
-        };
-        Update: {
-          id?: string;
-          organization_id?: string;
-          code?: string;
-          name?: string;
-          is_active?: boolean;
-        };
-        Relationships: [];
-      };
-      programme_offerings: {
-        Row: {
-          id: string;
-          organization_id: string;
-          branch_id: string;
-          academic_year_id: string;
-          class_id: string;
-          program_id: string;
-          group_id: string | null;
-          code: string;
-          name: string;
-          status: Database["public"]["Enums"]["offering_status"];
-          created_by: string;
-          created_at: string;
-          updated_at: string;
-          showcase_title: string | null;
-          showcase_title_bn: string | null;
-          showcase_description: string | null;
-          showcase_description_bn: string | null;
-          showcase_eyebrow: string | null;
-          showcase_eyebrow_bn: string | null;
-          showcase_icon: string | null;
-          showcase_sort_order: number;
-          is_website_visible: boolean;
-          is_accepting_applications: boolean;
-          applications_open_on: string | null;
-          applications_close_on: string | null;
-          public_schedule: string | null;
-          public_requirements: string | null;
-          admission_policy: string | null;
-          public_schedule_bn: string | null;
-          public_requirements_bn: string | null;
-          admission_policy_bn: string | null;
-          allowed_discount_percentages: number[];
-        };
-        Insert: {
-          id?: string;
-          organization_id: string;
-          branch_id: string;
-          academic_year_id: string;
-          class_id: string;
-          program_id: string;
-          group_id?: string | null;
-          code: string;
-          name: string;
-          status?: Database["public"]["Enums"]["offering_status"];
-          created_by: string;
-          created_at?: string;
-          updated_at?: string;
-          showcase_title?: string | null;
-          showcase_title_bn?: string | null;
-          showcase_description?: string | null;
-          showcase_description_bn?: string | null;
-          showcase_eyebrow?: string | null;
-          showcase_eyebrow_bn?: string | null;
-          showcase_icon?: string | null;
-          showcase_sort_order?: number;
-          is_website_visible?: boolean;
-          is_accepting_applications?: boolean;
-          applications_open_on?: string | null;
-          applications_close_on?: string | null;
-          public_schedule?: string | null;
-          public_requirements?: string | null;
-          admission_policy?: string | null;
-          public_schedule_bn?: string | null;
-          public_requirements_bn?: string | null;
-          admission_policy_bn?: string | null;
-          allowed_discount_percentages?: number[];
-        };
-        Update: {
-          id?: string;
-          organization_id?: string;
-          branch_id?: string;
-          academic_year_id?: string;
-          class_id?: string;
-          program_id?: string;
-          group_id?: string | null;
-          code?: string;
-          name?: string;
-          status?: Database["public"]["Enums"]["offering_status"];
-          created_by?: string;
-          created_at?: string;
-          updated_at?: string;
-          showcase_title?: string | null;
-          showcase_title_bn?: string | null;
-          showcase_description?: string | null;
-          showcase_description_bn?: string | null;
-          showcase_eyebrow?: string | null;
-          showcase_eyebrow_bn?: string | null;
-          showcase_icon?: string | null;
-          showcase_sort_order?: number;
-          is_website_visible?: boolean;
-          is_accepting_applications?: boolean;
-          applications_open_on?: string | null;
-          applications_close_on?: string | null;
-          public_schedule?: string | null;
-          public_requirements?: string | null;
-          admission_policy?: string | null;
-          public_schedule_bn?: string | null;
-          public_requirements_bn?: string | null;
-          admission_policy_bn?: string | null;
-          allowed_discount_percentages?: number[];
-        };
-        Relationships: [];
-      };
-      fee_plan_versions: {
-        Row: {
-          id: string;
-          offering_id: string;
-          version: number;
-          status: Database["public"]["Enums"]["rule_status"];
-          billing_cycle: string;
-          due_day: number | null;
-          currency_code: string;
-          effective_from: string;
-          effective_to: string | null;
-          change_reason: string;
-          created_by: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          offering_id: string;
-          version: number;
-          status?: Database["public"]["Enums"]["rule_status"];
-          billing_cycle: string;
-          due_day?: number | null;
-          currency_code?: string;
-          effective_from: string;
-          effective_to?: string | null;
-          change_reason: string;
-          created_by: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          offering_id?: string;
-          version?: number;
-          status?: Database["public"]["Enums"]["rule_status"];
-          billing_cycle?: string;
-          due_day?: number | null;
-          currency_code?: string;
-          effective_from?: string;
-          effective_to?: string | null;
-          change_reason?: string;
-          created_by?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      fee_plan_components: {
-        Row: {
-          id: string;
-          fee_plan_version_id: string;
-          code: string;
-          name: string;
-          amount: number;
-          charge_type: string;
-          recurrence: string;
-          sort_order: number;
-        };
-        Insert: {
-          id?: string;
-          fee_plan_version_id: string;
-          code: string;
-          name: string;
-          amount: number;
-          charge_type: string;
-          recurrence: string;
-          sort_order?: number;
-        };
-        Update: {
-          id?: string;
-          fee_plan_version_id?: string;
-          code?: string;
-          name?: string;
-          amount?: number;
-          charge_type?: string;
-          recurrence?: string;
-          sort_order?: number;
-        };
-        Relationships: [];
-      };
       admission_cases: {
         Row: {
           id: string;
@@ -1501,6 +1516,207 @@ export type Database = {
         };
         Relationships: [];
       };
+      admission_command_keys: {
+        Row: {
+          request_id: string;
+          actor_id: string;
+          payload: Json;
+          result: Json;
+          created_at: string;
+        };
+        Insert: {
+          request_id: string;
+          actor_id: string;
+          payload: Json;
+          result: Json;
+          created_at?: string;
+        };
+        Update: {
+          request_id?: string;
+          actor_id?: string;
+          payload?: Json;
+          result?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      student_merges: {
+        Row: {
+          id: string;
+          source_id: string;
+          target_id: string;
+          source_snapshot: Json;
+          target_snapshot: Json;
+          created_at: string;
+          authorized_by: string;
+          authorization_reason: string;
+        };
+        Insert: {
+          id?: string;
+          source_id: string;
+          target_id: string;
+          source_snapshot: Json;
+          target_snapshot: Json;
+          created_at?: string;
+          authorized_by: string;
+          authorization_reason: string;
+        };
+        Update: {
+          id?: string;
+          source_id?: string;
+          target_id?: string;
+          source_snapshot?: Json;
+          target_snapshot?: Json;
+          created_at?: string;
+          authorized_by?: string;
+          authorization_reason?: string;
+        };
+        Relationships: [];
+      };
+      enrollment_transfers: {
+        Row: {
+          id: string;
+          student_id: string;
+          admission_id: string;
+          from_enrollment_id: string;
+          to_enrollment_id: string;
+          from_batch_id: string;
+          to_batch_id: string;
+          capacity_policy_version_id: string;
+          transferred_on: string;
+          created_at: string;
+          authorized_by: string;
+          authorization_reason: string;
+        };
+        Insert: {
+          id?: string;
+          student_id: string;
+          admission_id: string;
+          from_enrollment_id: string;
+          to_enrollment_id: string;
+          from_batch_id: string;
+          to_batch_id: string;
+          capacity_policy_version_id: string;
+          transferred_on: string;
+          created_at?: string;
+          authorized_by: string;
+          authorization_reason: string;
+        };
+        Update: {
+          id?: string;
+          student_id?: string;
+          admission_id?: string;
+          from_enrollment_id?: string;
+          to_enrollment_id?: string;
+          from_batch_id?: string;
+          to_batch_id?: string;
+          capacity_policy_version_id?: string;
+          transferred_on?: string;
+          created_at?: string;
+          authorized_by?: string;
+          authorization_reason?: string;
+        };
+        Relationships: [];
+      };
+      staff_admission_intake_requests: {
+        Row: {
+          request_id: string;
+          actor_id: string;
+          payload: Json;
+          prospect_id: string | null;
+          admission_id: string;
+          created_at: string;
+        };
+        Insert: {
+          request_id: string;
+          actor_id: string;
+          payload: Json;
+          prospect_id?: string | null;
+          admission_id: string;
+          created_at?: string;
+        };
+        Update: {
+          request_id?: string;
+          actor_id?: string;
+          payload?: Json;
+          prospect_id?: string | null;
+          admission_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      admission_physical_consent_receipts: {
+        Row: {
+          id: string;
+          request_id: string;
+          request_payload: Json;
+          admission_id: string;
+          version: number;
+          guardian_signed_on: string;
+          student_signed: boolean;
+          physical_copy_reference: string | null;
+          received_by: string;
+          received_at: string;
+          reason: string;
+          identity_revision: number;
+        };
+        Insert: {
+          id?: string;
+          request_id: string;
+          request_payload: Json;
+          admission_id: string;
+          version: number;
+          guardian_signed_on: string;
+          student_signed?: boolean;
+          physical_copy_reference?: string | null;
+          received_by: string;
+          received_at?: string;
+          reason: string;
+          identity_revision?: number;
+        };
+        Update: {
+          id?: string;
+          request_id?: string;
+          request_payload?: Json;
+          admission_id?: string;
+          version?: number;
+          guardian_signed_on?: string;
+          student_signed?: boolean;
+          physical_copy_reference?: string | null;
+          received_by?: string;
+          received_at?: string;
+          reason?: string;
+          identity_revision?: number;
+        };
+        Relationships: [];
+      };
+      payment_methods: {
+        Row: {
+          id: string;
+          organization_id: string;
+          code: string;
+          name: string;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          code: string;
+          name: string;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          code?: string;
+          name?: string;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       admission_invoices: {
         Row: {
           id: string;
@@ -1573,30 +1789,6 @@ export type Database = {
           name?: string;
           charge_type?: string;
           amount?: number;
-        };
-        Relationships: [];
-      };
-      admission_command_keys: {
-        Row: {
-          request_id: string;
-          actor_id: string;
-          payload: Json;
-          result: Json;
-          created_at: string;
-        };
-        Insert: {
-          request_id: string;
-          actor_id: string;
-          payload: Json;
-          result: Json;
-          created_at?: string;
-        };
-        Update: {
-          request_id?: string;
-          actor_id?: string;
-          payload?: Json;
-          result?: Json;
-          created_at?: string;
         };
         Relationships: [];
       };
@@ -1738,6 +1930,8 @@ export type Database = {
           amount: number;
           created_at: string;
           applied_by: string | null;
+          category: string;
+          description: string | null;
         };
         Insert: {
           id?: string;
@@ -1747,6 +1941,8 @@ export type Database = {
           amount: number;
           created_at?: string;
           applied_by?: string | null;
+          category?: string;
+          description?: string | null;
         };
         Update: {
           id?: string;
@@ -1756,6 +1952,8 @@ export type Database = {
           amount?: number;
           created_at?: string;
           applied_by?: string | null;
+          category?: string;
+          description?: string | null;
         };
         Relationships: [];
       };
@@ -1882,564 +2080,6 @@ export type Database = {
           invoice_count?: number;
           gross_total?: number;
           reason?: string;
-        };
-        Relationships: [];
-      };
-      student_merges: {
-        Row: {
-          id: string;
-          source_id: string;
-          target_id: string;
-          source_snapshot: Json;
-          target_snapshot: Json;
-          created_at: string;
-          authorized_by: string;
-          authorization_reason: string;
-        };
-        Insert: {
-          id?: string;
-          source_id: string;
-          target_id: string;
-          source_snapshot: Json;
-          target_snapshot: Json;
-          created_at?: string;
-          authorized_by: string;
-          authorization_reason: string;
-        };
-        Update: {
-          id?: string;
-          source_id?: string;
-          target_id?: string;
-          source_snapshot?: Json;
-          target_snapshot?: Json;
-          created_at?: string;
-          authorized_by?: string;
-          authorization_reason?: string;
-        };
-        Relationships: [];
-      };
-      enrollment_transfers: {
-        Row: {
-          id: string;
-          student_id: string;
-          admission_id: string;
-          from_enrollment_id: string;
-          to_enrollment_id: string;
-          from_batch_id: string;
-          to_batch_id: string;
-          capacity_policy_version_id: string;
-          transferred_on: string;
-          created_at: string;
-          authorized_by: string;
-          authorization_reason: string;
-        };
-        Insert: {
-          id?: string;
-          student_id: string;
-          admission_id: string;
-          from_enrollment_id: string;
-          to_enrollment_id: string;
-          from_batch_id: string;
-          to_batch_id: string;
-          capacity_policy_version_id: string;
-          transferred_on: string;
-          created_at?: string;
-          authorized_by: string;
-          authorization_reason: string;
-        };
-        Update: {
-          id?: string;
-          student_id?: string;
-          admission_id?: string;
-          from_enrollment_id?: string;
-          to_enrollment_id?: string;
-          from_batch_id?: string;
-          to_batch_id?: string;
-          capacity_policy_version_id?: string;
-          transferred_on?: string;
-          created_at?: string;
-          authorized_by?: string;
-          authorization_reason?: string;
-        };
-        Relationships: [];
-      };
-      academic_rooms: {
-        Row: {
-          id: string;
-          branch_id: string;
-          name: string;
-          capacity: number;
-          created_by: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          branch_id: string;
-          name: string;
-          capacity: number;
-          created_by: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          branch_id?: string;
-          name?: string;
-          capacity?: number;
-          created_by?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      curriculum_versions: {
-        Row: {
-          id: string;
-          batch_id: string;
-          subject_id: string;
-          version: number;
-          title: string;
-          units: Json;
-          reason: string;
-          published_by: string;
-          published_at: string;
-        };
-        Insert: {
-          id?: string;
-          batch_id: string;
-          subject_id: string;
-          version: number;
-          title: string;
-          units: Json;
-          reason: string;
-          published_by: string;
-          published_at?: string;
-        };
-        Update: {
-          id?: string;
-          batch_id?: string;
-          subject_id?: string;
-          version?: number;
-          title?: string;
-          units?: Json;
-          reason?: string;
-          published_by?: string;
-          published_at?: string;
-        };
-        Relationships: [];
-      };
-      academic_routines: {
-        Row: {
-          id: string;
-          batch_id: string;
-          subject_id: string;
-          teacher_id: string;
-          room_id: string;
-          weekday: number;
-          start_time: string;
-          end_time: string;
-          starts_on: string;
-          ends_on: string;
-          created_by: string;
-          created_at: string;
-          retired_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          batch_id: string;
-          subject_id: string;
-          teacher_id: string;
-          room_id: string;
-          weekday: number;
-          start_time: string;
-          end_time: string;
-          starts_on: string;
-          ends_on: string;
-          created_by: string;
-          created_at?: string;
-          retired_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          batch_id?: string;
-          subject_id?: string;
-          teacher_id?: string;
-          room_id?: string;
-          weekday?: number;
-          start_time?: string;
-          end_time?: string;
-          starts_on?: string;
-          ends_on?: string;
-          created_by?: string;
-          created_at?: string;
-          retired_at?: string | null;
-        };
-        Relationships: [];
-      };
-      class_sessions: {
-        Row: {
-          id: string;
-          routine_id: string | null;
-          batch_id: string;
-          subject_id: string;
-          teacher_id: string;
-          room_id: string;
-          curriculum_version_id: string | null;
-          planned_scope: string;
-          session_date: string;
-          starts_at: string;
-          ends_at: string;
-          status: string;
-          cancellation_reason: string | null;
-          cancelled_by: string | null;
-          cancelled_at: string | null;
-          created_by: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          routine_id?: string | null;
-          batch_id: string;
-          subject_id: string;
-          teacher_id: string;
-          room_id: string;
-          curriculum_version_id?: string | null;
-          planned_scope: string;
-          session_date: string;
-          starts_at: string;
-          ends_at: string;
-          status?: string;
-          cancellation_reason?: string | null;
-          cancelled_by?: string | null;
-          cancelled_at?: string | null;
-          created_by: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          routine_id?: string | null;
-          batch_id?: string;
-          subject_id?: string;
-          teacher_id?: string;
-          room_id?: string;
-          curriculum_version_id?: string | null;
-          planned_scope?: string;
-          session_date?: string;
-          starts_at?: string;
-          ends_at?: string;
-          status?: string;
-          cancellation_reason?: string | null;
-          cancelled_by?: string | null;
-          cancelled_at?: string | null;
-          created_by?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      attendance_submissions: {
-        Row: {
-          id: string;
-          session_id: string;
-          revision: number;
-          entries: Json;
-          reason: string;
-          status: string;
-          recorded_by: string;
-          created_at: string;
-          approval_id: string | null;
-          reviewer_id: string | null;
-          review_note: string | null;
-          reviewed_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          session_id: string;
-          revision: number;
-          entries: Json;
-          reason: string;
-          status?: string;
-          recorded_by: string;
-          created_at?: string;
-          approval_id?: string | null;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          reviewed_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          session_id?: string;
-          revision?: number;
-          entries?: Json;
-          reason?: string;
-          status?: string;
-          recorded_by?: string;
-          created_at?: string;
-          approval_id?: string | null;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          reviewed_at?: string | null;
-        };
-        Relationships: [];
-      };
-      programme_offering_subjects: {
-        Row: {
-          offering_id: string;
-          subject_id: string;
-          sort_order: number;
-        };
-        Insert: {
-          offering_id: string;
-          subject_id: string;
-          sort_order?: number;
-        };
-        Update: {
-          offering_id?: string;
-          subject_id?: string;
-          sort_order?: number;
-        };
-        Relationships: [];
-      };
-      class_logs: {
-        Row: {
-          id: string;
-          session_id: string;
-          revision: number;
-          previous_log_id: string | null;
-          status: string;
-          unit_progress: Json;
-          class_summary: string;
-          unfinished_reason: string;
-          homework: string;
-          next_session_plan: string;
-          reason: string;
-          authored_by: string;
-          created_at: string;
-          submitted_at: string | null;
-          reviewer_id: string | null;
-          review_note: string | null;
-          reviewed_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          session_id: string;
-          revision: number;
-          previous_log_id?: string | null;
-          status: string;
-          unit_progress?: Json;
-          class_summary: string;
-          unfinished_reason?: string;
-          homework?: string;
-          next_session_plan?: string;
-          reason: string;
-          authored_by: string;
-          created_at?: string;
-          submitted_at?: string | null;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          reviewed_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          session_id?: string;
-          revision?: number;
-          previous_log_id?: string | null;
-          status?: string;
-          unit_progress?: Json;
-          class_summary?: string;
-          unfinished_reason?: string;
-          homework?: string;
-          next_session_plan?: string;
-          reason?: string;
-          authored_by?: string;
-          created_at?: string;
-          submitted_at?: string | null;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          reviewed_at?: string | null;
-        };
-        Relationships: [];
-      };
-      question_bank_items: {
-        Row: {
-          id: string;
-          root_id: string | null;
-          revision: number;
-          batch_id: string;
-          subject_id: string;
-          curriculum_version_id: string | null;
-          topic: string;
-          difficulty: string;
-          question_type: string;
-          prompt: string;
-          choices: Json;
-          answer_key: string;
-          explanation: string | null;
-          status: string;
-          author_id: string;
-          reviewer_id: string | null;
-          review_note: string | null;
-          created_at: string;
-          submitted_at: string | null;
-          reviewed_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          root_id?: string | null;
-          revision?: number;
-          batch_id: string;
-          subject_id: string;
-          curriculum_version_id?: string | null;
-          topic: string;
-          difficulty: string;
-          question_type: string;
-          prompt: string;
-          choices?: Json;
-          answer_key: string;
-          explanation?: string | null;
-          status?: string;
-          author_id: string;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          created_at?: string;
-          submitted_at?: string | null;
-          reviewed_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          root_id?: string | null;
-          revision?: number;
-          batch_id?: string;
-          subject_id?: string;
-          curriculum_version_id?: string | null;
-          topic?: string;
-          difficulty?: string;
-          question_type?: string;
-          prompt?: string;
-          choices?: Json;
-          answer_key?: string;
-          explanation?: string | null;
-          status?: string;
-          author_id?: string;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          created_at?: string;
-          submitted_at?: string | null;
-          reviewed_at?: string | null;
-        };
-        Relationships: [];
-      };
-      homework_checks: {
-        Row: {
-          id: string;
-          class_log_id: string;
-          enrollment_id: string;
-          revision: number;
-          status: string;
-          submitted_on: string | null;
-          feedback: string;
-          recorded_by: string;
-          recorded_at: string;
-        };
-        Insert: {
-          id?: string;
-          class_log_id: string;
-          enrollment_id: string;
-          revision: number;
-          status: string;
-          submitted_on?: string | null;
-          feedback?: string;
-          recorded_by: string;
-          recorded_at?: string;
-        };
-        Update: {
-          id?: string;
-          class_log_id?: string;
-          enrollment_id?: string;
-          revision?: number;
-          status?: string;
-          submitted_on?: string | null;
-          feedback?: string;
-          recorded_by?: string;
-          recorded_at?: string;
-        };
-        Relationships: [];
-      };
-      academic_assessments: {
-        Row: {
-          id: string;
-          batch_id: string;
-          subject_id: string;
-          title: string;
-          assessment_date: string;
-          max_marks: number;
-          status: string;
-          author_id: string;
-          created_at: string;
-          published_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          batch_id: string;
-          subject_id: string;
-          title: string;
-          assessment_date: string;
-          max_marks: number;
-          status?: string;
-          author_id: string;
-          created_at?: string;
-          published_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          batch_id?: string;
-          subject_id?: string;
-          title?: string;
-          assessment_date?: string;
-          max_marks?: number;
-          status?: string;
-          author_id?: string;
-          created_at?: string;
-          published_at?: string | null;
-        };
-        Relationships: [];
-      };
-      assessment_result_submissions: {
-        Row: {
-          id: string;
-          assessment_id: string;
-          revision: number;
-          entries: Json;
-          status: string;
-          author_id: string;
-          reviewer_id: string | null;
-          review_note: string | null;
-          created_at: string;
-          submitted_at: string | null;
-          reviewed_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          assessment_id: string;
-          revision: number;
-          entries: Json;
-          status?: string;
-          author_id: string;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          created_at?: string;
-          submitted_at?: string | null;
-          reviewed_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          assessment_id?: string;
-          revision?: number;
-          entries?: Json;
-          status?: string;
-          author_id?: string;
-          reviewer_id?: string | null;
-          review_note?: string | null;
-          created_at?: string;
-          submitted_at?: string | null;
-          reviewed_at?: string | null;
         };
         Relationships: [];
       };
@@ -3351,6 +2991,9 @@ export type Database = {
           contact_note: string | null;
           created_by: string | null;
           created_at: string;
+          email: string | null;
+          profile_id: string | null;
+          is_active: boolean;
         };
         Insert: {
           id?: string;
@@ -3362,6 +3005,9 @@ export type Database = {
           contact_note?: string | null;
           created_by?: string | null;
           created_at?: string;
+          email?: string | null;
+          profile_id?: string | null;
+          is_active?: boolean;
         };
         Update: {
           id?: string;
@@ -3373,6 +3019,9 @@ export type Database = {
           contact_note?: string | null;
           created_by?: string | null;
           created_at?: string;
+          email?: string | null;
+          profile_id?: string | null;
+          is_active?: boolean;
         };
         Relationships: [];
       };
@@ -3454,126 +3103,567 @@ export type Database = {
         };
         Relationships: [];
       };
-      staff_admission_intake_requests: {
+      staff_subject_assignments: {
         Row: {
-          request_id: string;
-          actor_id: string;
-          payload: Json;
-          prospect_id: string | null;
-          admission_id: string;
+          id: string;
+          staff_id: string;
+          subject_id: string;
+          effective_from: string;
+          effective_to: string | null;
+          is_primary: boolean;
+          assigned_by: string | null;
           created_at: string;
         };
         Insert: {
-          request_id: string;
-          actor_id: string;
-          payload: Json;
-          prospect_id?: string | null;
-          admission_id: string;
+          id?: string;
+          staff_id: string;
+          subject_id: string;
+          effective_from?: string;
+          effective_to?: string | null;
+          is_primary?: boolean;
+          assigned_by?: string | null;
           created_at?: string;
         };
         Update: {
-          request_id?: string;
-          actor_id?: string;
-          payload?: Json;
-          prospect_id?: string | null;
-          admission_id?: string;
+          id?: string;
+          staff_id?: string;
+          subject_id?: string;
+          effective_from?: string;
+          effective_to?: string | null;
+          is_primary?: boolean;
+          assigned_by?: string | null;
           created_at?: string;
         };
         Relationships: [];
       };
-      admission_physical_consent_receipts: {
+      academic_rooms: {
         Row: {
           id: string;
-          request_id: string;
-          request_payload: Json;
-          admission_id: string;
-          version: number;
-          guardian_signed_on: string;
-          student_signed: boolean;
-          physical_copy_reference: string | null;
-          received_by: string;
-          received_at: string;
-          reason: string;
-          identity_revision: number;
+          branch_id: string;
+          name: string;
+          capacity: number;
+          created_by: string;
+          created_at: string;
         };
         Insert: {
           id?: string;
-          request_id: string;
-          request_payload: Json;
-          admission_id: string;
-          version: number;
-          guardian_signed_on: string;
-          student_signed?: boolean;
-          physical_copy_reference?: string | null;
-          received_by: string;
-          received_at?: string;
-          reason: string;
-          identity_revision?: number;
+          branch_id: string;
+          name: string;
+          capacity: number;
+          created_by: string;
+          created_at?: string;
         };
         Update: {
           id?: string;
-          request_id?: string;
-          request_payload?: Json;
-          admission_id?: string;
-          version?: number;
-          guardian_signed_on?: string;
-          student_signed?: boolean;
-          physical_copy_reference?: string | null;
-          received_by?: string;
-          received_at?: string;
-          reason?: string;
-          identity_revision?: number;
+          branch_id?: string;
+          name?: string;
+          capacity?: number;
+          created_by?: string;
+          created_at?: string;
         };
         Relationships: [];
       };
-      staff_access_requests: {
+      curriculum_versions: {
         Row: {
           id: string;
-          full_name: string;
-          email: string;
-          mobile: string;
-          requested_role: string;
-          purpose: string;
+          batch_id: string;
+          subject_id: string;
+          version: number;
+          title: string;
+          units: Json;
+          reason: string;
+          published_by: string;
+          published_at: string;
+        };
+        Insert: {
+          id?: string;
+          batch_id: string;
+          subject_id: string;
+          version: number;
+          title: string;
+          units: Json;
+          reason: string;
+          published_by: string;
+          published_at?: string;
+        };
+        Update: {
+          id?: string;
+          batch_id?: string;
+          subject_id?: string;
+          version?: number;
+          title?: string;
+          units?: Json;
+          reason?: string;
+          published_by?: string;
+          published_at?: string;
+        };
+        Relationships: [];
+      };
+      academic_routines: {
+        Row: {
+          id: string;
+          batch_id: string;
+          subject_id: string;
+          teacher_id: string;
+          room_id: string;
+          weekday: number;
+          start_time: string;
+          end_time: string;
+          starts_on: string;
+          ends_on: string;
+          created_by: string;
+          created_at: string;
+          retired_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          batch_id: string;
+          subject_id: string;
+          teacher_id: string;
+          room_id: string;
+          weekday: number;
+          start_time: string;
+          end_time: string;
+          starts_on: string;
+          ends_on: string;
+          created_by: string;
+          created_at?: string;
+          retired_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          batch_id?: string;
+          subject_id?: string;
+          teacher_id?: string;
+          room_id?: string;
+          weekday?: number;
+          start_time?: string;
+          end_time?: string;
+          starts_on?: string;
+          ends_on?: string;
+          created_by?: string;
+          created_at?: string;
+          retired_at?: string | null;
+        };
+        Relationships: [];
+      };
+      class_sessions: {
+        Row: {
+          id: string;
+          routine_id: string | null;
+          batch_id: string;
+          subject_id: string;
+          teacher_id: string;
+          room_id: string;
+          curriculum_version_id: string | null;
+          planned_scope: string;
+          session_date: string;
+          starts_at: string;
+          ends_at: string;
           status: string;
-          assigned_role: string | null;
-          profile_id: string | null;
-          reviewed_by: string | null;
+          cancellation_reason: string | null;
+          cancelled_by: string | null;
+          cancelled_at: string | null;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          routine_id?: string | null;
+          batch_id: string;
+          subject_id: string;
+          teacher_id: string;
+          room_id: string;
+          curriculum_version_id?: string | null;
+          planned_scope: string;
+          session_date: string;
+          starts_at: string;
+          ends_at: string;
+          status?: string;
+          cancellation_reason?: string | null;
+          cancelled_by?: string | null;
+          cancelled_at?: string | null;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          routine_id?: string | null;
+          batch_id?: string;
+          subject_id?: string;
+          teacher_id?: string;
+          room_id?: string;
+          curriculum_version_id?: string | null;
+          planned_scope?: string;
+          session_date?: string;
+          starts_at?: string;
+          ends_at?: string;
+          status?: string;
+          cancellation_reason?: string | null;
+          cancelled_by?: string | null;
+          cancelled_at?: string | null;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      attendance_submissions: {
+        Row: {
+          id: string;
+          session_id: string;
+          revision: number;
+          entries: Json;
+          reason: string;
+          status: string;
+          recorded_by: string;
+          created_at: string;
+          approval_id: string | null;
+          reviewer_id: string | null;
+          review_note: string | null;
           reviewed_at: string | null;
-          invitation_sent_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          revision: number;
+          entries: Json;
+          reason: string;
+          status?: string;
+          recorded_by: string;
+          created_at?: string;
+          approval_id?: string | null;
+          reviewer_id?: string | null;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          revision?: number;
+          entries?: Json;
+          reason?: string;
+          status?: string;
+          recorded_by?: string;
+          created_at?: string;
+          approval_id?: string | null;
+          reviewer_id?: string | null;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      class_logs: {
+        Row: {
+          id: string;
+          session_id: string;
+          revision: number;
+          previous_log_id: string | null;
+          status: string;
+          unit_progress: Json;
+          class_summary: string;
+          unfinished_reason: string;
+          homework: string;
+          next_session_plan: string;
+          reason: string;
+          authored_by: string;
+          created_at: string;
+          submitted_at: string | null;
+          reviewer_id: string | null;
+          review_note: string | null;
+          reviewed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          revision: number;
+          previous_log_id?: string | null;
+          status: string;
+          unit_progress?: Json;
+          class_summary: string;
+          unfinished_reason?: string;
+          homework?: string;
+          next_session_plan?: string;
+          reason: string;
+          authored_by: string;
+          created_at?: string;
+          submitted_at?: string | null;
+          reviewer_id?: string | null;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          revision?: number;
+          previous_log_id?: string | null;
+          status?: string;
+          unit_progress?: Json;
+          class_summary?: string;
+          unfinished_reason?: string;
+          homework?: string;
+          next_session_plan?: string;
+          reason?: string;
+          authored_by?: string;
+          created_at?: string;
+          submitted_at?: string | null;
+          reviewer_id?: string | null;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      question_bank_items: {
+        Row: {
+          id: string;
+          root_id: string | null;
+          revision: number;
+          batch_id: string;
+          subject_id: string;
+          curriculum_version_id: string | null;
+          topic: string;
+          difficulty: string;
+          question_type: string;
+          prompt: string;
+          choices: Json;
+          answer_key: string;
+          explanation: string | null;
+          status: string;
+          author_id: string;
+          reviewer_id: string | null;
           review_note: string | null;
           created_at: string;
+          submitted_at: string | null;
+          reviewed_at: string | null;
         };
         Insert: {
           id?: string;
-          full_name: string;
-          email: string;
-          mobile: string;
-          requested_role: string;
-          purpose: string;
+          root_id?: string | null;
+          revision?: number;
+          batch_id: string;
+          subject_id: string;
+          curriculum_version_id?: string | null;
+          topic: string;
+          difficulty: string;
+          question_type: string;
+          prompt: string;
+          choices?: Json;
+          answer_key: string;
+          explanation?: string | null;
           status?: string;
-          assigned_role?: string | null;
-          profile_id?: string | null;
-          reviewed_by?: string | null;
-          reviewed_at?: string | null;
-          invitation_sent_at?: string | null;
+          author_id: string;
+          reviewer_id?: string | null;
           review_note?: string | null;
           created_at?: string;
+          submitted_at?: string | null;
+          reviewed_at?: string | null;
         };
         Update: {
           id?: string;
-          full_name?: string;
-          email?: string;
-          mobile?: string;
-          requested_role?: string;
-          purpose?: string;
+          root_id?: string | null;
+          revision?: number;
+          batch_id?: string;
+          subject_id?: string;
+          curriculum_version_id?: string | null;
+          topic?: string;
+          difficulty?: string;
+          question_type?: string;
+          prompt?: string;
+          choices?: Json;
+          answer_key?: string;
+          explanation?: string | null;
           status?: string;
-          assigned_role?: string | null;
-          profile_id?: string | null;
-          reviewed_by?: string | null;
-          reviewed_at?: string | null;
-          invitation_sent_at?: string | null;
+          author_id?: string;
+          reviewer_id?: string | null;
           review_note?: string | null;
           created_at?: string;
+          submitted_at?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      homework_checks: {
+        Row: {
+          id: string;
+          class_log_id: string;
+          enrollment_id: string;
+          revision: number;
+          status: string;
+          submitted_on: string | null;
+          feedback: string;
+          recorded_by: string;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          class_log_id: string;
+          enrollment_id: string;
+          revision: number;
+          status: string;
+          submitted_on?: string | null;
+          feedback?: string;
+          recorded_by: string;
+          recorded_at?: string;
+        };
+        Update: {
+          id?: string;
+          class_log_id?: string;
+          enrollment_id?: string;
+          revision?: number;
+          status?: string;
+          submitted_on?: string | null;
+          feedback?: string;
+          recorded_by?: string;
+          recorded_at?: string;
+        };
+        Relationships: [];
+      };
+      academic_assessments: {
+        Row: {
+          id: string;
+          batch_id: string;
+          subject_id: string;
+          title: string;
+          assessment_date: string;
+          max_marks: number;
+          status: string;
+          author_id: string;
+          created_at: string;
+          published_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          batch_id: string;
+          subject_id: string;
+          title: string;
+          assessment_date: string;
+          max_marks: number;
+          status?: string;
+          author_id: string;
+          created_at?: string;
+          published_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          batch_id?: string;
+          subject_id?: string;
+          title?: string;
+          assessment_date?: string;
+          max_marks?: number;
+          status?: string;
+          author_id?: string;
+          created_at?: string;
+          published_at?: string | null;
+        };
+        Relationships: [];
+      };
+      assessment_result_submissions: {
+        Row: {
+          id: string;
+          assessment_id: string;
+          revision: number;
+          entries: Json;
+          status: string;
+          author_id: string;
+          reviewer_id: string | null;
+          review_note: string | null;
+          created_at: string;
+          submitted_at: string | null;
+          reviewed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          assessment_id: string;
+          revision: number;
+          entries: Json;
+          status?: string;
+          author_id: string;
+          reviewer_id?: string | null;
+          review_note?: string | null;
+          created_at?: string;
+          submitted_at?: string | null;
+          reviewed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          assessment_id?: string;
+          revision?: number;
+          entries?: Json;
+          status?: string;
+          author_id?: string;
+          reviewer_id?: string | null;
+          review_note?: string | null;
+          created_at?: string;
+          submitted_at?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      referral_reward_contracts: {
+        Row: {
+          admission_id: string;
+          referrer_id: string;
+          billing_period: string;
+          bonus_percent: number;
+          policy_version_id: string;
+          created_at: string;
+        };
+        Insert: {
+          admission_id: string;
+          referrer_id: string;
+          billing_period: string;
+          bonus_percent: number;
+          policy_version_id: string;
+          created_at?: string;
+        };
+        Update: {
+          admission_id?: string;
+          referrer_id?: string;
+          billing_period?: string;
+          bonus_percent?: number;
+          policy_version_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      referral_reward_entries: {
+        Row: {
+          id: string;
+          admission_id: string;
+          referrer_id: string;
+          amount: number;
+          net_collected: number;
+          bonus_percent: number;
+          journal_id: string | null;
+          payable_id: string | null;
+          source_reference: string | null;
+          created_at: string;
+          actor_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          admission_id: string;
+          referrer_id: string;
+          amount: number;
+          net_collected: number;
+          bonus_percent: number;
+          journal_id?: string | null;
+          payable_id?: string | null;
+          source_reference?: string | null;
+          created_at?: string;
+          actor_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          admission_id?: string;
+          referrer_id?: string;
+          amount?: number;
+          net_collected?: number;
+          bonus_percent?: number;
+          journal_id?: string | null;
+          payable_id?: string | null;
+          source_reference?: string | null;
+          created_at?: string;
+          actor_id?: string | null;
         };
         Relationships: [];
       };
@@ -3616,6 +3706,14 @@ export type Database = {
         Args: Record<string, never>;
         Returns: string;
       };
+      generate_prospect_no: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+      generate_student_no: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
       has_permission: {
         Args: {
           p_permission_code: string;
@@ -3632,14 +3730,6 @@ export type Database = {
           p_full_name?: string | null;
         };
         Returns: Json;
-      };
-      generate_prospect_no: {
-        Args: Record<string, never>;
-        Returns: string;
-      };
-      generate_student_no: {
-        Args: Record<string, never>;
-        Returns: string;
       };
       submit_public_interest: {
         Args: {
@@ -3699,84 +3789,6 @@ export type Database = {
         };
         Returns: Json;
       };
-      admission_payment_satisfied: {
-        Args: {
-          p_admission_id: string;
-        };
-        Returns: boolean;
-      };
-      post_admission_payment: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      admission_workspace: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      invoice_balance: {
-        Args: {
-          p_invoice_id: string;
-        };
-        Returns: Json;
-      };
-      apply_invoice_discounts: {
-        Args: {
-          p_invoice_id: string;
-        };
-        Returns: undefined;
-      };
-      billing_preview: {
-        Args: {
-          p_period: string;
-          p_term_id?: string | null;
-        };
-        Returns: Json;
-      };
-      finance_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      student_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      student_profile_workspace: {
-        Args: {
-          p_student_id: string;
-        };
-        Returns: Json;
-      };
-      can_access_class_session: {
-        Args: {
-          p_session: string;
-        };
-        Returns: boolean;
-      };
-      academic_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      academic_workspace: {
-        Args: {
-          p_from: string;
-          p_to: string;
-        };
-        Returns: Json;
-      };
-      class_session_workspace: {
-        Args: {
-          p_session_id: string;
-        };
-        Returns: Json;
-      };
       manage_crm_master_record: {
         Args: {
           p_input: Json;
@@ -3793,62 +3805,245 @@ export type Database = {
         Args: Record<string, never>;
         Returns: Json;
       };
-      class_log_workspace: {
-        Args: {
-          p_session_id: string;
-        };
-        Returns: Json;
-      };
-      class_log_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      question_bank_workspace: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      question_bank_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      homework_workspace: {
-        Args: {
-          p_session_id: string;
-        };
-        Returns: Json;
-      };
-      homework_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      can_access_assessment: {
-        Args: {
-          p_batch: string;
-          p_subject: string;
-        };
-        Returns: boolean;
-      };
-      assessment_workspace: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      assessment_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
       link_staff_profile_by_email: {
         Args: {
           p_email: string;
         };
         Returns: string;
+      };
+      admin_review_queue: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      save_fee_plan: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      save_offering_discount_policy: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      academy_setup_status: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      complete_academy_setup: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      record_lifecycle_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      request_staff_access: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      review_staff_access: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      edit_staff_record: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      save_academy_identity: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      create_admission_directory_choice: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      audit_event_list: {
+        Args: {
+          p_correlation?: string | null;
+        };
+        Returns: Json;
+      };
+      prospect_assignment_options: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      assign_prospect_staff: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      create_programme_offering: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      update_programme_offering: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      invoice_balance: {
+        Args: {
+          p_invoice_id: string;
+        };
+        Returns: Json;
+      };
+      admission_payment_satisfied: {
+        Args: {
+          p_admission_id: string;
+        };
+        Returns: boolean;
+      };
+      post_admission_payment: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      admission_workspace: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      apply_invoice_discounts: {
+        Args: {
+          p_invoice_id: string;
+        };
+        Returns: undefined;
+      };
+      billing_preview: {
+        Args: {
+          p_period: string;
+          p_term_id?: string | null;
+        };
+        Returns: Json;
+      };
+      student_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      student_profile_workspace: {
+        Args: {
+          p_student_id: string;
+        };
+        Returns: Json;
+      };
+      batch_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      record_physical_admission_consent: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      admission_offering_options: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      admission_discount_options: {
+        Args: {
+          p_admission_id: string;
+        };
+        Returns: Json;
+      };
+      edit_admission_identity: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      admission_review_checks: {
+        Args: {
+          p_admission_id: string;
+        };
+        Returns: Json;
+      };
+      create_staff_admission_intake: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      admission_directory_options: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      save_admission_extra_charge: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      deactivate_admission_extra_charge: {
+        Args: {
+          p_admission_id: string;
+          p_charge_id: string;
+        };
+        Returns: undefined;
+      };
+      admission_case_detail: {
+        Args: {
+          p_admission_id: string;
+        };
+        Returns: Json;
+      };
+      correct_admission_placement: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      admission_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      close_student_enrollment: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      create_prospect_admission: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      execute_admission_stage: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      finance_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
       };
       finance_account_balance: {
         Args: {
@@ -3939,195 +4134,8 @@ export type Database = {
         };
         Returns: Json;
       };
-      batch_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      record_physical_admission_consent: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      admin_review_queue: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      attendance_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      save_fee_plan: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      admission_offering_options: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      save_offering_discount_policy: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      admission_discount_options: {
-        Args: {
-          p_admission_id: string;
-        };
-        Returns: Json;
-      };
-      academy_setup_status: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      complete_academy_setup: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      record_lifecycle_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      request_staff_access: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      review_staff_access: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      edit_admission_identity: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      admission_review_checks: {
-        Args: {
-          p_admission_id: string;
-        };
-        Returns: Json;
-      };
-      create_staff_admission_intake: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      edit_staff_record: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      save_academy_identity: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      admission_directory_options: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      create_admission_directory_choice: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      save_admission_extra_charge: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      deactivate_admission_extra_charge: {
-        Args: {
-          p_admission_id: string;
-          p_charge_id: string;
-        };
-        Returns: undefined;
-      };
-      admission_case_detail: {
-        Args: {
-          p_admission_id: string;
-        };
-        Returns: Json;
-      };
-      correct_admission_placement: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      admission_command: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      audit_event_list: {
-        Args: {
-          p_correlation?: string | null;
-        };
-        Returns: Json;
-      };
       finance_workspace: {
         Args: Record<string, never>;
-        Returns: Json;
-      };
-      close_student_enrollment: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      prospect_assignment_options: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      assign_prospect_staff: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      create_prospect_admission: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      create_programme_offering: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      update_programme_offering: {
-        Args: {
-          p_input: Json;
-        };
-        Returns: Json;
-      };
-      execute_admission_stage: {
-        Args: {
-          p_input: Json;
-        };
         Returns: Json;
       };
       apply_finance_adjustment: {
@@ -4137,6 +4145,140 @@ export type Database = {
         Returns: Json;
       };
       post_accounting_operation: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      can_access_class_session: {
+        Args: {
+          p_session: string;
+        };
+        Returns: boolean;
+      };
+      academic_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      academic_workspace: {
+        Args: {
+          p_from: string;
+          p_to: string;
+        };
+        Returns: Json;
+      };
+      class_session_workspace: {
+        Args: {
+          p_session_id: string;
+        };
+        Returns: Json;
+      };
+      class_log_workspace: {
+        Args: {
+          p_session_id: string;
+        };
+        Returns: Json;
+      };
+      class_log_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      question_bank_workspace: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      question_bank_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      homework_workspace: {
+        Args: {
+          p_session_id: string;
+        };
+        Returns: Json;
+      };
+      homework_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      can_access_assessment: {
+        Args: {
+          p_batch: string;
+          p_subject: string;
+        };
+        Returns: boolean;
+      };
+      assessment_workspace: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      assessment_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      attendance_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      referral_invoice_collections: {
+        Args: {
+          p_admission_id: string;
+        };
+        Returns: Json;
+      };
+      sync_referral_reward: {
+        Args: {
+          p_admission_id: string;
+        };
+        Returns: undefined;
+      };
+      referrer_paid: {
+        Args: {
+          p_referrer: string;
+        };
+        Returns: number;
+      };
+      referrer_workspace: {
+        Args: {
+          p_referrer_id?: string | null;
+        };
+        Returns: Json;
+      };
+      manage_referrer: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      settle_referrer_reward: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      collect_student_payment: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      finance_operating_summary: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      save_referral_operating_rules: {
         Args: {
           p_input: Json;
         };

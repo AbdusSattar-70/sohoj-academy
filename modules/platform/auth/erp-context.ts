@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getVerifiedUser } from "@/lib/supabase/server";
 import type { ErpContext } from "@/types/erp";
 
 const contextSchema = z.object({
@@ -20,7 +20,7 @@ export const getErpContext = cache(async (): Promise<ErpContext | null> => {
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await getVerifiedUser(supabase);
 
   if (authError || !user) return null;
 

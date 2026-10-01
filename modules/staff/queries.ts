@@ -9,6 +9,7 @@ export type StaffListRow = {
   roleName: string;
   status: string;
   joinedOn: string | null;
+  details: {alternate_mobile:string|null;address:string|null;emergency_contact_name:string|null;emergency_contact_mobile:string|null;notes:string|null;profile_id:string|null;branch_id:string|null;left_on:string|null};
 };
 
 export async function getStaffList(): Promise<StaffListRow[]> {
@@ -16,7 +17,7 @@ export async function getStaffList(): Promise<StaffListRow[]> {
   const [staffQ, assignmentsQ, rolesQ] = await Promise.all([
     supabase
       .from("staff")
-      .select("id,staff_no,full_name,mobile,email,status,joined_on")
+      .select("id,staff_no,full_name,mobile,email,status,joined_on,alternate_mobile,address,emergency_contact_name,emergency_contact_mobile,notes,profile_id,branch_id,left_on")
       .order("full_name"),
     supabase
       .from("staff_role_assignments")
@@ -47,6 +48,7 @@ export async function getStaffList(): Promise<StaffListRow[]> {
     roleName: primaryRoleByStaff.get(row.id) ?? "Staff",
     status: row.status,
     joinedOn: row.joined_on,
+    details: {alternate_mobile:row.alternate_mobile,address:row.address,emergency_contact_name:row.emergency_contact_name,emergency_contact_mobile:row.emergency_contact_mobile,notes:row.notes,profile_id:row.profile_id,branch_id:row.branch_id,left_on:row.left_on},
   }));
 }
 

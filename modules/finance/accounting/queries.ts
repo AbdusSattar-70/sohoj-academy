@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 export type FinanceAccountingWorkspaceData = {
+  operatingSummary:{revenue:number;discountsAndReversals:number;expenses:number;profitLoss:number};
   permissions: string[];
   currentProfileId: string;
   staff: Array<{ id: string; name: string }>;
@@ -10,7 +11,7 @@ export type FinanceAccountingWorkspaceData = {
   externalReferrals: Array<{ admissionId:string; referrer:string; student:string; awardStatus:string|null }>;
   compensationLines: Array<{ runId: string; teacherId: string; teacher: string; amount: number }>;
   accounts: Array<{ id: string; code: string; name: string; accountType: string; subtype: string; balance: number }>;
-  payables: Array<{ id: string; number: string; type: string; beneficiary: string; amount: number; status: string; dueOn: string | null; remaining: number }>;
+  payables: Array<{ id: string; number: string; type: string; referrerId:string|null; beneficiary: string; amount: number; status: string; dueOn: string | null; remaining: number }>;
   advances: Array<{ id: string; number: string; beneficiary: string; purpose: string; requestedAmount: number; balance: number; status: string; expectedDate: string | null }>;
   expenses: Array<{ id: string; number: string; date: string; description: string; amount: number; status: string }>;
   compensation: Array<{ id: string; runNo: string; from: string; to: string; total: number; status: string }>;
@@ -24,7 +25,7 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
   const supabase = (await createClient()) as unknown as SupabaseClient;
   const context = await (await import("@/modules/platform/auth/erp-context")).requireErpContext();
   const [
-    referralResult, referralAwardsResult,
+    summaryResult, referralResult, referralAwardsResult,
     staffResult, vendorsResult, categoriesResult, linesResult, settlementsResult,
     accountsResult,
     payablesResult,
@@ -33,6 +34,7 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     compensationResult,
     movementsResult,
   ] = await Promise.all([
+    supabase.rpc("finance_operating_summary"),
     supabase.from("admission_referrals").select("admission_id,source,referrer:referrer_id(id,full_name,staff_id),admission:admission_id(identity_snapshot,status)").eq("source","REFERRED"),
     supabase.from("referral_bonus_awards").select("admission_id,status"),
     supabase.from("staff").select("id,full_name").eq("status", "ACTIVE").order("full_name"),
@@ -41,32 +43,19 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     supabase.from("teacher_compensation_lines").select("run_id,teacher_id,amount,staff:teacher_id(full_name)"),
     supabase.from("finance_payable_settlements").select("payable_id,amount"),
     supabase.from("finance_accounts").select("id,code,name,account_type,account_subtype").eq("is_active", true).order("code"),
-    supabase.from("finance_payables").select("id,payable_no,payable_type,original_amount,status,due_on,staff:staff_id(full_name),vendor:vendor_id(name),referrer:referrer_id(full_name)").neq("status", "VOIDED").order("due_on"),
+    supabase.from("finance_payables").select("id,payable_no,payable_type,referrer_id,original_amount,status,due_on,staff:staff_id(full_name),vendor:vendor_id(name),referrer:referrer_id(full_name)").neq("status", "VOIDED").order("due_on"),
     supabase.from("finance_advances").select("id,advance_no,beneficiary_type,purpose,requested_amount,status,expected_settlement_date,staff:staff_id(full_name),vendor:vendor_id(name)").order("created_at", { ascending: false }),
     supabase.from("finance_expenses").select("id,expense_no,expense_date,description,amount,status").order("expense_date", { ascending: false }),
     supabase.from("teacher_compensation_runs").select("id,run_no,period_start,period_end,total_amount,status").order("period_end", { ascending: false }),
     supabase.from("finance_advance_movements").select("advance_id,movement_type,amount"),
   ]);
 
-  for (const result of [referralResult,referralAwardsResult,staffResult,vendorsResult,categoriesResult,linesResult,settlementsResult,accountsResult, payablesResult, advancesResult, expensesResult, compensationResult, movementsResult]) {
+  for (const result of [summaryResult,referralResult,referralAwardsResult,staffResult,vendorsResult,categoriesResult,linesResult,settlementsResult,accountsResult, payablesResult, advancesResult, expensesResult, compensationResult, movementsResult]) {
     if (result.error) throw new Error(result.error.message);
   }
 
-  const accounts = await Promise.all((accountsResult.data ?? []).map(async (account) => {
-    const { data, error } = await supabase.rpc("finance_read_account_balance", {
-      p_account_id: account.id,
-      p_as_of: new Date().toISOString().slice(0, 10),
-    });
-    if (error) throw new Error(error.message);
-    return {
-      id: account.id,
-      code: account.code,
-      name: account.name,
-      accountType: account.account_type,
-      subtype: account.account_subtype,
-      balance: Number(data ?? 0),
-    };
-  }));
+  const summary=summaryResult.data as {revenue:number;discountsAndReversals:number;expenses:number;profitLoss:number;balances:Record<string,number>};
+  const accounts=(accountsResult.data??[]).map(account=>({id:account.id,code:account.code,name:account.name,accountType:account.account_type,subtype:account.account_subtype,balance:Number(summary.balances[account.id]??0)}));
 
   const advanceBalances = new Map<string, number>();
   for (const movement of movementsResult.data ?? []) {
@@ -85,6 +74,7 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     compensationLines.set(key,{ runId:row.run_id, teacherId:row.teacher_id, teacher:relatedRecord(row.staff)?.full_name ?? "Teacher", amount:(current?.amount ?? 0)+Number(row.amount) });
   }
   return {
+    operatingSummary:summary,
     permissions:context.permissions,
     currentProfileId:context.profileId,
     staff:(staffResult.data ?? []).map(x=>({id:x.id,name:x.full_name})),
@@ -98,7 +88,7 @@ export async function getFinanceAccountingWorkspace(): Promise<FinanceAccounting
     payables: (payablesResult.data ?? []).map((row) => ({
       id: row.id,
       number: row.payable_no,
-      type: row.payable_type,
+      type: row.payable_type,referrerId:row.referrer_id,
       beneficiary: relatedRecord(row.staff)?.full_name ?? relatedRecord(row.vendor)?.name ?? relatedRecord(row.referrer)?.full_name ?? "Other",
       amount: Number(row.original_amount),
       status: row.status,

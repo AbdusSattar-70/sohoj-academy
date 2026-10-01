@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 import { useState, useTransition } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -62,7 +63,7 @@ export function ClassLogForm({
       }),
     )();
   return (
-    <form
+    <ActionPanel title="Record / edit class log"><form
       onSubmit={(e) => {
         e.preventDefault();
         void submit("SAVE_DRAFT");
@@ -197,6 +198,6 @@ export function ClassLogForm({
       <p role="status" className="text-sm">
         {message}
       </p>
-    </form>
+    </form></ActionPanel>
   );
 }

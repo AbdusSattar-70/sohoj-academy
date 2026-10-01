@@ -1,3 +1,5 @@
+import { ActionPanel } from "@/components/erp/action-panel";
+import { StaffRegister } from "@/modules/staff/components/staff-register";
 import { RecordStateButton } from "@/components/erp/record-state-button";
 import { StaffEditButton } from "@/components/erp/staff-edit-button";
 import { UsersRound } from "lucide-react";
@@ -27,68 +29,14 @@ export default async function StaffPage() {
       />
 
       {can(context, "staff.manage") && (
-        <CreateStaffForm
+        <ActionPanel title="Create staff identity"><CreateStaffForm
           roles={formOptions.roles}
           subjects={formOptions.subjects}
-        />
+        /></ActionPanel>
       )}
 
       {rows.length ? (
-        <section className="overflow-hidden rounded-2xl border bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-sm">
-              <thead>
-                <tr className="border-b bg-muted/40 text-left">
-                  <th className="px-4 py-3 font-semibold">Staff ID</th>
-                  <th className="px-4 py-3 font-semibold">Name</th>
-                  <th className="px-4 py-3 font-semibold">Primary role</th>
-                  <th className="px-4 py-3 font-semibold">Contact</th>
-                  <th className="px-4 py-3 font-semibold">Joined</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id} className="border-b hover:bg-muted/30">
-                    <td className="px-4 py-3 font-semibold">{row.staffNo}</td>
-                    <td className="px-4 py-3">{row.fullName}</td>
-                    <td className="px-4 py-3">{row.roleName}</td>
-                    <td className="px-4 py-3">
-                      <p>{row.mobile ?? "—"}</p>
-                      {row.email && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {row.email}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {row.joinedOn
-                        ? new Date(row.joinedOn).toLocaleDateString()
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge value={row.status} />
-                      {can(context, "staff.manage") && (
-                        <div className="mt-2 space-y-2">
-                          <StaffEditButton
-                            id={row.id}
-                            name={row.fullName}
-                            mobile={row.mobile}
-                          />
-                          <RecordStateButton
-                            entity="staff"
-                            id={row.id}
-                            active={row.status !== "ARCHIVED"}
-                          />
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <StaffRegister rows={rows} canManage={can(context,"staff.manage")} />
       ) : (
         <EmptyState
           icon={UsersRound}

@@ -1,3 +1,4 @@
+import { MutationFeedback } from "./mutation-feedback";
 import { Suspense } from "react";
 import { WorkflowReturn } from "./workflow-return";
 import type { ReactNode } from "react";
@@ -47,6 +48,7 @@ export function ErpShell({
           <Suspense>
             <WorkflowReturn />
           </Suspense>
+          <MutationFeedback />
           {children}
         </main>
       </SidebarInset>

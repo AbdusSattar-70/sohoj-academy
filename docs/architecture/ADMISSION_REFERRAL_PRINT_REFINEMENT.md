@@ -25,3 +25,21 @@ Acquisition reward is based on net collected tuition of the first qualifying bil
 Online intake and paper share contact/address/support fields. Paper does not collect passwords or unnecessary sensitive IDs. Public preferences are never verified placement. Letterhead space is configurable through print CSS; preview before physical printing.
 
 Next work after this scope: teacher dashboard, question bank, routine/session calendar and academic operations; then assets and the remaining Finance review.
+
+## Operator path
+
+1. Business Rules → Referral and collection settings: save acquisition percentage and permitted collection-time discount/scholarship limits.
+2. Referrers: create/edit verified identity; use an existing staff account or save verified email and send secure account setup. Referrer login opens only their portal; staff retains their authorized workspace.
+3. Admission: select or create the referrer, record signed paper consent, review placement/fees and finalize. Admission discount is explicitly labelled on the invoice.
+4. Admission case or Billing: open Collect payment / discount, select an invoice and actual collection method. An optional discount/scholarship requires its reason and policy limit. A scholarship-only transaction records zero money received.
+5. Referrers: inspect collected tuition, earned amount and corrections; record actual settlement against available corrected entitlement. Negative outstanding means recovery/future offset, not another payment. Accounting shows all-time posted operating profit/loss.
+
+## Paper and online field decisions
+
+Names, verified class/placement, guardian relationship/contact and address are core; student mobile/email, date of birth, parent names, school roll, birth registration, previous results and learning/accessibility support are optional. Do not request identity documents/passwords in public intake. Present landmark is free text, area can be typed directly, and permanent address may copy present address. Public preferences are indicative, not eligibility enforcement.
+
+ERP print documents reserve space for preprinted letterhead and contain no repeated academy branding. Blank admission includes live offerings/subjects, capital-letter name boxes, wider address fields, guardian consent and a separate office-only charges/collection section. The last part is a detachable manual money receipt. A zero/unpaid admission does not create a money receipt. Printed payment/invoice amounts include English taka/paisa words; Bangla labels and names remain renderable. Public acknowledgement uses Print / Save PDF rather than the former lossy PDF encoder.
+
+## Validation and boundaries
+
+TypeScript and four isolated SQL fixtures passed. Rendered print previews confirmed two-page blank admission and one-page example invoice/acknowledgement with Bangla text. Large live catalogues or long populated records may legitimately use extra pages instead of clipping data. Verify browser Print Preview, paper margins and your actual letterhead before printing a pad. Account setup requires server-only SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_SITE_URL, Auth redirect allowlist and working email delivery. The live Supabase service and the reported development-only Performance.measure error were not directly reproduced.

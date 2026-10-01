@@ -39,6 +39,12 @@ export default async function DashboardLayout({
     );
   }
 
+  const pathname = (await headers()).get("x-erp-pathname") ?? "/dashboard";
+  const portalOnly = context.permissions.includes("referrals.portal.view") && !context.permissions.includes("dashboard.view");
+  if (context.status === "ACTIVE" && portalOnly) {
+    if (!["/dashboard/referrals", "/dashboard/account"].some(p => pathname === p || pathname.startsWith(`${p}/`))) redirect("/dashboard/referrals");
+    return <ErpShell context={context}>{children}</ErpShell>;
+  }
   if (
     context.status !== "ACTIVE" ||
     !context.permissions.includes("dashboard.view")

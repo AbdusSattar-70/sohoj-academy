@@ -171,7 +171,7 @@ export function StudentForm({
           {errors.confirmed_same_person.message}
         </p>
       )}
-      <Button type="submit" disabled={pending || !isValid || !isDirty}>
+      <Button type="submit" disabled={pending || !isValid || !isDirty} loading={pending}>
         {pending ? "Saving…" : label}
       </Button>
       <ErpFormStatus message={message} />

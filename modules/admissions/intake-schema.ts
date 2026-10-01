@@ -3,6 +3,10 @@ import { z } from "zod";
 const uuid = z.string().uuid("Choose a valid option.");
 
 export const staffAdmissionIntakeSchema = z.object({
+  studentMobile: z.string().regex(/^$|^01[3-9][0-9]{8}$/).optional(),
+  studentEmail: z.union([z.email(),z.literal("")]).optional(),
+  presentLandmark: z.string().trim().max(160).optional(),
+  permanentSameAsPresent: z.boolean().optional(),
   fatherName: z.string().trim().max(160).optional(),
   motherName: z.string().trim().max(160).optional(),
   birthRegistration: z.string().trim().max(40).optional(),

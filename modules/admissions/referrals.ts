@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function getAdmissionReferrals() {
   const db = (await createClient()) as unknown as SupabaseClient;
   const [people, staff, choices] = await Promise.all([
-    db.from("referral_people").select("id,full_name,mobile,staff_id").order("full_name"),
+    db.from("referral_people").select("id,full_name,mobile,staff_id").eq("is_active",true).order("full_name"),
     db.from("staff").select("id,full_name").eq("status","ACTIVE").order("full_name"),
     db.from("admission_referrals").select("admission_id,source,referrer_id"),
   ]);

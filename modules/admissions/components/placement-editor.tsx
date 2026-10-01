@@ -1,4 +1,5 @@
 "use client";
+import { announceSaved } from "@/components/erp/action-panel";
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { AdmissionWorkspace } from "../schema";
@@ -29,14 +30,14 @@ export function AdmissionPlacementEditor({
           reason: "Corrected academic placement with student or guardian",
         });
         setMessage(result.message);
-        if (result.ok) router.refresh();
+        if (result.ok) { announceSaved(result.message); router.refresh(); }
       } catch {
         setMessage("Could not save placement. Please try again.");
       }
     });
   }
   return (
-    <details className="rounded-xl border p-4">
+    <details data-action-panel className="rounded-xl border p-4">
       <summary className="cursor-pointer font-semibold">
         Correct programme / batch or refresh fees
       </summary>

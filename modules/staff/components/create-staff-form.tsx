@@ -1,5 +1,6 @@
 "use client";
 
+import { announceSaved } from "@/components/erp/action-panel";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -108,6 +109,7 @@ export function CreateStaffForm({
           ok: true,
           text: `Staff identity created successfully. Permanent Staff ID: ${result.staffNo}.`,
         });
+        announceSaved("Staff identity created.");
         router.refresh();
         return;
       }
