@@ -4284,6 +4284,12 @@ export type Database = {
         };
         Returns: Json;
       };
+      audit_event_page: {
+        Args: {
+          p_filters?: Json | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       approval_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";

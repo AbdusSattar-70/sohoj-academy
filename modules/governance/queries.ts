@@ -54,3 +54,9 @@ export async function getBusinessRules() {
 
   return data ?? [];
 }
+
+export type AuditPageData={rows:Pick<AuditRow,"id"|"occurred_at"|"action"|"entity_type"|"entity_id"|"reason"|"actor_profile_id"|"actor_name"|"actor_staff_no"|"actor_role_code">[];total:number;page:number;pageSize:number;activity:{date:string;admissions:number|null;invoices:number|null;grossIssued:number|null;collected:number|null;refunds:number|null}};
+export async function getAuditPage(filters:Record<string,string>):Promise<AuditPageData>{
+ const {platformClient}=await import("@/modules/platform/rpc-client");const db=await platformClient();
+ const {data,error}=await db.rpc("audit_event_page",{p_filters:filters});if(error)throw Error(error.message);return data as unknown as AuditPageData;
+}

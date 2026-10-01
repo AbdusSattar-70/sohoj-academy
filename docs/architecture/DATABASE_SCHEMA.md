@@ -18,8 +18,9 @@
 | 12 | RLS, grants, audit and integrity triggers |
 | 13 | Essential system seed and Auth profile synchronization |
 | 14 | Scoped referrer accounts, collection-based acquisition rewards, instant discounts/scholarships and full staff/intake contracts |
+| 15 | Database-paged audit search and permission-scoped daily activity |
 
-The 01–13 baseline contains 90 application tables and 113 functions. After refinement 14 the current contract has 92 application tables and 125 functions. It installs final definitions directly: no dynamic pg_get_functiondef rewriting or historical rename-and-wrap chain. Private helpers implement transactional stages; only intended RPC entry points receive client execution grants.
+The 01–13 baseline contains 90 application tables and 113 functions. After refinements 14–15 the current contract has 92 application tables and 126 functions. It installs final definitions directly: no dynamic pg_get_functiondef rewriting or historical rename-and-wrap chain. Private helpers implement transactional stages; only intended RPC entry points receive client execution grants.
 
 ## Removed duplication
 
@@ -35,7 +36,7 @@ Seed only organization/campus placeholders, staff roles/permissions, essential p
 
 No direct application INSERT/UPDATE/DELETE grants for anonymous/authenticated clients. Controlled RPCs enforce permission, scope, business transitions and audit. Financial corrections preserve posted evidence; journals remain balanced. Internal fee/policy snapshots preserve historical agreements without exposing version queues to administrators.
 
-After a deployed fresh baseline, append migration 15_<task>.sql and subsequent files. Update generated types and contract consumers together. Do not introduce a second financial/admission model.
+After a deployed fresh baseline, append migration 16_<task>.sql and subsequent files. Update generated types and contract consumers together. Do not introduce a second financial/admission model.
 
 ## Referral and collection controls
 
