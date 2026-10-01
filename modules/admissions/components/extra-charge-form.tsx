@@ -1,4 +1,5 @@
 "use client";
+import { announceSaved } from "@/components/erp/action-panel";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -39,12 +40,13 @@ export function ExtraChargeForm({
       if (r.ok) {
         request.current = crypto.randomUUID();
         form.reset();
+        announceSaved();
         router.refresh();
       }
     });
   }
   return (
-    <details className="rounded-xl border p-4">
+    <details data-action-panel className="rounded-xl border p-4">
       <summary className="cursor-pointer font-semibold">
         Additional one-time fees, if needed
       </summary>

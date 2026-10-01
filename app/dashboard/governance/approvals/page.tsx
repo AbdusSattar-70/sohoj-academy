@@ -15,15 +15,11 @@ export default async function ApprovalsPage() {
       <PageHeader
         eyebrow="Governance"
         title="Approval Register"
-        description="Sensitive workflows remain traceable from request through decision. The requester cannot approve their own request."
+        description="Teacher submissions remain traceable through administrative review. Admin admission and finance actions post directly with audit evidence."
       />
 
-      <Link
-        href="/dashboard/finance/billing"
-        className="inline-block text-sm underline"
-      >
-        Review discount, cancellation and refund requests in Billing &
-        Adjustments → Approvals
+      <Link href="/dashboard/action-center" className="inline-block text-sm underline">
+        Open teacher academic review tasks
       </Link>
       {rows.length ? (
         <section className="overflow-hidden rounded-2xl border bg-card">
@@ -59,16 +55,6 @@ export default async function ApprovalsPage() {
                           href={`/dashboard/academics/sessions/${row.entity_id}`}
                         >
                           Review class attendance
-                        </Link>
-                      )}
-                      {["STUDENT_TRANSFER", "STUDENT_MERGE"].includes(
-                        row.workflow_type,
-                      ) && (
-                        <Link
-                          className="mt-2 block underline"
-                          href={`/dashboard/students/${row.entity_id}#reviews`}
-                        >
-                          Review student request
                         </Link>
                       )}
                     </td>

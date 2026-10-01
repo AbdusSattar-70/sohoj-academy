@@ -1,7 +1,9 @@
 "use client";
 import { useState, useTransition, type FormEvent } from "react";
+import { useLanguage } from "@/components/providers/language-provider";
 import { requestStaffAccess } from "./actions";
 export function StaffAccessRequestForm() {
+  const {locale}=useLanguage();const t=(en:string,bn:string)=>locale==="bn"?bn:en;
   const [pending, start] = useTransition(),
     [message, setMessage] = useState(""),
     [sent, setSent] = useState(false);
@@ -11,10 +13,10 @@ export function StaffAccessRequestForm() {
     start(async () => {
       try {
         const r = await requestStaffAccess(Object.fromEntries(f));
-        setMessage(r.message);
+        setMessage(locale==="bn" && "messageBn" in r ? String(r.messageBn):r.message);
         setSent(r.ok);
       } catch {
-        setMessage("Request could not be sent. Please try again.");
+        setMessage(t("Request could not be sent. Please try again.","অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন।"));
       }
     });
   }
@@ -24,7 +26,7 @@ export function StaffAccessRequestForm() {
       {!sent && (
         <>
           <label className="block text-sm">
-            Full name
+            {t("Full name","পূর্ণ নাম")}
             <input
               required
               maxLength={160}
@@ -33,7 +35,7 @@ export function StaffAccessRequestForm() {
             />
           </label>
           <label className="block text-sm">
-            Email
+            {t("Email","ইমেইল")}
             <input
               required
               type="email"
@@ -43,7 +45,7 @@ export function StaffAccessRequestForm() {
             />
           </label>
           <label className="block text-sm">
-            Mobile
+            {t("Mobile","মোবাইল")}
             <input
               required
               pattern="01[3-9][0-9]{8}"
@@ -52,9 +54,9 @@ export function StaffAccessRequestForm() {
             />
           </label>
           <label className="block text-sm">
-            Which role are you requesting?
+            {t("Which role are you requesting?","কোন দায়িত্বের জন্য প্রবেশাধিকার চান?")}
             <select name="requested_role" required className={control}>
-              <option value="">Choose role</option>
+              <option value="">{t("Choose role","ভূমিকা নির্বাচন করুন")}</option>
               <option value="ADMIN">Admin</option>
               <option value="OPERATOR">Operator</option>
               <option value="TEACHER">Teacher</option>
@@ -62,7 +64,7 @@ export function StaffAccessRequestForm() {
             </select>
           </label>
           <label className="block text-sm">
-            Why do you need access?
+            {t("Why do you need access?","কেন প্রবেশাধিকার প্রয়োজন?")}
             <textarea
               name="purpose"
               required
@@ -81,7 +83,7 @@ export function StaffAccessRequestForm() {
             disabled={pending}
             className="min-h-11 w-full rounded-xl bg-primary font-semibold text-primary-foreground"
           >
-            {pending ? "Sending…" : "Request staff access"}
+            {pending ? t("Sending…","পাঠানো হচ্ছে…") : t("Request staff access","প্রবেশাধিকারের অনুরোধ পাঠান")}
           </button>
         </>
       )}

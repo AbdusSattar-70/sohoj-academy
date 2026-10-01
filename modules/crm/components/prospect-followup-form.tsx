@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -124,7 +125,7 @@ export function ProspectFollowupForm({
         ]}
       />
 
-      <form
+      <ActionPanel title="Record counselling / follow-up"><form
         onSubmit={submit}
         noValidate
         className="mt-6 grid gap-5 md:grid-cols-2"
@@ -273,7 +274,7 @@ export function ProspectFollowupForm({
             {pending ? "Saving Follow-up…" : "Record Follow-up"}
           </Button>
         </div>
-      </form>
+      </form></ActionPanel>
     </section>
   );
 }

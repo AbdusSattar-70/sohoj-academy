@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 import { useId, useRef, useState, useTransition, type FormEvent } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -97,7 +98,7 @@ export function AcademicForm({
       });
     })(event);
   return (
-    <form
+    <ActionPanel title="Open academic action form"><form
       noValidate
       onSubmit={submit}
       className="space-y-4 rounded-xl border bg-card p-4"
@@ -318,10 +319,10 @@ export function AcademicForm({
           ))}
         </fieldset>
       )}
-      <Button type="submit" disabled={pending || !isValid || !isDirty}>
+      <Button type="submit" disabled={pending || !isValid || !isDirty} loading={pending}>
         {pending ? "Saving…" : label}
       </Button>
       <ErpFormStatus message={message} />
-    </form>
+    </form></ActionPanel>
   );
 }

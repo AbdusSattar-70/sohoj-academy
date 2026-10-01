@@ -152,8 +152,8 @@ export default function AuthHomePage() {
                 </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   <LocalizedText
-                    en="Authorised academy staff, including administrators, operators and teachers. Students and guardians can apply on the website without an account."
-                    bn="অনুমোদিত একাডেমি স্টাফ, যেমন অ্যাডমিন, অপারেটর ও শিক্ষক। শিক্ষার্থী ও অভিভাবক অ্যাকাউন্ট ছাড়াই ওয়েবসাইটে আবেদন করতে পারেন।"
+                    en="Authorised academy staff and verified referral partners. Each account sees only its permitted tools and records. Students and guardians can apply on the website without an account."
+                    bn="অনুমোদিত একাডেমি স্টাফ ও যাচাইকৃত রেফারেল সহযোগীরা সাইন ইন করতে পারবেন। প্রত্যেকে কেবল অনুমোদিত কাজ ও তথ্য দেখতে পাবেন। শিক্ষার্থী ও অভিভাবক অ্যাকাউন্ট ছাড়াই ওয়েবসাইটে আবেদন করতে পারেন।"
                   />
                 </p>
               </div>
@@ -173,8 +173,9 @@ export default function AuthHomePage() {
                 href="/auth/sign-up"
                 className="mt-4 block text-center text-sm underline"
               >
-                Request staff access / স্টাফ প্রবেশাধিকার চাই
+                <LocalizedText en="Request staff access" bn="স্টাফ প্রবেশাধিকার চাই" />
               </Link>
+              <p className="mt-3 text-center text-sm text-muted-foreground"><LocalizedText en="Referral partner? Ask the academy to verify your identity and send account setup instructions." bn="রেফারেল সহযোগী? পরিচয় যাচাই করে অ্যাকাউন্ট চালুর নির্দেশনা পাঠাতে একাডেমিকে অনুরোধ করুন।" /></p>
               <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
                 <LocalizedText
                   en="Access is for authorised users. Public interest registration is separate from account sign-in."

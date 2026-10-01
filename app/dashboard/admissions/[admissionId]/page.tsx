@@ -1,3 +1,4 @@
+import { CollectionForm } from "@/modules/finance/operations/collection-form";
 import { AdmissionPlacementEditor } from "@/modules/admissions/components/placement-editor";
 import { ExtraChargeForm } from "@/modules/admissions/components/extra-charge-form";
 import Link from "next/link";
@@ -252,14 +253,7 @@ export default async function AdmissionCasePage({
           </div>
         )}
         {a.invoice && a.invoice.due > 0 && canPay && (
-          <AdmissionCommandForm
-            action="PAY"
-            admissionId={a.id}
-            data={data}
-            maxAmount={a.invoice.due}
-            label="Record actual payment and issue receipt"
-            description="Only record money actually received. You can leave the invoice unpaid; enrollment follows the configured policy."
-          />
+          <CollectionForm admissionId={a.id} invoiceId={a.invoice.id} due={a.invoice.due} methods={data.paymentMethods} />
         )}
         {["BILLING_POSTED", "PENDING_PAYMENT"].includes(a.status) &&
           manage &&

@@ -12,7 +12,7 @@ export async function getOfferingOverview() {
   const base = await createClient();
   const [
     offeringsQ, groupsQ, yearsQ, branchesQ, classesQ, programsQ,
-    plansQ, componentsQ, subjectsQ, publicVersionsQ,
+    plansQ, componentsQ, subjectsQ,
   ] = await Promise.all([
     db.from("programme_offerings").select("*").order("created_at", { ascending: false }),
     db.from("academic_groups").select("id,code,name").eq("is_active", true).order("name"),
@@ -23,7 +23,6 @@ export async function getOfferingOverview() {
     db.from("fee_plan_versions").select("*").order("version", { ascending: false }),
     db.from("fee_plan_components").select("*").order("sort_order"),
     base.from("subjects").select("id,code,name").eq("is_active", true).order("name"),
-    db.from("programme_offering_public_versions").select("*").order("version", { ascending: false }),
   ]);
 
   let offeringSubjects: { offering_id: string; subject_id: string; sort_order: number }[] = [];
@@ -49,7 +48,6 @@ export async function getOfferingOverview() {
     components: dataOrThrow(componentsQ.data, componentsQ.error),
     subjects: dataOrThrow(subjectsQ.data, subjectsQ.error),
     offeringSubjects,
-    publicVersions: dataOrThrow(publicVersionsQ.data, publicVersionsQ.error),
   };
 }
 export type OfferingOverview = Awaited<ReturnType<typeof getOfferingOverview>>;

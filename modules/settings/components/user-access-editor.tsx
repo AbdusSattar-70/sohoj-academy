@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -135,7 +136,7 @@ export function UserAccessEditor({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="grid gap-5">
+    <ActionPanel title="Edit account access"><form onSubmit={submit} noValidate className="grid gap-5">
       <input type="hidden" {...register("profileId")} />
 
       <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
@@ -298,6 +299,6 @@ export function UserAccessEditor({
           {pending ? "Saving User Access…" : "Save User Access"}
         </Button>
       </div>
-    </form>
+    </form></ActionPanel>
   );
 }

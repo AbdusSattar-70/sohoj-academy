@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 
 import { useState, useTransition } from "react";
 import { recordHomeworkCheck } from "./actions";
@@ -22,7 +23,7 @@ type Student = HomeworkWorkspace["students"][number];
 function StudentCheck({ sessionId, assignmentId, student, canRecord }: { sessionId: string; assignmentId: string; student: Student; canRecord: boolean }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState("");
-  return <form action={(formData) => {
+  return <ActionPanel title="Record homework review"><form onSubmit={(event) => { event.preventDefault(); const formData=new FormData(event.currentTarget);
     setMessage("");
     startTransition(async () => {
       const result = await recordHomeworkCheck({
@@ -32,14 +33,14 @@ function StudentCheck({ sessionId, assignmentId, student, canRecord }: { session
         submitted_on: String(formData.get("submitted_on") || "") || undefined,
         feedback: String(formData.get("feedback") || ""),
       });
-      setMessage(result.message);
+      setMessage(result.message);if(result.ok)announceSaved(result.message);
     });
   }} className="grid gap-3 rounded-xl border p-4 text-sm lg:grid-cols-[minmax(10rem,1fr)_10rem_10rem_minmax(12rem,1fr)_auto] lg:items-end">
     <div><p className="font-medium">{student.studentNo} · {student.name}</p><p className="text-xs text-muted-foreground">Last check: {student.status?.replaceAll("_"," ") || "Not checked"}</p></div>
     <label className="space-y-1">Status<select name="status" defaultValue={student.status || "NOT_SUBMITTED"} disabled={!canRecord} className="block min-h-10 w-full rounded-lg border bg-background px-2"><option value="NOT_SUBMITTED">Not submitted</option><option value="NEEDS_WORK">Needs work</option><option value="COMPLETE">Complete</option></select></label>
     <label className="space-y-1">Submitted on<input type="date" name="submitted_on" defaultValue={student.submittedOn || ""} disabled={!canRecord} className="block min-h-10 w-full rounded-lg border bg-background px-2" /></label>
     <label className="space-y-1">Feedback<input name="feedback" maxLength={1000} defaultValue={student.feedback || ""} disabled={!canRecord} className="block min-h-10 w-full rounded-lg border bg-background px-2" /></label>
-    {canRecord && <button disabled={pending} className="min-h-10 rounded-lg border px-3 font-medium disabled:opacity-50">Save check</button>}
+    {canRecord && <button disabled={pending} className="min-h-10 rounded-lg border px-3 font-medium disabled:opacity-50">{pending?"Saving…":"Save check"}</button>}
     {message && <p role="status" className="lg:col-span-5">{message}</p>}
-  </form>;
+  </form></ActionPanel>;
 }

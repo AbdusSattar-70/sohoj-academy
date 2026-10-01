@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 export default function AccountPage() {
@@ -48,7 +49,7 @@ export default function AccountPage() {
   return (
     <div className="max-w-xl space-y-6">
       <h1 className="text-2xl font-bold">My account</h1>
-      <form onSubmit={submit} className="space-y-3 rounded-xl border p-5">
+      <ActionPanel title="Change account email"><form onSubmit={submit} className="space-y-3 rounded-xl border p-5">
         <label className="block">
           New email
           <input
@@ -62,7 +63,7 @@ export default function AccountPage() {
         <button disabled={pending} className="rounded-lg border p-3">
           Send email change confirmation
         </button>
-      </form>
+      </form></ActionPanel>
       <button
         disabled={pending}
         onClick={reset}

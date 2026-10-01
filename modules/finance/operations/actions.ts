@@ -14,7 +14,7 @@ export async function runFinanceCommand(input: FinanceCommand) {
     return { ok: false, message: parsed.error.issues[0].message };
   if (!(await getErpContext()))
     return { ok: false, message: "Sign in to continue." };
-  // Every command enforces its own permission and maker-checker rules atomically in the database.
+  // Every command enforces permission, idempotency and ledger integrity atomically in the database.
   const db = await financeClient();
   const { data, error } = await db.rpc(
     input.action === "PAY" ? "post_admission_payment" : "finance_command",

@@ -27,6 +27,7 @@ export async function correctAdmissionPlacement(input: unknown) {
   };
 }
 const identitySchema = z.object({
+ student_mobile:z.string().regex(/^$|^01[3-9][0-9]{8}$/).optional(),student_email:z.union([z.email(),z.literal("")]).optional(),present_landmark:z.string().max(160).optional(),permanent_address:z.string().max(300).optional(),permanent_same_as_present:z.enum(["true","false"]).optional(),
   student_name: z.string().trim().min(2).max(160),
   student_name_bn: z.string().max(160),
   guardian_name: z.string().trim().min(2).max(160),

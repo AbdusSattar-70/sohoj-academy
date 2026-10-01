@@ -282,7 +282,7 @@ export function OfferingForm({
           <Button
             type="button"
             variant="outline"
-            disabled={pending}
+            disabled={pending} loading={pending}
             onClick={onCancel}
           >
             Cancel

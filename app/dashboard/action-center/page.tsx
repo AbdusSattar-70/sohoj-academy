@@ -33,11 +33,11 @@ export default async function ActionCenterPage() {
       {staffRequests && (
         <Link
           className="block rounded-2xl border bg-card p-5"
-          href="/dashboard/settings/access-requests"
+          href="/dashboard/staff#staff-access"
         >
           <strong>{staffRequests.count ?? 0} staff access requests</strong>
           <p className="mt-1 text-sm text-muted-foreground">
-            Verify role and identity, then send a Supabase setup link.
+            Verify role and identity, then send secure account setup instructions.
           </p>
         </Link>
       )}

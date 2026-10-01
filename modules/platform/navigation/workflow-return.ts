@@ -10,6 +10,8 @@ export function finishWorkflow(router: {
   push: (path: string) => void;
   refresh: () => void;
 }) {
+  document.querySelectorAll<HTMLDetailsElement>("details[data-action-panel]").forEach(el => el.open = false);
+  window.dispatchEvent(new CustomEvent("erp:saved", { detail: "Saved successfully." }));
   const path = workflowReturnPath(
     new URLSearchParams(window.location.search).get("returnTo"),
   );

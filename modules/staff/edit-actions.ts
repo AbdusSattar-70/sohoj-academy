@@ -8,6 +8,11 @@ export async function editStaffRecord(input: unknown) {
       id: z.string().uuid(),
       full_name: z.string().trim().min(2).max(160),
       mobile: z.string().regex(/^$|^01[3-9][0-9]{8}$/),
+      alternate_mobile: z.string().regex(/^$|^01[3-9][0-9]{8}$/).optional(),
+      email: z.union([z.email(),z.literal("")]).optional(),
+      address: z.string().max(500).optional(), emergency_contact_name:z.string().max(160).optional(),
+      emergency_contact_mobile:z.string().regex(/^$|^01[3-9][0-9]{8}$/).optional(),
+      joined_on:z.string().optional(),notes:z.string().max(1000).optional(),
       reason: z.string().min(5).max(500),
     })
     .safeParse(input);

@@ -1,6 +1,6 @@
 "use server";
 import { z } from "zod";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { sendAccountSetup } from "@/lib/supabase/account-setup";
 import { revalidatePath } from "next/cache";
 import { getErpContext } from "../auth/erp-context";
 import { platformClient } from "../rpc-client";
@@ -32,7 +32,8 @@ export async function requestStaffAccess(input: unknown) {
     : {
         ok: true,
         message:
-          "Request received. The super admin will verify your role and email a secure account setup link. You do not have ERP access yet.",
+          "Your access request has been received. An administrator will verify your identity and responsibilities, then email secure account setup instructions. Access is granted only after verification.",
+        messageBn:"আপনার প্রবেশাধিকারের অনুরোধ পাওয়া গেছে। অ্যাডমিন পরিচয় ও দায়িত্ব যাচাই করে ইমেইলে নিরাপদভাবে অ্যাকাউন্ট চালুর নির্দেশনা পাঠাবেন। যাচাইয়ের আগে কোনো প্রবেশাধিকার দেওয়া হয় না।",
       };
 }
 const reviewSchema = z.object({
@@ -67,44 +68,8 @@ export async function reviewStaffAccess(input: unknown) {
         ok: false,
         message: "Verify the request before sending an invitation.",
       };
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY,
-      origin = process.env.NEXT_PUBLIC_SITE_URL;
-    if (!key || !origin)
-      return {
-        ok: false,
-        message:
-          "Configure SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SITE_URL on the server to send Supabase invitations.",
-      };
-    const admin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      key,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          flowType: "implicit",
-        },
-      },
-    );
-    // Invitation email belongs only to this explicitly verified request.
-    const { error } = await admin.auth.admin.inviteUserByEmail(r.email, {
-      redirectTo: `${origin.replace(/\/$/, "")}/auth/update-password`,
-      data: { full_name: r.full_name },
-    });
-    if (error) {
-      if (
-        r.status !== "INVITED" &&
-        !["email_exists", "user_already_exists"].includes(error.code ?? "")
-      )
-        return {
-          ok: false,
-          message: `Invitation failed: ${error.message}. If this account already exists, assign its access under Settings and use password recovery.`,
-        };
-      const reset = await admin.auth.resetPasswordForEmail(r.email, {
-        redirectTo: `${origin.replace(/\/$/, "")}/auth/update-password`,
-      });
-      if (reset.error) return { ok: false, message: reset.error.message };
-    }
+    const sent=await sendAccountSetup(r.email,r.full_name);
+    if(!sent.ok)return sent;
     const { error: completeError } = await db.rpc("review_staff_access", {
       p_input: { ...value, action: "COMPLETE_INVITATION" },
     });
@@ -114,14 +79,15 @@ export async function reviewStaffAccess(input: unknown) {
         message: `Invitation sent, but access assignment failed: ${completeError.message}. Retry this verified request; do not create another account.`,
       };
   }
-  revalidatePath("/dashboard/settings/access-requests");
+  revalidatePath("/dashboard/staff");
   revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard/action-center");
   return {
     ok: true,
     message:
       value.action === "INVITE"
-        ? "Supabase setup email sent and assigned access recorded."
+        ? "Secure account setup instructions sent. The verified role is now assigned."
         : "Request updated.",
+    messageBn: value.action==="INVITE"?"নিরাপদভাবে অ্যাকাউন্ট চালুর নির্দেশনা পাঠানো হয়েছে এবং যাচাইকৃত ভূমিকা দেওয়া হয়েছে।":"অনুরোধ আপডেট হয়েছে।",
   };
 }

@@ -1,4 +1,5 @@
 "use client";
+import { announceSaved } from "@/components/erp/action-panel";
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { z } from "zod";
@@ -10,6 +11,7 @@ export function AdmissionIdentityEditor({ admission: a }: { admission: Case }) {
     [message, setMessage] = useState("");
   const router = useRouter();
   const values = {
+    student_mobile:a.additionalDetails?.student_mobile??"",student_email:a.additionalDetails?.student_email??"",present_landmark:a.additionalDetails?.present_landmark??"",permanent_address:a.additionalDetails?.permanent_address??"",permanent_same_as_present:a.additionalDetails?.permanent_same_as_present??"false",
     student_name: a.name,
     student_name_bn: a.nameBn ?? "",
     guardian_name: a.guardian,
@@ -36,13 +38,14 @@ export function AdmissionIdentityEditor({ admission: a }: { admission: Case }) {
           reason: "Corrected application details with student or guardian",
         });
         setMessage(result.message);
-        if (result.ok) router.refresh();
+        if (result.ok) { announceSaved(result.message); router.refresh(); }
       } catch {
         setMessage("Could not save corrections. Try again.");
       }
     });
   }
   const labels: Record<keyof typeof values, string> = {
+    student_mobile:"Student mobile (optional)",student_email:"Student email (optional)",present_landmark:"Nearby landmark",permanent_address:"Permanent address",permanent_same_as_present:"Same as present address (true / false)",
     student_name: "Student full name",
     student_name_bn: "Student name in Bangla",
     guardian_name: "Guardian name",
@@ -56,7 +59,7 @@ export function AdmissionIdentityEditor({ admission: a }: { admission: Case }) {
     school_roll: "School roll",
   };
   return (
-    <details
+    <details data-action-panel
       className="rounded-xl border p-4"
       open={a.origin === "PROSPECT_CONVERSION" && a.status === "DRAFT"}
     >
@@ -70,14 +73,14 @@ export function AdmissionIdentityEditor({ admission: a }: { admission: Case }) {
           {Object.entries(values).map(([key, value]) => (
             <label key={key} className="block text-sm">
               {labels[key as keyof typeof values]}
-              {key === "gender" ? (
+              {["gender","permanent_same_as_present"].includes(key) ? (
                 <select
                   name={key}
                   defaultValue={value}
                   className="mt-1 w-full rounded-lg border bg-background p-3"
                 >
                   <option value="">Not provided</option>
-                  {["Female", "Male", "Other", "Prefer not to say"].map((v) => (
+                  {(key === "gender" ? ["Female", "Male", "Other", "Prefer not to say"] : ["true","false"]).map((v) => (
                     <option key={v}>{v}</option>
                   ))}
                 </select>

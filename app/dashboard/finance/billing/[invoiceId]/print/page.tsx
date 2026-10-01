@@ -1,3 +1,4 @@
+import { amountInWords } from "@/lib/academy/money-in-words";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
@@ -41,22 +42,16 @@ export default async function Statement({
         <PrintAdmissionButton />
       </nav>
       <style>{`
- .finance-document{max-width:185mm;margin:auto;padding:12mm;background:white;color:#111;font:10pt/1.45 Arial,sans-serif;border:1px solid #aaa}
- .invoice-header{display:flex;justify-content:space-between;gap:8mm;align-items:start;border-bottom:2px solid #111;padding-bottom:5mm}.invoice-brand{display:flex;gap:4mm;align-items:center}.invoice-monogram{border:2px solid #111;padding:3mm;font-size:19pt;font-weight:800}.invoice-header h1{font-size:20pt;font-weight:800;margin:0;text-transform:uppercase}.invoice-header p{margin:1mm 0;font-size:8pt}.invoice-badge{border:1px solid #111;padding:2mm 3mm;font-weight:700;font-size:9pt}
- .invoice-meta{display:grid;grid-template-columns:1fr 1fr;gap:3mm 6mm;padding:5mm 0;border-bottom:1px solid #aaa}.invoice-meta dt{font-size:8pt;color:#333}.invoice-meta dd{margin:0;font-weight:600;overflow-wrap:anywhere}.invoice-section{margin-top:6mm}.invoice-section h2{font-size:10pt;text-transform:uppercase;letter-spacing:.5pt;border-bottom:1px solid #111;padding-bottom:2mm;margin-bottom:3mm}
- .invoice-table{width:100%;border-collapse:collapse;font-size:9pt}.invoice-table th,.invoice-table td{border:1px solid #aaa;padding:2.5mm;text-align:left}.invoice-table th{font-size:8pt;text-transform:uppercase}.invoice-table .number{text-align:right;white-space:nowrap}.invoice-summary{margin:5mm 0 5mm auto;max-width:90mm;border:1px solid #111;padding:3mm}.invoice-summary>div{display:flex;justify-content:space-between;gap:5mm;padding:1.2mm 0}.invoice-summary dt{font-size:8.5pt}.invoice-summary dd{margin:0;font-weight:600}.invoice-total{border-top:1px solid #111;margin-top:2mm;padding-top:3mm!important;font-size:12pt}.invoice-total dt{font-size:10pt;font-weight:700}
- .invoice-note{font-size:8pt;margin-top:4mm}.invoice-footer{border-top:1px solid #777;margin-top:8mm;padding-top:3mm;font-size:7.5pt}.invoice-seal{border:1px dashed #888;padding:5mm;margin-top:6mm;width:55mm;text-align:center;font-size:8pt}.invoice-section,.invoice-summary{break-inside:avoid}
- @media print{body *{visibility:hidden}.finance-document,.finance-document *{visibility:visible}.finance-document{position:absolute;top:0;left:0;width:100%;max-width:none;padding:0;border:0} .invoice-table thead{display:table-header-group}@page{size:A4;margin:14mm}}
+ .finance-document{max-width:185mm;margin:auto;padding:12mm;background:white;color:#111;font:9pt/1.35 Arial,var(--font-bn),sans-serif;border:1px solid #aaa}
+ .finance-document{padding-top:36mm}.invoice-header{display:flex;justify-content:space-between;gap:8mm;align-items:start;border-bottom:2px solid #111;padding-bottom:5mm}.invoice-brand{display:flex;gap:4mm;align-items:center}.invoice-monogram{border:2px solid #111;padding:3mm;font-size:19pt;font-weight:800}.invoice-header h1{font-size:20pt;font-weight:800;margin:0;text-transform:uppercase}.invoice-header p{margin:1mm 0;font-size:8pt}.invoice-badge{border:1px solid #111;padding:2mm 3mm;font-weight:700;font-size:9pt}
+ .invoice-meta{display:grid;grid-template-columns:1fr 1fr;gap:3mm 6mm;padding:3mm 0;border-bottom:1px solid #aaa}.invoice-meta dt{font-size:8pt;color:#333}.invoice-meta dd{margin:0;font-weight:600;overflow-wrap:anywhere}.invoice-section{margin-top:4mm}.invoice-section h2{font-size:10pt;text-transform:uppercase;letter-spacing:.5pt;border-bottom:1px solid #111;padding-bottom:2mm;margin-bottom:3mm}
+ .invoice-table{width:100%;border-collapse:collapse;font-size:9pt}.invoice-table th,.invoice-table td{border:1px solid #aaa;padding:1.7mm;text-align:left}.invoice-table th{font-size:8pt;text-transform:uppercase}.invoice-table .number{text-align:right;white-space:nowrap}.invoice-summary{margin:3mm 0 3mm auto;max-width:90mm;border:1px solid #111;padding:3mm}.invoice-summary>div{display:flex;justify-content:space-between;gap:5mm;padding:.7mm 0}.invoice-summary dt{font-size:8.5pt}.invoice-summary dd{margin:0;font-weight:600}.invoice-total{border-top:1px solid #111;margin-top:2mm;padding-top:3mm!important;font-size:12pt}.invoice-total dt{font-size:10pt;font-weight:700}
+ .invoice-note{font-size:8pt;margin-top:4mm}.invoice-footer{border-top:1px solid #777;margin-top:5mm;padding-top:3mm;font-size:7.5pt}.invoice-seal{border:1px dashed #888;padding:3mm;margin-top:4mm;width:55mm;text-align:center;font-size:8pt}.invoice-section,.invoice-summary{break-inside:avoid}
+ @media print{body:has(.finance-document) *:not(:has(.finance-document)):not(.finance-document):not(.finance-document *){display:none!important}body:has(.finance-document) *:has(.finance-document){display:block!important;margin:0!important;padding:0!important;max-width:none!important;min-height:0!important}body *{visibility:hidden}.finance-document,.finance-document *{visibility:visible}.finance-document{position:static;width:100%;max-width:none;padding:24mm 0 0;border:0} .invoice-table thead{display:table-header-group}@page{size:A4;margin:14mm}}
  `}</style>
       <article className="finance-document">
         <header className="invoice-header">
-          <div className="invoice-brand">
-            <span className="invoice-monogram">SA</span>
-            <div>
-              <h1>{setup.academyName}</h1>
-              <p>Student accounts · শিক্ষা হোক সহজ ও আনন্দময়</p>
-            </div>
-          </div>
+          <div><h1>Student invoice</h1><p>Charges, reductions and payment statement</p></div>
           <span className="invoice-badge">INVOICE STATEMENT</span>
         </header>
         <dl className="invoice-meta">
@@ -96,13 +91,15 @@ export default async function Statement({
         <dl className="invoice-summary">
           {[
             ["Original charges", i.gross],
-            ["Discounts / recorded credits", i.credits],
+            ["Discount", i.discountAmount],
+            ["Scholarship", i.scholarshipAmount],
+            ["Other adjustments", i.otherAdjustments],
             ["Net charges", i.net],
             ["Money received", i.paid],
             ["Refunds paid", i.refunded],
-            ["Customer credit", i.credit],
+            ["Overpayment balance", i.credit],
             ["Outstanding balance", i.due],
-          ].map(([label, value]) => (
+          ].filter(([label,value])=>!["Scholarship","Other adjustments","Refunds paid","Overpayment balance"].includes(String(label))||Number(value)!==0).map(([label, value]) => (
             <div
               key={label}
               className={label === "Outstanding balance" ? "invoice-total" : ""}
@@ -112,6 +109,7 @@ export default async function Statement({
             </div>
           ))}
         </dl>
+        <p className="invoice-note"><strong>Outstanding amount in words / কথায়:</strong> {amountInWords(i.due)}</p>
         <section className="invoice-section">
           <h2>02 · Payment record</h2>
           {payments.length ? (
@@ -129,7 +127,7 @@ export default async function Statement({
                     <td>
                       {p.number}
                       <br />
-                      {date(p.postedAt)}
+                      {date(p.postedAt)}<br/><small>{amountInWords(p.amount)}</small>
                     </td>
                     <td>{p.method}</td>
                     <td className="number">{money(i.currency, p.amount)}</td>
@@ -177,7 +175,7 @@ export default async function Statement({
         )}
         <p className="invoice-note">
           Keep the invoice reference for future payments. Posted charges remain
-          in history; discounts and corrections appear as recorded credits. This
+          in history; discounts, scholarships and other adjustments are shown separately. This
           statement is not evidence of a new payment.
         </p>
         <div className="invoice-seal">

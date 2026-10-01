@@ -4,17 +4,14 @@ export const studentCommandSchema = z
   .object({
     action: z.enum([
       "CREATE_EXISTING",
-      "REQUEST_TRANSFER",
-      "REQUEST_MERGE",
-      "DECIDE",
+      "TRANSFER",
+      "MERGE",
     ]),
     request_id: id,
     student_id: id.optional(),
     batch_id: id.optional(),
     admission_id: id.optional(),
     target_id: id.optional(),
-    approval_id: id.optional(),
-    decision: z.enum(["APPROVED", "REJECTED"]).optional(),
     confirmed_same_person: z.boolean().optional(),
     reason: z
       .string()
@@ -25,9 +22,8 @@ export const studentCommandSchema = z
   .superRefine((v, ctx) => {
     const required = {
       CREATE_EXISTING: ["student_id", "batch_id"],
-      REQUEST_TRANSFER: ["student_id", "admission_id", "batch_id"],
-      REQUEST_MERGE: ["student_id", "target_id"],
-      DECIDE: ["approval_id", "decision"],
+      TRANSFER: ["student_id", "admission_id", "batch_id"],
+      MERGE: ["student_id", "target_id"],
     }[v.action];
     for (const key of required)
       if (!v[key as keyof typeof v])
@@ -36,7 +32,7 @@ export const studentCommandSchema = z
           path: [key],
           message: "Select a valid option.",
         });
-    if (v.action === "REQUEST_MERGE" && !v.confirmed_same_person)
+    if (v.action === "MERGE" && !v.confirmed_same_person)
       ctx.addIssue({
         code: "custom",
         path: ["confirmed_same_person"],
@@ -125,7 +121,7 @@ export const profileSchema = z.object({
       fromBatch: z.string(),
       toBatch: z.string(),
       date: z.string(),
-      approvalId: id,
+      authorizedBy: id,
     }),
   ),
   candidates: z.array(
@@ -136,18 +132,6 @@ export const profileSchema = z.object({
       mobile: z.string().nullable(),
     }),
   ),
-  approvals: z.array(
-    z.object({
-      id,
-      type: z.string(),
-      status: z.string(),
-      requesterId: id,
-      requester: z.string(),
-      reason: z.string(),
-      decisionNote: z.string().nullable(),
-      createdAt: z.string(),
-      payload: z.record(z.string(), z.unknown()),
-    }),
-  ),
+
 });
 export type StudentProfile = z.infer<typeof profileSchema>;

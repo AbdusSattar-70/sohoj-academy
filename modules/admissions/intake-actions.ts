@@ -28,6 +28,8 @@ export async function createStaffAdmissionIntake(input: StaffAdmissionIntake) {
     "create_staff_admission_intake" as never,
     {
       p_input: {
+        student_mobile: value.studentMobile, student_email: value.studentEmail,
+        present_landmark: value.presentLandmark, permanent_same_as_present: value.permanentSameAsPresent,
         father_name: value.fatherName,
         mother_name: value.motherName,
         birth_registration: value.birthRegistration,

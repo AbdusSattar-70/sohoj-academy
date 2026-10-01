@@ -1,4 +1,5 @@
 "use client";
+import { ReferralPolicyEditor } from "./referral-policy-editor";
 import { finishWorkflow } from "@/modules/platform/navigation/workflow-return";
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
@@ -99,6 +100,7 @@ export function PolicyControlCenter({ rules }: { rules: SettingsPolicyRow[] }) {
 
   return (
     <div className="grid gap-5 xl:grid-cols-2">
+      <ReferralPolicyEditor rules={rules} />
       {batchRule && <BatchCapacityEditor rule={batchRule} />}
       {admissionRule && <AdmissionActivationEditor rule={admissionRule} />}
       {compensationRule && (
@@ -313,11 +315,6 @@ function TeacherCompensationEditor({
       name: "teachingPoolReviewMaxPercent" as const,
       label: "Teaching Pool Review Maximum",
       hint: "Upper management-approved ceiling for the teaching pool.",
-    },
-    {
-      name: "acquisitionBonusPercent" as const,
-      label: "Acquisition Bonus",
-      hint: "Percentage applied to the eligible first-month Net Collected Tuition.",
     },
     {
       name: "retention3MonthPercent" as const,

@@ -25,7 +25,6 @@ export default async function BillingPage({
         }
         data={data}
         permissions={context.permissions}
-        profileId={context.profileId}
       />
     </div>
   );

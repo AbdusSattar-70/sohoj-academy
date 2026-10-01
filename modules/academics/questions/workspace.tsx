@@ -1,4 +1,5 @@
 "use client";
+import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 
 import { useState, useTransition } from "react";
 import { runQuestionCommand } from "./actions";
@@ -19,7 +20,7 @@ export function QuestionBank({ data, actorId, canAuthor, canReview }: {
     startTransition(async () => {
       const result = await runQuestionCommand(input);
       setNotice(result.message);
-      if (result.ok) after?.();
+      if (result.ok) { after?.(); announceSaved(result.message); }
     });
   }
 
@@ -43,7 +44,7 @@ export function QuestionBank({ data, actorId, canAuthor, canReview }: {
     {canAuthor && <section className="rounded-2xl border bg-card p-5">
       <h2 className="text-lg font-semibold">{editing ? "Edit question draft" : "Author a question"}</h2>
       <p className="mt-1 text-sm text-muted-foreground">Answers stay within the staff workspace. Submitting freezes this revision for independent review.</p>
-      <form key={editing?.id || "new"} action={save} className="mt-5 grid gap-4 md:grid-cols-2">
+      <ActionPanel title="Create / edit question draft" initialOpen={Boolean(editing)}><form key={editing?.id || "new"} onSubmit={event=>{event.preventDefault();save(new FormData(event.currentTarget));}} className="mt-5 grid gap-4 md:grid-cols-2">
         {!editing && <>
           <Field label="Batch"><select name="batch_id" required className={fieldClass} defaultValue=""><option value="">Select batch</option>{data.batches.map((b) => <option value={b.id} key={b.id}>{b.name}</option>)}</select></Field>
           <Field label="Subject"><select name="subject_id" required className={fieldClass} defaultValue=""><option value="">Select subject</option>{data.subjects.map((s) => <option value={s.id} key={s.id}>{s.name}</option>)}</select></Field>
@@ -56,7 +57,7 @@ export function QuestionBank({ data, actorId, canAuthor, canReview }: {
         <Field label={choiceCount ? "Correct letter (A–F)" : "Model answer"}><input name="answer_key" required maxLength={1500} defaultValue={editing?.answerKey} className={fieldClass} /></Field>
         <Field label="Explanation" wide><textarea name="explanation" maxLength={3000} rows={2} defaultValue={editing?.explanation || ""} className={fieldClass} /></Field>
         <div className="flex gap-3 md:col-span-2"><button disabled={pending} className="min-h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">Save draft</button>{editing && <button type="button" onClick={() => { setEditing(null); setChoiceCount(4); }} className="min-h-11 rounded-lg border px-4 text-sm">Cancel</button>}</div>
-      </form>
+      </form></ActionPanel>
     </section>}
     <section className="space-y-4"><h2 className="text-lg font-semibold">Question history</h2>
       {data.items.length === 0 && <p className="rounded-xl border p-5 text-sm text-muted-foreground">No questions in your accessible scope yet.</p>}

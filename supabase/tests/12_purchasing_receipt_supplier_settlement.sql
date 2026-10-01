@@ -1,0 +1,41 @@
+begin;
+insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values('93000000-0000-0000-0000-000000000001','purchase-admin@example.test',now(),'{"full_name":"Purchase Admin"}'),('93000000-0000-0000-0000-000000000002','purchase-outsider@example.test',now(),'{"full_name":"Outsider"}');
+select public.bootstrap_admin('purchase-admin@example.test','Purchase Admin');
+select set_config('request.jwt.claim.sub','93000000-0000-0000-0000-000000000001',true);
+do $test$
+declare vendor uuid;category uuid;cash uuid;payload jsonb;purchase uuid;expense uuid;payable uuid;rejected boolean;
+begin
+ vendor:=(public.purchase_command(jsonb_build_object('action','CREATE_VENDOR','request_id',gen_random_uuid(),'name','Fixture Stationery Supplier','reason','Added verified stationery supplier'))->>'id')::uuid;
+ select id into category from public.finance_expense_categories where is_active limit 1;
+ select id into cash from public.finance_accounts where account_subtype='CASH' and is_active limit 1;
+ payload:=jsonb_build_object('action','SAVE','request_id',gen_random_uuid(),'vendor_id',vendor,'category_id',category,'description','Whiteboard markers','items',jsonb_build_array(jsonb_build_object('name','Markers','quantity',3,'price',125)),'reason','Preparing necessary classroom supplies');
+ purchase:=(public.purchase_command(payload)->>'id')::uuid;perform public.purchase_command(payload);
+ if (select count(*) from public.finance_purchases where id=purchase)<>1 or exists(select 1 from public.finance_purchases where id=purchase and expense_id is not null) then raise exception 'Draft retry duplicated or posted expense.';end if;
+ rejected:=false;begin perform public.purchase_command(jsonb_build_object('action','CANCEL','request_id',gen_random_uuid(),'id',purchase,'revision',2,'reason','Stale cancellation request'));exception when others then rejected:=true;end;if not rejected then raise exception 'Stale change accepted.';end if;
+ payload:=jsonb_build_object('action','RECEIVE','request_id',gen_random_uuid(),'id',purchase,'revision',1,'received_on',current_date,'invoice_reference','SUP-INV-001','confirmed_received',true,'payment_mode','ON_ACCOUNT','reason','Verified full delivery and supplier invoice');
+ perform public.purchase_command(payload);perform public.purchase_command(payload);
+ select p.expense_id,e.payable_id into expense,payable from public.finance_purchases p join public.finance_expenses e on e.id=p.expense_id where p.id=purchase;
+ if expense is null or payable is null or (select original_amount from public.finance_payables where id=payable)<>375 then raise exception 'Supplier expense/payable mismatch.';end if;
+ if (select count(*) from public.general_ledger_journals where source_type='EXPENSE' and source_id=expense::text)<>1 then raise exception 'Duplicate journal.';end if;
+ payload:=jsonb_build_object('action','PAY','request_id',gen_random_uuid(),'id',purchase,'revision',2,'amount',100,'payment_account_id',cash,'external_reference','CASH-001','reason','Partial supplier payment actually made');perform public.purchase_command(payload);perform public.purchase_command(payload);
+ if (select sum(amount) from public.finance_payable_settlements where payable_id=payable)<>100 then raise exception 'Duplicate settlement.';end if;
+ if (select (x->>'remaining')::numeric from jsonb_array_elements(public.purchase_workspace()->'rows') x where x->>'id'=purchase::text)<>275 then raise exception 'Remaining payable incorrect.';end if;
+ rejected:=false;begin update public.finance_purchases set description='Overwritten' where id=purchase;exception when others then rejected:=true;end;if not rejected then raise exception 'Posted purchase mutable.';end if;
+ payload:=jsonb_set(payload,'{request_id}',to_jsonb(gen_random_uuid()));payload:=jsonb_set(payload,'{amount}','300');rejected:=false;begin perform public.purchase_command(payload);exception when others then rejected:=true;end;if not rejected then raise exception 'Overpayment accepted.';end if;
+ payload:=jsonb_build_object('action','SAVE','request_id',gen_random_uuid(),'vendor_id',vendor,'category_id',category,'description','Second marker draft','items',jsonb_build_array(jsonb_build_object('name','Markers','quantity',1,'price',125)),'reason','Second draft for duplicate invoice check');
+ purchase:=(public.purchase_command(payload)->>'id')::uuid;
+ rejected:=false;begin perform public.purchase_command(jsonb_build_object('action','RECEIVE','request_id',gen_random_uuid(),'id',purchase,'revision',1,'received_on',current_date,'invoice_reference','sup-inv-001','confirmed_received',true,'payment_mode','ON_ACCOUNT','reason','Attempt duplicate supplier invoice'));exception when others then rejected:=true;end;if not rejected then raise exception 'Duplicate supplier invoice posted.';end if;
+ if (select status from public.finance_purchases where id=purchase)<>'DRAFT' then raise exception 'Failed receipt changed draft.';end if;
+ perform public.purchase_command(jsonb_build_object('action','CANCEL','request_id',gen_random_uuid(),'id',purchase,'revision',1,'reason','Cancelled duplicate purchase draft'));
+ -- Paid-now receipt posts cash once and never advertises a supplier balance.
+ payload:=jsonb_build_object('action','SAVE','request_id',gen_random_uuid(),'vendor_id',vendor,'category_id',category,'description','Paid cash stationery','items',jsonb_build_array(jsonb_build_object('name','Paper','quantity',1,'price',200)),'reason','Preparing actual paid purchase');
+ purchase:=(public.purchase_command(payload)->>'id')::uuid;
+ payload:=jsonb_set(payload,'{request_id}',to_jsonb(gen_random_uuid()));payload:=payload||jsonb_build_object('id',purchase,'revision',1,'description','Corrected paid cash stationery');perform public.purchase_command(payload);
+ perform public.purchase_command(jsonb_build_object('action','RECEIVE','request_id',gen_random_uuid(),'id',purchase,'revision',2,'received_on',current_date,'invoice_reference','SUP-INV-002','confirmed_received',true,'payment_mode','PAID_NOW','payment_account_id',cash,'reason','Verified goods and cash payment receipt'));
+ if (select e.payable_id from public.finance_purchases p join public.finance_expenses e on e.id=p.expense_id where p.id=purchase) is not null then raise exception 'Paid receipt created payable.';end if;
+ if (select (x->>'remaining')::numeric from jsonb_array_elements(public.purchase_workspace()->'rows') x where x->>'id'=purchase::text)<>0 then raise exception 'Paid receipt shows due.';end if;
+ if has_function_privilege('anon','public.purchase_command(jsonb)','EXECUTE') then raise exception 'Public purchase mutation exposed.';end if;
+end $test$;
+select set_config('request.jwt.claim.sub','93000000-0000-0000-0000-000000000002',true);
+do $test$ declare rejected boolean:=false;begin begin perform public.purchase_workspace();exception when others then rejected:=true;end;if not rejected then raise exception 'Outsider read supplier financial records.';end if;end $test$;
+rollback;

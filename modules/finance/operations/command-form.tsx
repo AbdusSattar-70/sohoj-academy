@@ -155,7 +155,7 @@ export function FinanceForm({
           </ErpFormField>
         ))}
       </fieldset>
-      <Button type="submit" disabled={pending || !isValid || !isDirty}>
+      <Button type="submit" disabled={pending || !isValid || !isDirty} loading={pending}>
         {pending ? "Saving…" : label}
       </Button>
       <ErpFormStatus message={message} />

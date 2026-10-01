@@ -271,6 +271,7 @@ export const admissionCaseDetailSchema = z.object({
   ),
   invoice: z
     .object({
+      id: uuid,
       number: z.string(),
       total: z.number(),
       dueOn: z.string(),

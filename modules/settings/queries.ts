@@ -48,8 +48,6 @@ export async function getSettingsOverview() {
     rolesQ,
     permissionsQ,
     rolePermissionsQ,
-    definitionsQ,
-    valuesQ,
     profilesQ,
     staffQ,
     assignmentsQ,
@@ -72,20 +70,6 @@ export async function getSettingsOverview() {
         .select("id,code,name,description")
         .order("code"),
       supabase.from("role_permissions").select("role_id,permission_id"),
-      supabase
-        .from("setting_definitions")
-        .select(
-          "id,code,group_code,name,description,value_type,is_active,validation_contract"
-        )
-        .eq("is_active", true)
-        .order("group_code")
-        .order("sort_order"),
-      supabase
-        .from("setting_versions")
-        .select(
-          "setting_definition_id,version,status,value,branch_id,effective_from,change_reason"
-        )
-        .eq("status", "ACTIVE"),
       supabase
         .from("profiles")
         .select("id,display_name,status")
@@ -129,10 +113,6 @@ export async function getSettingsOverview() {
     });
     permissionsByRole.set(link.role_id, list);
   }
-
-  const settingValueByDefinition = new Map(
-    (valuesQ.data ?? []).map((value) => [value.setting_definition_id, value])
-  );
 
   const staffByProfile = new Map(
     (staffQ.data ?? [])
@@ -202,9 +182,6 @@ export async function getSettingsOverview() {
     ),
     permissions,
     accessUsers,
-    settings: (definitionsQ.data ?? []).map((definition) => ({
-      ...definition,
-      activeValue: settingValueByDefinition.get(definition.id) ?? null,
-    })),
+
   };
 }

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   ClipboardCheck,
@@ -18,6 +19,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ access?: string }>;
 }) {
   const context = await requirePermission("dashboard.view");
+  if (!context.roles.includes("ADMIN") && context.permissions.includes("workforce.self.view")) redirect("/dashboard/my-work");
   const overview = await getDashboardOverview(context);
   const { access } = await searchParams;
 
@@ -113,7 +115,7 @@ export default async function DashboardPage({
           ],
           [
             "system.users.manage",
-            "/dashboard/settings/access-requests",
+            "/dashboard/staff#staff-access",
             "Staff access requests",
           ],
         ]

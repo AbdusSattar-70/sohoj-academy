@@ -1,3 +1,4 @@
+import { getPrintCatalogue } from "@/modules/admissions/print-catalogue";
 import { getAcademySetup } from "@/modules/platform/setup/queries";
 import Link from "next/link";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
@@ -5,7 +6,7 @@ import { PrintAdmissionButton } from "@/modules/admissions/components/print-butt
 import { AdmissionPaper } from "@/modules/admissions/components/admission-paper";
 export default async function BlankApplication() {
   await requirePermission("admissions.create");
-  const setup = await getAcademySetup();
+  const [setup,catalogue] = await Promise.all([getAcademySetup(),getPrintCatalogue()]);
   return (
     <div className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-4 print:hidden">
@@ -27,7 +28,7 @@ export default async function BlankApplication() {
           <PrintAdmissionButton />
         </div>
       </header>
-      <AdmissionPaper academyName={setup.academyName} />
+      <AdmissionPaper catalogue={catalogue} academyName={setup.academyName} />
     </div>
   );
 }

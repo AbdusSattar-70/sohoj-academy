@@ -35,6 +35,7 @@ export async function submitPublicInterest(
   // Keep the client receiver: Supabase rpc() reads this.rest internally.
   const { data: result, error } = await supabase.rpc("submit_public_interest", {
     p_payload: {
+      student_mobile:data.studentMobile,student_email:data.studentEmail,present_landmark:data.presentLandmark,permanent_same_as_present:data.permanentSameAsPresent,
       date_of_birth: data.dateOfBirth || "",
       gender: data.gender || "",
       school_roll: data.schoolRoll || "",

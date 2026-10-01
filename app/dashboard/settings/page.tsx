@@ -68,7 +68,7 @@ export default async function AccessSecurityPage() {
         {canManageUsers && (
           <Link
             className="rounded-xl border px-4 py-3 text-sm"
-            href="/dashboard/settings/access-requests"
+            href="/dashboard/staff#staff-access"
           >
             Staff access requests
           </Link>
