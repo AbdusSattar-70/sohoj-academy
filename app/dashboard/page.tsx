@@ -113,7 +113,7 @@ export default async function DashboardPage({
           ],
           [
             "system.users.manage",
-            "/dashboard/settings/access-requests",
+            "/dashboard/staff#staff-access",
             "Staff access requests",
           ],
         ]
