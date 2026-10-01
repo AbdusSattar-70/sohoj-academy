@@ -1,23 +1,21 @@
-"use client";
+import type { ReactNode } from "react";
 
-import { useLanguage } from "@/components/providers/language-provider";
-
-/** Decode accidental literal \\uXXXX sequences from bad encoding pipelines. */
-function decodeUnicodeEscapes(value: string): string {
-  if (!value.includes("\\u")) return value;
-  return value.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) =>
-    String.fromCharCode(Number.parseInt(hex, 16)),
-  );
-}
-
+/**
+ * Render both translations in the server component. The language provider
+ * toggles visibility through its data-locale attribute, so public pages do not
+ * need a client component just to display static copy.
+ */
 export function LocalizedText({
   en,
   bn,
 }: {
-  en: string;
-  bn: string;
+  en: ReactNode;
+  bn: ReactNode;
 }) {
-  const { locale } = useLanguage();
-  const text = locale === "bn" ? decodeUnicodeEscapes(bn) : decodeUnicodeEscapes(en);
-  return <>{text}</>;
+  return (
+    <>
+      <span className="localized-en">{en}</span>
+      <span className="localized-bn">{bn}</span>
+    </>
+  );
 }

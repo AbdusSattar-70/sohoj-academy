@@ -57,32 +57,58 @@ export type ProspectListRow = {
   offeringLabel: string;
 };
 
-export async function getProspectList(): Promise<ProspectListRow[]> {
+export type ProspectListPage = {
+  rows: ProspectListRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export async function getProspectList({
+  page = 1,
+  query = "",
+  status = "QUEUE",
+  intent = "ALL",
+  pageSize = 50,
+}: {
+  page?: number;
+  query?: string;
+  status?: string;
+  intent?: string;
+  pageSize?: number;
+} = {}): Promise<ProspectListPage> {
   const supabase = await createClient();
   const offeringDb = await createOfferingClient();
 
+  type ProspectQuery = {
+    select: (cols: string) => ProspectQuery;
+    order: (col: string, opts: { ascending: boolean }) => ProspectQuery;
+    range: (from: number, to: number) => Promise<{ data: ProspectCoreRow[] | null; count: number | null }>;
+    in: (column: string, values: string[]) => ProspectQuery;
+    eq: (column: string, value: string) => ProspectQuery;
+    or: (filters: string) => ProspectQuery;
+  };
   const prospectsClient = supabase as unknown as {
-    from: (table: string) => {
-      select: (cols: string) => {
-        order: (
-          col: string,
-          opts: { ascending: boolean },
-        ) => {
-          limit: (n: number) => Promise<{ data: ProspectCoreRow[] | null }>;
-        };
-      };
-    };
+    from: (table: string) => ProspectQuery;
   };
 
+  const safePage = Math.max(1, page);
+  const safePageSize = Math.min(100, Math.max(10, pageSize));
+  const from = (safePage - 1) * safePageSize;
+  const to = from + safePageSize - 1;
+  let prospectsQuery = prospectsClient
+    .from("prospects")
+    .select(
+      "id,prospect_no,student_name,guardian_name,mobile,current_class_id,school_id,school_name_snapshot,source_id,assigned_to_staff_id,status,next_follow_up_at,created_at,interested_offering_id,submission_intent,application_snapshot",
+    );
+  if (status === "QUEUE") prospectsQuery = prospectsQuery.in("status", ["NEW", "CONTACTED", "COUNSELLING", "FUTURE_FOLLOW_UP"]);
+  else if (status && status !== "ALL") prospectsQuery = prospectsQuery.eq("status", status);
+  if (intent && intent !== "ALL") prospectsQuery = prospectsQuery.eq("submission_intent", intent);
+  const needle = query.trim().replace(/[(),]/g, " ");
+  if (needle) prospectsQuery = prospectsQuery.or(`prospect_no.ilike.%${needle}%,student_name.ilike.%${needle}%,guardian_name.ilike.%${needle}%,mobile.ilike.%${needle}%,school_name_snapshot.ilike.%${needle}%`);
   const [prospectsQ, classesQ, schoolsQ, sourcesQ, staffQ, offeringsQ] =
     await Promise.all([
-      prospectsClient
-        .from("prospects")
-        .select(
-          "id,prospect_no,student_name,guardian_name,mobile,current_class_id,school_id,school_name_snapshot,source_id,assigned_to_staff_id,status,next_follow_up_at,created_at,interested_offering_id,submission_intent,application_snapshot",
-        )
-        .order("created_at", { ascending: false })
-        .limit(500),
+      prospectsQuery.order("created_at", { ascending: false }).range(from, to),
       supabase.from("classes").select("id,name"),
       supabase.from("schools").select("id,name,is_verified"),
       supabase.from("lead_sources").select("id,name"),
@@ -107,7 +133,7 @@ export async function getProspectList(): Promise<ProspectListRow[]> {
     ]),
   );
 
-  return (prospectsQ.data ?? []).map((row) => {
+  const rows = (prospectsQ.data ?? []).map((row) => {
     const linkedSchool = row.school_id ? schoolRows.get(row.school_id) : null;
     const schoolName = linkedSchool?.name ?? row.school_name_snapshot ?? "—";
     const schoolNeedsReview = Boolean(
@@ -136,8 +162,9 @@ export async function getProspectList(): Promise<ProspectListRow[]> {
       status: row.status as ProspectStatus,
       nextFollowUpAt: row.next_follow_up_at,
       createdAt: row.created_at,
-      submissionIntent:
-        row.submission_intent === "admission" ? "admission" : "interest",
+      submissionIntent: (row.submission_intent === "admission"
+        ? "admission"
+        : "interest") as SubmissionIntent,
       offeringLabel: row.interested_offering_id
         ? (offeringLabels.get(row.interested_offering_id) ?? "Linked offering")
         : row.application_snapshot?.offering_label
@@ -145,6 +172,7 @@ export async function getProspectList(): Promise<ProspectListRow[]> {
           : "Not verified",
     };
   });
+  return { rows, total: prospectsQ.count ?? rows.length, page: safePage, pageSize: safePageSize };
 }
 
 export type ProspectDetail = {
