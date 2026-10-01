@@ -3667,6 +3667,81 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_attendance_records: {
+        Row: {
+          id: string;
+          staff_id: string;
+          work_date: string;
+          status: string;
+          started_at: string | null;
+          ended_at: string | null;
+          break_minutes: number;
+          recorded_by: string;
+          reason: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          staff_id: string;
+          work_date: string;
+          status: string;
+          started_at?: string | null;
+          ended_at?: string | null;
+          break_minutes?: number;
+          recorded_by: string;
+          reason: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          staff_id?: string;
+          work_date?: string;
+          status?: string;
+          started_at?: string | null;
+          ended_at?: string | null;
+          break_minutes?: number;
+          recorded_by?: string;
+          reason?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      staff_compensation_terms: {
+        Row: {
+          staff_id: string;
+          model: string;
+          monthly_base: number;
+          hourly_rate: number;
+          pay_day: number;
+          effective_from: string;
+          recorded_by: string;
+          reason: string;
+          updated_at: string;
+        };
+        Insert: {
+          staff_id: string;
+          model: string;
+          monthly_base?: number;
+          hourly_rate?: number;
+          pay_day: number;
+          effective_from: string;
+          recorded_by: string;
+          reason: string;
+          updated_at?: string;
+        };
+        Update: {
+          staff_id?: string;
+          model?: string;
+          monthly_base?: number;
+          hourly_rate?: number;
+          pay_day?: number;
+          effective_from?: string;
+          recorded_by?: string;
+          reason?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -4293,6 +4368,20 @@ export type Database = {
       complete_own_staff_access: {
         Args: Record<string, never>;
         Returns: undefined;
+      };
+      workforce_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      staff_work_workspace: {
+        Args: {
+          p_month?: string | null;
+          p_staff_id?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
       };
     };
     Enums: {

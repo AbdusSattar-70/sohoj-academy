@@ -26,6 +26,8 @@ export type ErpRouteDefinition = {
 };
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
+  {id:"my-work",title:"My work & attendance",eyebrow:"Workspace",href:"/dashboard/my-work",navGroup:"Workspace",permission:"workforce.self.view",icon:"staff"},
+  {id:"staff-operations",title:"Staff attendance & terms",eyebrow:"People",href:"/dashboard/staff/operations",navGroup:"People",permission:"workforce.manage",icon:"staff"},
   { id: "referrals", title: "Referrers / My referrals", eyebrow: "People", href: "/dashboard/referrals", navGroup: "People", permission: "referrals.portal.view", icon: "students" },
   // Workspace
   {
