@@ -3742,6 +3742,57 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_work_tasks: {
+        Row: {
+          id: string;
+          staff_id: string;
+          title: string;
+          instructions: string;
+          due_on: string;
+          status: string;
+          progress: number;
+          blocker: string;
+          review_note: string | null;
+          created_by: string;
+          updated_by: string;
+          created_at: string;
+          updated_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          staff_id: string;
+          title: string;
+          instructions?: string;
+          due_on: string;
+          status?: string;
+          progress?: number;
+          blocker?: string;
+          review_note?: string | null;
+          created_by: string;
+          updated_by: string;
+          created_at?: string;
+          updated_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          staff_id?: string;
+          title?: string;
+          instructions?: string;
+          due_on?: string;
+          status?: string;
+          progress?: number;
+          blocker?: string;
+          review_note?: string | null;
+          created_by?: string;
+          updated_by?: string;
+          created_at?: string;
+          updated_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -4379,6 +4430,20 @@ export type Database = {
         Args: {
           p_month?: string | null;
           p_staff_id?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      staff_task_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      staff_tasks_workspace: {
+        Args: {
+          p_staff_id?: string | null;
+          p_history?: boolean | null;
           p_page?: number | null;
         };
         Returns: Json;

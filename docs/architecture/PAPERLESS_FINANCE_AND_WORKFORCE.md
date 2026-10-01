@@ -55,6 +55,6 @@ Paperless readiness requires actual end-to-end consent, receipts, payslips, expe
 ## Delivery status
 
 - Documentation: committed first.
-- Attendance and own workforce workspace: next feature.
-- Tasks and completion accountability: following feature.
+- Attendance and own workforce workspace: implemented in migration 17, with own-only reads, corrections, overlap checks and retry protection.
+- Tasks and completion accountability: implemented in migration 18, with own reports, administrative acceptance/return, cancellation, audit and paginated current/history lists.
 - Fixed/hourly payroll, daily close, reporting/period lock, assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
