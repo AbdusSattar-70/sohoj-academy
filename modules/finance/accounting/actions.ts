@@ -31,7 +31,7 @@ const inputSchema = z.object({
 
 export async function submitAccountingCommand(input: unknown): Promise<{ ok: boolean; message: string }> {
   const parsed = inputSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, message: "Enter the required details and a reason of at least five characters." };
+  if (!parsed.success) return { ok: false, message: parsed.error.issues.some(i => i.path[0] === "reason") ? "Reason needs at least five characters after removing spaces. Your entries have been kept." : "Choose a valid action and check the entered details." };
   const context = await requireErpContext();
   const permission = commands[parsed.data.action];
   if (!context.permissions.includes(permission)) return { ok: false, message: "You do not have permission for this action." };

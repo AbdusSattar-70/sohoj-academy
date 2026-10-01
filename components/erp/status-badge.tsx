@@ -18,6 +18,18 @@ const tones: Record<string, string> = {
     "border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200",
 };
 
+Object.assign(tones, {
+  ACTIVE_ENROLLMENT: tones.ACTIVE,
+  ACCEPTED: tones.APPROVED,
+  READY: tones.CONTACTED,
+  DRAFT: tones.PENDING,
+  BILLING_POSTED: tones.CONTACTED,
+  PENDING_PAYMENT: tones.PENDING,
+  CANCELLED: tones.REJECTED,
+  SUSPENDED: tones.REJECTED,
+  CLOSED_ENROLLMENT: "border-slate-400 bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-300",
+});
+
 export function StatusBadge({
   value,
   className,
