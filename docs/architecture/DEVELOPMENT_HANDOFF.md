@@ -31,3 +31,5 @@ Apply migration 16 to existing installations without resetting data. See [Referr
 ## Paperless finance and workforce branch
 
 Branch `feature/finance_accounting_management` extends migration 16. Read [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md) before further work. Migration 17 provides actual staff attendance and agreed compensation terms; migration 18 provides assigned work and administrative completion acceptance. My work is the first workspace for non-admin staff, with own-only attendance, tasks and approved finance summaries. Fixed/hourly payroll posting, payslips, daily close, period lock and full financial reporting remain explicitly pending. Do not confuse configured salary or estimates with posted liabilities.
+
+Accounting action forms now open inline. Client-owned request IDs survive unchanged retries; the server does not generate a new key for every accounting attempt. Validation retains inputs, pending saves prevent closing the form, and signed adjustments can be entered. Uncertain outcomes require checking the record before changing inputs.

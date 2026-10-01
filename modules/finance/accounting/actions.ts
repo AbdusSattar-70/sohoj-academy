@@ -24,6 +24,7 @@ const commands = {
 
 type Command = keyof typeof commands;
 const inputSchema = z.object({
+  request_id: z.string().uuid(),
   action: z.enum(Object.keys(commands) as [Command, ...Command[]]),
   reason: z.string().trim().min(5).max(1000),
   values: z.record(z.string(), z.union([z.string(), z.number()])).default({}),
@@ -32,6 +33,7 @@ const inputSchema = z.object({
 export async function submitAccountingCommand(input: unknown): Promise<{ ok: boolean; message: string }> {
   const parsed = inputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: parsed.error.issues.some(i => i.path[0] === "reason") ? "Reason needs at least five characters after removing spaces. Your entries have been kept." : "Choose a valid action and check the entered details." };
+  try {
   const context = await requireErpContext();
   const permission = commands[parsed.data.action];
   if (!context.permissions.includes(permission)) return { ok: false, message: "You do not have permission for this action." };
@@ -41,10 +43,11 @@ export async function submitAccountingCommand(input: unknown): Promise<{ ok: boo
       ...parsed.data.values,
       action: parsed.data.action,
       reason: parsed.data.reason,
-      request_id: crypto.randomUUID(),
+      request_id: parsed.data.request_id,
     },
   });
   if (error) return { ok: false, message: error.message };
   revalidatePath("/dashboard/finance/accounting");
   return { ok: true, message: (data as { message?: string } | null)?.message ?? "Finance action completed." };
+  } catch { return {ok:false,message:"Could not confirm the result. Check the record before changing inputs; retrying unchanged inputs uses the same request identity."}; }
 }

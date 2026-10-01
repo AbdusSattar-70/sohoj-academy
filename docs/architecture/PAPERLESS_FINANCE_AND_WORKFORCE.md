@@ -57,4 +57,16 @@ Paperless readiness requires actual end-to-end consent, receipts, payslips, expe
 - Documentation: committed first.
 - Attendance and own workforce workspace: implemented in migration 17, with own-only reads, corrections, overlap checks and retry protection.
 - Tasks and completion accountability: implemented in migration 18, with own reports, administrative acceptance/return, cancellation, audit and paginated current/history lists.
+- Accounting save recovery: implemented stable request IDs for unchanged retries, inline action forms, preserved invalid input and signed compensation adjustments. The all-time operating result is labelled explicitly.
 - Fixed/hourly payroll, daily close, reporting/period lock, assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
+
+## Start using this delivery
+
+1. Apply migrations 17 and 18 without resetting the database.
+2. Admin opens People → Staff attendance & terms, chooses the person and month, then records actual attendance and agreed pay terms. Present hours require completed start/end times; corrections require a reason.
+3. On the same page choose Assign task, confirm responsibility, instructions and deadline.
+4. Staff sign in to My work, inspect their own attendance and posted financial position, update progress/blocker and submit completed work. Teachers use My classes to take student attendance.
+5. Admin selects the same person, accepts submitted completion or returns it with an explanation. Completed and cancelled tasks remain in history.
+6. Accounting actions open inline; failed validation retains input. After an uncertain network outcome inspect the record; an unchanged retry keeps the same database request identity.
+
+Local acceptance still needed: hosted Supabase Auth/RLS integration, real browser form behaviour, mobile/tablet layout, and complete accounting posting/settlement against your development database. Isolated SQL fixtures cover own-only reads, attendance hour arithmetic, permission denial, idempotent task creation and completion review. TypeScript checks cover the added routes and contracts. No live database has been changed.
