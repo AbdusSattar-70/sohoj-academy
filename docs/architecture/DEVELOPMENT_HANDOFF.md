@@ -23,3 +23,7 @@ Current verification: all 14 files applied in isolated PGlite; four rollback fix
 Read [Secure account setup](ACCOUNT_SETUP_CONFIGURATION.md). Staff requests are verified inside the Staff page; the previous Settings request route redirects there. Setup/recovery uses a shared server-only secret-key client with credential checks and professional locale-specific feedback. Wrong live credentials still require the project administrator to correct the environment and restart/redeploy.
 
 Migration 15 adds audit search, bounded pagination and permission-scoped Bangladesh-day operational totals. Correlation and raw change payloads stay in immutable records, not the operator table. Five isolated SQL fixtures now pass, including paged search/no overlap and protected totals.
+
+## Staff onboarding and own compensation statements
+
+Apply migration 16 to existing installations without resetting data. See [Referral accounts and staff onboarding](REFERRAL_ACCOUNT_AND_STAFF_ONBOARDING.md). Staff onboarding is request-only; completed account setup appears in request history. Teachers and referrers have own-only financial statements. Manual Staff creation is removed from the UI and revoked at the RPC boundary. Existing ambiguous identities require review; they are never automatically merged.

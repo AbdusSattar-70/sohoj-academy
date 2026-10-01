@@ -4290,6 +4290,10 @@ export type Database = {
         };
         Returns: Json;
       };
+      complete_own_staff_access: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
     };
     Enums: {
       approval_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";

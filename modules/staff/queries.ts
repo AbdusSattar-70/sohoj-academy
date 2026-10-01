@@ -53,27 +53,3 @@ export async function getStaffList(): Promise<StaffListRow[]> {
 }
 
 
-export async function getStaffFormOptions() {
-  const supabase = await createClient();
-  const [rolesQ, subjectsQ] = await Promise.all([
-    supabase
-      .from("staff_roles")
-      .select("code,name,is_teaching_role")
-      .eq("is_active", true)
-      .order("name"),
-    supabase
-      .from("subjects")
-      .select("id,name")
-      .eq("is_active", true)
-      .order("name"),
-  ]);
-
-  return {
-    roles: (rolesQ.data ?? []).map((row) => ({
-      code: row.code,
-      name: row.name,
-      isTeachingRole: row.is_teaching_role,
-    })),
-    subjects: subjectsQ.data ?? [],
-  };
-}

@@ -66,6 +66,7 @@ function RequestCard({ row: r }: { row: RequestRow }) {
       <p className="my-3 text-sm">
         {t("Requested role","অনুরোধকৃত ভূমিকা")} {r.requested_role}: {r.purpose}
       </p>
+      {r.status === "ACTIVE" && <p className="text-sm text-muted-foreground">{t("Account setup completed; this person has accessed the workspace. Manage their identity and responsibilities in the staff register.","অ্যাকাউন্ট চালু হয়েছে এবং এই ব্যক্তি কর্মক্ষেত্রে প্রবেশ করেছেন। স্টাফ তালিকা থেকে পরিচয় ও দায়িত্ব পরিচালনা করুন।")}</p>}
       {["PENDING", "VERIFIED", "INVITED"].includes(r.status) && (
         <details className="space-y-3"><summary className="cursor-pointer font-semibold">{t("Review access request","প্রবেশাধিকারের অনুরোধ পর্যালোচনা করুন")}</summary><div className="mt-3 space-y-3">
           <label className="block text-sm">
