@@ -3841,6 +3841,100 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_daily_closes: {
+        Row: {
+          id: string;
+          close_no: string;
+          account_id: string;
+          close_date: string;
+          opening: number;
+          receipts: number;
+          payments: number;
+          expected: number;
+          actual: number;
+          variance: number;
+          ledger_token: string;
+          denominations: Json | null;
+          statement_reference: string;
+          explanation: string;
+          handed_to: string | null;
+          recorded_by: string;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          close_no?: string;
+          account_id: string;
+          close_date: string;
+          opening: number;
+          receipts: number;
+          payments: number;
+          expected: number;
+          actual: number;
+          variance: number;
+          ledger_token: string;
+          denominations?: Json | null;
+          statement_reference: string;
+          explanation: string;
+          handed_to?: string | null;
+          recorded_by: string;
+          recorded_at?: string;
+        };
+        Update: {
+          id?: string;
+          close_no?: string;
+          account_id?: string;
+          close_date?: string;
+          opening?: number;
+          receipts?: number;
+          payments?: number;
+          expected?: number;
+          actual?: number;
+          variance?: number;
+          ledger_token?: string;
+          denominations?: Json | null;
+          statement_reference?: string;
+          explanation?: string;
+          handed_to?: string | null;
+          recorded_by?: string;
+          recorded_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_close_resolutions: {
+        Row: {
+          id: string;
+          event_order: number;
+          ledger_token: string;
+          close_id: string;
+          action: string;
+          reason: string;
+          journal_id: string | null;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          ledger_token: string;
+          close_id: string;
+          action: string;
+          reason: string;
+          journal_id?: string | null;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          ledger_token?: string;
+          close_id?: string;
+          action?: string;
+          reason?: string;
+          journal_id?: string | null;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -4517,6 +4611,25 @@ export type Database = {
       };
       my_salary_summary: {
         Args: Record<string, never>;
+        Returns: Json;
+      };
+      daily_close_preview: {
+        Args: {
+          p_account_id: string;
+          p_date: string;
+        };
+        Returns: Json;
+      };
+      daily_close_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      daily_close_workspace: {
+        Args: {
+          p_page?: number | null;
+        };
         Returns: Json;
       };
     };

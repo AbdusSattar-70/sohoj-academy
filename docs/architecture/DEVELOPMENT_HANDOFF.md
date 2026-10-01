@@ -30,10 +30,14 @@ Apply migration 16 to existing installations without resetting data. See [Referr
 
 ## Paperless finance and workforce branch
 
-Branch `feature/finance_accounting_management` extends migration 16. Read [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md) before further work. Migration 17 provides actual staff attendance and agreed compensation terms; migration 18 provides assigned work and administrative completion acceptance. My work is the first workspace for non-admin staff, with own-only attendance, tasks and approved finance summaries. Migration 19 now supplies fixed/hourly payroll posting and payslips. Daily close, period lock and full financial reporting remain pending. Do not confuse configured salary or estimates with posted liabilities.
+Branch `feature/finance_accounting_management` extends migration 16. Read [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md) before further work. Migration 17 provides actual staff attendance and agreed compensation terms; migration 18 provides assigned work and administrative completion acceptance. My work is the first workspace for non-admin staff, with own-only attendance, tasks and approved finance summaries. Migration 19 now supplies fixed/hourly payroll posting and payslips. Migration 20 supplies daily cash/statement evidence; period lock and full financial reporting remain pending. Do not confuse configured salary or estimates with posted liabilities.
 
 Accounting action forms now open inline. Client-owned request IDs survive unchanged retries; the server does not generate a new key for every accounting attempt. Validation retains inputs, pending saves prevent closing the form, and signed adjustments can be entered. Uncertain outcomes require checking the record before changing inputs.
 
 ## Monthly payroll and payslips
 
 Migration 19 implements fixed/hourly salary preview, once-only posting, immutable snapshots, own payslips and partial cash/advance settlement. Read the monthly payroll section of [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md). Fixed/hourly teaching contracts are excluded from the teaching pool; hybrid participation is explicit. A staff advance creation reference to the removed organization_id column is fixed. Current-month payroll remains provisional, and statutory deductions/historical contract restoration/posted payroll correction are separate remaining work.
+
+## Daily close evidence
+
+Migration 20 adds cash denomination counts, statement comparison, explained variance, investigation notes, recount-based resolution, reopen and stale detection after later ledger postings. No ledger amount is overwritten and no accounting period is locked by this workflow. Handover receiver acknowledgement and assigned tills remain separate work. See the daily close section of [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md).

@@ -11,7 +11,7 @@ Branch: `feature/finance_accounting_management`. Base: redesign_refactor, migrat
 | P0 | Compensation terms | Revenue-share teacher policy and approved runs | Fixed/hourly/hybrid terms, agreed pay day and a clearly labelled estimate. Never present an estimate as approved debt or promise payment. |
 | P0 | Tasks and accountability | Academic workflow review | Staff assignments, due dates, progress, blocker explanation, completion submission and admin acceptance. Completion percentage is declared progress, not a salary deduction formula. |
 | P0 | Payroll | Migration 19: fixed/hourly/hybrid salary preview, posting, payslips and cash/advance settlement | Historical contract recovery, statutory deduction policies and documented payroll corrections remain. No automatic task/absence deduction or second acquisition accrual. |
-| P0 | Daily close | Balanced journals, actual collections and account reconciliation | Cash count, till/opening float, expected/actual/difference, cashier handover and unresolved variance register. |
+| P0 | Daily close | Migration 20: denomination count, statement comparison, variance/recount evidence and stale detection | Receiver acknowledgement, cash ownership/till assignment and opening-float workflow remain. |
 | P0 | Month close | Ledger and accounting summary | Trial balance, period locking, authorised reopen, P&L, balance sheet and cash flow with date/account filters. Current all-time summary is not a monthly management report. |
 | P1 | Expenses and procurement | Vendors, expenses, advances and payables | Inline vendor/category selection, attachments with private storage, reimbursements, recurring rent/utilities, purchase order and receipt matching. |
 | P1 | Assets | Permission names exist | Asset register, custody, purchase cost, depreciation, maintenance, disposal and linked ledger evidence. |
@@ -59,7 +59,8 @@ Paperless readiness requires actual end-to-end consent, receipts, payslips, expe
 - Tasks and completion accountability: implemented in migration 18, with own reports, administrative acceptance/return, cancellation, audit and paginated current/history lists.
 - Accounting save recovery: implemented stable request IDs for unchanged retries, inline action forms, preserved invalid input and signed compensation adjustments. The all-time operating result is labelled explicitly.
 - Fixed/hourly payroll: implemented in migration 19, with month/staff uniqueness, stale-preview rejection, immutable term/attendance snapshot, balanced expense/liability posting, cash payment, partial settlement, advance recovery and own-only printable payslips.
-- Daily close, reporting/period lock, assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
+- Daily close: implemented in migration 20, with immutable count/statement evidence, denomination validation, variance investigation, fresh-count resolution, reopen and changed-ledger detection. Recording a handover recipient is not receiver acknowledgement.
+- Reporting/period lock, assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
 
 ## Start using this delivery
 
@@ -83,3 +84,13 @@ Record actual cash/bank payment and an optional paid staff advance offset in one
 FIXED/HOURLY contracts are excluded from teaching-pool remuneration; HYBRID explicitly allows both agreed salary and teaching pool. Acquisition and retention remain separate rewards. Existing teaching-pool posting blocks conflicting fixed/hourly salary posting for the same period. A staff advance creation defect from a nonexistent staff.organization_id reference is corrected by checking branch scope. Payroll records and teaching/referral evidence retain separate detail views. My work combines their posted outstanding liabilities once and shows advances separately; do not add cash and offset totals indiscriminately.
 
 Before production: verify real browser navigation/printing and hosted auth permissions. Isolated tests exercise stale preview rejection, once-only posting, balanced journal creation, partial cash plus advance recovery, unchanged retries and teacher privilege denial. Payroll correction/reversal and historic agreement restoration need a separate controlled feature; do not rewrite posted records.
+
+## Daily cash and statement close (migration 20)
+
+Finance → Daily cash & statement close → Count cash / match statement → choose account/date → review opening, debits, credits and expected closing → enter actual cash denomination counts or actual statement balance → explain differences and record reference, optional recipient and note → save. This creates evidence only; no balancing journal is invented. Ledger-derived debits/credits include financial transfers, not only student receipts or expenses.
+
+A second verified count remains a new immutable record. Add investigation notes, resolve after a fresh matching count/statement, or reopen with a reason. Notes do not erase the latest resolved/reopened state. Backdated ledger postings invalidate both count evidence and a previously resolved balance; review again. Inactive account history stays readable. Original evidence is never overwritten/deleted.
+
+This daily close does not freeze financial posting or create a period lock. A stated handover recipient is recorded by the closing actor; authenticated recipient acknowledgement and cashier/till ownership are still separate remaining workflows. External bank/mobile statements are referenced manually; automatic transaction import/matching is not implemented.
+
+Isolated tests exercise duplicate-count retries, unexplained variance protection, matching recount resolution, notes after resolution, late-posting stale detection, immutable ledger balance and denial of teacher access to academy-wide cash accounts. Hosted browser/mobile and actual bank statement workflows still require local acceptance.
