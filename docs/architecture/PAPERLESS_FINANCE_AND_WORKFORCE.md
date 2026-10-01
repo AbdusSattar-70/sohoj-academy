@@ -12,7 +12,7 @@ Branch: `feature/finance_accounting_management`. Base: redesign_refactor, migrat
 | P0 | Tasks and accountability | Academic workflow review | Staff assignments, due dates, progress, blocker explanation, completion submission and admin acceptance. Completion percentage is declared progress, not a salary deduction formula. |
 | P0 | Payroll | Migration 19: fixed/hourly/hybrid salary preview, posting, payslips and cash/advance settlement | Historical contract recovery, statutory deduction policies and documented payroll corrections remain. No automatic task/absence deduction or second acquisition accrual. |
 | P0 | Daily close | Migration 20: denomination count, statement comparison, variance/recount evidence and stale detection | Receiver acknowledgement, cash ownership/till assignment and opening-float workflow remain. |
-| P0 | Month close | Ledger and accounting summary | Trial balance, period locking, authorised reopen, P&L, balance sheet and cash flow with date/account filters. Current all-time summary is not a monthly management report. |
+| P0 | Month close | Migration 21: monthly P&L, balance sheet, trial balance, cash movement, close/reopen and write guards | Cost-centre/programme filters, classified cash-flow statements and fiscal year-end closing remain. |
 | P1 | Expenses and procurement | Vendors, expenses, advances and payables | Inline vendor/category selection, attachments with private storage, reimbursements, recurring rent/utilities, purchase order and receipt matching. |
 | P1 | Assets | Permission names exist | Asset register, custody, purchase cost, depreciation, maintenance, disposal and linked ledger evidence. |
 | P1 | Collections | Invoices, discounts, scholarships, payment/refund and recurring invoices | Aging buckets, parent statement, arrears tasks, instalment commitments, safe reminders, online payment verification and duplicate transaction protection. |
@@ -60,7 +60,8 @@ Paperless readiness requires actual end-to-end consent, receipts, payslips, expe
 - Accounting save recovery: implemented stable request IDs for unchanged retries, inline action forms, preserved invalid input and signed compensation adjustments. The all-time operating result is labelled explicitly.
 - Fixed/hourly payroll: implemented in migration 19, with month/staff uniqueness, stale-preview rejection, immutable term/attendance snapshot, balanced expense/liability posting, cash payment, partial settlement, advance recovery and own-only printable payslips.
 - Daily close: implemented in migration 20, with immutable count/statement evidence, denomination validation, variance investigation, fresh-count resolution, reopen and changed-ledger detection. Recording a handover recipient is not receiver acknowledgement.
-- Reporting/period lock, assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
+- Monthly accounts and period controls: implemented in migration 21, with posted-date reports, CSV/print, month-end verification checks, immutable close/reopen snapshots and database write guards.
+- Assets and other gaps: separate subsequent features; do not label them implemented until their posting and recovery paths exist.
 
 ## Start using this delivery
 
@@ -94,3 +95,15 @@ A second verified count remains a new immutable record. Add investigation notes,
 This daily close does not freeze financial posting or create a period lock. A stated handover recipient is recorded by the closing actor; authenticated recipient acknowledgement and cashier/till ownership are still separate remaining workflows. External bank/mobile statements are referenced manually; automatic transaction import/matching is not implemented.
 
 Isolated tests exercise duplicate-count retries, unexplained variance protection, matching recount resolution, notes after resolution, late-posting stale detection, immutable ledger balance and denial of teacher access to academy-wide cash accounts. Hosted browser/mobile and actual bank statement workflows still require local acceptance.
+
+## Monthly reports and period controls (migration 21)
+
+Finance → Monthly accounts & period close → choose month → P&L / balance sheet / trial balance / cash movement. Reports include posted journals only, by accounting date. Opening balances carry all earlier postings; month movements cover that month; balance sheet includes accumulated unclosed result separately from posted equity. Cash movement groups posted source types and excludes net-zero internal transfers; it is not yet an operating/investing/financing cash-flow classification. CSV exports the full trial balance; print uses the selected report without an academy branding header.
+
+Fixed/hourly payroll expense is now dated at the earned month's end, while its settlement remains on the actual payment date. If that earned month was closed, the entire attempted payroll posting rolls back. Revenue-share/referral reward recognition continues under the collection-driven existing engine, independently from fixed payroll.
+
+Before CLOSE, verify all currently active cash/bank/mobile accounts against a matching, current-token month-end count/statement; review payroll, receipts/refunds, expense evidence and outstanding balances. Open receivables/payables/advances may carry legitimately; do not manufacture settlement just to close. The completed-month report must balance and all posted journals must balance. A refreshed preview is mandatory if evidence changes.
+
+CLOSE stores an immutable snapshot and blocks new journal headers and additional journal lines in that month, including controlled financial RPCs and service-role writes through normal triggers. Posting takes a shared month lock; close takes the exclusive lock, so normal concurrent transactions cannot slip through the close boundary. An authorised REOPEN records actor/reason and restores posting, with history preserved. No silent unlock or deletion exists.
+
+Remaining reporting work: cost-centre/programme contribution, budgets, classified cash flow, fiscal year-end transfer of accumulated result, payroll correction/reversal, historical contract restoration, external payment import, handover acknowledgement and assets. Isolated tests verify reporting arithmetic, rejected unverified close, one-time close, blocked backdated posting, authorised reopen and teacher access denial. Hosted concurrency and browser acceptance still need local verification.

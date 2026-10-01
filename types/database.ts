@@ -3935,6 +3935,37 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_period_events: {
+        Row: {
+          id: string;
+          event_order: number;
+          month: string;
+          action: string;
+          snapshot: Json;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          month: string;
+          action: string;
+          snapshot: Json;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          month?: string;
+          action?: string;
+          snapshot?: Json;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -4629,6 +4660,25 @@ export type Database = {
       daily_close_workspace: {
         Args: {
           p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      finance_account_ledger_token: {
+        Args: {
+          p_account: string;
+          p_date: string;
+        };
+        Returns: string;
+      };
+      monthly_financial_report: {
+        Args: {
+          p_month?: string | null;
+        };
+        Returns: Json;
+      };
+      finance_period_command: {
+        Args: {
+          p_input: Json;
         };
         Returns: Json;
       };
