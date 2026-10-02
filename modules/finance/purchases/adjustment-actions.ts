@@ -1,0 +1,6 @@
+"use server";
+import {z} from "zod";
+import {platformClient} from "@/modules/platform/rpc-client";
+import {runCommandAction} from "@/modules/platform/command-action";
+const schema=z.object({action:z.enum(["ADJUST","COLLECT_REFUND"]),request_id:z.string().uuid(),purchase_id:z.string().uuid().optional(),adjustment_id:z.string().uuid().optional(),kind:z.enum(["RETURN","CORRECTION"]).optional(),confirmed:z.boolean().optional(),amount:z.number().positive(),cash_refund:z.number().nonnegative().optional(),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),payment_account_id:z.string().uuid().optional(),reference:z.string().trim().min(3).max(200),reason:z.string().trim().min(10).max(1000)});
+export async function adjustmentAction(input:unknown){try{return await runCommandAction({schema,input,client:platformClient,rpc:"purchase_adjustment_command",permission:"accounting.expense.manage",revalidate:["/dashboard/finance/purchases","/dashboard/finance/accounting","/dashboard/finance/reports","/dashboard/finance/daily-close"],mapResult:data=>({message:(data as {message:string}).message})});}catch{return {ok:false as const,message:"Could not confirm the adjustment. Check the record first; unchanged retries reuse the request identity."};}}
