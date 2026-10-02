@@ -9,7 +9,7 @@ begin
  if kind='VENDOR' then
   if record_id is not null then
    select * into v from public.vendors where id=record_id and organization_id=org for update;if v.id is null then raise exception 'Supplier unavailable.';end if;
-   if v.updated_at is distinct from (p_input->>'expected_updated_at')::timestamptz then raise exception 'Supplier changed. Refresh before editing.';end if;before_value:=to_jsonb(v);
+   if md5(to_jsonb(v)::text) is distinct from p_input->>'token' then raise exception 'Supplier changed. Refresh before editing.';end if;before_value:=to_jsonb(v);
   end if;
   perform pg_advisory_xact_lock(hashtextextended(org::text||lower(name_value),22));
   if active and exists(select 1 from public.vendors where organization_id=org and is_active and lower(btrim(name))=lower(name_value) and id is distinct from record_id) then raise exception 'An active supplier with this name already exists.';end if;
@@ -49,7 +49,7 @@ begin
  select id into org from public.organizations where code='SOHOJ' and is_active;
  if p_kind='VENDOR' then
   select count(*) into total from public.vendors where organization_id=org and (p_search='' or concat_ws(' ',name,mobile,email,vendor_no) ilike '%'||p_search||'%');
-  select coalesce(jsonb_agg(to_jsonb(x)),'[]'::jsonb) into rows from(select id,vendor_no code,name,mobile,email,address,service_category,is_active,updated_at::text token,null::uuid expense_account_id from public.vendors where organization_id=org and (p_search='' or concat_ws(' ',name,mobile,email,vendor_no) ilike '%'||p_search||'%') order by name,id limit 25 offset (p_page-1)*25)x;
+  select coalesce(jsonb_agg(to_jsonb(x)),'[]'::jsonb) into rows from(select id,vendor_no code,name,mobile,email,address,service_category,is_active,md5(to_jsonb(v)::text) token,null::uuid expense_account_id from public.vendors v where organization_id=org and (p_search='' or concat_ws(' ',name,mobile,email,vendor_no) ilike '%'||p_search||'%') order by name,id limit 25 offset (p_page-1)*25)x;
  else
   select count(*) into total from public.finance_expense_categories where organization_id=org and (p_search='' or concat_ws(' ',name,code) ilike '%'||p_search||'%');
   select coalesce(jsonb_agg(to_jsonb(x)),'[]'::jsonb) into rows from(select id,code,name,null::text mobile,null::text email,null::text address,null::text service_category,is_active,md5(to_jsonb(c)::text) token,expense_account_id from public.finance_expense_categories c where organization_id=org and (p_search='' or concat_ws(' ',name,code) ilike '%'||p_search||'%') order by name,id limit 25 offset (p_page-1)*25)x;
