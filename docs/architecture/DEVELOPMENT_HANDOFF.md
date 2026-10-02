@@ -62,3 +62,5 @@ Migration 24 adds private finance-evidence Storage bucket, upload tickets, immut
 Migration 25 and SQL fixture 15 implement purchase credit notes/overstated expense reductions, payable credits explicitly distinguished from cash settlements, supplier refund receivables and later actual refund collection. Original charges are preserved. Purchases expose these actions in expandable rows; reports and daily close read the compensating journals.
 
 Migration 26 adds own-scope reimbursement drafts, private receipt attachment, submission, finance correction/verification/posting and actual partial/full payment. Route `/dashboard/finance/reimbursements` and SQL fixture 16 cover teacher own claims and prohibited self-posting. Documents now permit workforce users only for their authorized claim records; other purchase/expense documents remain finance-only.
+
+Migration 27 preserves the existing claim migration and allows newly verified global staff identities to claim before a campus assignment exists. Non-null campus assignments must still belong to the academy. The teacher fixture includes the required signup mobile field.
