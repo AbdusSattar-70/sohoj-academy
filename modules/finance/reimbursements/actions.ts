@@ -1,0 +1,6 @@
+"use server";
+import {z} from "zod";
+import {platformClient} from "@/modules/platform/rpc-client";
+import {runCommandAction} from "@/modules/platform/command-action";
+const schema=z.object({action:z.enum(["SAVE","SUBMIT","RETURN","CANCEL","POST","PAY"]),request_id:z.string().uuid(),id:z.string().uuid().optional(),revision:z.number().int().positive().optional(),staff_id:z.string().uuid().optional(),category_id:z.string().uuid().optional(),amount:z.number().positive().optional(),expense_date:z.string().optional(),description:z.string().max(1000).optional(),receipt_reference:z.string().max(200).optional(),own_funds:z.boolean().optional(),payment_account_id:z.string().uuid().optional(),reference:z.string().max(200).optional(),reason:z.string().trim().min(5).max(1000)});
+export async function reimbursementAction(input:unknown){try{return await runCommandAction({schema,input,client:platformClient,rpc:"reimbursement_command",permission:["accounting.expense.manage","workforce.self.view"],revalidate:["/dashboard/finance/reimbursements","/dashboard/finance/accounting","/dashboard/my-work","/dashboard/finance/reports"],mapResult:data=>({message:(data as {message:string}).message})});}catch{return {ok:false as const,message:"Could not confirm claim action. Check its status before changing inputs; unchanged retries reuse the same identity."};}}

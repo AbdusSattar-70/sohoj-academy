@@ -8,7 +8,7 @@ const reply=(message:string,status:number)=>Response.json({ok:false,message},{st
 export async function POST(request:Request){
  try{
   if(request.headers.get("origin")!==new URL(request.url).origin)return reply("Invalid request origin.",403);
-  const context=await getErpContext();if(!context||context.status!=="ACTIVE"||!context.permissions.includes("accounting.expense.manage"))return reply("Expense document access required.",403);
+  const context=await getErpContext();if(!context||context.status!=="ACTIVE"||!context.permissions.some(p=>["accounting.expense.manage","workforce.self.view"].includes(p)))return reply("Expense document access required.",403);
   const length=Number(request.headers.get("content-length")??0);if(length>6*1024*1024)return reply("File must be at most 5 MB.",413);
   const body=await request.formData();const file=body.get("file");const parsed=schema.safeParse(Object.fromEntries(body));
   if(!parsed.success||!(file instanceof File))return reply("Choose a document and enter a clear evidence note.",400);
