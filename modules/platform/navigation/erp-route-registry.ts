@@ -26,6 +26,7 @@ export type ErpRouteDefinition = {
 };
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
+  {id:"assets",title:"Assets & custody",eyebrow:"Finance",href:"/dashboard/finance/assets",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},
   {id:"reimbursements",title:"Staff expense claims",eyebrow:"Finance",href:"/dashboard/finance/reimbursements",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},
   {id:"purchases",title:"Purchases & supplier expenses",eyebrow:"Finance",href:"/dashboard/finance/purchases",navGroup:"Finance",permission:"accounting.expense.manage",icon:"accounting"},
   {id:"financial-reports",title:"Monthly accounts & period close",eyebrow:"Finance",href:"/dashboard/finance/reports",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
