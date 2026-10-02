@@ -54,3 +54,5 @@ Migration `22_purchase_drafts_receipt_and_expense_posting.sql` and `/dashboard/f
 SQL fixture `12_purchasing_receipt_supplier_settlement.sql` checks retry safety, stale revision rejection, receipt journals, partial-payment balance, overpayment rejection, duplicate invoice rollback, paid-now treatment, edit/cancel and outsider denial. No live database reset or mutation is part of this delivery.
 
 Next: private expense-document evidence and supplier/category maintenance; then procurement returns/corrections and staff reimbursements. Asset register/capitalization/depreciation follows as a distinct workflow. Monthly period locks already apply to the expense/payable journal calls.
+
+Migration 23 adds supplier/category maintenance under Purchases → Suppliers & categories. Edit, mark inactive and reactivate preserve history; stale changes and duplicate active supplier names/category codes are rejected. SQL fixture 13 exercises these controls. Private evidence is the next delivery.
