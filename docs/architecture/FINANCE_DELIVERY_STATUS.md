@@ -16,10 +16,15 @@ This is the current status; older roadmap paragraphs describe the state when wri
 | 40 | Twelve-month year closing, retained-result transfer and reversal | `/dashboard/finance/year-end` |
 | 41 | Current supplier accounts, settlement and separate advances/refunds | `/dashboard/finance/suppliers` |
 | 42 | Physical consumable receipt/use/count register and reorder attention | `/dashboard/finance/stock` |
+| 43 | Orders, partial received quantities, exact supplier invoice matching and inline settlement | `/dashboard/finance/procurement` |
+
+## Explicitly excluded
+
+Digital admission consent is excluded by the owner decision of 2026-10-03. Keep guardian/student paper signatures and physical file-reference recording. Do not add digital consent, uploads or a digital-consent prerequisite as a future delivery gap. Private finance-document evidence is a separate existing capability. Digital finance with paper admission consent is the intended operating model.
 
 ## Remaining internal extensions
 
-These are not delivered and must not be advertised as complete: partial procurement receipt/matching; optional private digital admission evidence and retention controls; payroll full cancellation/overpayment recovery and configured statutory liabilities; interrupted cashier reassignment, evidenced shortage resolution and transfer reversal; expanded historical duty pagination; broader legacy-register pagination and failure recovery visibility; advanced asset impairment/revaluation, credit-sale proceeds and construction accounting. Existing private finance-document storage does not establish digital admission consent.
+These are not delivered and must not be advertised as complete: payroll full cancellation/overpayment recovery and configured statutory liabilities; interrupted cashier reassignment, evidenced shortage resolution and transfer reversal; expanded historical duty pagination; broader legacy-register pagination and failure recovery visibility; advanced asset impairment/revaluation, credit-sale proceeds and construction accounting.
 
 ## External dependencies and release acceptance
 

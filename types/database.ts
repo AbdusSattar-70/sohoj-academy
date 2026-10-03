@@ -5223,6 +5223,90 @@ export type Database = {
         };
         Relationships: [];
       };
+      procurement_orders: {
+        Row: {
+          id: string;
+          order_no: string;
+          organization_id: string;
+          vendor_id: string;
+          category_id: string;
+          description: string;
+          items: Json;
+          total: number;
+          expected_on: string | null;
+          status: string;
+          revision: number;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_no?: string;
+          organization_id: string;
+          vendor_id: string;
+          category_id: string;
+          description: string;
+          items: Json;
+          total: number;
+          expected_on?: string | null;
+          status?: string;
+          revision?: number;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_no?: string;
+          organization_id?: string;
+          vendor_id?: string;
+          category_id?: string;
+          description?: string;
+          items?: Json;
+          total?: number;
+          expected_on?: string | null;
+          status?: string;
+          revision?: number;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      procurement_receipts: {
+        Row: {
+          id: string;
+          order_id: string;
+          purchase_id: string;
+          items: Json;
+          invoice_total: number;
+          price_variance_reason: string | null;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          purchase_id: string;
+          items: Json;
+          invoice_total: number;
+          price_variance_reason?: string | null;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          purchase_id?: string;
+          items?: Json;
+          invoice_total?: number;
+          price_variance_reason?: string | null;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -6272,6 +6356,20 @@ export type Database = {
       consumable_workspace: {
         Args: {
           p_page?: number | null;
+          p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      procurement_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      procurement_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_status?: string | null;
           p_search?: string | null;
         };
         Returns: Json;

@@ -104,3 +104,6 @@ Finance extension 41: supplier account statements at `/dashboard/finance/supplie
 
 
 Finance extension 42: physical consumable stock at `/dashboard/finance/stock`, receipt/use/count evidence, edit/inactivation and low-stock attention. Fixture 31 covers retry, stale evidence, negative stock denial, unit stability, unchanged journals and outsider denial.
+
+
+Owner scope update 2026-10-03: digital admission consent excluded. Preserve paper-signature/file-reference workflow; it is not pending work. Finance extension 43 adds `/dashboard/finance/procurement`: order commitments, partial receipts, exact invoice amount matching, price variance evidence, inline supplier payments and commitment closure. Fixture 32 checks no pre-receipt journal, partial/final quantities, duplicate request/invoice rollback, stale/over-receipt denial, price-variance requirement and outsider scope.
