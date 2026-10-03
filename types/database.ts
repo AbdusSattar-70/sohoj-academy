@@ -4408,6 +4408,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_handover_receipts: {
+        Row: {
+          close_id: string;
+          recipient_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          close_id: string;
+          recipient_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          close_id?: string;
+          recipient_id?: string;
+          actor_id?: string;
+          outcome?: string;
+          counted_amount?: number;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -5235,6 +5265,22 @@ export type Database = {
           p_status?: string | null;
           p_search?: string | null;
         };
+        Returns: Json;
+      };
+      cash_handover_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      cash_handover_workspace: {
+        Args: {
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      cash_handover_recipients: {
+        Args: Record<string, never>;
         Returns: Json;
       };
     };

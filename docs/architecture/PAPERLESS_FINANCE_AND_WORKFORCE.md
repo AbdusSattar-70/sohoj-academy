@@ -11,7 +11,7 @@ Branch: `feature/finance_accounting_management`. Base: redesign_refactor, migrat
 | P0 | Compensation terms | Revenue-share teacher policy and approved runs | Fixed/hourly/hybrid terms, agreed pay day and a clearly labelled estimate. Never present an estimate as approved debt or promise payment. |
 | P0 | Tasks and accountability | Academic workflow review | Staff assignments, due dates, progress, blocker explanation, completion submission and admin acceptance. Completion percentage is declared progress, not a salary deduction formula. |
 | P0 | Payroll | Migration 19: fixed/hourly/hybrid salary preview, posting, payslips and cash/advance settlement | Historical contract recovery, statutory deduction policies and documented payroll corrections remain. No automatic task/absence deduction or second acquisition accrual. |
-| P0 | Daily close | Migration 20: denomination count, statement comparison, variance/recount evidence and stale detection | Receiver acknowledgement, cash ownership/till assignment and opening-float workflow remain. |
+| P0 | Daily close | Migration 20: denomination count, statement comparison, variance/recount evidence and stale detection | Migration 30 adds recipient receipt/dispute evidence. Cash ownership/till assignment and opening-float workflow remain. |
 | P0 | Month close | Migration 21: monthly P&L, balance sheet, trial balance, cash movement, close/reopen and write guards | Cost-centre/programme filters, classified cash-flow statements and fiscal year-end closing remain. |
 | P1 | Expenses and procurement | Vendors, expenses, advances and payables | Inline vendor/category selection, attachments with private storage, reimbursements, recurring rent/utilities, purchase order and receipt matching. |
 | P1 | Assets | Permission names exist | Asset register, custody, purchase cost, depreciation, maintenance, disposal and linked ledger evidence. |
@@ -65,6 +65,7 @@ Paperless readiness requires actual end-to-end consent, receipts, payslips, expe
 - Purchase returns and expense reductions: implemented in migration 25, with explicit supplier credits, refund receivables and actual refund collection.
 - Staff personal-fund claims: implemented in migrations 26–27, with own documents, submission, finance verification/posting and actual reimbursements.
 - Asset acquisition, custody, depreciation and disposal: implemented in migration 28; see the detailed convention/limitations below.
+- Cash handover recipient acknowledgement: migration 30 adds own receipt/dispute evidence and an administrator register; sender counts and ledger balances stay intact.
 - Further roadmap items (budgeting, consumable stock, recurring reminders, external bank imports, restore verification and statutory payroll/asset tax treatment) remain separate work.
 
 ## Start using this delivery
@@ -96,7 +97,7 @@ Finance → Daily cash & statement close → Count cash / match statement → ch
 
 A second verified count remains a new immutable record. Add investigation notes, resolve after a fresh matching count/statement, or reopen with a reason. Notes do not erase the latest resolved/reopened state. Backdated ledger postings invalidate both count evidence and a previously resolved balance; review again. Inactive account history stays readable. Original evidence is never overwritten/deleted.
 
-This daily close does not freeze financial posting or create a period lock. A stated handover recipient is recorded by the closing actor; authenticated recipient acknowledgement and cashier/till ownership are still separate remaining workflows. External bank/mobile statements are referenced manually; automatic transaction import/matching is not implemented.
+This daily close does not freeze financial posting or create a period lock. A stated handover recipient is recorded by the closing actor. Migration 30 adds authenticated recipient acknowledgement; cashier/till ownership remains separate work. External bank/mobile statements are referenced manually; automatic transaction import/matching is not implemented.
 
 Isolated tests exercise duplicate-count retries, unexplained variance protection, matching recount resolution, notes after resolution, late-posting stale detection, immutable ledger balance and denial of teacher access to academy-wide cash accounts. Hosted browser/mobile and actual bank statement workflows still require local acceptance.
 
@@ -157,3 +158,14 @@ Depreciation uses full configured calendar months and straight-line cumulative r
 Before month close, all acquired assets due that month must have scheduled depreciation posted. Asset writes and period close share an ordered advisory-lock boundary; journal period guards and explicit zero-entry checks reject closed months. Disposal requires all completed depreciation months, records actual received proceeds (zero for a write-off), removes asset cost/accumulated depreciation and posts gain/loss against net book value. Asset history and unpaid supplier liabilities remain. Disposal is based on actual proceeds received; credit-sale debt collection, impairment/revaluation, tax books, assets-under-construction, supplier returns with unpaid capital liabilities and stock/quantity movements are separate extensions, not silently approximated.
 
 Operational walkthrough: create draft → attach invoice → verify/capitalize → assign custodian → staff acknowledges → log inspections → post monthly depreciation → settle supplier balance as paid → dispose with evidence when necessary. The academy's existing P&L/balance sheet/cash movement automatically include the resulting journals.
+
+
+## Cash handover recipient confirmation (migration 30)
+
+Finance → Daily cash close records the sender count and designated staff recipient. Finance → Cash handover receipts is the recipient inbox and administrator register, paginated at 25 rows. The designated active staff account counts the cash and records Received (must match the sender amount) or Disputed with their actual amount and an explanation. The sender cannot confirm their own handover. A named recipient with no active linked account cannot confirm; provision the account before using authenticated handover.
+
+Receipt evidence is immutable, own-only for staff and visible to reconciliation administrators. Stable request identities make unchanged retries safe. A dispute does not correct the close, resolve a cash variance or change the ledger; finance investigates and records a new count/handover when needed. The original dispute remains. Receipt acknowledges the historical cash custody event even if later backdated journals change reconciliation; ledger freshness remains on Daily close. Bank/mobile statement records do not represent physical cash receipt and do not appear here.
+
+This completes receiver acknowledgement only. Till ownership, opening float, handover amount separate from whole counted cash, and formal dispute-resolution cases remain extensions. Current handover signifies the entire recorded actual cash count; do not use it for partial transfers. Hosted account/RLS and browser acceptance remain local checks.
+
+The Bengali operator guide is available inside ERP at `/dashboard/help/finance`. Its canonical content is `modules/help/finance-guide.bn.json`; run `node scripts/sync-finance-guide.mjs` after editing it to synchronize the repository Markdown guide.
