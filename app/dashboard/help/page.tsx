@@ -123,7 +123,7 @@ function StepList({ steps, permissions, start }: { steps: Step[]; permissions: s
 export default async function HelpPage() {
   const context = await requirePermission("dashboard.view");
   return <div className="space-y-8 pb-12">
-    <PageHeader eyebrow="Getting Started" title="Help & Workflows" description="Follow the academy setup once, then use the admission walkthrough for each student. Links open the exact ERP workspaces used in the steps." />
+    <Link href="/dashboard/help/finance" className="block rounded-xl border bg-card p-5 font-semibold text-primary">আর্থিক ও হিসাব পরিচালনার পূর্ণাঙ্গ বাংলা নির্দেশিকা →</Link><PageHeader eyebrow="Getting Started" title="Help & Workflows" description="Follow the academy setup once, then use the admission walkthrough for each student. Links open the exact ERP workspaces used in the steps." />
     <nav aria-label="Help sections" className="flex flex-wrap gap-2 text-sm">
       {[["#setup","Start from zero"],["#student","Student admission"],["#example","Worked example"],["#after","After admission"],["#problems","If something blocks you"]].map(([href,label])=><a key={href} href={href} className="rounded-full border bg-card px-4 py-2 font-medium hover:bg-muted">{label}</a>)}
     </nav>
