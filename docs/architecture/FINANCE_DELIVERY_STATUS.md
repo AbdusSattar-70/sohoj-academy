@@ -14,10 +14,11 @@ This is the current status; older roadmap paragraphs describe the state when wri
 | 38 | Verified bank CSV import, exact matching and release history | `/dashboard/finance/bank` |
 | 39 | Classified cash flow, export and print | `/dashboard/finance/cash-flow` |
 | 40 | Twelve-month year closing, retained-result transfer and reversal | `/dashboard/finance/year-end` |
+| 41 | Current supplier accounts, settlement and separate advances/refunds | `/dashboard/finance/suppliers` |
 
 ## Remaining internal extensions
 
-These are not delivered and must not be advertised as complete: consumable inventory movements; unified supplier statements; partial procurement receipt/matching; optional private digital admission evidence and retention controls; payroll full cancellation/overpayment recovery and configured statutory liabilities; interrupted cashier reassignment, evidenced shortage resolution and transfer reversal; expanded historical duty pagination; broader legacy-register pagination and failure recovery visibility; advanced asset impairment/revaluation, credit-sale proceeds and construction accounting. Existing private finance-document storage does not establish digital admission consent.
+These are not delivered and must not be advertised as complete: consumable inventory movements; partial procurement receipt/matching; optional private digital admission evidence and retention controls; payroll full cancellation/overpayment recovery and configured statutory liabilities; interrupted cashier reassignment, evidenced shortage resolution and transfer reversal; expanded historical duty pagination; broader legacy-register pagination and failure recovery visibility; advanced asset impairment/revaluation, credit-sale proceeds and construction accounting. Existing private finance-document storage does not establish digital admission consent.
 
 ## External dependencies and release acceptance
 

@@ -222,3 +222,8 @@ Posted cash/bank/mobile movements are grouped by journal, net internal transfers
 ## Fiscal year close and reversal (migration 40)
 
 A selected start month defines twelve months. The first eleven must be closed; the last stays open after verified cash/statement month-end checks. Nonzero nominal balances transfer to retained earnings through a balanced dated closing journal, then the final month closes atomically. Prior unclosed years and overlapping definitions are rejected. Monthly P&L, operating summary and programme contribution exclude closing/reversal journals from activity while trial balance and balance sheet include them. Year guards prevent independent monthly reopening or posting. Authorised year reopening appends evidence, opens the final month and reverses the original closing journal; later closed years must be reopened first. No posted history is deleted. Fresh preview tokens and stable request identity protect repeat actions. This is an internal accounting close, not certification of statutory filings.
+
+
+## Supplier account statements (migration 41)
+
+Scoped accounting reads provide a searched 25-row supplier directory and 25-row payable statement. Whole-supplier totals distinguish paid cash, advance offsets, credit notes and remaining payables; unsettled advances and refund receivables stay separate assets. Paid-now expenses have no payable and remain in Purchases. Inactive supplier history stays available. This is a current-balance statement, not a reconstructed historical-as-of ledger. Printing is black/white and page-specific; no branding is added over letterhead. No financial writes or automatic netting occur.

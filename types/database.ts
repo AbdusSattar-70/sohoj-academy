@@ -6179,6 +6179,14 @@ export type Database = {
         };
         Returns: Json;
       };
+      supplier_account_statement: {
+        Args: {
+          p_vendor?: string | null;
+          p_search?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       approval_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";

@@ -98,3 +98,6 @@ Migration 39 adds `/dashboard/finance/cash-flow`: reconciled operating/investing
 
 
 Finance extension 40: fiscal year preview/close/reopen at `/dashboard/finance/year-end`, nominal transfer and reversal, monthly write guards, preserved operational P&L. SQL fixture 29 checks arithmetic, retries, closed-year guard and reversal. Current delivery status: `FINANCE_DELIVERY_STATUS.md`.
+
+
+Finance extension 41: supplier account statements at `/dashboard/finance/suppliers`; bounded directory/payables, separate advances/refund receivables, scoped read and print. Fixture 30 verifies settlement arithmetic and outsider denial.
