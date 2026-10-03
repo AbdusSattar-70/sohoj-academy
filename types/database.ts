@@ -4992,6 +4992,99 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_bank_imports: {
+        Row: {
+          id: string;
+          account_id: string;
+          statement_reference: string;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          statement_reference: string;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          statement_reference?: string;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_bank_transactions: {
+        Row: {
+          id: string;
+          import_id: string;
+          account_id: string;
+          transaction_date: string;
+          reference: string;
+          description: string;
+          amount: number;
+        };
+        Insert: {
+          id?: string;
+          import_id: string;
+          account_id: string;
+          transaction_date: string;
+          reference: string;
+          description?: string;
+          amount: number;
+        };
+        Update: {
+          id?: string;
+          import_id?: string;
+          account_id?: string;
+          transaction_date?: string;
+          reference?: string;
+          description?: string;
+          amount?: number;
+        };
+        Relationships: [];
+      };
+      finance_bank_links: {
+        Row: {
+          id: string;
+          transaction_id: string;
+          line_id: string;
+          actor_id: string;
+          reason: string;
+          matched_at: string;
+          released_at: string | null;
+          released_by: string | null;
+          release_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          transaction_id: string;
+          line_id: string;
+          actor_id: string;
+          reason: string;
+          matched_at?: string;
+          released_at?: string | null;
+          released_by?: string | null;
+          release_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          transaction_id?: string;
+          line_id?: string;
+          actor_id?: string;
+          reason?: string;
+          matched_at?: string;
+          released_at?: string | null;
+          released_by?: string | null;
+          release_reason?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -5966,6 +6059,29 @@ export type Database = {
         Args: {
           p_month?: string | null;
           p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      bank_reconciliation_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      bank_reconciliation_workspace: {
+        Args: {
+          p_account_id?: string | null;
+          p_page?: number | null;
+          p_search?: string | null;
+          p_unmatched?: boolean | null;
+        };
+        Returns: Json;
+      };
+      bank_match_candidates: {
+        Args: {
+          p_id: string;
+          p_page?: number | null;
+          p_search?: string | null;
         };
         Returns: Json;
       };

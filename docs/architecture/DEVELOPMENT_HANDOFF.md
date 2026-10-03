@@ -91,3 +91,5 @@ Migration 35 adds `/dashboard/finance/receivables`: current aging, paginated sea
 Migration 36 adds `/dashboard/finance/capital` for actual owner contributions and bounded contributed-capital returns. Use this before funding counters in a new installation. It creates equity, never student revenue or academy expense.
 
 Migration 37 adds `/dashboard/finance/planning`: existing cost centres, revision-checked monthly budgets, immutable split allocations, contribution reports and clearly labelled cash-runway scenario. Unallocated costs stay visible; posted ledger amounts never change.
+
+Migration 38 adds `/dashboard/finance/bank`: atomic verified CSV import, duplicate transaction protection, exact signed ledger matching and non-destructive match release. No inferred payment or journal is created. Gateway/API verification remains an external integration.
