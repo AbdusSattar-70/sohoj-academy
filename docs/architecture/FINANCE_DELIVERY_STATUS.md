@@ -17,6 +17,7 @@ This is the current status; older roadmap paragraphs describe the state when wri
 | 41 | Current supplier accounts, settlement and separate advances/refunds | `/dashboard/finance/suppliers` |
 | 42 | Physical consumable receipt/use/count register and reorder attention | `/dashboard/finance/stock` |
 | 43 | Orders, partial received quantities, exact supplier invoice matching and inline settlement | `/dashboard/finance/procurement` |
+| 44 | On-demand counter duty and opening-receipt history with dates and pagination | `/dashboard/finance/counters` |
 
 ## Explicitly excluded
 
@@ -24,7 +25,7 @@ Digital admission consent is excluded by the owner decision of 2026-10-03. Keep 
 
 ## Remaining internal extensions
 
-These are not delivered and must not be advertised as complete: payroll full cancellation/overpayment recovery and configured statutory liabilities; interrupted cashier reassignment, evidenced shortage resolution and transfer reversal; expanded historical duty pagination; broader legacy-register pagination and failure recovery visibility; advanced asset impairment/revaluation, credit-sale proceeds and construction accounting.
+These are not delivered and must not be advertised as complete: payroll full cancellation/overpayment recovery and configured statutory liabilities; interrupted cashier reassignment, evidenced shortage resolution and transfer reversal; broader legacy-register pagination and failure recovery visibility; advanced asset impairment/revaluation, credit-sale proceeds and construction accounting.
 
 ## External dependencies and release acceptance
 

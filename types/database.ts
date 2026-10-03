@@ -6374,6 +6374,16 @@ export type Database = {
         };
         Returns: Json;
       };
+      cash_counter_history: {
+        Args: {
+          p_counter: string;
+          p_page?: number | null;
+          p_from?: string | null;
+          p_through?: string | null;
+          p_shift?: string | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       approval_status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";

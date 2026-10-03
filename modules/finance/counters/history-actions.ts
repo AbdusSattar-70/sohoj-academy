@@ -1,0 +1,4 @@
+"use server";
+import {platformClient} from "@/modules/platform/rpc-client";
+import {counterHistoryInput,counterHistorySchema,type CounterHistoryData} from "./history-schema";
+export async function loadCounterHistory(input:unknown):Promise<{ok:true;data:CounterHistoryData}|{ok:false;message:string}>{const parsed=counterHistoryInput.safeParse(input);if(!parsed.success)return {ok:false,message:"Check the dates, counter and page."};try{const p=parsed.data,db=await platformClient();const {data,error}=await db.rpc("cash_counter_history",{p_counter:p.counter,p_page:p.page,p_from:p.from??null,p_through:p.through??null,p_shift:p.shift??null});if(error)return {ok:false,message:error.message};return {ok:true,data:counterHistorySchema.parse(data)};}catch{return {ok:false,message:"History unavailable. Retry loading; no financial change was made."};}}

@@ -107,3 +107,6 @@ Finance extension 42: physical consumable stock at `/dashboard/finance/stock`, r
 
 
 Owner scope update 2026-10-03: digital admission consent excluded. Preserve paper-signature/file-reference workflow; it is not pending work. Finance extension 43 adds `/dashboard/finance/procurement`: order commitments, partial receipts, exact invoice amount matching, price variance evidence, inline supplier payments and commitment closure. Fixture 32 checks no pre-receipt journal, partial/final quantities, duplicate request/invoice rollback, stale/over-receipt denial, price-variance requirement and outsider scope.
+
+
+Finance extension 44: paginated counter duty and opening-receipt history within the counter page. Dates, 25-row pages, preserved return-to-duty-page navigation and active staff own-scope; bounded nested receipts in operational snapshot. Fixture 33 covers 28 duties, date filtering, receipt pagination and cross-cashier/public denial.
