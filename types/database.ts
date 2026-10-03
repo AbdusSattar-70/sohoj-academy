@@ -4635,6 +4635,70 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_payroll_month_terms: {
+        Row: {
+          id: string;
+          staff_id: string;
+          month: string;
+          terms: Json;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+          event_order: number;
+        };
+        Insert: {
+          id?: string;
+          staff_id: string;
+          month: string;
+          terms: Json;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          staff_id?: string;
+          month?: string;
+          terms?: Json;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      staff_payroll_adjustments: {
+        Row: {
+          id: string;
+          payroll_id: string;
+          amount: number;
+          posted_on: string;
+          reason: string;
+          actor_id: string;
+          journal_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          payroll_id: string;
+          amount: number;
+          posted_on: string;
+          reason: string;
+          actor_id: string;
+          journal_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          payroll_id?: string;
+          amount?: number;
+          posted_on?: string;
+          reason?: string;
+          actor_id?: string;
+          journal_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -5522,6 +5586,12 @@ export type Database = {
           p_page?: number | null;
           p_counter_ids?: string[] | null;
           p_pending?: boolean | null;
+        };
+        Returns: Json;
+      };
+      payroll_recovery_command: {
+        Args: {
+          p_input: Json;
         };
         Returns: Json;
       };

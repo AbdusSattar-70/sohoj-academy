@@ -81,3 +81,5 @@ Migration 31 adds `/dashboard/finance/counters`: inline dedicated CASH account r
 ## Counter top-ups and cash returns
 
 Migration 32 extends the same counter page: guarded internal top-ups, assigned cashier receipt/dispute/recount, collection suspension until receipt, and partial/full return to a main account after duty closure with fresh matching count evidence. Transfer reference uniqueness, unchanged retries, period/account locks and own-duty paginated reads protect history. New duty event order makes latest-duty selection independent of transaction-start timestamp. Counter count navigation returns to the same form/page. Bengali section 21b explains the complete workflow. No live DB migration was run.
+
+Migration 33 adds historical month-specific payroll agreement evidence and immutable signed earning corrections. Original salary remains intact; adjusted payable and own payslips include correction evidence. No implicit tax/loan deduction or paid salary reversal.
