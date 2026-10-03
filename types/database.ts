@@ -4438,6 +4438,121 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_cash_counters: {
+        Row: {
+          id: string;
+          account_id: string;
+          payment_method_id: string;
+          name: string;
+          is_active: boolean;
+          revision: number;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          payment_method_id: string;
+          name: string;
+          is_active?: boolean;
+          revision?: number;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          payment_method_id?: string;
+          name?: string;
+          is_active?: boolean;
+          revision?: number;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_counter_shifts: {
+        Row: {
+          id: string;
+          counter_id: string;
+          staff_id: string;
+          work_date: string;
+          opening_balance: number;
+          float_amount: number;
+          source_account_id: string | null;
+          journal_id: string | null;
+          opened_by: string;
+          reason: string;
+          opened_at: string;
+          closed_at: string | null;
+          close_id: string | null;
+          closed_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          counter_id: string;
+          staff_id: string;
+          work_date: string;
+          opening_balance: number;
+          float_amount: number;
+          source_account_id?: string | null;
+          journal_id?: string | null;
+          opened_by: string;
+          reason: string;
+          opened_at?: string;
+          closed_at?: string | null;
+          close_id?: string | null;
+          closed_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          counter_id?: string;
+          staff_id?: string;
+          work_date?: string;
+          opening_balance?: number;
+          float_amount?: number;
+          source_account_id?: string | null;
+          journal_id?: string | null;
+          opened_by?: string;
+          reason?: string;
+          opened_at?: string;
+          closed_at?: string | null;
+          close_id?: string | null;
+          closed_by?: string | null;
+        };
+        Relationships: [];
+      };
+      finance_counter_receipts: {
+        Row: {
+          id: string;
+          event_order: number;
+          shift_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          shift_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          shift_id?: string;
+          actor_id?: string;
+          outcome?: string;
+          counted_amount?: number;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -4829,7 +4944,7 @@ export type Database = {
         };
         Returns: number;
       };
-      finance_post_journal: {
+      finance_post_journal_engine: {
         Args: {
           p_organization_id: string;
           p_journal_date: string;
@@ -5281,6 +5396,31 @@ export type Database = {
       };
       cash_handover_recipients: {
         Args: Record<string, never>;
+        Returns: Json;
+      };
+      finance_post_journal: {
+        Args: {
+          p_organization_id: string;
+          p_journal_date: string;
+          p_journal_type: string;
+          p_source_type: string;
+          p_source_id: string;
+          p_description: string;
+          p_posted_by: string;
+          p_lines: Json;
+        };
+        Returns: string;
+      };
+      cash_counter_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      cash_counter_workspace: {
+        Args: {
+          p_page?: number | null;
+        };
         Returns: Json;
       };
     };

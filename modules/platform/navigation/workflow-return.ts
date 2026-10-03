@@ -2,6 +2,7 @@
 export function workflowReturnPath(value: string | null) {
   return value &&
     (value === "/dashboard/setup" ||
+      /^\/dashboard\/finance\/counters(?:\?close=[0-9a-f-]{36}(?:&page=[0-9]{1,5})?)?$/.test(value) ||
       /^\/dashboard\/admissions(?:\/[0-9a-f-]{36})?(?:\?[^#]*)?$/.test(value))
     ? value
     : null;

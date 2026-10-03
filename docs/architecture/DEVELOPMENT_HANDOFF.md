@@ -73,3 +73,7 @@ Migration 29 rejects PostgreSQL numeric NaN in ledger, expenses/payables, purcha
 ## Cash handover receipts
 
 Migration 30 adds `/dashboard/finance/handovers` with authenticated recipient-only Received/Disputed evidence, immutable history, retry protection and 25-row pages. Admin sees all handovers; staff see only those addressed to their identity. Receipt never rewrites counts or ledger balances. Read the cash handover section of PAPERLESS_FINANCE_AND_WORKFORCE.md for whole-count limitations and remaining till/opening-float work.
+
+## Counter responsibility and opening float
+
+Migration 31 adds `/dashboard/finance/counters`: inline dedicated CASH account registration, name/status edits, one open duty per cashier/counter, real internal funding transfers, own receipt/dispute history and fresh reconciled duty close. Sorted account locking in the internal journal wrapper serializes controlled funding checks with journal writers; the old engine is not client callable. Remaining cash carries forward. It does not recognize new owner capital, return counter cash automatically, grant posting rights. A dedicated collection method is mapped/enabled on receipt and disabled on close; legacy collection methods stay intact. Counter posting is guarded by open received duty and cashier/reconciliation authority. Bengali operator section 21a documents the workflow and limits.
