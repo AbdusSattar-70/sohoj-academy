@@ -5085,6 +5085,34 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_cash_classifications: {
+        Row: {
+          id: string;
+          journal_id: string;
+          category: string;
+          event_order: number;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          journal_id: string;
+          category: string;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          journal_id?: string;
+          category?: string;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -6082,6 +6110,26 @@ export type Database = {
           p_id: string;
           p_page?: number | null;
           p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      finance_cash_default_class: {
+        Args: {
+          p_source: string;
+          p_type: string;
+        };
+        Returns: string;
+      };
+      cash_classification_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      classified_cash_flow: {
+        Args: {
+          p_month?: string | null;
+          p_page?: number | null;
         };
         Returns: Json;
       };

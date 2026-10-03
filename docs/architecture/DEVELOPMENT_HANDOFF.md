@@ -93,3 +93,5 @@ Migration 36 adds `/dashboard/finance/capital` for actual owner contributions an
 Migration 37 adds `/dashboard/finance/planning`: existing cost centres, revision-checked monthly budgets, immutable split allocations, contribution reports and clearly labelled cash-runway scenario. Unallocated costs stay visible; posted ledger amounts never change.
 
 Migration 38 adds `/dashboard/finance/bank`: atomic verified CSV import, duplicate transaction protection, exact signed ledger matching and non-destructive match release. No inferred payment or journal is created. Gateway/API verification remains an external integration.
+
+Migration 39 adds `/dashboard/finance/cash-flow`: reconciled operating/investing/financing/unclassified cash reporting and audited classification correction. Ambiguous sources remain visible; internal transfers do not inflate flows.

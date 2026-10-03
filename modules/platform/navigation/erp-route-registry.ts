@@ -26,6 +26,7 @@ export type ErpRouteDefinition = {
 };
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
+  {id:"cash-flow",title:"Cash flow",eyebrow:"Finance",href:"/dashboard/finance/cash-flow",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
   {id:"bank-matching",title:"Bank statements & matching",eyebrow:"Finance",href:"/dashboard/finance/bank",navGroup:"Finance",permission:"accounting.reconcile",icon:"accounting"},
   {id:"finance-planning",title:"Budgets & programme contribution",eyebrow:"Finance",href:"/dashboard/finance/planning",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
   {id:"owner-capital",title:"Owner capital & funding",eyebrow:"Finance",href:"/dashboard/finance/capital",navGroup:"Finance",permission:"accounting.reconcile",icon:"accounting"},
