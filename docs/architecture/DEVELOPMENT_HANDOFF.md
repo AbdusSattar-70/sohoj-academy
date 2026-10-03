@@ -87,3 +87,5 @@ Migration 33 adds historical month-specific payroll agreement evidence and immut
 Migration 34 adds `/dashboard/finance/recurring`: monthly expected expenses, editable/inactive schedules, retry-safe monthly purchase drafts and return-to-working-month after actual bill verification/payment. Expectations never create journals.
 
 Migration 35 adds `/dashboard/finance/receivables`: current aging, paginated search, due promises, recorded contacts and guardian statements. Promises do not reduce dues; matching actual net collections are required for completion. Payment navigation returns to the selected student.
+
+Migration 36 adds `/dashboard/finance/capital` for actual owner contributions and bounded contributed-capital returns. Use this before funding counters in a new installation. It creates equity, never student revenue or academy expense.

@@ -1,0 +1,6 @@
+"use server";
+import {z} from "zod";
+import {platformClient} from "@/modules/platform/rpc-client";
+import {runCommandAction} from "@/modules/platform/command-action";
+const schema=z.object({action:z.enum(["SAVE_OWNER","SET_ACTIVE","POST"]),request_id:z.string().uuid(),reason:z.string().trim().min(5).max(1000),id:z.string().uuid().optional(),revision:z.number().int().positive().optional(),is_active:z.boolean().optional(),name:z.string().trim().min(2).max(200).optional(),contact:z.string().max(200).optional(),owner_id:z.string().uuid().optional(),account_id:z.string().uuid().optional(),kind:z.enum(["CONTRIBUTION","CAPITAL_RETURN"]).optional(),amount:z.coerce.number().finite().positive().optional(),reference:z.string().trim().min(3).max(200).optional(),actual_confirmed:z.boolean().optional()});
+export async function capitalAction(input:unknown){try{return await runCommandAction({schema,input,client:platformClient,rpc:"owner_capital_command",permission:"accounting.reconcile",revalidate:["/dashboard/finance/capital","/dashboard/finance/counters","/dashboard/finance/accounting","/dashboard/finance/reports"],mapResult:data=>({message:String((data as {message:string}).message)})});}catch{return {ok:false as const,message:"Outcome uncertain. Check the capital register before repeating the actual movement."};}}

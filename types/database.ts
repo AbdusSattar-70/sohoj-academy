@@ -4847,6 +4847,78 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_owners: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          contact: string;
+          is_active: boolean;
+          revision: number;
+          actor_id: string;
+          reason: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          contact?: string;
+          is_active?: boolean;
+          revision?: number;
+          actor_id: string;
+          reason: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          contact?: string;
+          is_active?: boolean;
+          revision?: number;
+          actor_id?: string;
+          reason?: string;
+        };
+        Relationships: [];
+      };
+      finance_capital_movements: {
+        Row: {
+          id: string;
+          owner_id: string;
+          kind: string;
+          amount: number;
+          account_id: string;
+          reference: string;
+          journal_id: string;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          kind: string;
+          amount: number;
+          account_id: string;
+          reference: string;
+          journal_id: string;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          owner_id?: string;
+          kind?: string;
+          amount?: number;
+          account_id?: string;
+          reference?: string;
+          journal_id?: string;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -5795,6 +5867,19 @@ export type Database = {
           p_bucket?: string | null;
           p_promises?: boolean | null;
           p_student_id?: string | null;
+        };
+        Returns: Json;
+      };
+      owner_capital_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      owner_capital_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_owner_id?: string | null;
         };
         Returns: Json;
       };
