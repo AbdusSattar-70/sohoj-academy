@@ -95,3 +95,6 @@ Migration 37 adds `/dashboard/finance/planning`: existing cost centres, revision
 Migration 38 adds `/dashboard/finance/bank`: atomic verified CSV import, duplicate transaction protection, exact signed ledger matching and non-destructive match release. No inferred payment or journal is created. Gateway/API verification remains an external integration.
 
 Migration 39 adds `/dashboard/finance/cash-flow`: reconciled operating/investing/financing/unclassified cash reporting and audited classification correction. Ambiguous sources remain visible; internal transfers do not inflate flows.
+
+
+Finance extension 40: fiscal year preview/close/reopen at `/dashboard/finance/year-end`, nominal transfer and reversal, monthly write guards, preserved operational P&L. SQL fixture 29 checks arithmetic, retries, closed-year guard and reversal. Current delivery status: `FINANCE_DELIVERY_STATUS.md`.

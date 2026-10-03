@@ -5113,6 +5113,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_year_events: {
+        Row: {
+          id: string;
+          year_start: string;
+          action: string;
+          event_order: number;
+          snapshot: Json;
+          journal_id: string | null;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          year_start: string;
+          action: string;
+          snapshot: Json;
+          journal_id?: string | null;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          year_start?: string;
+          action?: string;
+          snapshot?: Json;
+          journal_id?: string | null;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -6130,6 +6164,18 @@ export type Database = {
         Args: {
           p_month?: string | null;
           p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      fiscal_year_preview: {
+        Args: {
+          p_start: string;
+        };
+        Returns: Json;
+      };
+      fiscal_year_command: {
+        Args: {
+          p_input: Json;
         };
         Returns: Json;
       };
