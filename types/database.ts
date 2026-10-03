@@ -5147,6 +5147,82 @@ export type Database = {
         };
         Relationships: [];
       };
+      consumable_items: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          unit: string;
+          reorder_level: number;
+          is_active: boolean;
+          revision: number;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          unit: string;
+          reorder_level?: number;
+          is_active?: boolean;
+          revision?: number;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          unit?: string;
+          reorder_level?: number;
+          is_active?: boolean;
+          revision?: number;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      consumable_movements: {
+        Row: {
+          id: string;
+          item_id: string;
+          event_order: number;
+          kind: string;
+          quantity: number;
+          physical_quantity: number | null;
+          reference: string;
+          purchase_id: string | null;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          item_id: string;
+          kind: string;
+          quantity: number;
+          physical_quantity?: number | null;
+          reference: string;
+          purchase_id?: string | null;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          item_id?: string;
+          kind?: string;
+          quantity?: number;
+          physical_quantity?: number | null;
+          reference?: string;
+          purchase_id?: string | null;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -6184,6 +6260,19 @@ export type Database = {
           p_vendor?: string | null;
           p_search?: string | null;
           p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      consumable_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      consumable_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_search?: string | null;
         };
         Returns: Json;
       };

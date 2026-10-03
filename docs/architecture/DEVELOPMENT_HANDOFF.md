@@ -101,3 +101,6 @@ Finance extension 40: fiscal year preview/close/reopen at `/dashboard/finance/ye
 
 
 Finance extension 41: supplier account statements at `/dashboard/finance/suppliers`; bounded directory/payables, separate advances/refund receivables, scoped read and print. Fixture 30 verifies settlement arithmetic and outsider denial.
+
+
+Finance extension 42: physical consumable stock at `/dashboard/finance/stock`, receipt/use/count evidence, edit/inactivation and low-stock attention. Fixture 31 covers retry, stale evidence, negative stock denial, unit stability, unchanged journals and outsider denial.

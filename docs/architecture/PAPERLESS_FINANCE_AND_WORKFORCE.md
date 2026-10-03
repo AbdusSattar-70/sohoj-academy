@@ -227,3 +227,8 @@ A selected start month defines twelve months. The first eleven must be closed; t
 ## Supplier account statements (migration 41)
 
 Scoped accounting reads provide a searched 25-row supplier directory and 25-row payable statement. Whole-supplier totals distinguish paid cash, advance offsets, credit notes and remaining payables; unsettled advances and refund receivables stay separate assets. Paid-now expenses have no payable and remain in Purchases. Inactive supplier history stays available. This is a current-balance statement, not a reconstructed historical-as-of ledger. Printing is black/white and page-specific; no branding is added over letterhead. No financial writes or automatic netting occur.
+
+
+## Consumable physical stock (migration 42)
+
+Editable/inactivatable item identities have a fixed unit after first movement. Actual receipt, usage and observed physical count append quantity evidence with actor, reference and reason. Item-row locking, expected event order and stable request identity prevent stale/double posting; issues cannot exceed stock. Counts record the difference without rewriting history. This is physical control, not financial inventory valuation; purchase expenses remain separate, avoiding duplicate journals. Items are 25/page with latest ten movements per item and reorder attention. Optional posted purchase linkage exists at the database boundary; inline forms use verified reference. Full historical stock statements and cost valuation remain extensions.

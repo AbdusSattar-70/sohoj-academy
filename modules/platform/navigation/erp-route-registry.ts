@@ -26,6 +26,7 @@ export type ErpRouteDefinition = {
 };
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
+  {id:"consumable-stock",title:"Consumable stock",eyebrow:"Finance",href:"/dashboard/finance/stock",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
   {id:"supplier-accounts",title:"Supplier accounts",eyebrow:"Finance",href:"/dashboard/finance/suppliers",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
   {id:"year-end",title:"Year closing",eyebrow:"Finance",href:"/dashboard/finance/year-end",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
   {id:"cash-flow",title:"Cash flow",eyebrow:"Finance",href:"/dashboard/finance/cash-flow",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
