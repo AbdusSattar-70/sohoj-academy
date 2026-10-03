@@ -2137,6 +2137,8 @@ export type Database = {
           is_active: boolean;
           created_by: string | null;
           created_at: string;
+          offering_id: string | null;
+          revision: number;
         };
         Insert: {
           id?: string;
@@ -2149,6 +2151,8 @@ export type Database = {
           is_active?: boolean;
           created_by?: string | null;
           created_at?: string;
+          offering_id?: string | null;
+          revision?: number;
         };
         Update: {
           id?: string;
@@ -2161,6 +2165,8 @@ export type Database = {
           is_active?: boolean;
           created_by?: string | null;
           created_at?: string;
+          offering_id?: string | null;
+          revision?: number;
         };
         Relationships: [];
       };
@@ -4919,6 +4925,73 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_budgets: {
+        Row: {
+          id: string;
+          centre_id: string;
+          month: string;
+          revenue_target: number;
+          expense_limit: number;
+          cash_in: number;
+          cash_out: number;
+          revision: number;
+          actor_id: string;
+          reason: string;
+        };
+        Insert: {
+          id?: string;
+          centre_id: string;
+          month: string;
+          revenue_target: number;
+          expense_limit: number;
+          cash_in: number;
+          cash_out: number;
+          revision?: number;
+          actor_id: string;
+          reason: string;
+        };
+        Update: {
+          id?: string;
+          centre_id?: string;
+          month?: string;
+          revenue_target?: number;
+          expense_limit?: number;
+          cash_in?: number;
+          cash_out?: number;
+          revision?: number;
+          actor_id?: string;
+          reason?: string;
+        };
+        Relationships: [];
+      };
+      finance_line_allocations: {
+        Row: {
+          id: string;
+          line_id: string;
+          allocation: Json;
+          event_order: number;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          line_id: string;
+          allocation: Json;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          line_id?: string;
+          allocation?: Json;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -5880,6 +5953,19 @@ export type Database = {
         Args: {
           p_page?: number | null;
           p_owner_id?: string | null;
+        };
+        Returns: Json;
+      };
+      finance_planning_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      finance_planning_workspace: {
+        Args: {
+          p_month?: string | null;
+          p_page?: number | null;
         };
         Returns: Json;
       };

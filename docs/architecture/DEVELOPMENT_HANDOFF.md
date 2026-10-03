@@ -89,3 +89,5 @@ Migration 34 adds `/dashboard/finance/recurring`: monthly expected expenses, edi
 Migration 35 adds `/dashboard/finance/receivables`: current aging, paginated search, due promises, recorded contacts and guardian statements. Promises do not reduce dues; matching actual net collections are required for completion. Payment navigation returns to the selected student.
 
 Migration 36 adds `/dashboard/finance/capital` for actual owner contributions and bounded contributed-capital returns. Use this before funding counters in a new installation. It creates equity, never student revenue or academy expense.
+
+Migration 37 adds `/dashboard/finance/planning`: existing cost centres, revision-checked monthly budgets, immutable split allocations, contribution reports and clearly labelled cash-runway scenario. Unallocated costs stay visible; posted ledger amounts never change.
