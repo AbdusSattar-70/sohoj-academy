@@ -77,3 +77,7 @@ Migration 30 adds `/dashboard/finance/handovers` with authenticated recipient-on
 ## Counter responsibility and opening float
 
 Migration 31 adds `/dashboard/finance/counters`: inline dedicated CASH account registration, name/status edits, one open duty per cashier/counter, real internal funding transfers, own receipt/dispute history and fresh reconciled duty close. Sorted account locking in the internal journal wrapper serializes controlled funding checks with journal writers; the old engine is not client callable. Remaining cash carries forward. It does not recognize new owner capital, return counter cash automatically, grant posting rights. A dedicated collection method is mapped/enabled on receipt and disabled on close; legacy collection methods stay intact. Counter posting is guarded by open received duty and cashier/reconciliation authority. Bengali operator section 21a documents the workflow and limits.
+
+## Counter top-ups and cash returns
+
+Migration 32 extends the same counter page: guarded internal top-ups, assigned cashier receipt/dispute/recount, collection suspension until receipt, and partial/full return to a main account after duty closure with fresh matching count evidence. Transfer reference uniqueness, unchanged retries, period/account locks and own-duty paginated reads protect history. New duty event order makes latest-duty selection independent of transaction-start timestamp. Counter count navigation returns to the same form/page. Bengali section 21b explains the complete workflow. No live DB migration was run.

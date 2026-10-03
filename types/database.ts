@@ -4487,6 +4487,7 @@ export type Database = {
           closed_at: string | null;
           close_id: string | null;
           closed_by: string | null;
+          event_order: number;
         };
         Insert: {
           id?: string;
@@ -4503,6 +4504,7 @@ export type Database = {
           closed_at?: string | null;
           close_id?: string | null;
           closed_by?: string | null;
+          event_order?: number;
         };
         Update: {
           id?: string;
@@ -4519,6 +4521,7 @@ export type Database = {
           closed_at?: string | null;
           close_id?: string | null;
           closed_by?: string | null;
+          event_order?: number;
         };
         Relationships: [];
       };
@@ -4545,6 +4548,85 @@ export type Database = {
         Update: {
           id?: string;
           shift_id?: string;
+          actor_id?: string;
+          outcome?: string;
+          counted_amount?: number;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_counter_transfers: {
+        Row: {
+          id: string;
+          counter_id: string;
+          shift_id: string;
+          kind: string;
+          amount: number;
+          source_account_id: string;
+          destination_account_id: string;
+          journal_id: string;
+          close_id: string | null;
+          reference: string;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          counter_id: string;
+          shift_id: string;
+          kind: string;
+          amount: number;
+          source_account_id: string;
+          destination_account_id: string;
+          journal_id: string;
+          close_id?: string | null;
+          reference: string;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          counter_id?: string;
+          shift_id?: string;
+          kind?: string;
+          amount?: number;
+          source_account_id?: string;
+          destination_account_id?: string;
+          journal_id?: string;
+          close_id?: string | null;
+          reference?: string;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_counter_transfer_receipts: {
+        Row: {
+          id: string;
+          event_order: number;
+          transfer_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          transfer_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          transfer_id?: string;
           actor_id?: string;
           outcome?: string;
           counted_amount?: number;
@@ -5411,7 +5493,7 @@ export type Database = {
         };
         Returns: string;
       };
-      cash_counter_command: {
+      cash_counter_base_command: {
         Args: {
           p_input: Json;
         };
@@ -5420,6 +5502,26 @@ export type Database = {
       cash_counter_workspace: {
         Args: {
           p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      cash_counter_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      counter_transfer_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      counter_transfer_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_counter_ids?: string[] | null;
+          p_pending?: boolean | null;
         };
         Returns: Json;
       };
