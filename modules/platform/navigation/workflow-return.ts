@@ -2,6 +2,7 @@
 export function workflowReturnPath(value: string | null) {
   return value &&
     (value === "/dashboard/setup" ||
+      /^\/dashboard\/finance\/receivables(?:\?q=[^#]*)?$/.test(value) ||
       /^\/dashboard\/finance\/recurring(?:\?month=[0-9]{4}-(?:0[1-9]|1[0-2]))?$/.test(value) ||
       /^\/dashboard\/finance\/counters(?:\?(?:close|cashReturn)=[0-9a-f-]{36}(?:&page=[0-9]{1,5})?(?:&transfersPage=[0-9]{1,5})?)?$/.test(value) ||
       /^\/dashboard\/admissions(?:\/[0-9a-f-]{36})?(?:\?[^#]*)?$/.test(value))

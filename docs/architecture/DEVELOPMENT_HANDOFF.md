@@ -85,3 +85,5 @@ Migration 32 extends the same counter page: guarded internal top-ups, assigned c
 Migration 33 adds historical month-specific payroll agreement evidence and immutable signed earning corrections. Original salary remains intact; adjusted payable and own payslips include correction evidence. No implicit tax/loan deduction or paid salary reversal.
 
 Migration 34 adds `/dashboard/finance/recurring`: monthly expected expenses, editable/inactive schedules, retry-safe monthly purchase drafts and return-to-working-month after actual bill verification/payment. Expectations never create journals.
+
+Migration 35 adds `/dashboard/finance/receivables`: current aging, paginated search, due promises, recorded contacts and guardian statements. Promises do not reduce dues; matching actual net collections are required for completion. Payment navigation returns to the selected student.

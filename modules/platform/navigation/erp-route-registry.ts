@@ -26,6 +26,7 @@ export type ErpRouteDefinition = {
 };
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
+  {id:"receivables",title:"Receivables & collection follow-up",eyebrow:"Finance",href:"/dashboard/finance/receivables",navGroup:"Finance",permission:"finance.view",icon:"accounting"},
   {id:"recurring-expenses",title:"Recurring expenses",eyebrow:"Finance",href:"/dashboard/finance/recurring",navGroup:"Finance",permission:"accounting.expense.manage",icon:"accounting"},
   {id:"cash-counters",title:"Cash counters & opening float",eyebrow:"Finance",href:"/dashboard/finance/counters",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},
   {id:"cash-handovers",title:"Cash handover receipts",eyebrow:"Finance",href:"/dashboard/finance/handovers",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},

@@ -4778,38 +4778,133 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_collection_promises: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          amount: number;
+          due_on: string;
+          baseline_net_paid: number;
+          status: string;
+          revision: number;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          amount: number;
+          due_on: string;
+          baseline_net_paid: number;
+          status?: string;
+          revision?: number;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_id?: string;
+          amount?: number;
+          due_on?: string;
+          baseline_net_paid?: number;
+          status?: string;
+          revision?: number;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_collection_events: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          promise_id: string | null;
+          action: string;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          promise_id?: string | null;
+          action: string;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_id?: string;
+          promise_id?: string | null;
+          action?: string;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
-        id: string;
-        offering_id: string;
-        version: number;
-        status: Database["public"]["Enums"]["rule_status"];
-        billing_cycle: string;
+        id: string | null;
+        offering_id: string | null;
+        version: number | null;
+        status: Database["public"]["Enums"]["rule_status"] | null;
+        billing_cycle: string | null;
         due_day: number | null;
-        currency_code: string;
-        effective_from: string;
+        currency_code: string | null;
+        effective_from: string | null;
         effective_to: string | null;
-        change_reason: string;
-        created_by: string;
-        created_at: string;
+        change_reason: string | null;
+        created_by: string | null;
+        created_at: string | null;
       }; Relationships: [] };
       current_fee_plan_components: { Row: {
-        id: string;
-        fee_plan_version_id: string;
-        code: string;
-        name: string;
-        amount: number;
-        charge_type: string;
-        recurrence: string;
-        sort_order: number;
+        id: string | null;
+        fee_plan_version_id: string | null;
+        code: string | null;
+        name: string | null;
+        amount: number | null;
+        charge_type: string | null;
+        recurrence: string | null;
+        sort_order: number | null;
       }; Relationships: [] };
       current_operating_rules: { Row: {
-        id: string;
-        domain: string;
-        rule_key: string;
-        status: Database["public"]["Enums"]["rule_status"];
-        payload: Json;
+        id: string | null;
+        domain: string | null;
+        rule_key: string | null;
+        status: Database["public"]["Enums"]["rule_status"] | null;
+        payload: Json | null;
+      }; Relationships: [] };
+      finance_receivable_rows: { Row: {
+        id: string | null;
+        invoice_no: string | null;
+        student_id: string | null;
+        admission_id: string | null;
+        issued_on: string | null;
+        due_on: string | null;
+        student_no: string | null;
+        full_name: string | null;
+        gross: number | null;
+        credits: number | null;
+        net: number | null;
+        paid: number | null;
+        refunded: number | null;
+        due: number | null;
+        age_days: number | null;
+        bucket: string | null;
+        guardian: string | null;
+        mobile: string | null;
+        promise_id: string | null;
+        promise_amount: number | null;
+        promise_due: string | null;
+        promise_revision: number | null;
+        promise_collected: number | null;
+        last_contact: string | null;
       }; Relationships: [] };
     };
     Functions: {
@@ -5684,6 +5779,22 @@ export type Database = {
         Args: {
           p_month?: string | null;
           p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      collection_followup_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      receivable_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_search?: string | null;
+          p_bucket?: string | null;
+          p_promises?: boolean | null;
+          p_student_id?: string | null;
         };
         Returns: Json;
       };
