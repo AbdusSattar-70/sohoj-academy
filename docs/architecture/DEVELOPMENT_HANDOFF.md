@@ -54,3 +54,11 @@ Migration `22_purchase_drafts_receipt_and_expense_posting.sql` and `/dashboard/f
 SQL fixture `12_purchasing_receipt_supplier_settlement.sql` checks retry safety, stale revision rejection, receipt journals, partial-payment balance, overpayment rejection, duplicate invoice rollback, paid-now treatment, edit/cancel and outsider denial. No live database reset or mutation is part of this delivery.
 
 Next: private expense-document evidence and supplier/category maintenance; then procurement returns/corrections and staff reimbursements. Asset register/capitalization/depreciation follows as a distinct workflow. Monthly period locks already apply to the expense/payable journal calls.
+
+## Lean modular EduOps documentation baseline — 2026-10-04
+
+Active new direction branch: `feature/lean-modular-eduops`, forked from `master@00f11f2358516bc7362e1984836f09584085b4e7` after finance PR #21. Earlier branch names/counts above describe historical deliveries. Base repository includes migrations 01–22; exact current table/function counts require a fresh inventory.
+
+Read [Lean blueprint](LEAN_EDUOPS_BLUEPRINT.md), [Bangla target workflows](LEAN_EDUOPS_WORKFLOWS_BN.md), and [Ordered implementation plan](LEAN_EDUOPS_IMPLEMENTATION_PLAN.md). The new contract retains CRM and simplified business/assets modules, unifies Programme/Offering UI, makes organization scope a security boundary, and plans operational finance independent of optional downstream accounting. No application, schema, security or accounting dependency changed in this docs-only delivery. Existing balanced journals remain protected; disabling/removing their current prerequisites requires the planned operational migration, never merely bypassing checks.
+
+Next: milestone 1, inventory actual models/RPCs/routes and accounting/tenant/consent dependencies. Existing academic pages are present; inspect their behavior before calling them missing or building replacements. No digital consent development is planned. Preserve historic physical evidence while removing a mandatory default consent gate through a future tested migration.
