@@ -4699,6 +4699,85 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_recurring_expenses: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          vendor_id: string;
+          category_id: string;
+          amount: number;
+          first_month: string;
+          due_day: number;
+          is_active: boolean;
+          revision: number;
+          actor_id: string;
+          reason: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          vendor_id: string;
+          category_id: string;
+          amount: number;
+          first_month: string;
+          due_day: number;
+          is_active?: boolean;
+          revision?: number;
+          actor_id: string;
+          reason: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          vendor_id?: string;
+          category_id?: string;
+          amount?: number;
+          first_month?: string;
+          due_day?: number;
+          is_active?: boolean;
+          revision?: number;
+          actor_id?: string;
+          reason?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_recurring_occurrences: {
+        Row: {
+          id: string;
+          schedule_id: string;
+          month: string;
+          purchase_id: string;
+          snapshot: Json;
+          event_order: number;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          schedule_id: string;
+          month: string;
+          purchase_id: string;
+          snapshot: Json;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          schedule_id?: string;
+          month?: string;
+          purchase_id?: string;
+          snapshot?: Json;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
@@ -5592,6 +5671,19 @@ export type Database = {
       payroll_recovery_command: {
         Args: {
           p_input: Json;
+        };
+        Returns: Json;
+      };
+      recurring_expense_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      recurring_expense_workspace: {
+        Args: {
+          p_month?: string | null;
+          p_page?: number | null;
         };
         Returns: Json;
       };

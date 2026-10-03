@@ -193,3 +193,7 @@ Transfers are shown 25/page, with own-duty staff scoping; management gets only b
 ## Historical salary evidence and corrections (migration 33)
 
 Payroll now accepts append-only month-specific agreement recovery for completed, unposted months; this does not change current workforce terms. Re-record incorrect evidence before posting; the latest monotonic evidence is used by preview, and its token detects changed terms. Original posted payroll remains immutable. Signed earning corrections post balanced expense/payable adjustments on today's open accounting date. Adjusted payable must remain positive and not below actual cash/advance settlements. Payslips and own summaries show adjusted salary, original salary and explanations separately. This is not statutory withholding, full cancellation or overpayment recovery; those require distinct liabilities/receivable workflows.
+
+## Recurring operating expenses (migration 34)
+
+Monthly rent/utilities schedules are editable, revision-checked and inactivatable. Month-specific generation creates only a purchase draft using the existing governed purchase command. Schedule-row locks and immutable occurrence evidence prevent duplicate active monthly bills; cancelled drafts may have a new evidenced replacement. Schedule snapshots survive edits. Actual invoice, service verification and paid-now/on-account treatment remain on Purchases; successful receipt/payment returns to the selected recurring month. No background posting, notification delivery or inferred payment occurs. Register is 25/page.
