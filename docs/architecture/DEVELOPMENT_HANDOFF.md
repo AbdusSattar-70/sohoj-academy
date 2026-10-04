@@ -55,6 +55,61 @@ SQL fixture `12_purchasing_receipt_supplier_settlement.sql` checks retry safety,
 
 Next: private expense-document evidence and supplier/category maintenance; then procurement returns/corrections and staff reimbursements. Asset register/capitalization/depreciation follows as a distinct workflow. Monthly period locks already apply to the expense/payable journal calls.
 
+Migration 23 adds supplier/category maintenance under Purchases → Suppliers & categories. Edit, mark inactive and reactivate preserve history; stale changes and duplicate active supplier names/category codes are rejected. SQL fixture 13 exercises these controls. Private evidence is the next delivery.
+
+Migration 24 adds private finance-evidence Storage bucket, upload tickets, immutable attachment metadata and scoped read/insert policies. Purchase rows provide document upload and authenticated short-lived download. RPCs never grant staff/student outsiders access. SQL fixture 14 verifies ticket completion, immutability and storage policy boundaries against a mocked managed Storage catalog. Production Storage HTTP/browser verification remains necessary; no service role environment variable is needed for this feature.
+
+Migration 25 and SQL fixture 15 implement purchase credit notes/overstated expense reductions, payable credits explicitly distinguished from cash settlements, supplier refund receivables and later actual refund collection. Original charges are preserved. Purchases expose these actions in expandable rows; reports and daily close read the compensating journals.
+
+Migration 26 adds own-scope reimbursement drafts, private receipt attachment, submission, finance correction/verification/posting and actual partial/full payment. Route `/dashboard/finance/reimbursements` and SQL fixture 16 cover teacher own claims and prohibited self-posting. Documents now permit workforce users only for their authorized claim records; other purchase/expense documents remain finance-only.
+
+Migration 27 preserves the existing claim migration and allows newly verified global staff identities to claim before a campus assignment exists. Non-null campus assignments must still belong to the academy. The teacher fixture includes the required signup mobile field.
+
+
+Migration 28 implements `/dashboard/finance/assets`: draft acquisition, capitalized cash/payable posting, reclassification of an existing unadjusted purchase without double payment, staff custody acknowledgement, maintenance history, in-order complete-month straight-line depreciation and actual-proceeds disposal. Month close requires due depreciation; shared asset-register/exclusive close locks and period guards protect posting. Posted asset financial terms remain immutable; edit name/tag and use inactive/reactivate for operational changes. Asset documents use private evidence. SQL fixture 17 covers acquisition, retry-safe depreciation, own custody, denied teacher lifecycle changes, vendor installments and disposal book value. Read the documented first-month convention and remaining extensions before release.
+
+Migration 29 rejects PostgreSQL numeric NaN in ledger, expenses/payables, purchases, reimbursements, asset values and supplier corrections/refunds. Fixture 18 checks direct-RPC and journal attempts, independently of browser validation. This prevents invalid amounts from corrupting balances or breaking typed financial screens.
+
+## Cash handover receipts
+
+Migration 30 adds `/dashboard/finance/handovers` with authenticated recipient-only Received/Disputed evidence, immutable history, retry protection and 25-row pages. Admin sees all handovers; staff see only those addressed to their identity. Receipt never rewrites counts or ledger balances. Read the cash handover section of PAPERLESS_FINANCE_AND_WORKFORCE.md for whole-count limitations and remaining till/opening-float work.
+
+## Counter responsibility and opening float
+
+Migration 31 adds `/dashboard/finance/counters`: inline dedicated CASH account registration, name/status edits, one open duty per cashier/counter, real internal funding transfers, own receipt/dispute history and fresh reconciled duty close. Sorted account locking in the internal journal wrapper serializes controlled funding checks with journal writers; the old engine is not client callable. Remaining cash carries forward. It does not recognize new owner capital, return counter cash automatically, grant posting rights. A dedicated collection method is mapped/enabled on receipt and disabled on close; legacy collection methods stay intact. Counter posting is guarded by open received duty and cashier/reconciliation authority. Bengali operator section 21a documents the workflow and limits.
+
+## Counter top-ups and cash returns
+
+Migration 32 extends the same counter page: guarded internal top-ups, assigned cashier receipt/dispute/recount, collection suspension until receipt, and partial/full return to a main account after duty closure with fresh matching count evidence. Transfer reference uniqueness, unchanged retries, period/account locks and own-duty paginated reads protect history. New duty event order makes latest-duty selection independent of transaction-start timestamp. Counter count navigation returns to the same form/page. Bengali section 21b explains the complete workflow. No live DB migration was run.
+
+Migration 33 adds historical month-specific payroll agreement evidence and immutable signed earning corrections. Original salary remains intact; adjusted payable and own payslips include correction evidence. No implicit tax/loan deduction or paid salary reversal.
+
+Migration 34 adds `/dashboard/finance/recurring`: monthly expected expenses, editable/inactive schedules, retry-safe monthly purchase drafts and return-to-working-month after actual bill verification/payment. Expectations never create journals.
+
+Migration 35 adds `/dashboard/finance/receivables`: current aging, paginated search, due promises, recorded contacts and guardian statements. Promises do not reduce dues; matching actual net collections are required for completion. Payment navigation returns to the selected student.
+
+Migration 36 adds `/dashboard/finance/capital` for actual owner contributions and bounded contributed-capital returns. Use this before funding counters in a new installation. It creates equity, never student revenue or academy expense.
+
+Migration 37 adds `/dashboard/finance/planning`: existing cost centres, revision-checked monthly budgets, immutable split allocations, contribution reports and clearly labelled cash-runway scenario. Unallocated costs stay visible; posted ledger amounts never change.
+
+Migration 38 adds `/dashboard/finance/bank`: atomic verified CSV import, duplicate transaction protection, exact signed ledger matching and non-destructive match release. No inferred payment or journal is created. Gateway/API verification remains an external integration.
+
+Migration 39 adds `/dashboard/finance/cash-flow`: reconciled operating/investing/financing/unclassified cash reporting and audited classification correction. Ambiguous sources remain visible; internal transfers do not inflate flows.
+
+
+Finance extension 40: fiscal year preview/close/reopen at `/dashboard/finance/year-end`, nominal transfer and reversal, monthly write guards, preserved operational P&L. SQL fixture 29 checks arithmetic, retries, closed-year guard and reversal. Current delivery status: `FINANCE_DELIVERY_STATUS.md`.
+
+
+Finance extension 41: supplier account statements at `/dashboard/finance/suppliers`; bounded directory/payables, separate advances/refund receivables, scoped read and print. Fixture 30 verifies settlement arithmetic and outsider denial.
+
+
+Finance extension 42: physical consumable stock at `/dashboard/finance/stock`, receipt/use/count evidence, edit/inactivation and low-stock attention. Fixture 31 covers retry, stale evidence, negative stock denial, unit stability, unchanged journals and outsider denial.
+
+
+Owner scope update 2026-10-03: digital admission consent excluded. Preserve paper-signature/file-reference workflow; it is not pending work. Finance extension 43 adds `/dashboard/finance/procurement`: order commitments, partial receipts, exact invoice amount matching, price variance evidence, inline supplier payments and commitment closure. Fixture 32 checks no pre-receipt journal, partial/final quantities, duplicate request/invoice rollback, stale/over-receipt denial, price-variance requirement and outsider scope.
+
+
+Finance extension 44: paginated counter duty and opening-receipt history within the counter page. Dates, 25-row pages, preserved return-to-duty-page navigation and active staff own-scope; bounded nested receipts in operational snapshot. Fixture 33 covers 28 duties, date filtering, receipt pagination and cross-cashier/public denial.
 
 ## Master development demo seed
 

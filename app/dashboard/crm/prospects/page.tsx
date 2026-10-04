@@ -5,9 +5,20 @@ import { ProspectTable } from "@/modules/crm/components/prospect-table";
 import { getProspectList } from "@/modules/crm/queries";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
 
-export default async function ProspectsPage() {
+export default async function ProspectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; q?: string; status?: string; intent?: string }>;
+}) {
   await requirePermission("crm.prospects.view");
-  const rows = await getProspectList();
+  const params = await searchParams;
+  const result = await getProspectList({
+    page: Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1),
+    query: params.q,
+    status: params.status,
+    intent: params.intent,
+  });
+  const rows = result.rows;
 
   return (
     <div className="space-y-7">
@@ -35,7 +46,15 @@ export default async function ProspectsPage() {
         }
       />
 
-      <ProspectTable rows={rows} />
+      <ProspectTable
+        rows={rows}
+        total={result.total}
+        page={result.page}
+        pageSize={result.pageSize}
+        initialQuery={params.q ?? ""}
+        initialStatus={params.status ?? "QUEUE"}
+        initialIntent={params.intent ?? "ALL"}
+      />
     </div>
   );
 }

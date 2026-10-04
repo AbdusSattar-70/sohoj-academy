@@ -2137,6 +2137,8 @@ export type Database = {
           is_active: boolean;
           created_by: string | null;
           created_at: string;
+          offering_id: string | null;
+          revision: number;
         };
         Insert: {
           id?: string;
@@ -2149,6 +2151,8 @@ export type Database = {
           is_active?: boolean;
           created_by?: string | null;
           created_at?: string;
+          offering_id?: string | null;
+          revision?: number;
         };
         Update: {
           id?: string;
@@ -2161,6 +2165,8 @@ export type Database = {
           is_active?: boolean;
           created_by?: string | null;
           created_at?: string;
+          offering_id?: string | null;
+          revision?: number;
         };
         Relationships: [];
       };
@@ -2406,6 +2412,7 @@ export type Database = {
           settled_at: string;
           reason: string;
           advance_id: string | null;
+          settlement_kind: string;
         };
         Insert: {
           id?: string;
@@ -2417,6 +2424,7 @@ export type Database = {
           settled_at?: string;
           reason: string;
           advance_id?: string | null;
+          settlement_kind?: string;
         };
         Update: {
           id?: string;
@@ -2428,6 +2436,7 @@ export type Database = {
           settled_at?: string;
           reason?: string;
           advance_id?: string | null;
+          settlement_kind?: string;
         };
         Relationships: [];
       };
@@ -4026,38 +4035,1336 @@ export type Database = {
         };
         Relationships: [];
       };
+      finance_documents: {
+        Row: {
+          id: string;
+          entity_type: string;
+          entity_id: string;
+          actor_id: string;
+          object_path: string;
+          original_name: string;
+          mime_type: string;
+          byte_size: number;
+          sha256: string;
+          note: string;
+          request_payload: Json;
+          status: string;
+          created_at: string;
+          ready_at: string | null;
+        };
+        Insert: {
+          id: string;
+          entity_type: string;
+          entity_id: string;
+          actor_id: string;
+          object_path: string;
+          original_name: string;
+          mime_type: string;
+          byte_size: number;
+          sha256: string;
+          note: string;
+          request_payload: Json;
+          status?: string;
+          created_at?: string;
+          ready_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          entity_type?: string;
+          entity_id?: string;
+          actor_id?: string;
+          object_path?: string;
+          original_name?: string;
+          mime_type?: string;
+          byte_size?: number;
+          sha256?: string;
+          note?: string;
+          request_payload?: Json;
+          status?: string;
+          created_at?: string;
+          ready_at?: string | null;
+        };
+        Relationships: [];
+      };
+      purchase_adjustments: {
+        Row: {
+          id: string;
+          purchase_id: string;
+          kind: string;
+          reference: string;
+          adjustment_date: string;
+          amount: number;
+          payable_credit: number;
+          cash_refund: number;
+          refund_due: number;
+          payment_account_id: string | null;
+          journal_id: string;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          purchase_id: string;
+          kind: string;
+          reference: string;
+          adjustment_date: string;
+          amount: number;
+          payable_credit: number;
+          cash_refund: number;
+          refund_due: number;
+          payment_account_id?: string | null;
+          journal_id: string;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          purchase_id?: string;
+          kind?: string;
+          reference?: string;
+          adjustment_date?: string;
+          amount?: number;
+          payable_credit?: number;
+          cash_refund?: number;
+          refund_due?: number;
+          payment_account_id?: string | null;
+          journal_id?: string;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      purchase_refund_receipts: {
+        Row: {
+          id: string;
+          adjustment_id: string;
+          amount: number;
+          receipt_date: string;
+          payment_account_id: string;
+          reference: string;
+          reason: string;
+          actor_id: string;
+          journal_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          adjustment_id: string;
+          amount: number;
+          receipt_date: string;
+          payment_account_id: string;
+          reference: string;
+          reason: string;
+          actor_id: string;
+          journal_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          adjustment_id?: string;
+          amount?: number;
+          receipt_date?: string;
+          payment_account_id?: string;
+          reference?: string;
+          reason?: string;
+          actor_id?: string;
+          journal_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      staff_reimbursements: {
+        Row: {
+          id: string;
+          claim_no: string;
+          organization_id: string;
+          staff_id: string;
+          category_id: string;
+          expense_date: string;
+          amount: number;
+          description: string;
+          receipt_reference: string;
+          status: string;
+          revision: number;
+          expense_id: string | null;
+          review_note: string | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          claim_no?: string;
+          organization_id: string;
+          staff_id: string;
+          category_id: string;
+          expense_date: string;
+          amount: number;
+          description: string;
+          receipt_reference: string;
+          status?: string;
+          revision?: number;
+          expense_id?: string | null;
+          review_note?: string | null;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          claim_no?: string;
+          organization_id?: string;
+          staff_id?: string;
+          category_id?: string;
+          expense_date?: string;
+          amount?: number;
+          description?: string;
+          receipt_reference?: string;
+          status?: string;
+          revision?: number;
+          expense_id?: string | null;
+          review_note?: string | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      academy_assets: {
+        Row: {
+          id: string;
+          asset_no: string;
+          organization_id: string;
+          name: string;
+          serial_no: string | null;
+          location: string;
+          vendor_id: string;
+          source_purchase_id: string | null;
+          asset_account_id: string;
+          cost: number;
+          residual: number;
+          life_months: number;
+          acquired_on: string;
+          in_service_on: string;
+          depreciation_start: string;
+          invoice_reference: string;
+          status: string;
+          custodian_id: string | null;
+          payable_id: string | null;
+          acquisition_journal_id: string | null;
+          revision: number;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          asset_no?: string;
+          organization_id: string;
+          name: string;
+          serial_no?: string | null;
+          location: string;
+          vendor_id: string;
+          source_purchase_id?: string | null;
+          asset_account_id: string;
+          cost: number;
+          residual: number;
+          life_months: number;
+          acquired_on: string;
+          in_service_on: string;
+          depreciation_start: string;
+          invoice_reference: string;
+          status?: string;
+          custodian_id?: string | null;
+          payable_id?: string | null;
+          acquisition_journal_id?: string | null;
+          revision?: number;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          asset_no?: string;
+          organization_id?: string;
+          name?: string;
+          serial_no?: string | null;
+          location?: string;
+          vendor_id?: string;
+          source_purchase_id?: string | null;
+          asset_account_id?: string;
+          cost?: number;
+          residual?: number;
+          life_months?: number;
+          acquired_on?: string;
+          in_service_on?: string;
+          depreciation_start?: string;
+          invoice_reference?: string;
+          status?: string;
+          custodian_id?: string | null;
+          payable_id?: string | null;
+          acquisition_journal_id?: string | null;
+          revision?: number;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      asset_depreciation_entries: {
+        Row: {
+          id: string;
+          asset_id: string;
+          month: string;
+          amount: number;
+          journal_id: string | null;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          asset_id: string;
+          month: string;
+          amount: number;
+          journal_id?: string | null;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          asset_id?: string;
+          month?: string;
+          amount?: number;
+          journal_id?: string | null;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      asset_events: {
+        Row: {
+          id: string;
+          event_order: number;
+          asset_id: string;
+          action: string;
+          actor_id: string;
+          reason: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          asset_id: string;
+          action: string;
+          actor_id: string;
+          reason: string;
+          payload: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          asset_id?: string;
+          action?: string;
+          actor_id?: string;
+          reason?: string;
+          payload?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      asset_disposals: {
+        Row: {
+          id: string;
+          asset_id: string;
+          disposed_on: string;
+          proceeds: number;
+          book_value: number;
+          journal_id: string;
+          reference: string;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          asset_id: string;
+          disposed_on: string;
+          proceeds: number;
+          book_value: number;
+          journal_id: string;
+          reference: string;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          asset_id?: string;
+          disposed_on?: string;
+          proceeds?: number;
+          book_value?: number;
+          journal_id?: string;
+          reference?: string;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_handover_receipts: {
+        Row: {
+          close_id: string;
+          recipient_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          close_id: string;
+          recipient_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          close_id?: string;
+          recipient_id?: string;
+          actor_id?: string;
+          outcome?: string;
+          counted_amount?: number;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_cash_counters: {
+        Row: {
+          id: string;
+          account_id: string;
+          payment_method_id: string;
+          name: string;
+          is_active: boolean;
+          revision: number;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          payment_method_id: string;
+          name: string;
+          is_active?: boolean;
+          revision?: number;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          payment_method_id?: string;
+          name?: string;
+          is_active?: boolean;
+          revision?: number;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_counter_shifts: {
+        Row: {
+          id: string;
+          counter_id: string;
+          staff_id: string;
+          work_date: string;
+          opening_balance: number;
+          float_amount: number;
+          source_account_id: string | null;
+          journal_id: string | null;
+          opened_by: string;
+          reason: string;
+          opened_at: string;
+          closed_at: string | null;
+          close_id: string | null;
+          closed_by: string | null;
+          event_order: number;
+        };
+        Insert: {
+          id?: string;
+          counter_id: string;
+          staff_id: string;
+          work_date: string;
+          opening_balance: number;
+          float_amount: number;
+          source_account_id?: string | null;
+          journal_id?: string | null;
+          opened_by: string;
+          reason: string;
+          opened_at?: string;
+          closed_at?: string | null;
+          close_id?: string | null;
+          closed_by?: string | null;
+          event_order?: number;
+        };
+        Update: {
+          id?: string;
+          counter_id?: string;
+          staff_id?: string;
+          work_date?: string;
+          opening_balance?: number;
+          float_amount?: number;
+          source_account_id?: string | null;
+          journal_id?: string | null;
+          opened_by?: string;
+          reason?: string;
+          opened_at?: string;
+          closed_at?: string | null;
+          close_id?: string | null;
+          closed_by?: string | null;
+          event_order?: number;
+        };
+        Relationships: [];
+      };
+      finance_counter_receipts: {
+        Row: {
+          id: string;
+          event_order: number;
+          shift_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          shift_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          shift_id?: string;
+          actor_id?: string;
+          outcome?: string;
+          counted_amount?: number;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_counter_transfers: {
+        Row: {
+          id: string;
+          counter_id: string;
+          shift_id: string;
+          kind: string;
+          amount: number;
+          source_account_id: string;
+          destination_account_id: string;
+          journal_id: string;
+          close_id: string | null;
+          reference: string;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          counter_id: string;
+          shift_id: string;
+          kind: string;
+          amount: number;
+          source_account_id: string;
+          destination_account_id: string;
+          journal_id: string;
+          close_id?: string | null;
+          reference: string;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          counter_id?: string;
+          shift_id?: string;
+          kind?: string;
+          amount?: number;
+          source_account_id?: string;
+          destination_account_id?: string;
+          journal_id?: string;
+          close_id?: string | null;
+          reference?: string;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_counter_transfer_receipts: {
+        Row: {
+          id: string;
+          event_order: number;
+          transfer_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          transfer_id: string;
+          actor_id: string;
+          outcome: string;
+          counted_amount: number;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          transfer_id?: string;
+          actor_id?: string;
+          outcome?: string;
+          counted_amount?: number;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      staff_payroll_month_terms: {
+        Row: {
+          id: string;
+          staff_id: string;
+          month: string;
+          terms: Json;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+          event_order: number;
+        };
+        Insert: {
+          id?: string;
+          staff_id: string;
+          month: string;
+          terms: Json;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          staff_id?: string;
+          month?: string;
+          terms?: Json;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      staff_payroll_adjustments: {
+        Row: {
+          id: string;
+          payroll_id: string;
+          amount: number;
+          posted_on: string;
+          reason: string;
+          actor_id: string;
+          journal_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          payroll_id: string;
+          amount: number;
+          posted_on: string;
+          reason: string;
+          actor_id: string;
+          journal_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          payroll_id?: string;
+          amount?: number;
+          posted_on?: string;
+          reason?: string;
+          actor_id?: string;
+          journal_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_recurring_expenses: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          vendor_id: string;
+          category_id: string;
+          amount: number;
+          first_month: string;
+          due_day: number;
+          is_active: boolean;
+          revision: number;
+          actor_id: string;
+          reason: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          vendor_id: string;
+          category_id: string;
+          amount: number;
+          first_month: string;
+          due_day: number;
+          is_active?: boolean;
+          revision?: number;
+          actor_id: string;
+          reason: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          vendor_id?: string;
+          category_id?: string;
+          amount?: number;
+          first_month?: string;
+          due_day?: number;
+          is_active?: boolean;
+          revision?: number;
+          actor_id?: string;
+          reason?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_recurring_occurrences: {
+        Row: {
+          id: string;
+          schedule_id: string;
+          month: string;
+          purchase_id: string;
+          snapshot: Json;
+          event_order: number;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          schedule_id: string;
+          month: string;
+          purchase_id: string;
+          snapshot: Json;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          schedule_id?: string;
+          month?: string;
+          purchase_id?: string;
+          snapshot?: Json;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_collection_promises: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          amount: number;
+          due_on: string;
+          baseline_net_paid: number;
+          status: string;
+          revision: number;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          amount: number;
+          due_on: string;
+          baseline_net_paid: number;
+          status?: string;
+          revision?: number;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_id?: string;
+          amount?: number;
+          due_on?: string;
+          baseline_net_paid?: number;
+          status?: string;
+          revision?: number;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_collection_events: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          promise_id: string | null;
+          action: string;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          promise_id?: string | null;
+          action: string;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_id?: string;
+          promise_id?: string | null;
+          action?: string;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_owners: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          contact: string;
+          is_active: boolean;
+          revision: number;
+          actor_id: string;
+          reason: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          contact?: string;
+          is_active?: boolean;
+          revision?: number;
+          actor_id: string;
+          reason: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          contact?: string;
+          is_active?: boolean;
+          revision?: number;
+          actor_id?: string;
+          reason?: string;
+        };
+        Relationships: [];
+      };
+      finance_capital_movements: {
+        Row: {
+          id: string;
+          owner_id: string;
+          kind: string;
+          amount: number;
+          account_id: string;
+          reference: string;
+          journal_id: string;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          kind: string;
+          amount: number;
+          account_id: string;
+          reference: string;
+          journal_id: string;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          owner_id?: string;
+          kind?: string;
+          amount?: number;
+          account_id?: string;
+          reference?: string;
+          journal_id?: string;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_budgets: {
+        Row: {
+          id: string;
+          centre_id: string;
+          month: string;
+          revenue_target: number;
+          expense_limit: number;
+          cash_in: number;
+          cash_out: number;
+          revision: number;
+          actor_id: string;
+          reason: string;
+        };
+        Insert: {
+          id?: string;
+          centre_id: string;
+          month: string;
+          revenue_target: number;
+          expense_limit: number;
+          cash_in: number;
+          cash_out: number;
+          revision?: number;
+          actor_id: string;
+          reason: string;
+        };
+        Update: {
+          id?: string;
+          centre_id?: string;
+          month?: string;
+          revenue_target?: number;
+          expense_limit?: number;
+          cash_in?: number;
+          cash_out?: number;
+          revision?: number;
+          actor_id?: string;
+          reason?: string;
+        };
+        Relationships: [];
+      };
+      finance_line_allocations: {
+        Row: {
+          id: string;
+          line_id: string;
+          allocation: Json;
+          event_order: number;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          line_id: string;
+          allocation: Json;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          line_id?: string;
+          allocation?: Json;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_bank_imports: {
+        Row: {
+          id: string;
+          account_id: string;
+          statement_reference: string;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          statement_reference: string;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          account_id?: string;
+          statement_reference?: string;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_bank_transactions: {
+        Row: {
+          id: string;
+          import_id: string;
+          account_id: string;
+          transaction_date: string;
+          reference: string;
+          description: string;
+          amount: number;
+        };
+        Insert: {
+          id?: string;
+          import_id: string;
+          account_id: string;
+          transaction_date: string;
+          reference: string;
+          description?: string;
+          amount: number;
+        };
+        Update: {
+          id?: string;
+          import_id?: string;
+          account_id?: string;
+          transaction_date?: string;
+          reference?: string;
+          description?: string;
+          amount?: number;
+        };
+        Relationships: [];
+      };
+      finance_bank_links: {
+        Row: {
+          id: string;
+          transaction_id: string;
+          line_id: string;
+          actor_id: string;
+          reason: string;
+          matched_at: string;
+          released_at: string | null;
+          released_by: string | null;
+          release_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          transaction_id: string;
+          line_id: string;
+          actor_id: string;
+          reason: string;
+          matched_at?: string;
+          released_at?: string | null;
+          released_by?: string | null;
+          release_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          transaction_id?: string;
+          line_id?: string;
+          actor_id?: string;
+          reason?: string;
+          matched_at?: string;
+          released_at?: string | null;
+          released_by?: string | null;
+          release_reason?: string | null;
+        };
+        Relationships: [];
+      };
+      finance_cash_classifications: {
+        Row: {
+          id: string;
+          journal_id: string;
+          category: string;
+          event_order: number;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          journal_id: string;
+          category: string;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          journal_id?: string;
+          category?: string;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      finance_year_events: {
+        Row: {
+          id: string;
+          year_start: string;
+          action: string;
+          event_order: number;
+          snapshot: Json;
+          journal_id: string | null;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          year_start: string;
+          action: string;
+          snapshot: Json;
+          journal_id?: string | null;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          year_start?: string;
+          action?: string;
+          snapshot?: Json;
+          journal_id?: string | null;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      consumable_items: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          unit: string;
+          reorder_level: number;
+          is_active: boolean;
+          revision: number;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          unit: string;
+          reorder_level?: number;
+          is_active?: boolean;
+          revision?: number;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          unit?: string;
+          reorder_level?: number;
+          is_active?: boolean;
+          revision?: number;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      consumable_movements: {
+        Row: {
+          id: string;
+          item_id: string;
+          event_order: number;
+          kind: string;
+          quantity: number;
+          physical_quantity: number | null;
+          reference: string;
+          purchase_id: string | null;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          item_id: string;
+          kind: string;
+          quantity: number;
+          physical_quantity?: number | null;
+          reference: string;
+          purchase_id?: string | null;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          item_id?: string;
+          kind?: string;
+          quantity?: number;
+          physical_quantity?: number | null;
+          reference?: string;
+          purchase_id?: string | null;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      procurement_orders: {
+        Row: {
+          id: string;
+          order_no: string;
+          organization_id: string;
+          vendor_id: string;
+          category_id: string;
+          description: string;
+          items: Json;
+          total: number;
+          expected_on: string | null;
+          status: string;
+          revision: number;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_no?: string;
+          organization_id: string;
+          vendor_id: string;
+          category_id: string;
+          description: string;
+          items: Json;
+          total: number;
+          expected_on?: string | null;
+          status?: string;
+          revision?: number;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_no?: string;
+          organization_id?: string;
+          vendor_id?: string;
+          category_id?: string;
+          description?: string;
+          items?: Json;
+          total?: number;
+          expected_on?: string | null;
+          status?: string;
+          revision?: number;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      procurement_receipts: {
+        Row: {
+          id: string;
+          order_id: string;
+          purchase_id: string;
+          items: Json;
+          invoice_total: number;
+          price_variance_reason: string | null;
+          actor_id: string;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          purchase_id: string;
+          items: Json;
+          invoice_total: number;
+          price_variance_reason?: string | null;
+          actor_id: string;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          purchase_id?: string;
+          items?: Json;
+          invoice_total?: number;
+          price_variance_reason?: string | null;
+          actor_id?: string;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       current_fee_plans: { Row: {
-        id: string;
-        offering_id: string;
-        version: number;
-        status: Database["public"]["Enums"]["rule_status"];
-        billing_cycle: string;
+        id: string | null;
+        offering_id: string | null;
+        version: number | null;
+        status: Database["public"]["Enums"]["rule_status"] | null;
+        billing_cycle: string | null;
         due_day: number | null;
-        currency_code: string;
-        effective_from: string;
+        currency_code: string | null;
+        effective_from: string | null;
         effective_to: string | null;
-        change_reason: string;
-        created_by: string;
-        created_at: string;
+        change_reason: string | null;
+        created_by: string | null;
+        created_at: string | null;
       }; Relationships: [] };
       current_fee_plan_components: { Row: {
-        id: string;
-        fee_plan_version_id: string;
-        code: string;
-        name: string;
-        amount: number;
-        charge_type: string;
-        recurrence: string;
-        sort_order: number;
+        id: string | null;
+        fee_plan_version_id: string | null;
+        code: string | null;
+        name: string | null;
+        amount: number | null;
+        charge_type: string | null;
+        recurrence: string | null;
+        sort_order: number | null;
       }; Relationships: [] };
       current_operating_rules: { Row: {
-        id: string;
-        domain: string;
-        rule_key: string;
-        status: Database["public"]["Enums"]["rule_status"];
-        payload: Json;
+        id: string | null;
+        domain: string | null;
+        rule_key: string | null;
+        status: Database["public"]["Enums"]["rule_status"] | null;
+        payload: Json | null;
+      }; Relationships: [] };
+      finance_receivable_rows: { Row: {
+        id: string | null;
+        invoice_no: string | null;
+        student_id: string | null;
+        admission_id: string | null;
+        issued_on: string | null;
+        due_on: string | null;
+        student_no: string | null;
+        full_name: string | null;
+        gross: number | null;
+        credits: number | null;
+        net: number | null;
+        paid: number | null;
+        refunded: number | null;
+        due: number | null;
+        age_days: number | null;
+        bucket: string | null;
+        guardian: string | null;
+        mobile: string | null;
+        promise_id: string | null;
+        promise_amount: number | null;
+        promise_due: string | null;
+        promise_revision: number | null;
+        promise_collected: number | null;
+        last_contact: string | null;
       }; Relationships: [] };
     };
     Functions: {
@@ -4417,7 +5724,7 @@ export type Database = {
         };
         Returns: number;
       };
-      finance_post_journal: {
+      finance_post_journal_engine: {
         Args: {
           p_organization_id: string;
           p_journal_date: string;
@@ -4753,6 +6060,327 @@ export type Database = {
           p_page?: number | null;
           p_status?: string | null;
           p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      purchase_directory_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      purchase_directory_workspace: {
+        Args: {
+          p_kind?: string | null;
+          p_page?: number | null;
+          p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      finance_document_entity_allowed: {
+        Args: {
+          p_type: string;
+          p_id: string;
+        };
+        Returns: boolean;
+      };
+      finance_document_storage_allowed: {
+        Args: {
+          p_path: string;
+          p_write: boolean;
+        };
+        Returns: boolean;
+      };
+      finance_document_prepare: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      finance_document_complete: {
+        Args: {
+          p_id: string;
+        };
+        Returns: Json;
+      };
+      finance_document_workspace: {
+        Args: {
+          p_type: string;
+          p_id: string;
+        };
+        Returns: Json;
+      };
+      finance_document_batch: {
+        Args: {
+          p_type: string;
+          p_ids: string[];
+        };
+        Returns: Json;
+      };
+      purchase_adjustment_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      purchase_adjustment_workspace: {
+        Args: {
+          p_ids: string[];
+        };
+        Returns: Json;
+      };
+      reimbursement_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      reimbursement_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_status?: string | null;
+        };
+        Returns: Json;
+      };
+      asset_access: {
+        Args: {
+          p_id: string;
+        };
+        Returns: boolean;
+      };
+      asset_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      asset_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_status?: string | null;
+          p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      cash_handover_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      cash_handover_workspace: {
+        Args: {
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      cash_handover_recipients: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      finance_post_journal: {
+        Args: {
+          p_organization_id: string;
+          p_journal_date: string;
+          p_journal_type: string;
+          p_source_type: string;
+          p_source_id: string;
+          p_description: string;
+          p_posted_by: string;
+          p_lines: Json;
+        };
+        Returns: string;
+      };
+      cash_counter_base_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      cash_counter_workspace: {
+        Args: {
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      cash_counter_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      counter_transfer_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      counter_transfer_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_counter_ids?: string[] | null;
+          p_pending?: boolean | null;
+        };
+        Returns: Json;
+      };
+      payroll_recovery_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      recurring_expense_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      recurring_expense_workspace: {
+        Args: {
+          p_month?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      collection_followup_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      receivable_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_search?: string | null;
+          p_bucket?: string | null;
+          p_promises?: boolean | null;
+          p_student_id?: string | null;
+        };
+        Returns: Json;
+      };
+      owner_capital_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      owner_capital_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_owner_id?: string | null;
+        };
+        Returns: Json;
+      };
+      finance_planning_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      finance_planning_workspace: {
+        Args: {
+          p_month?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      bank_reconciliation_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      bank_reconciliation_workspace: {
+        Args: {
+          p_account_id?: string | null;
+          p_page?: number | null;
+          p_search?: string | null;
+          p_unmatched?: boolean | null;
+        };
+        Returns: Json;
+      };
+      bank_match_candidates: {
+        Args: {
+          p_id: string;
+          p_page?: number | null;
+          p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      finance_cash_default_class: {
+        Args: {
+          p_source: string;
+          p_type: string;
+        };
+        Returns: string;
+      };
+      cash_classification_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      classified_cash_flow: {
+        Args: {
+          p_month?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      fiscal_year_preview: {
+        Args: {
+          p_start: string;
+        };
+        Returns: Json;
+      };
+      fiscal_year_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      supplier_account_statement: {
+        Args: {
+          p_vendor?: string | null;
+          p_search?: string | null;
+          p_page?: number | null;
+        };
+        Returns: Json;
+      };
+      consumable_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      consumable_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      procurement_command: {
+        Args: {
+          p_input: Json;
+        };
+        Returns: Json;
+      };
+      procurement_workspace: {
+        Args: {
+          p_page?: number | null;
+          p_status?: string | null;
+          p_search?: string | null;
+        };
+        Returns: Json;
+      };
+      cash_counter_history: {
+        Args: {
+          p_counter: string;
+          p_page?: number | null;
+          p_from?: string | null;
+          p_through?: string | null;
+          p_shift?: string | null;
         };
         Returns: Json;
       };

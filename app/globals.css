@@ -4,6 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Static public translations stay server-rendered; the client locale wrapper only toggles visibility. */
+.localized-bn { display: none; }
+[data-locale="bn"] .localized-en { display: none; }
+[data-locale="bn"] .localized-bn { display: inline; }
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: var(--font-sans);

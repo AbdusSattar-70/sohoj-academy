@@ -1,0 +1,6 @@
+import {z} from "zod";
+const duty=z.object({id:z.string().uuid(),work_date:z.string(),opened_at:z.string(),closed_at:z.string().nullable(),opening_balance:z.number(),float_amount:z.number(),reason:z.string(),staff_no:z.string(),cashier:z.string(),opened_by:z.string().nullable(),closed_by:z.string().nullable(),close_no:z.string().nullable(),close_amount:z.number().nullable(),variance:z.number().nullable(),receipt_count:z.number(),receipt_outcome:z.string().nullable()});
+const receipt=z.object({id:z.string().uuid(),event_order:z.number(),outcome:z.string(),counted_amount:z.number(),reason:z.string(),created_at:z.string(),actor:z.string().nullable()});
+export const counterHistorySchema=z.discriminatedUnion("mode",[z.object({mode:z.literal("DUTIES"),total:z.number(),rows:z.array(duty)}),z.object({mode:z.literal("RECEIPTS"),total:z.number(),rows:z.array(receipt)})]);
+export type CounterHistoryData=z.infer<typeof counterHistorySchema>;
+export const counterHistoryInput=z.object({counter:z.string().uuid(),page:z.number().int().min(1).max(10000),from:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),through:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),shift:z.string().uuid().optional()});

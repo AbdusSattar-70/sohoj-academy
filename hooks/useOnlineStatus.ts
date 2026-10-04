@@ -1,6 +1,5 @@
 // hooks/useOnlineStatus.ts
 import { useEffect, useState } from "react";
-import { onlineManager } from "@tanstack/react-query";
 import { Status } from "@/types";
 import { STATUS } from "@/lib/constants";
 
@@ -8,25 +7,38 @@ export function useOnlineStatus(): Status {
   const [status, setStatus] = useState<Status>(STATUS.ONLINE);
 
   useEffect(() => {
-    const update = () => {
-      const isOnline = navigator.onLine;
-      onlineManager.setOnline(isOnline);
+    let wasOffline = false;
+    let backOnlineTimer: ReturnType<typeof setTimeout> | undefined;
 
-      if (isOnline) {
-        setStatus(STATUS.BACK_ONLINE);
-        setTimeout(() => setStatus(STATUS.ONLINE), 2000);
-      } else {
+    const update = () => {
+      if (!navigator.onLine) {
+        wasOffline = true;
+        if (backOnlineTimer) clearTimeout(backOnlineTimer);
         setStatus(STATUS.OFFLINE);
+        return;
       }
+
+      if (!wasOffline) {
+        setStatus(STATUS.ONLINE);
+        return;
+      }
+
+      wasOffline = false;
+      setStatus(STATUS.BACK_ONLINE);
+      backOnlineTimer = setTimeout(() => {
+        setStatus(STATUS.ONLINE);
+        backOnlineTimer = undefined;
+      }, 2000);
     };
 
     update();
-    window.addEventListener(STATUS.ONLINE, update);
-    window.addEventListener(STATUS.OFFLINE, update);
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
 
     return () => {
-      window.removeEventListener(STATUS.ONLINE, update);
-      window.removeEventListener(STATUS.OFFLINE, update);
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+      if (backOnlineTimer) clearTimeout(backOnlineTimer);
     };
   }, []);
 

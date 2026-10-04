@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { StatusBadge } from "@/components/erp/status-badge";
 import type { ProspectListRow } from "@/modules/crm/queries";
 
@@ -20,7 +21,6 @@ const statuses = [
   "LOST",
 ] as const;
 
-const intents = ["ALL", "interest", "admission"] as const;
 
 const QUEUE_STATUSES = new Set([
   "NEW",
@@ -29,42 +29,53 @@ const QUEUE_STATUSES = new Set([
   "FUTURE_FOLLOW_UP",
 ]);
 
-export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<(typeof statuses)[number]>("QUEUE");
-  const [intent, setIntent] = useState<(typeof intents)[number]>("ALL");
+export function ProspectTable({
+  rows,
+  total,
+  page,
+  pageSize,
+  initialQuery,
+  initialStatus,
+  initialIntent,
+}: {
+  rows: ProspectListRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+  initialQuery: string;
+  initialStatus: string;
+  initialIntent: string;
+}) {
+  const router = useRouter();
+  const [query, setQuery] = useState(initialQuery);
+  const [status, setStatus] = useState<(typeof statuses)[number]>(initialStatus as (typeof statuses)[number]);
+  const [intent, setIntent] = useState<"ALL" | "interest" | "admission">(initialIntent as "ALL" | "interest" | "admission");
   const [needsReviewOnly, setNeedsReviewOnly] = useState(false);
+  const filtered = rows.filter((row) => {
+    const matchesStatus = status === "ALL" || (status === "QUEUE" ? QUEUE_STATUSES.has(row.status) : row.status === status);
+    const matchesIntent = intent === "ALL" || row.submissionIntent === intent;
+    const matchesReview = !needsReviewOnly || row.schoolNeedsReview;
+    return matchesStatus && matchesIntent && matchesReview;
+  });
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const filterHref = (nextPage: number, values = { query, status, intent }) => {
+    const params = new URLSearchParams();
+    if (values.query.trim()) params.set("q", values.query.trim());
+    if (values.status !== "QUEUE") params.set("status", values.status);
+    if (values.intent !== "ALL") params.set("intent", values.intent);
+    params.set("page", String(nextPage));
+    return `/dashboard/crm/prospects?${params.toString()}`;
+  };
 
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-
-    return rows.filter((row) => {
-      const matchesStatus =
-        status === "ALL"
-          ? true
-          : status === "QUEUE"
-            ? QUEUE_STATUSES.has(row.status)
-            : row.status === status;
-      const matchesIntent = intent === "ALL" || row.submissionIntent === intent;
-      const matchesReview = !needsReviewOnly || row.schoolNeedsReview;
-      const matchesQuery =
-        !needle ||
-        [
-          row.prospectNo,
-          row.studentName,
-          row.guardianName,
-          row.mobile,
-          row.className,
-          row.schoolName,
-          row.sourceName,
-          row.assignedTo,
-          row.offeringLabel,
-          row.submissionIntent,
-        ].some((value) => value.toLowerCase().includes(needle));
-
-      return matchesStatus && matchesIntent && matchesReview && matchesQuery;
-    });
-  }, [intent, needsReviewOnly, query, rows, status]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const href = filterHref(1, { query, status, intent });
+      if (href !== window.location.pathname + window.location.search) {
+        router.replace(href);
+      }
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [query, status, intent, router]);
 
   const queueCount = rows.filter((row) =>
     QUEUE_STATUSES.has(row.status),
@@ -102,10 +113,9 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
             <label className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">Status</span>
               <select
+                name="status"
                 value={status}
-                onChange={(event) =>
-                  setStatus(event.target.value as (typeof statuses)[number])
-                }
+                onChange={(event) => setStatus(event.target.value as (typeof statuses)[number])}
                 className="min-h-11 rounded-xl border bg-background px-3"
               >
                 {statuses.map((item) => (
@@ -121,10 +131,9 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
             <label className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">Intent</span>
               <select
+                name="intent"
                 value={intent}
-                onChange={(event) =>
-                  setIntent(event.target.value as (typeof intents)[number])
-                }
+                onChange={(event) => setIntent(event.target.value as "ALL" | "interest" | "admission")}
                 className="min-h-11 rounded-xl border bg-background px-3"
               >
                 <option value="ALL">All</option>
@@ -237,7 +246,7 @@ export function ProspectTable({ rows }: { rows: ProspectListRow[] }) {
       </div>
 
       <div className="border-t px-4 py-3 text-xs text-muted-foreground">
-        Showing {filtered.length} of {rows.length} prospect records.
+        Showing {filtered.length} of {total} prospect records · Page {page} of {pageCount}. <span className="ml-2 inline-flex gap-2">{page > 1 && <Link className="rounded-lg border px-2 py-1" href={filterHref(page - 1)}>Previous</Link>}{page < pageCount && <Link className="rounded-lg border px-2 py-1" href={filterHref(page + 1)}>Next</Link>}</span>
       </div>
     </section>
   );

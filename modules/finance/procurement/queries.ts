@@ -1,0 +1,7 @@
+import {z} from "zod";
+import {platformClient} from "@/modules/platform/rpc-client";
+const choice=z.object({id:z.string().uuid(),name:z.string()});
+const item=z.object({name:z.string(),quantity:z.number(),price:z.number()});
+const schema=z.object({total:z.number(),canPay:z.boolean(),vendors:z.array(choice),categories:z.array(choice),accounts:z.array(choice),rows:z.array(z.object({id:z.string().uuid(),order_no:z.string(),vendor_id:z.string().uuid(),category_id:z.string().uuid(),description:z.string(),total:z.number(),status:z.enum(["OPEN","COMPLETE","CLOSED","CANCELLED"]),revision:z.number(),expected_on:z.string().nullable(),supplier:z.string(),items:z.array(item),lines:z.array(item.extend({line:z.number(),received:z.number()})),receipt_count:z.number(),receipts:z.array(z.object({id:z.string(),purchase_id:z.string(),purchase_no:z.string(),invoice_reference:z.string(),received_on:z.string(),items:z.array(item.extend({line:z.number()})),revision:z.number(),remaining:z.number(),invoice_total:z.number(),price_variance_reason:z.string().nullable(),reason:z.string(),created_at:z.string()}))}))});
+export type ProcurementData=z.infer<typeof schema>;
+export async function getProcurement(page:number,status:string,q:string){const db=await platformClient();const {data,error}=await db.rpc("procurement_workspace",{p_page:page,p_status:status,p_search:q});if(error)throw Error(error.message);return schema.parse(data);}

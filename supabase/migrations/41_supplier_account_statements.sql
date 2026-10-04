@@ -1,0 +1,20 @@
+create function public.supplier_account_statement(p_vendor uuid default null,p_search text default '',p_page integer default 1) returns jsonb language plpgsql stable security definer set search_path='' as $$
+declare org uuid;vendor public.vendors;rows jsonb;total integer;summary jsonb;
+begin
+ if auth.uid() is null or not public.has_permission('accounting.view') or not exists(select 1 from public.profiles where id=auth.uid() and status='ACTIVE') then raise exception 'Accounting access required.';end if;
+ if p_page not between 1 and 10000 or length(coalesce(p_search,''))>100 then raise exception 'Invalid statement page or search.';end if;
+ select id into org from public.organizations where code='SOHOJ' and is_active;
+ if p_vendor is null then
+  select count(*) into total from public.vendors where organization_id=org and (coalesce(p_search,'')='' or name ilike '%'||p_search||'%' or vendor_no ilike '%'||p_search||'%');
+  select coalesce(jsonb_agg(to_jsonb(x)),'[]'::jsonb) into rows from(select v.id,v.vendor_no,v.name,v.mobile,v.email,v.is_active from public.vendors v where organization_id=org and (coalesce(p_search,'')='' or name ilike '%'||p_search||'%' or vendor_no ilike '%'||p_search||'%') order by v.name,v.id limit 25 offset (p_page-1)*25)x;
+  return jsonb_build_object('total',total,'vendors',rows,'vendor',null,'rows','[]'::jsonb,'summary',null,'generatedAt',now());
+ end if;
+ select * into vendor from public.vendors where id=p_vendor and organization_id=org;if not found then raise exception 'Supplier not available.';end if;
+ select jsonb_build_object('charges',coalesce(sum(p.original_amount),0),'cashPaid',coalesce(sum(s.cash),0),'advanceOffset',coalesce(sum(s.offset_amount),0),'creditNotes',coalesce(sum(s.credit),0),'payableDue',coalesce(sum(p.original_amount-coalesce(s.total,0)),0)) into summary from public.finance_payables p left join lateral(select sum(amount) total,sum(amount) filter(where settlement_kind='PAYMENT' and advance_id is null) cash,sum(amount) filter(where advance_id is not null) offset_amount,sum(amount) filter(where settlement_kind='CREDIT_NOTE') credit from public.finance_payable_settlements where payable_id=p.id)s on true where p.vendor_id=p_vendor and p.organization_id=org;
+ summary:=summary||jsonb_build_object('advanceHeld',(select coalesce(sum(public.advance_balance(id)),0) from public.finance_advances where vendor_id=p_vendor and organization_id=org),'supplierRefundDue',(select coalesce(sum(a.refund_due-coalesce((select sum(r.amount) from public.purchase_refund_receipts r where r.adjustment_id=a.id),0)),0) from public.purchase_adjustments a join public.finance_purchases p on p.id=a.purchase_id where p.vendor_id=p_vendor and p.organization_id=org));
+ select count(*) into total from public.finance_payables where vendor_id=p_vendor and organization_id=org;
+ select coalesce(jsonb_agg(to_jsonb(x)),'[]'::jsonb) into rows from(select p.id,p.payable_no,p.source_type,p.source_id,p.created_at,p.due_on,p.original_amount,coalesce(s.cash,0) cash_paid,coalesce(s.offset_amount,0) advance_offset,coalesce(s.credit,0) credit_notes,p.original_amount-coalesce(s.total,0) remaining from public.finance_payables p left join lateral(select sum(amount) total,sum(amount) filter(where settlement_kind='PAYMENT' and advance_id is null) cash,sum(amount) filter(where advance_id is not null) offset_amount,sum(amount) filter(where settlement_kind='CREDIT_NOTE') credit from public.finance_payable_settlements where payable_id=p.id)s on true where p.vendor_id=p_vendor and p.organization_id=org order by p.created_at desc,p.id limit 25 offset (p_page-1)*25)x;
+ return jsonb_build_object('total',total,'vendors','[]'::jsonb,'vendor',jsonb_build_object('id',vendor.id,'name',vendor.name,'vendor_no',vendor.vendor_no,'mobile',vendor.mobile,'email',vendor.email,'is_active',vendor.is_active),'rows',rows,'summary',summary,'generatedAt',now());
+end $$;
+revoke all on function public.supplier_account_statement(uuid,text,integer) from public,anon;
+grant execute on function public.supplier_account_statement(uuid,text,integer) to authenticated;

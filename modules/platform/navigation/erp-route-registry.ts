@@ -26,6 +26,20 @@ export type ErpRouteDefinition = {
 };
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
+  {id:"procurement-orders",title:"Orders & partial receipts",eyebrow:"Finance",href:"/dashboard/finance/procurement",navGroup:"Finance",permission:"accounting.expense.manage",icon:"accounting"},
+  {id:"consumable-stock",title:"Consumable stock",eyebrow:"Finance",href:"/dashboard/finance/stock",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
+  {id:"supplier-accounts",title:"Supplier accounts",eyebrow:"Finance",href:"/dashboard/finance/suppliers",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
+  {id:"year-end",title:"Year closing",eyebrow:"Finance",href:"/dashboard/finance/year-end",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
+  {id:"cash-flow",title:"Cash flow",eyebrow:"Finance",href:"/dashboard/finance/cash-flow",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
+  {id:"bank-matching",title:"Bank statements & matching",eyebrow:"Finance",href:"/dashboard/finance/bank",navGroup:"Finance",permission:"accounting.reconcile",icon:"accounting"},
+  {id:"finance-planning",title:"Budgets & programme contribution",eyebrow:"Finance",href:"/dashboard/finance/planning",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
+  {id:"owner-capital",title:"Owner capital & funding",eyebrow:"Finance",href:"/dashboard/finance/capital",navGroup:"Finance",permission:"accounting.reconcile",icon:"accounting"},
+  {id:"receivables",title:"Receivables & collection follow-up",eyebrow:"Finance",href:"/dashboard/finance/receivables",navGroup:"Finance",permission:"finance.view",icon:"accounting"},
+  {id:"recurring-expenses",title:"Recurring expenses",eyebrow:"Finance",href:"/dashboard/finance/recurring",navGroup:"Finance",permission:"accounting.expense.manage",icon:"accounting"},
+  {id:"cash-counters",title:"Cash counters & opening float",eyebrow:"Finance",href:"/dashboard/finance/counters",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},
+  {id:"cash-handovers",title:"Cash handover receipts",eyebrow:"Finance",href:"/dashboard/finance/handovers",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},
+  {id:"assets",title:"Assets & custody",eyebrow:"Finance",href:"/dashboard/finance/assets",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},
+  {id:"reimbursements",title:"Staff expense claims",eyebrow:"Finance",href:"/dashboard/finance/reimbursements",navGroup:"Finance",permission:"workforce.self.view",icon:"accounting"},
   {id:"purchases",title:"Purchases & supplier expenses",eyebrow:"Finance",href:"/dashboard/finance/purchases",navGroup:"Finance",permission:"accounting.expense.manage",icon:"accounting"},
   {id:"financial-reports",title:"Monthly accounts & period close",eyebrow:"Finance",href:"/dashboard/finance/reports",navGroup:"Finance",permission:"accounting.view",icon:"accounting"},
   {id:"daily-close",title:"Daily cash & statement close",eyebrow:"Finance",href:"/dashboard/finance/daily-close",navGroup:"Finance",permission:"accounting.reconcile",icon:"accounting"},
