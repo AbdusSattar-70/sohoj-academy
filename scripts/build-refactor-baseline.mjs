@@ -9,6 +9,7 @@ const sources = [
   ['02_people_and_relationships.sql', 'people/02_people_and_relationships.sql'],
   ['03_academic_directory.sql', 'academics/03_academic_directory.sql'],
   ['04_foundation_seed.sql', 'academics/04_foundation_seed.sql'],
+  ['05_programmes_offerings_and_batches.sql', 'academics/05_programmes_offerings_and_batches.sql'],
 ];
 const check = process.argv.includes('--check');
 if (process.argv.some(arg => arg.startsWith('--') && arg !== '--check')) throw Error('Unknown option');

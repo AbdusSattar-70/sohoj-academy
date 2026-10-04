@@ -16,3 +16,14 @@ Isolated PostgreSQL-compatible PGlite passed SQL fixture including person retry,
 - Public CRM data adapter retaining design।
 - One-page admission and billing/print, then remuneration/expenses and academic workspace।
 - Final fresh baseline cutover and remove legacy code/migrations/docs; publish reset/bootstrap guide then.
+
+
+## Programme catalogue backend — পরবর্তী delivery
+
+Completed the fresh programme definition/current offering, fee settings/components, subject choices, batch/seat and academic-year database commands. Initial school scope Play–8, coaching 9–12; training uses dates without forcing school class/year. Generated titles/codes reduce typing. Admin actions direct, no approval/version queue. Standard fees editable with stale/retry guards; initial admission billing will snapshot them in its later implementation.
+
+Publication requires tuition settings; opening applications requires an active batch. Inactive runs excluded publicly; quick active/inactive command resets publication/intake, requiring deliberate reopening. Batch capacity has locked seat enforcement and cannot shrink below occupied seats. Fees/components and subject links preserve records through active flags. Search/list and per-run setup use whole-result counts and 25-row pages. Anonymous callers get only curated published catalogue, no mutations.
+
+Isolated fixture 02 passed: adult course without school context, missing-fee publication rejection, invalid discounts, idempotent fees/run saves, one-seat capacity denial, scoped catalogue, inactive visibility, multiple active years, class-scope checks and audit/privilege boundaries. Foundation fixture still passes; generated/source parity passes. Hosted concurrency/browser not tested.
+
+**Still pending:** connected People/directory/programme UI and verified account integration, public CRM adapter, admission/collection/enrollment orchestration, academic record workflows and simple financial reports. This is backend catalogue implementation, not a ready-to-reset full app. No live DB mutation. The temporarily generated file names reflect dependency sequence; final baseline will be consolidated at complete cutover.

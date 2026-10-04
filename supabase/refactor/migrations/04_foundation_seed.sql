@@ -7,9 +7,9 @@ select a.id,v.code,v.name,v.bn from public.academies a cross join (values
 on conflict(academy_id,code) do nothing;
 insert into public.campuses(academy_id,code,name) select id,'MAIN','Main Campus' from public.academies on conflict(academy_id,code) do nothing;
 insert into public.access_roles values
- ('ADMIN',array['people.view','people.manage','directory.view','directory.manage','access.manage','activity.view']),
- ('OPERATOR',array['people.view','people.manage','directory.view','directory.manage']),
- ('TEACHER',array['directory.view']),('ACCOUNTANT',array['directory.view']),('REFERRER','{}')
+ ('ADMIN',array['people.view','people.manage','directory.view','directory.manage','access.manage','activity.view','academics.view','academics.manage','fees.manage']),
+ ('OPERATOR',array['people.view','people.manage','directory.view','directory.manage','academics.view']),
+ ('TEACHER',array['directory.view','academics.view']),('ACCOUNTANT',array['directory.view']),('REFERRER','{}')
 on conflict(code) do nothing;
 insert into public.education_levels values
  ('EARLY_YEARS','Early years','প্রাক-প্রাথমিক',1,true),('SCHOOL','School','বিদ্যালয়',2,true),
