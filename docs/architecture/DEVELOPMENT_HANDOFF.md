@@ -110,3 +110,9 @@ Owner scope update 2026-10-03: digital admission consent excluded. Preserve pape
 
 
 Finance extension 44: paginated counter duty and opening-receipt history within the counter page. Dates, 25-row pages, preserved return-to-duty-page navigation and active staff own-scope; bounded nested receipts in operational snapshot. Fixture 33 covers 28 duties, date filtering, receipt pagination and cross-cashier/public denial.
+
+## Master development demo seed
+
+An explicit development-only `supabase/seed.sql` now creates academic masters, two public offerings, fee plans, three batches, six unverified Prospects, five staff-direct admission cases, three student identities and paid/part-paid/unpaid ledger examples. Pending staff access requests do not create Auth accounts. Run `pnpm seed:demo` after an existing bootstrap ADMIN is available. Repeated runs preserve the demo through an audit completion marker; no data/password reset is performed. Enrollment respects the configured payment policy. Fresh resets use `--no-seed` until bootstrap. See [Instant demo setup](../testing/INSTANT_DEMO_SETUP.md).
+
+Verified all master migrations and seed in isolated PostgreSQL-compatible PGlite, including missing-admin rejection, amounts due and duplicate-free repeat execution. Hosted Supabase and browser execution remain local acceptance steps.
