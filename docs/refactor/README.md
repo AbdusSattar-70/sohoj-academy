@@ -28,3 +28,7 @@ Branch: `feature/refactor_sohoj`। সিদ্ধান্তের তার�
 
 ## পুরোনো docs-এর অবস্থান
 এই branch-এর `docs/architecture/DEVELOPMENT_HANDOFF.md` নতুন index নির্দেশ করে। Inherited finance roadmaps ও পুরোনো architecture docs historical implementation context মাত্র; সেগুলো এই নতুন scope override করে না। Code replacement-এর সঙ্গে obsolete docs সরাতে হবে; পুরোনো branch-এ reference আছে। User-এর পরবর্তী explicit instruction এই docs-এর উপরে প্রাধান্য পায়।
+
+## Implementation status
+
+Actual implementation started. Read [Delivery status](DELIVERY_STATUS.md) before applying database commands. Backend foundation is staged; current app still uses the inherited schema until the replacement contracts are complete.
