@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && next typegen && tsc --noEmit",
-    "check": "pnpm lint && pnpm typecheck && pnpm build"
+    "check": "pnpm lint && pnpm typecheck && pnpm build",
+    "seed:demo": "supabase db push --include-seed"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
