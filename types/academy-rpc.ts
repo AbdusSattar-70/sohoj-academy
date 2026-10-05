@@ -40,6 +40,7 @@ export type AcademyDatabase = {
       public_application_choices: { Args: Record<string, never>; Returns: Json };
       receive_public_enquiry: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       search_enquiries: { Args: { p_query?: string; p_page?: number }; Returns: Json };
+      find_person_matches: { Args: { p_input: Json }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

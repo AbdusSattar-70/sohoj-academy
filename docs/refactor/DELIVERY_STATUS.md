@@ -2,7 +2,7 @@
 
 ## Current fresh project
 - One application: public CRM + `/dashboard` ERP. No `/academy` preview.
-- One schema: modular SQL source, generated `supabase/migrations/01…08`. Legacy chain/seed/types/modules/docs removed; reference only on master.
+- One schema: modular SQL source, generated `supabase/migrations/01…09`. Legacy chain/seed/types/modules/docs removed; reference only on master.
 - Foundation: academy, divisions, verified Auth bootstrap, roles/permissions, immutable audit, retry/stale guards.
 - People identity/responsibilities: create/edit, active/inactive guard, paginated search. Responsibility is not login permission.
 - Directory: shared dropdown records with school source verification, inline create/select, edit/inactive and search.
@@ -28,3 +28,8 @@ Migration 08 adds 2026/2027 years, four reusable programme definitions, three ed
 
 ## Seed ID validation correction
 PostgreSQL database IDs use canonical GUID validation, including deterministic starter IDs; browser-generated request tokens retain strict UUID validation. Existing data and IDs remain unchanged. Programme/offering reads, setup/edit inputs and public-form seed IDs passed isolated SQL-to-Zod checks; malformed IDs were rejected. Complete-project TypeScript check passed. No new migration or reset required.
+
+## People contacts and duplicate assistance
+People can be saved with no mobile/email, or with shared family contacts. Permanent Person IDs remain unique; responsibilities do not grant account access. Migration 09 adds permission- and academy-scoped matching (name/mobile/email, maximum 10 records, including inactive identities). The editor offers advisory matches after leaving identity/contact fields, optional existing-person edit, and preserves the ability to save a different person. Matching failure never blocks saving. No automatic merge or account creation. Login provisioning remains a separate upcoming workflow.
+
+People contact checks passed in isolated PostgreSQL-compatible PGlite: blank/shared contacts, unique permanent IDs, exact contact matches, edit exclusion and no login-link creation. TypeScript and production build passed (no hosted database mutation or browser acceptance performed).

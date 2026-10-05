@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { fetchPerson } from '../actions';
 import { pageSchema,personListRow,type Person,responsibilities } from '../schema';
 import { Editor,Reason,ValueField,Field,inputClass,text,useWords,PageControls } from './common';
+import {PersonMatchHints} from './person-match-hints';
 import { DirectoryPicker } from './directory-picker';
 import { useRegister } from './register';
 const peoplePage=pageSchema(personListRow);
@@ -18,8 +19,8 @@ export function PeopleWorkspace({permissions}:{permissions:string[]}) {
  {editor&&<Editor key={person?.id??'NEW'} title={t(person?'Edit person':'New person',person?'তথ্য সংশোধন':'নতুন ব্যক্তি')} command="person" onCancel={()=>setEditor(null)} onDone={()=>{setEditor(null);setNotice(t('Person saved. Responsibilities do not grant login access.','তথ্য সংরক্ষিত। দায়িত্ব নির্বাচন login access দেয় না।'));void list.load();}}
  read={f=>({...(person?{id:person.id,revision:person.revision}:{}),full_name:text(f,'full_name'),full_name_bn:text(f,'full_name_bn'),mobile:text(f,'mobile'),email:text(f,'email'),date_of_birth:text(f,'date_of_birth'),
  present_address:{line:text(f,'present_address.line'),locality:text(f,'present_address.locality')},permanent_address:{line:text(f,'permanent_address.line'),locality:text(f,'permanent_address.locality')},same_address:f.has('same_address'),responsibilities:f.getAll('responsibilities').map(String),reason:text(f,'reason')})}>
- <ValueField name="full_name" label={t('Full name','পূর্ণ নাম')} value={person?.full_name} required maxLength={160}/><ValueField name="full_name_bn" label={t('Bangla name (optional)','বাংলা নাম (ঐচ্ছিক)')} value={person?.full_name_bn} maxLength={160}/>
- <ValueField name="mobile" label={t('Mobile (optional)','মোবাইল (ঐচ্ছিক)')} type="tel" value={person?.mobile} maxLength={11}/><ValueField name="email" label={t('Email (optional)','ইমেইল (ঐচ্ছিক)')} type="email" value={person?.email} maxLength={200}/>
+ <PersonMatchHints excludeId={person?.id} onEdit={id=>void edit(id)}><ValueField name="full_name" label={t('Full name','পূর্ণ নাম')} value={person?.full_name} required maxLength={160}/><ValueField name="full_name_bn" label={t('Bangla name (optional)','বাংলা নাম (ঐচ্ছিক)')} value={person?.full_name_bn} maxLength={160}/>
+ <ValueField name="mobile" label={t('Mobile (optional)','মোবাইল (ঐচ্ছিক)')} type="tel" value={person?.mobile} maxLength={11}/><ValueField name="email" label={t('Email (optional)','ইমেইল (ঐচ্ছিক)')} type="email" value={person?.email} maxLength={200}/></PersonMatchHints>
  <ValueField name="date_of_birth" label={t('Date of birth (optional)','জন্মতারিখ (ঐচ্ছিক)')} type="date" value={person?.date_of_birth}/>
  <div className="sm:col-span-2"><p className="mb-2 text-sm font-medium">{t('Responsibilities — choose all applicable','দায়িত্ব — প্রযোজ্যগুলো নির্বাচন করুন')}</p><div className="flex flex-wrap gap-4">{responsibilities.map(role=><label key={role} className="flex items-center gap-2 text-sm"><input type="checkbox" name="responsibilities" value={role} defaultChecked={person?.responsibilities.includes(role)}/>{t(...labels[role])}</label>)}</div><p className="mt-2 text-xs text-muted-foreground">{t('Teacher also includes Staff. Account permissions are configured separately.','Teacher হলে Staff-ও যুক্ত হবে। Account permissions আলাদাভাবে নির্ধারিত হয়।')}</p></div>
  <Field name="present_address.line" label={t('Present address','বর্তমান ঠিকানা')}><textarea id="present_address.line" className={inputClass} name="present_address.line" defaultValue={String(person?.present_address.line??'')} rows={3} maxLength={500}/></Field>

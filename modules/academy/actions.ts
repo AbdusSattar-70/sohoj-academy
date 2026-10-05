@@ -51,3 +51,12 @@ export async function fetchPerson(id:string) {
   databaseId.parse(id);if(!(await academyContext())?.permissions.includes('people.view'))throw Error('Access denied.');
   const {data,error}=await (await academyClient()).rpc('person_profile',{p_person_id:id});if(error)throw Error('Could not load the person. Please retry.');return personSchema.parse(data);
 }
+
+// Advisory identity matching never creates, merges or grants an account.
+export async function findPersonMatches(input:unknown) {
+ const value=z.object({full_name:z.string().trim().max(160),mobile:z.string().trim().max(11),email:z.string().trim().max(200),exclude_id:databaseId.optional()}).parse(input);
+ if(!(await academyContext())?.permissions.includes('people.view'))throw Error('Access denied.');
+ const {data,error}=await (await academyClient()).rpc('find_person_matches',{p_input:value});
+ if(error)throw Error('Matching is unavailable.');
+ return z.array(personListRow).parse(data);
+}

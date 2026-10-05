@@ -2,7 +2,7 @@
 
 One fresh schema only. `supabase/schema/` holds modular current definitions; deterministic generator writes `supabase/migrations/`. Types are generated from RPC signatures, with parsed runtime JSON read contracts. No old schema, adapters, history backfill, alternative preview migration chain or legacy seed.
 
-Current dependency sequence: 01 academy/access → 02 People → 03 academic directory → 04 essential seed → 05 offering/fees/batch/year → 06 workspace contracts → 07 public enquiries.
+Current dependency sequence: 01 academy/access → 02 People → 03 academic directory → 04 essential seed → 05 offering/fees/batch/year → 06 workspace contracts → 07 public enquiries → 08 persistent starter setup → 09 advisory People identity matching.
 
 Each table enables RLS and revokes client direct mutations. Explicit RPC grants and academy/permission checks are the security boundary. Verified Auth identity is required for staff access; selecting Person responsibility cannot grant permissions. Public submissions remain unverified JSON claims. Operator review will attach verified identity/placement later.
 
