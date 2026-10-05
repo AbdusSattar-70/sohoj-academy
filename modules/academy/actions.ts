@@ -1,4 +1,5 @@
 'use server';
+import {databaseId} from '@/lib/database-id';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { academyClient } from './client';
@@ -29,7 +30,7 @@ export async function mutateAcademy(command:Command,input:unknown):Promise<Mutat
     return {ok:true,data};
   } catch { return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'}; }
 }
-const searchInput = z.object({query:z.string().max(160).default(''),page:z.number().int().min(1).max(100000).default(1),kind:z.enum([...kinds,'PROGRAMME']).optional(),includeInactive:z.boolean().default(false),division:z.string().uuid().optional()});
+const searchInput = z.object({query:z.string().max(160).default(''),page:z.number().int().min(1).max(100000).default(1),kind:z.enum([...kinds,'PROGRAMME']).optional(),includeInactive:z.boolean().default(false),division:databaseId.optional()});
 export async function searchAcademy(target:'people'|'directory'|'programmes'|'runs',input:unknown) {
   if(!['people','directory','programmes','runs'].includes(target)) throw new Error('Invalid search.');
   const value=searchInput.parse(input),context=await academyContext();
@@ -42,11 +43,11 @@ export async function searchAcademy(target:'people'|'directory'|'programmes'|'ru
   const {data,error}=await db.rpc('list_current_programmes',{p_query:value.query,p_page:value.page,p_division_id:value.division});if(error)throw Error('Search failed. Please retry.');return pageSchema(runListRow).parse(data);
 }
 export async function fetchRunSetup(id:string,page=1) {
-  z.string().uuid().parse(id);z.number().int().min(1).max(100000).parse(page);
+  databaseId.parse(id);z.number().int().min(1).max(100000).parse(page);
   if(!(await academyContext())?.permissions.includes('academics.view'))throw Error('Access denied.');
   const {data,error}=await (await academyClient()).rpc('programme_run_setup',{p_run_id:id,p_batch_page:page});if(error)throw Error('Could not load the programme. Please retry.');return setupSchema.parse(data);
 }
 export async function fetchPerson(id:string) {
-  z.string().uuid().parse(id);if(!(await academyContext())?.permissions.includes('people.view'))throw Error('Access denied.');
+  databaseId.parse(id);if(!(await academyContext())?.permissions.includes('people.view'))throw Error('Access denied.');
   const {data,error}=await (await academyClient()).rpc('person_profile',{p_person_id:id});if(error)throw Error('Could not load the person. Please retry.');return personSchema.parse(data);
 }

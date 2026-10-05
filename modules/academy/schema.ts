@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import {databaseId} from '@/lib/database-id';
 export const kinds = ['INSTITUTION','AREA','RELATIONSHIP','SUBJECT','MAJOR','GROUP','PROGRAMME_TYPE','EXPENSE_CATEGORY','DISCOUNT_REASON','LEAD_SOURCE'] as const;
 export const responsibilities = ['STUDENT','GUARDIAN','STAFF','TEACHER','REFERRER'] as const;
-const id = z.string().uuid();
+const id = databaseId;
 const optionalId = z.union([id,z.literal('')]).optional();
 const text = z.string().trim();
 const emptyText = text;
-const request = { request_id:id, reason:text.min(5).max(1000) };
+const request = { request_id:z.uuid(), reason:text.min(5).max(1000) };
 const edit = { id:optionalId, revision:z.number().int().min(0).optional() };
 const address = z.object({ line:emptyText.max(500).default(''), locality:emptyText.max(160).default('') });
 export const personInput = z.object({ ...request,...edit,full_name:text.min(2).max(160),full_name_bn:emptyText.max(160).default(''),

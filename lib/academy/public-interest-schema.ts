@@ -1,3 +1,4 @@
+import {databaseId} from '@/lib/database-id';
 import { z } from "zod";
 
 const optionalPhone = z.string().trim().max(30).optional();
@@ -27,7 +28,7 @@ export const publicInterestSchema = z
     mobile: z.string().trim().regex(/^01[3-9][0-9]{8}$/, "Enter a valid Bangladesh mobile number."),
     alternateMobile: optionalPhone,
     classId: z.string().trim().max(80),
-    schoolId: z.string().uuid().optional(),
+    schoolId: databaseId.optional(),
     schoolNameSnapshot: z.string().trim().max(180).optional(),
     area: z.string().trim().max(180).optional(),
     preferredSchedule: z
@@ -38,8 +39,8 @@ export const publicInterestSchema = z
       .max(7)
       .default([]),
     trialInterest: z.boolean().default(false),
-    programIds: z.array(z.string().uuid()).max(10).default([]),
-    subjectIds: z.array(z.string().uuid()).max(20).default([]),
+    programIds: z.array(databaseId).max(10).default([]),
+    subjectIds: z.array(databaseId).max(20).default([]),
     sourceCode: z
       .string()
       .trim()
@@ -53,8 +54,8 @@ export const publicInterestSchema = z
         "Please allow Sohoj Academy to contact you about this interest request.",
     }),
     website: z.string().max(200).optional(),
-    requestId:z.string().uuid(),
-    offeringId: z.string().uuid().optional(),
+    requestId:z.uuid(),
+    offeringId: databaseId.optional(),
     intent: z.enum(["interest", "admission"]).default("interest"),
     guardianAddress: z.string().trim().max(300).optional(),
     academicBackground: z.string().trim().max(500).optional(),

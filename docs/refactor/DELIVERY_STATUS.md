@@ -25,3 +25,6 @@ Fresh schema/essential-seed regression fixtures and public enquiry retry/privacy
 
 ## Persistent starter setup
 Migration 08 adds 2026/2027 years, four reusable programme definitions, three editable offering/fee/batch setups, local area choices and six official-source school names. Defaults are unpublished until reviewed. Repeated starter seeding preserves operator edits. School forms ask for name, optional area; other fields collapsed and optional. See SEED_DATA.md for use.
+
+## Seed ID validation correction
+PostgreSQL database IDs use canonical GUID validation, including deterministic starter IDs; browser-generated request tokens retain strict UUID validation. Existing data and IDs remain unchanged. Programme/offering reads, setup/edit inputs and public-form seed IDs passed isolated SQL-to-Zod checks; malformed IDs were rejected. Complete-project TypeScript check passed. No new migration or reset required.
