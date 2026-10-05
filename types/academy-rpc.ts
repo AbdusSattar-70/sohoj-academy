@@ -53,6 +53,7 @@ export type AcademyDatabase = {
       academic_command: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       claim_academic_emails: { Args: Record<string, never>; Returns: Json };
       finish_academic_email: { Args: { p_id: string; p_lease: string; p_provider_id: string; p_error: string }; Returns: undefined };
+      academic_resource_setup: { Args: Record<string, never>; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

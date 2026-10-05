@@ -6,7 +6,8 @@ const envelope=z.object({requestId:z.uuid(),payload:z.record(z.string(),z.unknow
 export async function loadAcademicDesk(page=1){
  if(!await verifiedAcademyUser())throw Error('Sign in with your academy account.');
  const {data,error}=await(await academyClient()).rpc('academic_workspace',{p_page:Math.max(1,page)});
- if(error)throw Error(error.message);return data;
+ if(error)throw Error(error.message);
+ const manager=(data as {manage?:boolean})?.manage;if(manager){const resources=await(await academyClient()).rpc('academic_resource_setup');if(resources.error)throw Error(resources.error.message);return {...data as object,resources:resources.data};}return data;
 }
 export async function saveAcademicOperation(input:unknown){
  const parsed=envelope.safeParse(input);if(!parsed.success)return{ok:false,message:'Check the form input.'};

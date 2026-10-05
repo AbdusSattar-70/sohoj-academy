@@ -51,3 +51,7 @@ Production build passed for the completed setup workspace. Local hosted/browser 
 One sidebar entry replaces three academic links. Programmes, Admissions (explicitly pending) and Academic settings are tabs on `/dashboard/academics`. Academic settings embeds shared choices, reusable programme names and year management. Legacy academic URLs redirect to the matching tab/category. Plain operator wording replaces offering/definition/directory labels; public CRM styling and database model stay unchanged. Unsaved changes require discard confirmation before section switching; pending/uncertain requests block switching. No database migration required for this UI consolidation.
 
 Unified workspace verification: complete route/type generation and production build passed. No database reset/migration added. Browser visual and keyboard acceptance remain local verification tasks.
+
+
+## Academic operations branch
+`feature/academic_operations` adds migrations 12–13, `/dashboard/academics/sessions`, resource availability, dated sessions, bounded weekday routines, closures, teacher report review and a leased notification outbox. See [Bangla operator guide](ACADEMIC_OPERATIONS_WORKFLOW_BN.md) for exact scope and unfinished extensions. Hosted email delivery needs provider configuration and a scheduler; no live email was sent during verification.

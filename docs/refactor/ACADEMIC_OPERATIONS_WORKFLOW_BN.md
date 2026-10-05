@@ -12,7 +12,7 @@
 ৬. ছুটি ও বন্ধের দিন বাদ দিয়ে নির্দিষ্ট তারিখের session তৈরি করুন। সব সময় বাংলাদেশ সময়; database-এ সময় timezone-সহ থাকবে।
 
 ## Routine ও session-এর পার্থক্য
-Routine হচ্ছে পুনরাবৃত্ত পরিকল্পনা, যেমন প্রতি রবিবার সকাল ৭–৯টা। Session হচ্ছে ১১ অক্টোবর সকাল ৭–৯টার বাস্তব ক্লাস। এক দিনের পরিবর্তন শুধু session-এ হবে। সম্পন্ন ক্লাসের ইতিহাস routine edit করে বদলানো যাবে না। ভবিষ্যৎ recurring routine, holiday exclusion এবং teacher availability editor আলাদা extension; নিচের dated-session desk এখন ব্যবহারযোগ্য ভিত্তি।
+Routine হচ্ছে পুনরাবৃত্ত পরিকল্পনা, যেমন প্রতি রবিবার সকাল ৭–৯টা। Session হচ্ছে ১১ অক্টোবর সকাল ৭–৯টার বাস্তব ক্লাস। এক দিনের পরিবর্তন শুধু session-এ হবে। সম্পন্ন ক্লাসের ইতিহাস routine edit করে বদলানো যাবে না। Desk-এর Weekly availability-তে room ও teacher-এর weekday এবং সময় নির্ধারণ করুন। Holiday / closure-এ বন্ধের দিন দিন। Create weekly classes-এ দিনগুলো tick করে সর্বোচ্চ ৩২ দিনের routine তৈরি করুন। বন্ধের দিন বাদ যাবে; কোনো দিনের conflict থাকলে পুরো routine save বন্ধ থাকবে। সংশোধন করে আবার দিন। নতুন routine দিয়ে ইতোমধ্যে তৈরি class overwrite হবে না।
 
 ## Session desk
 [ক্লাস পরিচালনা খুলুন](/dashboard/academics/sessions)। Admin room তৈরি/সম্পাদনা/inactive করবেন, batch, বিষয়, teacher, room ও সময় নির্বাচন করে session তৈরি করবেন। Capacity ও overlapping session database যাচাই করবে। পাশাপাশি অন্য window-তে save হলেও একই resource double booking হবে না। পরিবর্তনে revision মিলিয়ে পুরোনো screen থেকে নতুন তথ্য overwrite বন্ধ থাকবে।
@@ -41,8 +41,23 @@ Server-এ `RESEND_API_KEY`, verified sender `ACADEMIC_EMAIL_FROM`, এবং �
 Morning A, ১২ জনের batch; রবিবার ৭–৯টা Biology, teacher রহিম, room ১। রহিম অসুস্থ: session খুলে substitute teacher করিম নির্বাচন করুন। করিমের ওই সময় আরেক class থাকলে save হবে না। Room ২-এ ১০টি আসন হলে ১২ আসনের batch রাখা যাবে না। Guardian notification contact যুক্ত থাকলে পরিবর্তন queue হয়। পরে class cancel করলে সেটির সঙ্গে নতুন makeup যুক্ত করুন। Teacher report জমা দিলে admin যাচাই করবেন।
 
 ## পরবর্তী পৃথক কাজ
-- নিয়মিত weekday/time editor, teacher qualifications/weekly availability, holiday ও recurring generation।
+- Teacher-এর বিষয়ভিত্তিক qualification ও temporary resource blockout; ভবিষ্যৎ routine deactivate/edit করে কেবল অপরিবর্তিত planned session বদলানোর ব্যবস্থা।
 - Dated enrollment/transfer history থেকে student attendance roster ও attendance correction।
 - এক পাতায় admission, fee/payment ও receipt; notification contacts guardian সম্পর্ক থেকে সম্মতি অনুযায়ী নেওয়া।
 - Reminder, দৈনিক teacher agenda এবং returned report notification।
 এগুলো বর্তমান branch-এর session-change email ভিত্তির পরবর্তী কাজ; financial accounting বা প্রশ্নব্যাংক এখানে নতুন করে তৈরি করা হচ্ছে না।
+
+## বর্তমানে সম্পন্ন ও সীমা
+Room create/edit/inactive, teacher/room weekly availability, holiday/reopen, weekday নির্বাচন থেকে bounded routine generation, date-specific session changes, linked makeup, teacher report ও admin review, guardian email consent/contact inactive এবং transactional email queue সম্পন্ন। Teacher qualification editor, student attendance roster, temporary blockout ও routine edit/deactivate এখনো সম্পন্ন নয়। এগুলোর জন্য বিদ্যমান class ইতিহাস বদলানো যাবে না। আলাদা class/subject registers-এর পুনর্বিন্যাসও বাকি; বর্তমান Academic settings থেকে shared তালিকা সম্পাদনা করুন।
+
+## Local চালু করা
+```bash
+git fetch origin
+git switch feature/academic_operations
+git pull --ff-only
+pnpm install
+pnpm exec supabase db push
+pnpm dev
+```
+Reset প্রয়োজন নেই যদি আগের branch-এর 01–11 migrations ইতোমধ্যে আছে। অন্য schema/migration history থাকলে আগে docs/SETUP.md অনুসরণ করুন; migration repair দিয়ে বাস্তবে না থাকা schema-কে applied বলবেন না।
+Email provider-এর নির্দেশনা: https://resend.com/docs/api-reference/emails/send-email এবং https://resend.com/changelog/idempotency-keys । Scheduler চালু না থাকলে queue-তেই message থাকবে। Setup-এর পর নিজের সম্মত test contact দিয়ে hosted delivery যাচাই করুন।
