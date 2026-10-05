@@ -25,7 +25,7 @@ export async function mutateAcademy(command:Command,input:unknown):Promise<Mutat
       return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'};
     }
     if(data===null) return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'};
-    revalidatePath('/academy','layout');
+    revalidatePath('/dashboard','layout');
     return {ok:true,data};
   } catch { return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'}; }
 }

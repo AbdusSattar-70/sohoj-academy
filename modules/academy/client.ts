@@ -5,7 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { boundedFetch } from '@/lib/supabase/fetch';
 import type { AcademyDatabase } from '@/types/academy-rpc';
 
-/** Fresh workspace adapter. The legacy adapter is removed at final cutover. */
+/** Verified account adapter for the academy. */
 export const academyClient = cache(async () => {
   const jar = await cookies();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

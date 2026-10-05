@@ -59,7 +59,7 @@ export default function SignInPage() {
     }
 
     const next = new URLSearchParams(window.location.search).get("next");
-    const allowed = ["/academy", "/academy/people", "/academy/directory", "/academy/programmes"];
+    const allowed = ["/dashboard", "/dashboard/people", "/dashboard/directory", "/dashboard/programmes"];
     window.location.assign(next && allowed.includes(next) ? next : ROUTES.DASHBOARD);
   };
 
@@ -186,7 +186,7 @@ export default function SignInPage() {
                 href="/auth/sign-up"
                 className="mb-3 block text-sm underline"
               >
-                Request staff access
+                Account access information
               </Link>
               <p className="text-xs leading-5 text-muted-foreground">
                 {copy.support}
@@ -198,3 +198,4 @@ export default function SignInPage() {
     </main>
   );
 }
+

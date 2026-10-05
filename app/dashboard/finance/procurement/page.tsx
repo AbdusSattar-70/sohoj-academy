@@ -1,6 +1,0 @@
-import {requirePermission} from "@/modules/platform/auth/erp-context";
-import {PageHeader} from "@/components/erp/page-header";
-import {LocalizedText} from "@/components/shared/localized-text";
-import {getProcurement} from "@/modules/finance/procurement/queries";
-import {ProcurementRegister} from "@/modules/finance/procurement/register";
-export default async function Procurement({searchParams}:{searchParams:Promise<{q?:string;status?:string;page?:string}>}){await requirePermission("accounting.expense.manage");const p=await searchParams,q=(p.q??"").slice(0,100),status=['OPEN','COMPLETE','CLOSED','CANCELLED','ALL'].includes(p.status??'')?p.status!:'OPEN',page=Math.min(10000,Math.max(1,parseInt(p.page??'1')||1));return <div className="space-y-5"><PageHeader eyebrow={<LocalizedText en="Finance" bn="অর্থ ব্যবস্থাপনা"/>} title={<LocalizedText en="Orders & partial receipts" bn="অর্ডার ও আংশিক প্রাপ্তি"/>} description={<LocalizedText en="Match actual received quantities and supplier invoice before posting." bn="পোস্ট করার আগে প্রকৃত প্রাপ্তির পরিমাণ ও supplier invoice মিলিয়ে নিন।"/>}/><ProcurementRegister data={await getProcurement(page,status,q)} page={page} status={status} q={q}/></div>;}

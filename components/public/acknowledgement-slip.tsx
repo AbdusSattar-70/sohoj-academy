@@ -13,3 +13,4 @@ export function AcknowledgementSlip({message,bn=false}:{message:AcknowledgementD
         </article>
 
 </>; }
+

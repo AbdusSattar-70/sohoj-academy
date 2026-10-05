@@ -55,9 +55,9 @@ export const metadata: Metadata = {
     shortcut: ["/favicons/favicon.ico"],
     apple: [
       {
-        url: "/branding/sohoj-academy-icon-192.webp",
-        sizes: "192x192",
-        type: "image/webp",
+        url: "/favicons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
       },
     ],
   },
@@ -105,3 +105,4 @@ export default function RootLayout({
     </html>
   );
 }
+

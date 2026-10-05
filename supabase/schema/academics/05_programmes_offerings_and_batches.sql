@@ -262,6 +262,8 @@ end $$;
 create function public.public_current_programmes() returns jsonb language sql stable security definer set search_path=public,pg_temp as $$
  select coalesce(jsonb_agg(jsonb_build_object('id',r.id,'code',r.code,'title',r.title,'division',d.code,'classCode',r.class_code,
  'startsOn',r.starts_on,'endsOn',r.ends_on,'content',r.public_content,
+ 'activeBatches',(select count(*) from public.teaching_batches b where b.run_id=r.id and b.is_active),
+ 'openSeats',(select coalesce(sum(greatest(0,b.capacity-(select count(*) from public.batch_seats s where s.batch_id=b.id and s.is_active))),0) from public.teaching_batches b where b.run_id=r.id and b.is_active),
  'acceptingApplications',r.applications_open and exists(select 1 from public.teaching_batches b where b.run_id=r.id and b.is_active) and (r.application_opens_on is null or r.application_opens_on<=timezone(a.timezone,now())::date) and (r.application_closes_on is null or r.application_closes_on>=timezone(a.timezone,now())::date),
  'subjects',coalesce((select jsonb_agg(jsonb_build_object('id',s.id,'name',s.name,'nameBn',s.name_bn) order by s.sort_order,s.name) from public.run_subjects rs join public.directory_entries s on s.id=rs.subject_id where rs.run_id=r.id and rs.is_active and s.is_active),'[]'),
  'fees',jsonb_build_object('currency','BDT','cycle',f.cycle,'dueDay',f.due_day,'components',coalesce((select jsonb_agg(jsonb_build_object('name',c.name,'amount',c.amount,'chargeType',c.charge_type,'recurrence',c.recurrence) order by c.code) from public.run_fee_components c where c.run_id=r.id and c.is_active),'[]'))

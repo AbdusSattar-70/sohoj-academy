@@ -1,0 +1,3 @@
+import Link from 'next/link';
+import {LocalizedText} from '@/components/shared/localized-text';
+export default function Access(){return <main className="mx-auto max-w-xl space-y-4 p-8"><h1 className="text-2xl font-semibold"><LocalizedText en="Account access" bn="Account প্রবেশাধিকার"/></h1><p><LocalizedText en="Contact the academy administrator for account access. Staff invitation and access-request workflows are pending implementation." bn="Account প্রবেশাধিকারের জন্য প্রশাসকের সঙ্গে যোগাযোগ করুন। Staff invitation ও access-request workflow তৈরি করা বাকি।"/></p><Link href="/auth/sign-in" className="underline"><LocalizedText en="Back to sign in" bn="প্রবেশ পাতায় ফিরুন"/></Link></main>}

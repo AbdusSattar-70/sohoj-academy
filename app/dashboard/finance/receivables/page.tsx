@@ -1,5 +1,0 @@
-import {requirePermission} from "@/modules/platform/auth/erp-context";
-import {PageHeader} from "@/components/erp/page-header";
-import {getReceivables} from "@/modules/finance/receivables/queries";
-import {ReceivableRegister} from "@/modules/finance/receivables/register";
-export default async function Receivables({searchParams}:{searchParams:Promise<{page?:string;q?:string;bucket?:string;promises?:string}>}){await requirePermission("finance.view");const q=await searchParams,page=Math.min(10000,Math.max(1,parseInt(q.page??"1")||1)),search=(q.q??"").slice(0,100),bucket=["NOT_DUE","1_30","31_60","61_90","90_PLUS"].includes(q.bucket??"")?q.bucket!:"ALL",promises=q.promises==="1";return <div className="space-y-5"><PageHeader eyebrow="Finance" title="Receivables & collection follow-up" description="Current unpaid invoices, aging, guardian statements and actual collection commitments."/><ReceivableRegister data={await getReceivables(page,search,bucket,promises)} page={page} search={search} bucket={bucket} promises={promises}/></div>;}

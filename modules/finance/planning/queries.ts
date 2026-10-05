@@ -1,6 +1,0 @@
-import {z} from "zod";
-import {platformClient} from "@/modules/platform/rpc-client";
-const budget=z.object({revision:z.number(),revenue_target:z.number(),expense_limit:z.number(),cash_in:z.number(),cash_out:z.number()});
-const schema=z.object({month:z.string(),canManage:z.boolean(),unallocated:z.number(),cashAvailableToday:z.number(),plannedCashMovement:z.number(),runwayMonths:z.number().nullable(),total:z.number(),centreChoices:z.array(z.object({id:z.string(),name:z.string(),is_active:z.boolean()})),offerings:z.array(z.object({id:z.string(),name:z.string()})),centres:z.array(z.object({id:z.string(),name:z.string(),offering_id:z.string().nullable(),is_active:z.boolean(),revision:z.number(),revenue:z.number(),expense:z.number(),profit:z.number(),budget:budget.nullable()})),lines:z.array(z.object({id:z.string(),journal_date:z.string(),description:z.string(),source_type:z.string(),account:z.string(),account_type:z.string(),signed:z.number(),expected_order:z.number(),allocations:z.array(z.object({centre_id:z.string(),amount:z.number()}))}))});
-export type PlanningData=z.infer<typeof schema>;
-export async function getPlanning(month?:string,page=1){const db=await platformClient();const {data,error}=await db.rpc("finance_planning_workspace",{p_month:month??null,p_page:page});if(error)throw Error(error.message);return schema.parse(data);}

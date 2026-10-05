@@ -1,6 +1,0 @@
-"use server";
-import {z} from "zod";
-import {platformClient} from "@/modules/platform/rpc-client";
-import {runCommandAction} from "@/modules/platform/command-action";
-const schema=z.object({kind:z.enum(["VENDOR","CATEGORY"]),request_id:z.string().uuid(),id:z.string().uuid().optional(),name:z.string().trim().min(2).max(200),is_active:z.boolean(),reason:z.string().trim().min(5).max(1000),code:z.string().optional(),token:z.string().optional(),expected_updated_at:z.string().optional(),expense_account_id:z.string().uuid().optional(),mobile:z.string().max(30).optional(),email:z.union([z.literal(""),z.email()]).optional(),address:z.string().max(1000).optional(),service_category:z.string().max(200).optional()});
-export async function directoryAction(input:unknown){try{return await runCommandAction({schema,input,client:platformClient,rpc:"purchase_directory_command",permission:"accounting.expense.manage",revalidate:["/dashboard/finance/purchases","/dashboard/finance/accounting"],mapResult:(data)=>({message:(data as {message:string}).message})});}catch{return {ok:false as const,message:"Could not confirm the result. Inspect the directory before changing inputs; unchanged retries reuse the same request identity."};}}

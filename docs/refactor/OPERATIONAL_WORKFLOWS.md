@@ -47,3 +47,4 @@ No statutory/full-balance-sheet accounting claim। Same summaries use database 
 
 ## Workspaces
 Admin Today shows action links/counts। Teacher My day shows classes, attendance/tasks, review feedback, hours, remuneration paid/due, referral summary। Referrer sees only own permitted referral financial statement। Each workspace scoped; data from another user's unrelated records never exposed।
+

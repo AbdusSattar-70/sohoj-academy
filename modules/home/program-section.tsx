@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { LocalizedText } from "@/components/shared/localized-text";
-import { getPublicProgrammeOfferings } from "@/modules/offerings/queries";
+import { publicCatalogue } from "@/modules/crm/public-data";
 
 function feeSummaryFromPlan(
   plan: {
@@ -43,50 +43,6 @@ function feeSummaryFromPlan(
   return [partsEn.join(" · "), partsBn.join(" · ")];
 }
 
-function windowNoteFromOffering(row: {
-  is_accepting_applications: boolean;
-  application_state: "OPEN" | "UPCOMING" | "CLOSED";
-  applications_open_on: string | null;
-  applications_close_on: string | null;
-}): [string, string] | null {
-  if (row.application_state === "UPCOMING" && row.applications_open_on) {
-    return [`Opens ${row.applications_open_on}`, `${row.applications_open_on} থেকে আবেদন`];
-  }
-  if (!row.is_accepting_applications) {
-    return ["Applications closed", "আবেদন বন্ধ"];
-  }
-  const open = row.applications_open_on;
-  const close = row.applications_close_on;
-  if (!open && !close) return ["Applications open", "আবেদন চলছে"];
-  const fmt = (d: string) => {
-    try {
-      return new Date(d).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return d;
-    }
-  };
-  if (open && close) {
-    return [`Apply ${fmt(open)} – ${fmt(close)}`, `আবেদন ${fmt(open)} – ${fmt(close)}`];
-  }
-  if (close) {
-    return [`Apply by ${fmt(close)}`, `${fmt(close)} পর্যন্ত আবেদন`];
-  }
-  return [`Opens ${fmt(open!)}`, `${fmt(open!)} থেকে খোলা`];
-}
-
-const SHOWCASE_ICONS: Record<string, LucideIcon> = {
-  "clipboard-check": ClipboardCheck,
-  "graduation-cap": GraduationCap,
-  "users-round": UsersRound,
-  "book-open-check": BookOpenCheck,
-  "line-chart": LineChart,
-  "shield-check": ShieldCheck,
-};
-
 type ProgramCard = {
   key: string;
   eyebrow: [string, string];
@@ -106,39 +62,13 @@ type ProgramCard = {
 };
 
 export async function HomeProgramSection() {
-  const rows = await getPublicProgrammeOfferings();
-  const programs: ProgramCard[] =
-    rows?.map((row) => ({
-          key: row.id,
-          eyebrow: [
-            row.showcase_eyebrow || row.code,
-            row.showcase_eyebrow_bn || row.showcase_eyebrow || row.code,
-          ] as [string, string],
-          title: [
-            row.showcase_title || row.name,
-            row.showcase_title_bn || row.showcase_title || row.name,
-          ] as [string, string],
-          description: [
-            row.showcase_description || "",
-            row.showcase_description_bn || row.showcase_description || "",
-          ] as [string, string],
-          icon: SHOWCASE_ICONS[row.showcase_icon ?? ""] ?? GraduationCap,
-          offeringId: row.id,
-          acceptingApplications: Boolean(row.is_accepting_applications),
-          feeSummary: feeSummaryFromPlan(row.fee_plan),
-          windowNote: windowNoteFromOffering(row),
-          academicContext: [row.academic_year_name, row.branch_name, row.class_name, row.group_name]
-            .filter(Boolean).join(" · "),
-          subjects: row.subjects.map((subject) => subject.name),
-          schedule: row.public_schedule ? [row.public_schedule, row.public_schedule_bn || row.public_schedule] : null,
-          requirements: row.public_requirements ? [row.public_requirements, row.public_requirements_bn || row.public_requirements] : null,
-          policy: row.admission_policy ? [row.admission_policy, row.admission_policy_bn || row.admission_policy] : null,
-          availability: row.active_batch_count === 0
-            ? ["Batch placement being prepared", "ব্যাচে স্থান নির্ধারণ প্রস্তুত হচ্ছে"]
-            : row.current_open_seats === 0
-              ? ["Current batches are full; staff will review placement options", "বর্তমান ব্যাচগুলো পূর্ণ; স্টাফ স্থান নির্ধারণ পর্যালোচনা করবে"]
-              : [`${row.current_open_seats} of ${row.current_total_seats} current batch seats open · placement confirmed after review`, `বর্তমান ব্যাচে ${row.current_total_seats}টির মধ্যে ${row.current_open_seats}টি আসন খালি · যাচাইয়ের পরে স্থান নিশ্চিত`],
-        })) ?? [];
+  const rows = await publicCatalogue();
+  const programs: ProgramCard[] = rows?.map(row=>{
+    const copy=(key:string)=>typeof row.content[key]==='string'?String(row.content[key]):'';
+    const pair=(key:string):[string,string]|null=>copy(key)?[copy(key),copy(key+'_bn')||copy(key)]:null;
+    return {key:row.id,eyebrow:[row.code,row.code],title:[row.title,copy('title_bn')||row.title],description:pair('description')??['',''],icon:GraduationCap,offeringId:row.id,acceptingApplications:row.acceptingApplications,
+    feeSummary:feeSummaryFromPlan({billing_cycle:row.fees.cycle,currency_code:row.fees.currency,components:row.fees.components.map(c=>({...c,charge_type:c.chargeType}))}),windowNote:row.acceptingApplications?['Applications open','আবেদন চলছে']:['Applications closed','আবেদন বন্ধ'],academicContext:[row.division,row.classCode,row.startsOn+' – '+row.endsOn].filter(Boolean).join(' · '),subjects:row.subjects.map(s=>s.name),schedule:pair('schedule'),requirements:pair('requirements'),policy:pair('policy'),availability:['Placement confirmed by academy staff','একাডেমি যাচাইয়ের পরে স্থান নিশ্চিত করবে']};
+  })??[];
 
   return (
     <section id="programs" className="scroll-mt-24 border-b border-border bg-muted/35">
@@ -266,3 +196,4 @@ export async function HomeProgramSection() {
     </section>
   );
 }
+

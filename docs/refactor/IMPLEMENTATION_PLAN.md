@@ -38,3 +38,4 @@ No “completed” checklist item until code/database/UI implemented. App and se
 
 ## First implementation direction
 Start phase 1: dependency map and fresh schema foundation, then phase 2 directory/person model. Do not add more advanced finance extensions. No live database reset during documentation authoring. Later user-run reset guide must explicitly state target, Auth/Storage handling and bootstrap steps.
+

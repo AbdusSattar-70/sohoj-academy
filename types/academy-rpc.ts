@@ -37,6 +37,9 @@ export type AcademyDatabase = {
       save_person_profile: { Args: { p_input: Json }; Returns: Json };
       set_person_active: { Args: { p_input: Json }; Returns: Json };
       search_programme_definitions: { Args: { p_query?: string; p_page?: number }; Returns: Json };
+      public_application_choices: { Args: Record<string, never>; Returns: Json };
+      receive_public_enquiry: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
+      search_enquiries: { Args: { p_query?: string; p_page?: number }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

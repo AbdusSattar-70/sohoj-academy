@@ -25,3 +25,4 @@ Print, CRM and ERP intake share one field catalogue and programme requirements; 
 
 ## Activity
 Full audit in Activity: time, actor name/role/ID, action, record, reason; useful search/filter/pagination। Related profile shows concise relevant business history and link to filtered Activity, not duplicate raw audit table। Request/correlation trace internal support tool; not user typing requirement।
+

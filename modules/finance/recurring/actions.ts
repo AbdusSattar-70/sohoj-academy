@@ -1,6 +1,0 @@
-"use server";
-import {z} from "zod";
-import {platformClient} from "@/modules/platform/rpc-client";
-import {runCommandAction} from "@/modules/platform/command-action";
-const schema=z.object({action:z.enum(["SAVE","SET_ACTIVE","GENERATE"]),request_id:z.string().uuid(),reason:z.string().trim().min(5).max(1000),id:z.string().uuid().optional(),revision:z.number().int().positive().optional(),is_active:z.boolean().optional(),name:z.string().trim().min(3).max(200).optional(),vendor_id:z.string().uuid().optional(),category_id:z.string().uuid().optional(),amount:z.coerce.number().finite().positive().optional(),first_month:z.string().optional(),month:z.string().optional(),due_day:z.coerce.number().int().min(1).max(28).optional()});
-export async function recurringExpenseAction(input:unknown){try{return await runCommandAction({schema,input,client:platformClient,rpc:"recurring_expense_command",permission:"accounting.expense.manage",revalidate:["/dashboard/finance/recurring","/dashboard/finance/purchases"],mapResult:data=>({message:String((data as {message:string}).message)})});}catch{return {ok:false as const,message:"Outcome uncertain. Inspect the schedule and purchase register before retrying."};}}

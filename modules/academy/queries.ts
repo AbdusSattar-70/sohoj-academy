@@ -8,12 +8,12 @@ export const academyContext = cache(async () => {
   if (!await verifiedAcademyUser()) return null;
   const db = await academyClient();
   const {data,error} = await db.rpc('academy_account_context');
-  if(error) throw new Error(error.code === 'PGRST202' ? 'The fresh academy schema is not installed. Follow the refactor delivery status; do not reset the current project yet.' : 'Could not load your academy access. Please retry.');
+  if(error) throw new Error(error.code === 'PGRST202' ? 'Academy schema is not installed. Follow docs/SETUP.md.' : 'Could not load your academy access. Please retry.');
   return data ? contextSchema.parse(data) : null;
 });
 export async function requireAcademyPermission(permission:string) {
   const context = await academyContext();
-  if(!context) redirect('/auth/sign-in?next=/academy');
+  if(!context) redirect('/auth/sign-in?next=/dashboard');
   if(!context.permissions.includes(permission)) throw new Error('This workspace needs a permitted academy responsibility.');
   return context;
 }

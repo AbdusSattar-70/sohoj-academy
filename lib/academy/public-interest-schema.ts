@@ -24,9 +24,9 @@ export const publicInterestSchema = z
       .min(2, "Enter the guardian's name.")
       .max(120),
     guardianRelationship: z.string().trim().max(40).optional(),
-    mobile: z.string().trim().min(10, "Enter a valid mobile number.").max(30),
+    mobile: z.string().trim().regex(/^01[3-9][0-9]{8}$/, "Enter a valid Bangladesh mobile number."),
     alternateMobile: optionalPhone,
-    classId: z.string().uuid("Select the student's current class."),
+    classId: z.string().trim().max(80),
     schoolId: z.string().uuid().optional(),
     schoolNameSnapshot: z.string().trim().max(180).optional(),
     area: z.string().trim().max(180).optional(),
@@ -52,7 +52,8 @@ export const publicInterestSchema = z
       message:
         "Please allow Sohoj Academy to contact you about this interest request.",
     }),
-    website: z.string().max(0).optional(),
+    website: z.string().max(200).optional(),
+    requestId:z.string().uuid(),
     offeringId: z.string().uuid().optional(),
     intent: z.enum(["interest", "admission"]).default("interest"),
     guardianAddress: z.string().trim().max(300).optional(),
@@ -60,32 +61,7 @@ export const publicInterestSchema = z
     requirementsAcknowledged: z.boolean().optional(),
     policyAcknowledged: z.boolean().optional(),
   })
-  .superRefine((value, ctx) => {
-    if (value.intent === "admission" && !value.offeringId) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["offeringId"],
-        message:
-          "Select an open programme offering for admission applications.",
-      });
-    }
-    if (value.intent === "admission") {
-      if (!value.guardianAddress || value.guardianAddress.length < 5) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["guardianAddress"],
-          message: "Enter the guardian's address.",
-        });
-      }
-      if (!value.requirementsAcknowledged || !value.policyAcknowledged) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["requirementsAcknowledged"],
-          message:
-            "Review and acknowledge the programme requirements and admission policy.",
-        });
-      }
-    }
-  });
+;
 
 export type PublicInterestInput = z.infer<typeof publicInterestSchema>;
+

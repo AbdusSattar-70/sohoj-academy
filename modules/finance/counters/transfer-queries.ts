@@ -1,5 +1,0 @@
-import {z} from "zod";
-import {platformClient} from "@/modules/platform/rpc-client";
-const schema=z.object({total:z.number(),pendingCounterIds:z.array(z.string().uuid()),balances:z.array(z.object({id:z.string().uuid(),amount:z.number()})),records:z.array(z.object({id:z.string().uuid(),counter_id:z.string().uuid(),counter:z.string(),kind:z.enum(["TOPUP","RETURN"]),amount:z.number(),reference:z.string(),reason:z.string(),created_at:z.string(),cashier:z.string(),source:z.string(),destination:z.string(),actor:z.string(),outcome:z.string(),can_receive:z.boolean(),receipts:z.array(z.object({outcome:z.string(),amount:z.number(),note:z.string(),at:z.string()}))}))});
-export type TransferData=z.infer<typeof schema>;
-export async function getCounterTransfers(page:number,counterIds:string[],pendingOnly=false){const db=await platformClient();const {data,error}=await db.rpc("counter_transfer_workspace",{p_page:page,p_counter_ids:counterIds,p_pending:pendingOnly});if(error)throw Error(error.message);return schema.parse(data);}

@@ -103,6 +103,7 @@ export function PublicInterestForm({
   const visibleSubjects = subjects; // Preferences are reverified by staff; do not filter out other subjects.
 
   const [sameAddress,setSameAddress]=useState(false);
+  const requestId=useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [formVersion, setFormVersion] = useState(0);
@@ -117,7 +118,8 @@ export function PublicInterestForm({
 
   function submit(formData: FormData) {
     setMessage(null);
-    const input = {
+    if(!requestId.current)requestId.current=crypto.randomUUID();
+    const input = {requestId:requestId.current,
       studentMobile:String(formData.get("studentMobile")??""),studentEmail:String(formData.get("studentEmail")??""),presentLandmark:String(formData.get("presentLandmark")??""),permanentSameAsPresent:sameAddress,
       dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
       gender: String(formData.get("gender") ?? ""),
@@ -165,8 +167,10 @@ export function PublicInterestForm({
     };
 
     startTransition(async () => {
-      const result = await submitPublicInterest(input);
+      let result;
+      try { result = await submitPublicInterest(input); } catch { toast.error(bn?"জমা হয়েছে কিনা নিশ্চিত হয়নি। একই ফর্ম আবার পাঠান।":"Submission could not be confirmed. Retry the same form."); return; }
       if (result.ok) {
+        requestId.current=null;
         setMessage({
           ok: true,
           prospectNo: result.prospectNo,
@@ -266,7 +270,7 @@ export function PublicInterestForm({
               id="interest-offering"
               name="offeringId"
               className={selectClass}
-              required={intent === "admission"}
+              required={false}
               value={selectedOfferingId}
               onChange={(event) => setSelectedOfferingId(event.target.value)}
             >
@@ -374,13 +378,12 @@ export function PublicInterestForm({
             <Field><Label htmlFor="student-email">{bn?"শিক্ষার্থীর ইমেইল (ঐচ্ছিক)":"Student email (optional)"}</Label><Input id="student-email" name="studentEmail" type="email" className="h-11"/></Field>
             <Field>
               <Label htmlFor="interest-class">
-                {bn ? "বর্তমান ক্লাস" : "Current Class"} *
+                {bn ? "বর্তমান ক্লাস (প্রযোজ্য হলে)" : "Current class (if applicable)"}
               </Label>
               <select
                 id="interest-class"
                 name="classId"
                 className={selectClass}
-                required
                 key={selectedOffering?.classId ?? "class"}
                 defaultValue={selectedOffering?.classId ?? ""}
               >
@@ -822,3 +825,4 @@ export function PublicInterestForm({
     </div>
   );
 }
+

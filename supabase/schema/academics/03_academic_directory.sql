@@ -60,11 +60,11 @@ begin
    is_verified=coalesce((p_input->>'is_verified')::boolean,false),is_active=coalesce((p_input->>'is_active')::boolean,true),
    sort_order=coalesce((p_input->>'sort_order')::integer,0),revision=revision+1 where id=identity returning * into saved;
  else
-  insert into public.directory_entries(academy_id,kind,code,name,name_bn,locality,institution_type,eiin,source_url,verified_on,is_verified,sort_order)
+  insert into public.directory_entries(academy_id,kind,code,name,name_bn,locality,institution_type,eiin,source_url,verified_on,is_verified,sort_order,is_active)
   values(academy,kind_value,coalesce(nullif(upper(btrim(p_input->>'code')),''),'CUSTOM_'||upper(replace(gen_random_uuid()::text,'-',''))),
    btrim(p_input->>'name'),nullif(btrim(p_input->>'name_bn'),''),lower(btrim(coalesce(p_input->>'locality',''))),
    nullif(p_input->>'institution_type',''),nullif(p_input->>'eiin',''),nullif(p_input->>'source_url',''),
-   nullif(p_input->>'verified_on','')::date,coalesce((p_input->>'is_verified')::boolean,false),coalesce((p_input->>'sort_order')::integer,0)) returning * into saved;
+   nullif(p_input->>'verified_on','')::date,coalesce((p_input->>'is_verified')::boolean,false),coalesce((p_input->>'sort_order')::integer,0),coalesce((p_input->>'is_active')::boolean,true)) returning * into saved;
  end if;
  result:=jsonb_build_object('id',saved.id,'name',saved.name,'nameBn',saved.name_bn,'kind',saved.kind,'revision',saved.revision,'isActive',saved.is_active);
  perform public.record_activity(case when identity is null then 'CREATE' else 'EDIT' end,'DIRECTORY',saved.id::text,reason_value,to_jsonb(original),to_jsonb(saved),request);

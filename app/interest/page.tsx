@@ -5,8 +5,7 @@ import Navbar from "@/components/home-navbar/navbar";
 import { PublicInterestForm } from "@/components/public/interest-form";
 import Logo from "@/components/shared/logo";
 import { LocalizedText } from "@/components/shared/localized-text";
-import { createClient } from "@/lib/supabase/server";
-import { getPublicProgrammeOfferings } from "@/modules/offerings/queries";
+import { publicCatalogue, publicChoices } from "@/modules/crm/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -27,35 +26,14 @@ export default async function InterestPage({
   const intent = params.intent === "admission" ? "admission" : "interest";
   const requestedOfferingId = params.offering?.trim() || "";
 
-  const supabase = await createClient();
-
-  const [classesQ, programsQ, subjectsQ, schoolsQ, sourcesQ, relationshipsQ, publicOfferings] = await Promise.all([
-    supabase.from("classes").select("id,name").eq("is_active", true).order("sort_order"),
-    supabase.from("programs").select("id,name").eq("is_active", true).order("name"),
-    supabase.from("subjects").select("id,name").eq("is_active", true).order("name"),
-    supabase.from("schools").select("id,name").eq("is_active", true).order("name").limit(500),
-    supabase.from("lead_sources").select("code,name").eq("is_active", true).order("name"),
-    supabase.from("guardian_relationships").select("code,name").eq("is_active", true).order("name"),
-    getPublicProgrammeOfferings(),
-  ]);
-
-  const openOfferings = (publicOfferings ?? []).filter((row) => row.is_accepting_applications);
-  const preselected =
-    openOfferings.find((row) => row.id === requestedOfferingId) ??
-    null;
-  const closedRequested =
-    Boolean(requestedOfferingId) &&
-    !preselected &&
-    (publicOfferings ?? []).some((row) => row.id === requestedOfferingId);
-
-  const optionsUnavailable =
-    Boolean(classesQ.error) ||
-    Boolean(programsQ.error) ||
-    Boolean(subjectsQ.error) ||
-    Boolean(schoolsQ.error) ||
-    Boolean(sourcesQ.error) ||
-    Boolean(relationshipsQ.error) ||
-    publicOfferings === null;
+  const [choiceResult,catalogueResult]=await Promise.allSettled([publicChoices(),publicCatalogue()]);
+  const options=choiceResult.status==='fulfilled'?choiceResult.value:null;
+  const catalogue=catalogueResult.status==='fulfilled'?catalogueResult.value:null;
+  const publicOfferings=catalogue?.map(row=>({id:row.id,code:row.code,name:row.title,is_accepting_applications:row.acceptingApplications,showcase_title:row.title,public_schedule:String(row.content.schedule??''),public_schedule_bn:String(row.content.schedule_bn??''),public_requirements:String(row.content.requirements??''),public_requirements_bn:String(row.content.requirements_bn??''),admission_policy:String(row.content.policy??''),admission_policy_bn:String(row.content.policy_bn??''),fee_plan:{billing_cycle:row.fees.cycle,currency_code:row.fees.currency,components:row.fees.components},current_open_seats:row.openSeats,active_batch_count:row.activeBatches,class_id:row.classCode??'',program_id:'',subjects:row.subjects}))??[];
+  const openOfferings=publicOfferings.filter(row=>row.is_accepting_applications);
+  const preselected=openOfferings.find(row=>row.id===requestedOfferingId)??null;
+  const closedRequested=Boolean(requestedOfferingId)&&!preselected;
+  const optionsUnavailable=!options||catalogue===null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -166,15 +144,12 @@ export default async function InterestPage({
           ) : (
             <div className="rounded-[2rem] border border-border bg-card p-5 text-card-foreground shadow-[0_24px_70px_-50px_rgba(15,23,42,.35)] sm:p-7 lg:p-9">
               <PublicInterestForm
-                classes={classesQ.data ?? []}
-                programs={programsQ.data ?? []}
-                subjects={subjectsQ.data ?? []}
-                schools={(schoolsQ.data ?? []).map((school) => ({
-                  id: school.id,
-                  label: school.name,
-                }))}
-                sourceOptions={sourcesQ.data ?? []}
-                relationships={relationshipsQ.data ?? []}
+                classes={options?.classes ?? []}
+                programs={options?.programmes ?? []}
+                subjects={options?.subjects ?? []}
+                schools={options?.schools ?? []}
+                sourceOptions={options?.sources ?? []}
+                relationships={options?.relationships ?? []}
                 openOfferings={openOfferings.map((row) => ({
                   id: row.id,
                   code: row.code,
@@ -211,3 +186,4 @@ export default async function InterestPage({
     </div>
   );
 }
+

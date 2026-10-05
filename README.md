@@ -1,11 +1,16 @@
-# Sohoj Academy Digital Campus
+# Sohoj Academy
 
-Next.js App Router and Supabase ERP with an account-free public website. Branch: feature/redesign_refactor.
+Fresh first-version foundation for School, Coaching and Preparation/Training operations. CRM visual design is retained. There is one ERP `/dashboard` and one deployable SQL baseline in `supabase/migrations/`.
 
-Start with [Fresh database setup](docs/architecture/FRESH_DATABASE_SETUP.md), [Workflow](docs/architecture/REDESIGN_REFACTOR_WORKFLOW.md), [Schema](docs/architecture/DATABASE_SCHEMA.md) and [Handoff](docs/architecture/DEVELOPMENT_HANDOFF.md).
+[Setup/reset/bootstrap instructions](docs/SETUP.md) · [Architecture](docs/refactor/ARCHITECTURE.md) · [Implemented scope and remaining work](docs/refactor/DELIVERY_STATUS.md)
 
-This branch has 13 fresh baseline migrations plus additive refinements 14 (referrals/collections) and 15 (paged audit activity). The previous historical migrations and obsolete implementations are removed, without an archive. Install on an empty application schema or reset your authorized test project using the setup guide; do not push this baseline onto the old database.
+Implemented: secure academy access, shared People/responsibilities, searchable/editable directory, programme definitions, public catalogue and unverified public enquiries. Programme/offering/fees/batch backend exists; its full operational editor is pending. Admission, payment/receipt, teaching operations and simple finance are planned, not available in this foundation yet.
 
-The admission desk supports direct intake or verified Prospect conversion, physical paper consent, referral, permitted discounts, atomic acceptance/invoice, actual payment and enrollment. Admin actions run directly with permission/audit checks; teacher submissions retain administrative review. Fees and rules remain simple current settings with protected historical evidence.
+```bash
+pnpm install --frozen-lockfile
+pnpm dev
+```
 
-Required configuration is listed in .env.example. Complete academy setup after bootstrap login. Run pnpm build and pnpm dev, then follow [Manual acceptance](docs/architecture/REDESIGN_LOCAL_ACCEPTANCE.md).
+Use `pnpm db:baseline` after editing modular SQL sources; `pnpm db:rpc-types` generates RPC types. Generated migrations and types must match source. Essential seed is migration 04; no separate demo/legacy seed. Applied migrations become append-only after release. Before release this development baseline is installed by reset, not overlaid onto the previous schema.
+
+Previous implementation is accessible on `master`; this branch contains no legacy ERP/schema runtime or parallel preview app. Never commit credentials.

@@ -46,3 +46,4 @@ UI-তে “প্রোগ্রামের ধরন” ও “চলমা�
 - Typed generated Database + validated response schemas; broad any/untyped Supabase casts নয়।
 - Query failure empty result নয়; paginated reads, separate summary aggregates, ছোট on-demand directory search।
 - New posted invoice/payment/expense evidence immutable; amendments/cancellation/refund preserve new audit।
+

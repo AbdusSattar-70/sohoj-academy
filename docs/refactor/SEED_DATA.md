@@ -22,3 +22,4 @@ Target areas: Gopalpur Bazar, Narundi, Nandina, Varuakhali and nearby areas। C
 Prefer official education board/government/EMIS or institution records। Record official Bengali/English name aliases, institution type, area, EIIN when verified, source URL, checked date। Same EIIN unique; normalized name+area review when EIIN absent। Exact location spelling verify before seed।
 Missing/ambiguous institution unverified reference suggestion, never fabricated verified entry। Authoritative school creation requires permission; public free text retained original submission, admin can promote/link after review।
 Seed uses stable code/upsert without overwriting admin edits on rerun। “Active for selection” not “currently admitting”: offerings explicitly opened only after admin setup। Non-system master inactive not deleted।
+
