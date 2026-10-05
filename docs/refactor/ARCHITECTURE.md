@@ -8,7 +8,7 @@
 | Dashboard | setup নির্দেশনা, আজকের কাজ ও action links |
 | CRM | public content ও unverified enquiry/application queue |
 | People | Students, guardians, staff/teachers, referrers tabs; access requests; existing identity edit |
-| Academics | programme definitions, offerings/batches/standard fees/directory; admission, routine ও academic records |
+| Academics | একটি `/dashboard/academics` workspace: প্রোগ্রাম / ভর্তি / শিক্ষা সেটিংস tabs। প্রোগ্রামের ভেতর ফি, ছাড়, ব্যাচ ও website/application controls। |
 | Finance | student collection/invoices/receipts, remuneration/referral payouts, running expenses ও profit |
 | Settings & Help | setup/access configuration, operating help ও searchable audit |
 
@@ -48,3 +48,7 @@ UI-তে “প্রোগ্রামের ধরন” ও “চলমা�
 - Query failure empty result নয়; paginated reads, separate summary aggregates, ছোট on-demand directory search।
 - New posted invoice/payment/expense evidence immutable; amendments/cancellation/refund preserve new audit।
 
+
+## Unified academic entry
+Sidebar-এ একটি Academics link। Programme definitions/offerings/directory database concepts, sidebar items নয়। UI-তে Programme names শিক্ষা সেটিংসের একটি category; প্রোগ্রাম তৈরি করতে inline selection/create হয়। Academic years শিক্ষা সেটিংসে; missing year programme form-এ inline যোগ হয়।
+`/dashboard/offerings`, `/dashboard/programmes`, `/dashboard/directory` পুরোনো bookmarks নতুন workspace-এর সংশ্লিষ্ট tab/category-তে redirect করে। Separate legacy workspace নেই। Query tab/category allowlist এবং প্রতিটি embedded workspace-এর server/RPC permission বহাল। Admission tab বর্তমান implementation status স্পষ্ট দেখায়; actual ভর্তি workflow এখনও pending।

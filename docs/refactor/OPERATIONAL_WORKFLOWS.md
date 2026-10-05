@@ -50,6 +50,9 @@ Admin Today shows action links/counts। Teacher My day shows classes, attendanc
 
 
 ## Offering setup-এর বর্তমান interface
-Academics → Offerings, batches & standard fees (`/dashboard/offerings`) → Create offering। Operation নির্বাচন করলে উপযুক্ত class/year দেখাবে; Training-এ class/year লাগবে না। Programme বা subject না থাকলে একই form-এ যোগ করে নির্বাচন করুন। Year না থাকলে inline create; আগে থাকা year edit/inactive করতে উপরের Academic years button।
+শিক্ষা পরিচালনা (`/dashboard/academics`) → প্রোগ্রাম tab → প্রোগ্রাম তৈরি। Operation নির্বাচন করলে উপযুক্ত class/year দেখাবে; Training-এ class/year লাগবে না। Programme বা subject না থাকলে একই form-এ যোগ করে নির্বাচন করুন। Year না থাকলে inline create; আগে থাকা year edit/inactive করতে শিক্ষা সেটিংস tab-এর Academic years category।
 Offering save → standard tuition ও প্রয়োজনীয় চার্জ, billing cycle এবং allowed discount tick → Save → batch name ও capacity → Save → Next: publish/open applications। Code/title না লিখলে system তৈরি করবে। Academic context ভুল হলে placement history তৈরি হওয়ার আগে edit করা যায়; ইতিহাস থাকলে নতুন offering প্রয়োজন।
 Batch inactive করতে active enrollment আগে স্থানান্তর/বন্ধ করতে হবে (admission implementation pending)। শেষ batch হলে আগে offering-এ application intake বন্ধ করুন। Multiple academic years active রাখা যায়। History delete নয়।
+
+## এক জায়গায় কাজ
+শিক্ষা পরিচালনার তিনটি tab: প্রোগ্রাম, ভর্তি, শিক্ষা সেটিংস। প্রোগ্রামে তৈরি/edit/ফি/ব্যাচ/আবেদন খোলার কাজ একই পাতায়। শিক্ষা সেটিংসে স্কুল/বিষয়/অন্যান্য তালিকা, প্রোগ্রামের নাম ও শিক্ষাবর্ষ category নির্বাচন করুন। Missing তথ্য form-এর ভেতরেই যোগ করা যায়। Unsaved editor রেখে tab/category বদলালে discard confirmation আসে; pending/uncertain save-এর ফলাফল আগে নিশ্চিত করতে হবে।

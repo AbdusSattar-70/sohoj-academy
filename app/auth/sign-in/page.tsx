@@ -59,7 +59,7 @@ export default function SignInPage() {
     }
 
     const next = new URLSearchParams(window.location.search).get("next");
-    const allowed = ["/dashboard", "/dashboard/people", "/dashboard/directory", "/dashboard/programmes", "/dashboard/offerings"];
+    const allowed = ["/dashboard", "/dashboard/academics", "/dashboard/people", "/dashboard/directory", "/dashboard/programmes", "/dashboard/offerings"];
     window.location.assign(next && allowed.includes(next) ? next : ROUTES.DASHBOARD);
   };
 

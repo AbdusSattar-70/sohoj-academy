@@ -32,7 +32,7 @@ export function useMutation(command:Command,onSuccess:(data:Json)=>void) {
 }
 export function Editor({title,command,read,onDone,onCancel,children}:{title:string;command:Command;read:(f:FormData)=>Record<string,unknown>;onDone:(data:Json)=>void;onCancel:()=>void;children:ReactNode}) {
  const t=useWords(),mutation=useMutation(command,onDone),[dirty,setDirty]=useState(false);
- return <section className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm"><h2 className="mb-5 text-xl font-semibold">{title}</h2>
+ return <section data-editor="" data-dirty={dirty} data-busy={mutation.pending||mutation.uncertain} className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm"><h2 className="mb-5 text-xl font-semibold">{title}</h2>
  <errorsContext.Provider value={mutation.fields}><form onChange={()=>setDirty(true)} onSubmit={e=>{e.preventDefault();mutation.submit(read(new FormData(e.currentTarget)));}}>
  <fieldset disabled={mutation.pending||mutation.uncertain} className="grid gap-4 sm:grid-cols-2">{children}</fieldset>
  {mutation.error&&<p className="mt-4 rounded-lg border border-red-500/40 p-3 text-sm" role="alert">{t(mutation.error.message,mutation.uncertain?'ফলাফল নিশ্চিত হয়নি। তথ্য পরিবর্তন না করে একই অনুরোধ আবার পাঠান।':mutation.error.code==='conflict'?'একই তথ্যের record আছে। তালিকা থেকে সেটি নির্বাচন বা সংশোধন করুন।':'প্রয়োজনীয় তথ্য, তারিখ ও নির্বাচন যাচাই করুন। আপনার input রাখা হয়েছে।')}</p>}
