@@ -31,8 +31,8 @@ begin
   raise exception 'Normalized school duplicate accepted';
  exception when unique_violation then null; end;
  result:=public.save_directory_entry(input||jsonb_build_object('request_id',gen_random_uuid(),'id',result->>'id','revision',1,'is_active',false));
- if (public.search_directory('INSTITUTION')->>'total')::integer<>0 then raise exception 'Inactive school available for new use'; end if;
- if (public.search_directory('INSTITUTION','',1,true)->>'total')::integer<>1 then raise exception 'Inactive school history missing'; end if;
+ if (public.search_directory('INSTITUTION','Test School')->>'total')::integer<>0 then raise exception 'Inactive school available for new use'; end if;
+ if (public.search_directory('INSTITUTION','Test School',1,true)->>'total')::integer<>1 then raise exception 'Inactive school history missing'; end if;
  begin
   perform public.save_person(jsonb_build_object('request_id',gen_random_uuid(),'id',identity,'revision',1,'full_name','Stale name','reason','Stale edit attempted'));
   raise exception 'Stale person edit accepted';

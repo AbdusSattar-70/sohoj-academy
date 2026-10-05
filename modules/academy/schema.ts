@@ -18,7 +18,7 @@ export const programmeInput = z.object({ ...request,...edit,name:text.min(2).max
 export const runInput = z.object({ ...request,...edit,programme_id:id,division_id:id,campus_id:id,academic_year_id:optionalId,class_code:emptyText,
  code:emptyText.max(80).default(''),title:emptyText.max(240).default(''),starts_on:text.min(10),ends_on:text.min(10),guardian_rule:z.enum(['MINOR_REQUIRED','REQUIRED','OPTIONAL']),
  is_active:z.boolean(),website_visible:z.boolean(),applications_open:z.boolean(),application_opens_on:emptyText,application_closes_on:emptyText,
- subject_ids:z.array(id).max(100),public_content:z.object({description:emptyText.max(3000).default(''),schedule:emptyText.max(500).default(''),requirements:emptyText.max(1000).default(''),policy:emptyText.max(1000).default('')}) });
+ subject_ids:z.array(id).max(100),public_content:z.object({description_bn:emptyText.max(3000).default(''),schedule_bn:emptyText.max(500).default(''),requirements_bn:emptyText.max(1000).default(''),policy_bn:emptyText.max(1000).default(''),description:emptyText.max(3000).default(''),schedule:emptyText.max(500).default(''),requirements:emptyText.max(1000).default(''),policy:emptyText.max(1000).default('')}) });
 export const feeInput = z.object({ ...request,run_id:id,revision:z.number().int().min(0),cycle:z.enum(['MONTHLY','TERM','COURSE']),due_day:z.number().int().min(1).max(28),
  allowed_discounts:z.array(z.union([z.literal(5),z.literal(10),z.literal(15),z.literal(20),z.literal(25),z.literal(30)])),
  components:z.array(z.object({code:text.min(2).max(80),name:text.min(2).max(120),amount:z.number().finite().min(0),charge_type:z.enum(['TUITION','ADMISSION','EXAM','MATERIAL','OTHER']),recurrence:z.enum(['PER_CYCLE','ONE_TIME'])})).min(1).max(20) });

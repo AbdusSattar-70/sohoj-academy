@@ -4,8 +4,9 @@ select public.initialize_academy('catalogue@example.test','Catalogue Administrat
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
 do $$
 declare academy uuid; school uuid; coaching uuid; training uuid; campus uuid; type_id uuid; subject_id uuid; yr uuid;
- programme uuid; run uuid; batch uuid; person uuid; input jsonb; result jsonb; req uuid;
+ programme uuid; run uuid; batch uuid; person uuid; input jsonb; result jsonb; req uuid; years_before integer;
 begin
+ select count(*) into years_before from public.academic_years where is_active;
  select id into academy from public.academies;
  select id into school from public.operating_divisions where code='SCHOOL';
  select id into coaching from public.operating_divisions where code='COACHING';
@@ -49,12 +50,12 @@ begin
  result:=public.save_programme_run(input);
  if (public.programme_run_setup(run)->>'batchTotal')::integer<>1 then raise exception 'Setup batch count incorrect'; end if;
  if jsonb_array_length(public.public_current_programmes())<>1 then raise exception 'Published course absent from public contract'; end if;
- if (public.list_current_programmes(training)->>'total')::integer<>1 then raise exception 'Division filter incorrect'; end if;
+ if (public.list_current_programmes(training,'Teacher Job Preparation')->>'total')::integer<>1 then raise exception 'Division filter incorrect'; end if;
  result:=public.save_programme_run(input||jsonb_build_object('request_id',gen_random_uuid(),'revision',2,'is_active',false));
  if jsonb_array_length(public.public_current_programmes())<>0 then raise exception 'Inactive course still public'; end if;
- result:=public.save_academic_year(jsonb_build_object('request_id',gen_random_uuid(),'name','2026','starts_on','2026-01-01','ends_on','2026-12-31','reason','Create the school academic year')); yr:=(result->>'id')::uuid;
- perform public.save_academic_year(jsonb_build_object('request_id',gen_random_uuid(),'name','2027','starts_on','2027-01-01','ends_on','2027-12-31','reason','Open next academic year too'));
- if (select count(*) from public.academic_years where is_active)<>2 then raise exception 'Multiple active years blocked'; end if;
+ result:=public.save_academic_year(jsonb_build_object('request_id',gen_random_uuid(),'name','Fixture 2026','starts_on','2026-01-01','ends_on','2026-12-31','reason','Create the school academic year')); yr:=(result->>'id')::uuid;
+ perform public.save_academic_year(jsonb_build_object('request_id',gen_random_uuid(),'name','Fixture 2027','starts_on','2027-01-01','ends_on','2027-12-31','reason','Open next academic year too'));
+ if (select count(*) from public.academic_years where is_active)<>years_before+2 then raise exception 'Multiple active years blocked'; end if;
  input:=jsonb_build_object('request_id',gen_random_uuid(),'programme_id',programme,'division_id',school,'campus_id',campus,'academic_year_id',yr,'class_code','CLASS_8',
  'starts_on','2026-01-01','ends_on','2026-12-31','reason','Prepare a school context');
  perform public.save_programme_run(input);

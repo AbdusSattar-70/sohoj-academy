@@ -23,7 +23,7 @@ pnpm exec supabase projects list
 pnpm exec supabase db reset --linked
 pnpm exec supabase migration list --linked
 ```
-Reset সাতটি নতুন migration 01–07 চালায়। Essential setup seed 04 migration-এর অংশ। আলাদা legacy seed বা temporary CLI directory প্রয়োজন নেই। Auth users/Storage files সম্পূর্ণ মুছে গেছে ধরে নেবেন না; Dashboard-এ যাচাই করুন। Normal `db push` দিয়ে পুরোনো schema প্রতিস্থাপন করবেন না; initial replacement-এর জন্য reset। Reset-এর পরে ordinary root `db push` subsequent নতুন migrations-এর জন্য। Migration repair দিয়ে পুরোনো history applied সাজাবেন না।
+Reset আটটি নতুন migration 01–08 চালায়। Essential setup seed 04 migration-এর অংশ। আলাদা legacy seed বা temporary CLI directory প্রয়োজন নেই। Auth users/Storage files সম্পূর্ণ মুছে গেছে ধরে নেবেন না; Dashboard-এ যাচাই করুন। Normal `db push` দিয়ে পুরোনো schema প্রতিস্থাপন করবেন না; initial replacement-এর জন্য reset। Reset-এর পরে ordinary root `db push` subsequent নতুন migrations-এর জন্য। Migration repair দিয়ে পুরোনো history applied সাজাবেন না।
 
 ## New Supabase project
 Project তৈরি করে link করুন, `.env.local`-এ সেটির URL/key দিন, তারপর:
@@ -53,6 +53,6 @@ pnpm dev
 - `/dashboard/enquiries`: public submissions-এর paginated list।
 - `/dashboard/people`: shared person ও responsibilities, edit/inactive।
 - `/dashboard/directory`: school/area/subject/shared dropdown data।
-- `/dashboard/programmes`: programme definitions; offering/fee/batch editing UI এখনও বাকি।
+- `/dashboard/programmes`: programme definitions; starter/current offering edit, fee/discount ও existing batch editing-এর জন্য `/dashboard/offerings`।
 
-খালি fresh database-এ কোনো public offering থাকবে না। Fake published course/student/payment seed দেওয়া হয়নি। Backend catalogue আছে; public publishing editor পরবর্তী কাজ।
+Fresh install-এ starter offering/fee/batch থাকবে; প্রথমে অপ্রকাশিত। `/dashboard/offerings` থেকে ফি/তারিখ যাচাই করে Edit / publish-এ Website visible ও Accept applications tick করুন। কোনো fake student/payment তৈরি হয় না। বিস্তারিত [starter guide](refactor/SEED_DATA.md)।
