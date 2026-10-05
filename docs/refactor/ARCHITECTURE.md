@@ -5,13 +5,14 @@
 
 | Menu | Canonical কাজ |
 | --- | --- |
-| আজকের কাজ | আজকের classes, admission drafts, pending academic review, collection attention ও quick actions |
-| People | Students, guardians, staff/teachers, referrers; একই person-এর related records |
-| Academics | Applications & Admission, Programmes, Batches, Routine, Attendance, Homework, Assessments, Progress |
-| Billing | টাকা গ্রহণ, invoices/dues, staff/referral payments, running expenses, financial summary |
-| Settings | Academy/divisions, academic directory, fees/rules, account access |
-| Activity | Searchable audit history |
+| Dashboard | setup নির্দেশনা, আজকের কাজ ও action links |
+| CRM | public content ও unverified enquiry/application queue |
+| People | Students, guardians, staff/teachers, referrers tabs; access requests; existing identity edit |
+| Academics | programme definitions, offerings/batches/standard fees/directory; admission, routine ও academic records |
+| Finance | student collection/invoices/receipts, remuneration/referral payouts, running expenses ও profit |
+| Settings & Help | setup/access configuration, operating help ও searchable audit |
 
+বর্তমান sidebar-এ implemented routes-ই actionable। Admission/Finance/academic operations এখনও pending—fake operational link নয়। Master-এর পরিচিত grouped sidebar interaction reuse, advanced finance menu পুনরায় নয়।
 Menu order explicit registry-তে থাকবে; feature যোগ করলে sidebar-এর শুরুতে prepend নয়। Context selector: সকল বিভাগ / School / Coaching / Preparation & Training। Financial write-এ একটি division/invoice context স্পষ্ট; “সকল বিভাগ” write target নয়। Branch/campus physical location, division operating activity—দুটি আলাদা।
 
 ## Module ownership
@@ -29,11 +30,11 @@ Routes composition করবে; validation/domain queries/actions module-এ।
 ## Person এবং account
 Person ≠ Auth account। একই person student, guardian, teacher ও referrer হতে পারেন। Person ID internal stable key; student/staff number প্রয়োজনমতো domain identity। Adult participant নিজের contact; minor-এ guardian relationship required। নাম/phone মিললে সম্ভাব্য duplicate দেখাবে, automatic merge নয়; shared family phone বৈধ।
 
-Public submission verified person তৈরি করে না। Authorized verification-এ existing person link বা নতুন identity। Account staff/referrer-এর verified person-এর সঙ্গে link হবে। Website access request থেকে যাচাই/link; staff creation-এর competing duplicate path নয়। Existing person-কে staff responsibility দেওয়া যাবে, identity আবার তৈরি নয়।
+Public submission verified person তৈরি করে না। Authorized verification-এ existing person link বা নতুন identity। Account staff/referrer-এর verified person-এর সঙ্গে link হবে। Website access request থেকে যাচাই/link; staff creation-এর competing duplicate path নয়। People directory-তে generic Add person নেই; database edit command-ও নতুন identity প্রত্যাখ্যান করে। Requested role বা submitted email নিজের থেকে access নয়। Admin যাচাইয়ের পরে existing identity নির্বাচন বা নতুন identity একবার তৈরি করেন। Existing person-কে staff responsibility দেওয়া যাবে, identity আবার তৈরি নয়।
 
 ## Programme language
 ভেতরে programme definition reusable template; offering নির্দিষ্ট division/year-or-session/location/eligibility/subjects/fees/intake।
-UI-তে “প্রোগ্রামের ধরন” ও “চলমান প্রোগ্রাম”; একটি Programmes workspace। Generated title editable override; name বারবার বাধ্যতামূলক typing নয়। School year, coaching session এবং training duration-এর requirements আলাদা template, arbitrary user-built workflow engine নয়।
+UI-তে “প্রোগ্রামের ধরন” ও “চলমান প্রোগ্রাম”; Academics group-এ ব্যাখ্যাসহ definition ও offering-এর পৃথক canonical registers। Generated title editable override; name বারবার বাধ্যতামূলক typing নয়। School year, coaching session এবং training duration-এর requirements আলাদা template, arbitrary user-built workflow engine নয়।
 
 ## Security ও reliability
 - Server verified user; cookie session user বা requested role থেকে privilege নয়।

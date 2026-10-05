@@ -56,3 +56,8 @@ pnpm dev
 - `/dashboard/programmes`: programme definitions; starter/current offering edit, fee/discount ও existing batch editing-এর জন্য `/dashboard/offerings`।
 
 Fresh install-এ starter offering/fee/batch থাকবে; প্রথমে অপ্রকাশিত। `/dashboard/offerings` থেকে ফি/তারিখ যাচাই করে Edit / publish-এ Website visible ও Accept applications tick করুন। কোনো fake student/payment তৈরি হয় না। বিস্তারিত [starter guide](refactor/SEED_DATA.md)।
+
+## Staff/referrer account setup
+Open `/auth/sign-up` for an access request. Admin reviews it at `/dashboard/people/access`, checks identity/email ownership, chooses an existing Person or confirms a genuinely new one, and approves a role. Requested roles never grant access. New accounts use a secure setup email; existing accounts are reused and can use password recovery.
+Set `SUPABASE_SERVICE_ROLE_KEY` server-only to the same project's service role key; never use an anon/publishable key or `NEXT_PUBLIC_*` secret. Set `NEXT_PUBLIC_SITE_URL` to the exact origin. Supabase Auth Site URL/redirect allowlist must include local/deployed `/auth/update-password` and `/auth/confirm`. Configure email delivery. No keys are returned to client/UI.
+Existing fresh installations: pull and push migration 10; do not reset. People generic creation is intentionally removed. Student/guardian identities will originate from the upcoming admission flow.

@@ -41,6 +41,13 @@ export type AcademyDatabase = {
       receive_public_enquiry: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       search_enquiries: { Args: { p_query?: string; p_page?: number }; Returns: Json };
       find_person_matches: { Args: { p_input: Json }; Returns: Json };
+      request_academy_access: { Args: { p_input: Json }; Returns: Json };
+      list_access_requests: { Args: { p_page?: number; p_history?: boolean }; Returns: Json };
+      review_access_request: { Args: { p_input: Json }; Returns: Json };
+      complete_access_setup: { Args: { p_request_id: string }; Returns: Json };
+      access_setup_request: { Args: { p_request_id: string }; Returns: Json };
+      search_people_by_role: { Args: { p_query?: string; p_page?: number; p_responsibility?: string }; Returns: Json };
+      protect_current_account_identity: { Args: Record<string, never>; Returns: unknown };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

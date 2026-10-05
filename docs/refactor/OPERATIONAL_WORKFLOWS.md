@@ -14,7 +14,7 @@ Admin enquiry খুলে original preference দেখে actual identity/plac
 | --- | --- | --- |
 | Identity | existing person search/new student+guardian; adult/minor template | reusable verified identity, draft |
 | Placement | division, current programme, batch; inline missing master | eligible actual placement |
-| Terms | fees, discount reason, extras, Organic/referrer select/create | authoritative payable preview |
+| Terms | fees, discount reason, extras, Organic/referrer select; missing referrer access request/verified identity link | authoritative payable preview |
 | Paper consent | guardian/student applicable signature date/file reference | physical evidence for current identity revision |
 | Review | সমস্ত প্রয়োজনীয় তথ্য/fees একটি summary; edit section link | required checks complete |
 | Confirm | atomic acceptance + permanent ID/roll + initial invoice; eligible enrollment | unpaid amount remains due |
@@ -27,7 +27,7 @@ Payment policy simple: allow due / minimum payment / full payment; admin direct 
 
 ## People ও staff
 এক person profile-এ applicable student/guardian/staff/referrer relationships। নিজ নিজ module canonical editor; shortcut duplicate implementation নয়।
-Staff request → identity match/verify → responsibility/access → secure setup → account activated। Requested role never auto-grants। Teacher works assigned classes; admin takes staff attendance/verified work hours and configures fixed/hourly/teaching-share terms। One remuneration statement distinguishes teaching and acquisition bases, preventing same earning twice।
+Staff/referrer website request → admin identity match/verify → existing Person link অথবা confirmed new identity → approved role → secure setup → first sign-in। একই email-এর request repeated submit পুরোনো request rewrite বা নতুন Person তৈরি করে না। Person contacts optional/shared; login email ব্যক্তির নিজস্ব। নতুন staff তৈরির competing ERP button নেই। INVITED প্রথম sign-in-এর পরে ACTIVE হয়; completed requests history-তে থাকে। Existing account setup-এ নতুন account নয়—আগের account link/recovery ব্যবহার হয়। Requested role never auto-grants। Teacher works assigned classes; admin takes staff attendance/verified work hours and configures fixed/hourly/teaching-share terms। One remuneration statement distinguishes teaching and acquisition bases, preventing same earning twice।
 
 ## Academic workflows
 School: year/class/section/roll, attendance, assessment, progress and explicit year promotion।

@@ -6,8 +6,8 @@ Operational text/class ranges dynamic from configured content rather than hardco
 
 ## কম typing
 Searchable select with recent/relevant choices; checkbox/radio predefined reasons; auto fee/title/context; “permanent address same as present”; context keeps division/programme।
-Select/create permitted for school/college, area/locality, guardian relationship, referrer, subjects/programme types and authorized directories। Not for system status, arbitrary privilege, currency or posting action।
-Search → similar records → create inline → save and auto-select। Parent input/focus preserved, errors field-linked। Duplicate normalization plus server uniqueness; no name-only person merge।
+Select/create permitted for school/college, area/locality, guardian relationship, subjects/programme types and authorized directories। Not for system status, arbitrary privilege, currency or posting action।
+Directory: search → similar records → create inline → save and auto-select। Person identity generic directory নয়: staff/referrer access request ও student/guardian admission থেকে আসে; existing Person reuse করুন। Parent input/focus preserved, errors field-linked। Duplicate normalization plus server uniqueness; no name-only person merge।
 Adult programme hides mandatory school guardian fields। Empty optional numeric value stays null, not Number("")=0। English/Bangla one locale at a time; untranslated directory proper names allowed।
 
 ## Forms ও requests

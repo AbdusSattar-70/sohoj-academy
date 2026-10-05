@@ -186,7 +186,7 @@ export default function SignInPage() {
                 href="/auth/sign-up"
                 className="mb-3 block text-sm underline"
               >
-                Account access information
+                Request staff or referrer access
               </Link>
               <p className="text-xs leading-5 text-muted-foreground">
                 {copy.support}

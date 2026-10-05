@@ -6,5 +6,5 @@ export default async function Layout({children}:{children:React.ReactNode}) {
  if(!await verifiedAcademyUser())redirect('/auth/sign-in?next=/dashboard');
  const context=await academyContext();
  if(!context)return <main className="p-8"><h1>Academy access is not configured</h1><p>An administrator must assign your academy account before you can use this workspace.</p></main>;
- return <WorkspaceShell name={context.name} permissions={context.permissions}>{children}</WorkspaceShell>;
+ return <WorkspaceShell name={context.name} academyName={context.academyName} divisions={context.divisions} permissions={context.permissions}>{children}</WorkspaceShell>;
 }

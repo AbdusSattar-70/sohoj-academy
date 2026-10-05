@@ -36,6 +36,9 @@ No “completed” checklist item until code/database/UI implemented. App and se
 - A4 monochrome letterhead-safe forms/receipts amount-in-words; Back stays working context।
 - Browser visual parity public pages; language clean; loading/error/cancel/retry behaviour consistent।
 
-## First implementation direction
+## Original first implementation direction
 Start phase 1: dependency map and fresh schema foundation, then phase 2 directory/person model. Do not add more advanced finance extensions. No live database reset during documentation authoring. Later user-run reset guide must explicitly state target, Auth/Storage handling and bootstrap steps.
 
+
+## Current immediate direction
+Grouped ERP navigation and reviewed staff/referrer signup now precede admission. Finish offering creation/context/subjects and verified guardian relationship UI, then implement the one-page admission desk under Academics with invoice/payment/receipt in working context. No generic Person creation; no fabricated Prospect for walk-ins. Finance remains the simple scoped model above; do not restore the old advanced finance menus.

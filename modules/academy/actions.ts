@@ -30,14 +30,14 @@ export async function mutateAcademy(command:Command,input:unknown):Promise<Mutat
     return {ok:true,data};
   } catch { return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'}; }
 }
-const searchInput = z.object({query:z.string().max(160).default(''),page:z.number().int().min(1).max(100000).default(1),kind:z.enum([...kinds,'PROGRAMME']).optional(),includeInactive:z.boolean().default(false),division:databaseId.optional()});
+const searchInput = z.object({query:z.string().max(160).default(''),page:z.number().int().min(1).max(100000).default(1),responsibility:z.enum(['','STUDENT','GUARDIAN','STAFF','TEACHER','REFERRER']).default(''),kind:z.enum([...kinds,'PROGRAMME']).optional(),includeInactive:z.boolean().default(false),division:databaseId.optional()});
 export async function searchAcademy(target:'people'|'directory'|'programmes'|'runs',input:unknown) {
   if(!['people','directory','programmes','runs'].includes(target)) throw new Error('Invalid search.');
   const value=searchInput.parse(input),context=await academyContext();
   const permission=target==='people'?'people.view':target==='directory'?'directory.view':'academics.view';
   if(!context?.permissions.includes(permission)) throw new Error('Search access denied.');
   const db=await academyClient();
-  if(target==='people') { const {data,error}=await db.rpc('search_people',{p_query:value.query,p_page:value.page});if(error)throw Error('Search failed. Please retry.');return pageSchema(personListRow).parse(data); }
+  if(target==='people') { const {data,error}=await db.rpc('search_people_by_role',{p_query:value.query,p_page:value.page,p_responsibility:value.responsibility});if(error)throw Error('Search failed. Please retry.');return pageSchema(personListRow).parse(data); }
   if(target==='directory') { if(!value.kind||value.kind==='PROGRAMME')throw Error('Choose a directory.');const {data,error}=await db.rpc('search_directory',{p_kind:value.kind,p_query:value.query,p_page:value.page,p_include_inactive:value.includeInactive});if(error)throw Error('Search failed. Please retry.');return pageSchema(directoryListRow).parse(data); }
   if(target==='programmes') {const {data,error}=await db.rpc('search_programme_definitions',{p_query:value.query,p_page:value.page});if(error)throw Error('Search failed. Please retry.');return pageSchema(programmeRow).parse(data);}
   const {data,error}=await db.rpc('list_current_programmes',{p_query:value.query,p_page:value.page,p_division_id:value.division});if(error)throw Error('Search failed. Please retry.');return pageSchema(runListRow).parse(data);
