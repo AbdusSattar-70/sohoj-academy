@@ -27,3 +27,13 @@ Publication requires tuition settings; opening applications requires an active b
 Isolated fixture 02 passed: adult course without school context, missing-fee publication rejection, invalid discounts, idempotent fees/run saves, one-seat capacity denial, scoped catalogue, inactive visibility, multiple active years, class-scope checks and audit/privilege boundaries. Foundation fixture still passes; generated/source parity passes. Hosted concurrency/browser not tested.
 
 **Still pending:** connected People/directory/programme UI and verified account integration, public CRM adapter, admission/collection/enrollment orchestration, academic record workflows and simple financial reports. This is backend catalogue implementation, not a ready-to-reset full app. No live DB mutation. The temporarily generated file names reflect dependency sequence; final baseline will be consolidated at complete cutover.
+
+## People / directory UI integration — ৫ অক্টোবর ২০২৬
+
+Added temporary `/academy` workspace with authenticated, permission-scoped People, directory and programme-definition screens. People has one identity/multiple responsibilities, full correction and active/inactive controls. Directory covers schools/areas/subjects and shared choices with source verification and retained history. Programme definitions support create/edit/inactive; offering/fees/batch UI is still pending. Search is paginated (25 rows). Forms open on demand, close on success, preserve inputs on validation failure and show pending state. Inline directory creation auto-selects the saved record. Uncertain network results retry the same request ID instead of sending another mutation.
+
+Verified account lookup uses Auth getUser; RPC contracts are generated from the staged SQL. Person responsibilities never grant account permissions. The new screens need a disposable project with the staged fresh schema and initialized admin. They do not operate against the inherited project's schema. Do not run the normal old migration set together with this foundation. The temporary route is removed/replaced at final cutover; it is not a second permanent ERP.
+
+Checks: new workspace TypeScript check and existing isolated SQL regression/seed fixtures passed. Full repository build, browser acceptance and hosted deployment are not claimed. No live database mutation.
+
+Next: offering/fees/batches editor; public CRM adapter; one-page admission/billing/payment/printing; academic workflows and simple income/expense reports; final single-schema cutover and reset/bootstrap instructions.

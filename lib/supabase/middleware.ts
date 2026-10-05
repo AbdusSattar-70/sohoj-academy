@@ -33,9 +33,10 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  if (!user && (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname === "/academy" || request.nextUrl.pathname.startsWith("/academy/"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/sign-in";
+    if(request.nextUrl.pathname.startsWith("/academy")) { url.search = ""; url.searchParams.set("next",request.nextUrl.pathname); }
     return NextResponse.redirect(url);
   }
 

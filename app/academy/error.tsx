@@ -1,0 +1,3 @@
+'use client';
+import {useWords} from '@/modules/academy/components/common';
+export default function ErrorPage({reset}:{reset:()=>void}){const t=useWords();return <section className="m-6 rounded-xl border p-6"><h1 className="text-xl font-semibold">{t('Workspace unavailable','কর্মক্ষেত্র খোলা যায়নি')}</h1><p className="my-4">{t('Retry if the connection failed. This development workspace requires the fresh schema and an assigned academy account. Follow the delivery-status document before installation.','সংযোগ সমস্যায় আবার চেষ্টা করুন। নতুন schema ও অনুমোদিত academy account প্রয়োজন। স্থাপনের আগে delivery-status নির্দেশনা পড়ুন।')}</p><button className="rounded-lg border p-3" onClick={reset}>{t('Retry','আবার চেষ্টা')}</button></section>}

@@ -78,7 +78,7 @@ declare academy uuid:=public.require_operation('directory.view'); needle text:=b
 begin
  if p_page is null or p_page<1 or p_page>100000 or needle is null or length(needle)>160 then raise exception 'Choose a valid search/page.'; end if;
  if p_include_inactive and not public.can_operate('directory.manage') then raise exception 'Inactive entries require management access.' using errcode='42501'; end if;
- with matched as(select id,code,name,name_bn,kind,locality,institution_type,eiin,is_verified,is_active,revision,sort_order from public.directory_entries
+ with matched as(select id,code,name,name_bn,kind,locality,institution_type,eiin,source_url,verified_on,is_verified,is_active,revision,sort_order from public.directory_entries
   where academy_id=academy and kind=p_kind and (is_active or p_include_inactive) and (needle='' or position(lower(needle) in normalized_name)>0 or position(needle in coalesce(name_bn,''))>0)),
  paged as(select * from matched order by sort_order,name,id limit 25 offset (p_page-1)*25)
  select jsonb_build_object('total',(select count(*) from matched),'page',p_page,'pageSize',25,

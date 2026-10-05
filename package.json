@@ -11,7 +11,9 @@
     "check": "pnpm lint && pnpm typecheck && pnpm build",
     "seed:demo": "supabase db push --include-seed",
     "db:baseline": "node scripts/build-refactor-baseline.mjs",
-    "db:baseline:check": "node scripts/build-refactor-baseline.mjs --check"
+    "db:baseline:check": "node scripts/build-refactor-baseline.mjs --check",
+    "db:rpc-types": "node scripts/generate-academy-rpc-types.mjs",
+    "db:rpc-types:check": "node scripts/generate-academy-rpc-types.mjs --check"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -58,7 +58,9 @@ export default function SignInPage() {
       return;
     }
 
-    window.location.assign(ROUTES.DASHBOARD);
+    const next = new URLSearchParams(window.location.search).get("next");
+    const allowed = ["/academy", "/academy/people", "/academy/directory", "/academy/programmes"];
+    window.location.assign(next && allowed.includes(next) ? next : ROUTES.DASHBOARD);
   };
 
   return (
