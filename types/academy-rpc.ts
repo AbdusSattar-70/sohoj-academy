@@ -48,6 +48,7 @@ export type AcademyDatabase = {
       access_setup_request: { Args: { p_request_id: string }; Returns: Json };
       search_people_by_role: { Args: { p_query?: string; p_page?: number; p_responsibility?: string }; Returns: Json };
       protect_current_account_identity: { Args: Record<string, never>; Returns: unknown };
+      search_academic_years: { Args: { p_page?: number }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

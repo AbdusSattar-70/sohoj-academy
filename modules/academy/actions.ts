@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { academyClient } from './client';
 import { academyContext } from './queries';
-import { commandSchemas, pageSchema,personListRow,directoryListRow,programmeRow,runListRow,setupSchema,personSchema,kinds } from './schema';
+import { commandSchemas, pageSchema,personListRow,directoryListRow,programmeRow,runListRow,setupSchema,personSchema,kinds,choicesSchema,yearRow } from './schema';
 import type { Command } from './schema';
 import type { Json } from '@/types/academy-rpc';
 export type MutationResult = {ok:true;data:Json} | {ok:false;code:'invalid'|'permission'|'conflict'|'unavailable';message:string;fields?:Record<string,string>};
@@ -59,4 +59,14 @@ export async function findPersonMatches(input:unknown) {
  const {data,error}=await (await academyClient()).rpc('find_person_matches',{p_input:value});
  if(error)throw Error('Matching is unavailable.');
  return z.array(personListRow).parse(data);
+}
+
+export async function fetchSetupChoices(){
+ if(!(await academyContext())?.permissions.includes('academics.view'))throw Error('Access denied.');
+ const {data,error}=await (await academyClient()).rpc('academy_setup_choices');if(error)throw Error('Could not load setup choices.');return choicesSchema.parse(data);
+}
+export async function fetchAcademicYears(page=1){
+ z.number().int().min(1).max(100000).parse(page);
+ if(!(await academyContext())?.permissions.includes('directory.view'))throw Error('Access denied.');
+ const {data,error}=await (await academyClient()).rpc('search_academic_years',{p_page:page});if(error)throw Error('Could not load academic years.');return pageSchema(yearRow).parse(data);
 }

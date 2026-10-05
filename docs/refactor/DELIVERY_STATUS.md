@@ -2,16 +2,16 @@
 
 ## Current fresh project
 - One application: public CRM + `/dashboard` ERP. No `/academy` preview.
-- One schema: modular SQL source, generated `supabase/migrations/01…10`. Legacy chain/seed/types/modules/docs removed; reference only on master.
+- One schema: modular SQL source, generated `supabase/migrations/01…11`. Legacy chain/seed/types/modules/docs removed; reference only on master.
 - Foundation: academy, divisions, verified Auth bootstrap, roles/permissions, immutable audit, retry/stale guards.
 - People identity/responsibilities: edit existing identities, active/inactive guard, role-tab paginated search; staff/referrers enter through reviewed access requests. Responsibility is not login permission.
 - Directory: shared dropdown records with school source verification, inline create/select, edit/inactive and search.
-- Programme definitions: editable UI. Offering/fees/batch/year backend and public catalogue implemented; starter/current offering edit, fees/discounts and existing batch edit UI added; creation and subject/context editors pending.
+- Programme definitions: editable UI. Offering creation/context/subjects/public copy, initial and current fee components/discounts, batch creation/edit/inactive and multiple academic-year management are available in one Academics setup workspace. Public catalogue uses those same records.
 - Public CRM visual design retained. Catalogue and public form use fresh RPCs. Applications stored as unverified JSON preferences without programme/class placement constraints or Student FK.
 - Public submission acknowledgement and staff enquiry list connected. No student account required.
 
 ## Remaining implementation
-1. New offering/batch creation, subject/context editing and academic-year UI; verified guardian relationship UI.
+1. Verified guardian relationship UI and one-page admission identity/placement.
 2. Enquiry follow-up/correction/conversion and one-page direct/existing-student admission with physical paper consent.
 3. Atomic invoice/discount/payment/receipt/enrollment workflow and print documents.
 4. Teacher/student attendance, assessments/questions/progress, routine/session.
@@ -39,3 +39,10 @@ Grouped desktop collapsible sidebar, accessible mobile navigation, current-route
 People no longer offers generic creation; database commands also reject a generic new Person. Student/guardian creation belongs to upcoming admission. Public staff/referrer access requests remain unverified claims. Admin-only paginated review matches existing identities and confirms new-person creation, then grants the permitted login role and sends secure setup instructions. Repeated request/review/setup reuses the same identity/account; shared contacts never auto-merge. Server-only invitation configuration is documented in Settings & Help. Email delivery/hosted Auth acceptance has not been executed.
 
 Verification for migration 10: isolated PostgreSQL-compatible checks passed for no public Person/access creation, request deduplication/no overwrite, review/setup retry identity reuse, first-sign-in activation, responsibility filtering, rejected generic creation and anonymous review denial. Production compile/TypeScript passed; browser/mobile visual acceptance and hosted email delivery remain local acceptance tasks.
+
+## Offering setup completion
+Create offering → set standard fees/discounts → create batch → publish/open applications stays on `/dashboard/offerings`. Missing programme/subject/year can be created and selected inline; year management opens only when requested and supports several active years. Title/code are optional generated defaults. School uses Play–8, Coaching 9–12 and Training course dates without class/year.
+Public copy/date fields now persist on creation; English/Bangla copy are editable. Fees can be configured for a new offering with tuition/admission defaults, optional exam/material/other components and explicit allowed discounts; blank amounts are not silently zero. Batch edit preserves occupancy constraints and blocks deactivation of occupied or last intake batch. Context can be corrected before any placement history; later history locks context. Run-before-batch locking serializes context edit versus seat assignment. No posted financial history exists in this branch yet.
+Isolated PostgreSQL-compatible checks passed: create/retry, public copy/dates, subjects/setup metadata, first fee plan, batch, public publication, empty-context correction, historical-context lock, last-batch intake guard and multiple active years. TypeScript passed; browser/print and hosted acceptance remain local tasks.
+
+Production build passed for the completed setup workspace. Local hosted/browser acceptance and end-to-end admission remain pending.

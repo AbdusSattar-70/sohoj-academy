@@ -15,6 +15,7 @@ const sources = [
   ['08_persistent_starter_setup.sql', 'setup/08_persistent_starter_setup.sql'],
   ['09_people_identity_matching.sql', 'people/09_people_identity_matching.sql'],
   ['10_access_requests_and_identity_entry.sql', 'people/10_access_requests_and_identity_entry.sql'],
+  ['11_offering_setup_and_history_guards.sql', 'academics/11_offering_setup_and_history_guards.sql'],
 ];
 const check = process.argv.includes('--check');
 if (process.argv.some(arg => arg.startsWith('--') && arg !== '--check')) throw Error('Unknown option');

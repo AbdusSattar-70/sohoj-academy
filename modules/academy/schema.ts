@@ -45,8 +45,11 @@ export const runRow = z.object({id,academy_id:id,division_id:id,campus_id:id,pro
 export type Run = z.infer<typeof runRow>;
 export const runListRow = runRow.extend({division_name:z.string(),division_code:z.string(),programme_name:z.string(),campus_name:z.string(),active_batches:z.number()});
 export const feeComponent = z.object({id,code:z.string(),name:z.string(),amount:z.number(),charge_type:z.enum(['TUITION','ADMISSION','EXAM','MATERIAL','OTHER']),recurrence:z.enum(['PER_CYCLE','ONE_TIME']),is_active:z.boolean()});
-export const setupSchema = z.object({run:runRow,feeSettings:z.object({run_id:id,cycle:z.enum(['MONTHLY','TERM','COURSE']),due_day:z.number(),allowed_discounts:z.array(z.number()),revision:z.number()}).nullable(),components:z.array(feeComponent),subjectIds:z.array(id),batchPage:z.number(),batchPageSize:z.number(),batchTotal:z.number(),batches:z.array(z.object({id,run_id:id,code:z.string(),name:z.string(),capacity:z.number(),occupied:z.number(),is_active:z.boolean(),revision:z.number()}))});
+export const setupSchema = z.object({run:runRow,programmeName:z.string(),contextLocked:z.boolean(),subjects:z.array(choiceSchema.extend({is_active:z.boolean()})),feeSettings:z.object({run_id:id,cycle:z.enum(['MONTHLY','TERM','COURSE']),due_day:z.number(),allowed_discounts:z.array(z.number()),revision:z.number()}).nullable(),components:z.array(feeComponent),subjectIds:z.array(id),batchPage:z.number(),batchPageSize:z.number(),batchTotal:z.number(),batches:z.array(z.object({id,run_id:id,code:z.string(),name:z.string(),capacity:z.number(),occupied:z.number(),is_active:z.boolean(),revision:z.number()}))});
 export type RunSetup = z.infer<typeof setupSchema>;
 export const choicesSchema = z.object({divisions:z.array(z.object({id,code:z.string(),name:z.string(),nameBn:z.string()})),campuses:z.array(choiceSchema),years:z.array(z.object({id,name:z.string(),starts_on:z.string(),ends_on:z.string(),is_active:z.boolean(),revision:z.number()})),classes:z.array(z.object({code:z.string(),name:z.string(),nameBn:z.string()}))});
 export type SetupChoices = z.infer<typeof choicesSchema>;
 export function pageSchema<T extends z.ZodType>(row:T) { return z.object({total:z.number().int().nonnegative(),page:z.number().int().positive(),pageSize:z.number().int().positive(),rows:z.array(row)}); }
+
+export const yearRow=z.object({id,name:z.string(),starts_on:z.string(),ends_on:z.string(),is_active:z.boolean(),revision:z.number()});
+export type AcademicYear=z.infer<typeof yearRow>;

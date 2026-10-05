@@ -48,3 +48,8 @@ No statutory/full-balance-sheet accounting claim। Same summaries use database 
 ## Workspaces
 Admin Today shows action links/counts। Teacher My day shows classes, attendance/tasks, review feedback, hours, remuneration paid/due, referral summary। Referrer sees only own permitted referral financial statement। Each workspace scoped; data from another user's unrelated records never exposed।
 
+
+## Offering setup-এর বর্তমান interface
+Academics → Offerings, batches & standard fees (`/dashboard/offerings`) → Create offering। Operation নির্বাচন করলে উপযুক্ত class/year দেখাবে; Training-এ class/year লাগবে না। Programme বা subject না থাকলে একই form-এ যোগ করে নির্বাচন করুন। Year না থাকলে inline create; আগে থাকা year edit/inactive করতে উপরের Academic years button।
+Offering save → standard tuition ও প্রয়োজনীয় চার্জ, billing cycle এবং allowed discount tick → Save → batch name ও capacity → Save → Next: publish/open applications। Code/title না লিখলে system তৈরি করবে। Academic context ভুল হলে placement history তৈরি হওয়ার আগে edit করা যায়; ইতিহাস থাকলে নতুন offering প্রয়োজন।
+Batch inactive করতে active enrollment আগে স্থানান্তর/বন্ধ করতে হবে (admission implementation pending)। শেষ batch হলে আগে offering-এ application intake বন্ধ করুন। Multiple academic years active রাখা যায়। History delete নয়।
