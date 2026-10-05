@@ -54,6 +54,9 @@ export type AcademyDatabase = {
       claim_academic_emails: { Args: Record<string, never>; Returns: Json };
       finish_academic_email: { Args: { p_id: string; p_lease: string; p_provider_id: string; p_error: string }; Returns: undefined };
       academic_resource_setup: { Args: Record<string, never>; Returns: Json };
+      guard_session_teacher_and_blocks: { Args: Record<string, never>; Returns: unknown };
+      save_academic_resource: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
+      academic_resource_register: { Args: { p_page?: number }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

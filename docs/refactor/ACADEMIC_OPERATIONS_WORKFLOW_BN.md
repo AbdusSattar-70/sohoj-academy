@@ -61,3 +61,8 @@ pnpm dev
 ```
 Reset প্রয়োজন নেই যদি আগের branch-এর 01–11 migrations ইতোমধ্যে আছে। অন্য schema/migration history থাকলে আগে docs/SETUP.md অনুসরণ করুন; migration repair দিয়ে বাস্তবে না থাকা schema-কে applied বলবেন না।
 Email provider-এর নির্দেশনা: https://resend.com/docs/api-reference/emails/send-email এবং https://resend.com/changelog/idempotency-keys । Scheduler চালু না থাকলে queue-তেই message থাকবে। Setup-এর পর নিজের সম্মত test contact দিয়ে hosted delivery যাচাই করুন।
+
+## Teacher qualification ও অনুপলব্ধ সময়
+Class sessions-এর নিচে **Teacher qualifications & unavailable dates → Open register** খুলুন। **Assign subject** থেকে teacher ও subject নির্বাচন করে যোগ্যতা নিশ্চিত করুন। Active qualification ছাড়া ওই বিষয় শিক্ষককে assign করা যাবে না। ভবিষ্যৎ class থাকলে qualification inactive করার আগে substitute দিন অথবা class cancel করুন।
+
+**Add unavailable period** থেকে Teacher অথবা Classroom বেছে বাংলাদেশ সময়ে শুরু/শেষ দিন। নির্দিষ্ট দিনের ছুটি, maintenance বা অন্য ব্যবহার এভাবে আটকানো যায়। একই সময় class থাকলে আগে reschedule/cancel করুন। সময় সংশোধন অথবা inactive করতে তালিকার **Edit / inactive** ব্যবহার করুন। পরিবর্তনে ঐতিহাসিক approved teaching report বদলাবে না। পুরোনো teacher-দের qualification অনুমান করে তৈরি করা হয়নি; পরবর্তী class তৈরির আগে admin যাচাই করবেন।
