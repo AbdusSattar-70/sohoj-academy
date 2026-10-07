@@ -34,10 +34,10 @@ export const choiceSchema = z.object({id,name:z.string(),name_bn:z.string().null
 export type Choice = z.infer<typeof choiceSchema>;
 export const directoryRow = directoryInput.omit({request_id:true,reason:true,id:true}).extend({id,revision:z.number(),code:z.string(),name_bn:z.string().nullable(),institution_type:z.string().nullable(),eiin:z.string().nullable()});
 // Read contracts are distinct from full editor inputs; optional persisted fields may be null.
-export const personSchema = z.object({id,person_no:z.number(),full_name:z.string(),full_name_bn:z.string().nullable(),mobile:z.string().nullable(),email:z.string().nullable(),date_of_birth:z.string().nullable(),
+export const personSchema = z.object({id,person_no:z.number(),staff_no:z.number().nullable().default(null),referrer_no:z.number().nullable().default(null),full_name:z.string(),full_name_bn:z.string().nullable(),mobile:z.string().nullable(),email:z.string().nullable(),date_of_birth:z.string().nullable(),
  present_address:z.record(z.string(),z.unknown()),permanent_address:z.record(z.string(),z.unknown()),is_active:z.boolean(),revision:z.number(),responsibilities:z.array(z.enum(responsibilities))});
 export type Person = z.infer<typeof personSchema>;
-export const personListRow = personSchema.pick({id:true,person_no:true,full_name:true,mobile:true,email:true,is_active:true,revision:true});
+export const personListRow = personSchema.pick({id:true,person_no:true,staff_no:true,referrer_no:true,full_name:true,mobile:true,email:true,is_active:true,revision:true});
 export const directoryListRow = z.object({id,code:z.string(),name:z.string(),name_bn:z.string().nullable(),kind:z.enum(kinds),locality:z.string(),institution_type:z.string().nullable(),eiin:z.string().nullable(),source_url:z.string().nullable(),verified_on:z.string().nullable(),is_verified:z.boolean(),is_active:z.boolean(),revision:z.number(),sort_order:z.number()});
 export type DirectoryEntry = z.infer<typeof directoryListRow>;
 export const programmeRow = z.object({id,name:z.string(),name_bn:z.string().nullable(),programme_type_id:id,is_active:z.boolean(),revision:z.number()});

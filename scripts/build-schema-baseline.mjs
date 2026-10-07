@@ -22,6 +22,7 @@ const sources = [
   ['15_qualification_query_scope.sql', 'academics/15_qualification_query_scope.sql'],
   ['16_focused_academic_reads.sql', 'academics/16_focused_academic_reads.sql'],
   ['17_staff_identity.sql', 'people/17_staff_identity.sql'],
+  ['18_role_identity_display.sql', 'people/18_role_identity_display.sql'],
 ];
 const check = process.argv.includes('--check');
 if (process.argv.some(arg => arg.startsWith('--') && arg !== '--check')) throw Error('Unknown option');

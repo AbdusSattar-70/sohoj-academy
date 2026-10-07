@@ -12,6 +12,15 @@ do $$ declare academy uuid; person uuid; number bigint; result jsonb; begin
  select staff_no into number from public.people where id=person;
  if number is null then raise exception 'Teacher staff ID missing'; end if;
  insert into public.person_responsibilities values(person,academy,'STAFF',true);
+ insert into public.person_responsibilities values(person,academy,'REFERRER',true);
+ if (select referrer_no from public.people where id=person) is null then raise exception 'Referrer ID missing'; end if;
+ result:=public.search_people_by_role('SA-STF-'||lpad(number::text,5,'0'),1,'TEACHER');
+ if (result->>'total')::int<>1 or result->'rows'->0->>'staff_no' is null or result->'rows'->0->>'referrer_no' is null then raise exception 'Role identity search failed'; end if;
+ begin
+  update public.people set referrer_no=referrer_no+100 where id=person;
+  raise exception 'Referrer ID rewrite unexpectedly accepted';
+ exception when others then if sqlerrm<>'Referrer identity cannot be changed.' then raise; end if; end;
+ if has_sequence_privilege('authenticated','public.referrer_identity_number','USAGE') then raise exception 'Client can issue referrer IDs'; end if;
  update public.person_responsibilities set is_active=false where person_id=person;
  update public.people set full_name='Renamed teacher',is_active=false where id=person;
  if (select staff_no from public.people where id=person) is distinct from number then raise exception 'Staff ID changed'; end if;
