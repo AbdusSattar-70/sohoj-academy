@@ -60,6 +60,8 @@ export type AcademyDatabase = {
       academic_session_register: { Args: { p_page?: number }; Returns: Json };
       academic_operation_choices: { Args: { p_section?: string }; Returns: Json };
       academic_settings_register: { Args: { p_section: string; p_page?: number }; Returns: Json };
+      assign_staff_identity: { Args: Record<string, never>; Returns: unknown };
+      protect_staff_identity: { Args: Record<string, never>; Returns: unknown };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
