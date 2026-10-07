@@ -69,6 +69,12 @@ export type AcademyDatabase = {
       academic_session_detail: { Args: { p_id: string }; Returns: Json };
       academic_routine_register: { Args: { p_page?: number }; Returns: Json };
       manage_academic_routine: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
+      academic_batch_roster: { Args: { p_batch: string; p_on: string }; Returns: Json };
+      academic_session_work: { Args: { p_id: string }; Returns: Json };
+      save_academic_session_work: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
+      academic_teaching_summary: { Args: { p_from: string; p_through: string }; Returns: Json };
+      change_student_batch: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
+      academic_placement_register: { Args: { p_batch: string; p_page?: number }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

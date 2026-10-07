@@ -70,3 +70,28 @@ export async function saveAcademicRoutine(input:unknown){
  const {error}=await(await academyClient()).rpc('manage_academic_routine',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});
  return error?{ok:false,message:error.message}:{ok:true,message:'Routine saved. Existing session history is preserved.'};
 }
+
+export async function loadClassWork(id:string){
+ if(!await verifiedAcademyUser())throw Error('Please sign in again.');
+ const {data,error}=await(await academyClient()).rpc('academic_session_work',{p_id:id});if(error)throw Error(error.message);return data;
+}
+export async function saveClassWork(input:unknown){
+ const parsed=envelope.safeParse(input);if(!parsed.success)return{ok:false,message:'Check class work input.'};
+ if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
+ const {error}=await(await academyClient()).rpc('save_academic_session_work',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});
+ return error?{ok:false,message:error.message}:{ok:true,message:'Class work saved.'};
+}
+export async function loadTeachingHours(from:string,through:string){
+ if(!await verifiedAcademyUser())throw Error('Please sign in again.');
+ const {data,error}=await(await academyClient()).rpc('academic_teaching_summary',{p_from:from,p_through:through});if(error)throw Error(error.message);return data;
+}
+export async function loadPlacements(batchId:string,page=1){
+ if(!await verifiedAcademyUser())throw Error('Please sign in again.');
+ const {data,error}=await(await academyClient()).rpc('academic_placement_register',{p_batch:batchId,p_page:page});if(error)throw Error(error.message);return data;
+}
+export async function savePlacement(input:unknown){
+ const parsed=envelope.safeParse(input);if(!parsed.success)return{ok:false,message:'Check placement input.'};
+ if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
+ const {error}=await(await academyClient()).rpc('change_student_batch',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});
+ return error?{ok:false,message:error.message}:{ok:true,message:'Student placement saved.'};
+}
