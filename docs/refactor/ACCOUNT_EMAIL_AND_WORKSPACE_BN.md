@@ -33,3 +33,9 @@ Sidebar-এর উপরের workspace card থেকে switch করুন�
 ## যাচাইয়ের সীমা
 
 Auth transport mocked regression দিয়ে new invite, existing recovery, race recovery, provider failures এবং unsafe identity link rejection যাচাই পাস করেছে (`node scripts/check-account-setup.mjs`)। Typecheck ও production build-ও পাস করেছে। Live SMTP credentials বা বাস্তব recipient delivery repository থেকে নিশ্চিত করা যায় না; ব্যবহারকারীর environment-এ configuration check এবং row feedback দিয়ে নির্দিষ্ট কারণ ধরা যাবে।
+
+## Master-এর default email configuration parity
+
+Server-only `SUPABASE_SECRET_KEY` অথবা `SUPABASE_SERVICE_ROLE_KEY` গ্রহণ করা হয়। দুটোই থাকলে nonempty secret key আগে ব্যবহার হবে। Publishable/anon key, ভুল project-এর legacy service JWT ও placeholder প্রত্যাখ্যান করা হয়। Secret key-এর project validity configuration check-এ Auth server যাচাই করে।
+
+Application আলাদা SMTP provider বাধ্যতামূলক করে না। Supabase project-এ custom SMTP না থাকলে একই invitation/recovery API default email service ব্যবহার করবে, master-এর মতো। তবে default recipient restriction ও বর্তমান ঘণ্টায় ২টি project-wide email limit বজায় থাকে; registered app user নিজে থেকে Supabase organization team member হন না। App ওই সীমা বাড়াতে বা bypass করতে পারে না। বাস্তব recipient delivery এই পরিবর্তনে যাচাই করা হয়নি।

@@ -24,11 +24,17 @@ export async function reviewRequest(input:unknown){
  try{await requireAcademyPermission('access.manage');const {data,error}=await (await academyClient()).rpc('review_access_request',{p_input:parsed.data});if(error)return {ok:false,message:error.message};revalidatePath('/dashboard','layout');return {ok:true,message:'Review saved.',data:accessRow.parse(data)};}catch{return {ok:false,message:'Review could not be confirmed. Retry the unchanged request.'};}
 }
 function emailClient(){
- const key=process.env.SUPABASE_SERVICE_ROLE_KEY?.trim(),url=process.env.NEXT_PUBLIC_SUPABASE_URL?.trim(),site=process.env.NEXT_PUBLIC_SITE_URL?.trim();
+ const key=process.env.SUPABASE_SECRET_KEY?.trim()||process.env.SUPABASE_SERVICE_ROLE_KEY?.trim(),url=process.env.NEXT_PUBLIC_SUPABASE_URL?.trim(),site=process.env.NEXT_PUBLIC_SITE_URL?.trim();
  if(!key||!url||!site)return {ok:false as const,feedback:{ok:false,message:'Account setup email is not configured. Check the server environment and restart the application.',messageBn:'Account setup email configuration নেই। Server environment যাচাই করে application restart করুন।',code:'configuration_missing'}};
  let origin:URL,project:URL;
  try{origin=new URL(site);project=new URL(url);if(!['http:','https:'].includes(origin.protocol)||!['http:','https:'].includes(project.protocol)||origin.username||origin.password||project.username||project.password)throw Error();}
  catch{return {ok:false as const,feedback:{ok:false,message:'Configure valid HTTP/HTTPS project and site origins.',messageBn:'Project ও site-এর সঠিক HTTP/HTTPS origin দিন।',code:'configuration_invalid'}};}
+ // Match master's server-key support and reject public/wrong-project credentials before sending.
+ if(key.startsWith('sb_publishable_')||key.includes('YOUR_')||/\s/.test(key))return {ok:false as const,feedback:setupError({code:'not_admin',status:401})};
+ if(!key.startsWith('sb_secret_')){
+  try{const claims=JSON.parse(Buffer.from(key.split('.')[1]??'','base64url').toString());if(claims.role!=='service_role'||(claims.ref&&project.hostname.endsWith('.supabase.co')&&claims.ref!==project.hostname.split('.')[0]))throw Error();}
+  catch{return {ok:false as const,feedback:setupError({code:'not_admin',status:401})};}
+ }
  return {ok:true as const,admin:createClient(url,key,{auth:{autoRefreshToken:false,persistSession:false,flowType:'implicit'},global:{fetch:boundedFetch}}),redirectTo:new URL('/auth/update-password',origin.origin).href};
 }
 export async function checkAccountSetup():Promise<SetupFeedback>{
@@ -48,7 +54,7 @@ export async function sendSetup(id:string):Promise<SetupFeedback>{
   const row=accessRow.parse(request);
   return await deliverReviewedSetup({
    link:async()=>{const result=await db.rpc('complete_access_setup',{p_request_id:id});return {data:result.data,error:result.error};},
-   invite:()=>config.admin.auth.admin.inviteUserByEmail(row.email,{redirectTo:config.redirectTo}),
+   invite:()=>config.admin.auth.admin.inviteUserByEmail(row.email,{redirectTo:config.redirectTo,data:{full_name:row.full_name}}),
    recover:()=>config.admin.auth.resetPasswordForEmail(row.email,{redirectTo:config.redirectTo}),
   });
  }catch{return setupError({code:'request_timeout'});}
