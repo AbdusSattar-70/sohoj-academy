@@ -14,7 +14,7 @@ export const personInput = z.object({ ...request,...edit,full_name:text.min(2).m
  date_of_birth:emptyText,present_address:address,permanent_address:address,same_address:z.boolean(),responsibilities:z.array(z.enum(responsibilities)).max(5) });
 export const directoryInput = z.object({ ...request,...edit,kind:z.enum(kinds),code:emptyText.max(80).default(''),name:text.min(2).max(160),name_bn:emptyText.max(160).default(''),
  locality:emptyText.max(160).default(''),institution_type:z.enum(['SCHOOL','COLLEGE','MADRASA','UNIVERSITY','OTHER','']).default(''),
- eiin:emptyText.regex(/^$|^[0-9]{6}$/).default(''),source_url:emptyText.max(1000).default(''),verified_on:emptyText,is_verified:z.boolean().default(false),is_active:z.boolean().default(true),sort_order:z.number().int().default(0) });
+ eiin:emptyText.regex(/^$|^[0-9]{6}$/).default(''),source_url:emptyText.max(1000).default(''),verified_on:emptyText.default(''),is_verified:z.boolean().default(false),is_active:z.boolean().default(true),sort_order:z.number().int().default(0) });
 export const programmeInput = z.object({ ...request,...edit,name:text.min(2).max(160),name_bn:emptyText.max(160).default(''),programme_type_id:id,is_active:z.boolean().default(true) });
 export const runInput = z.object({ ...request,...edit,programme_id:id,division_id:id,campus_id:id,academic_year_id:optionalId,class_code:emptyText,
  code:emptyText.max(80).default(''),title:emptyText.max(240).default(''),starts_on:text.min(10),ends_on:text.min(10),guardian_rule:z.enum(['MINOR_REQUIRED','REQUIRED','OPTIONAL']),
@@ -28,7 +28,7 @@ export const yearInput = z.object({ ...request,...edit,name:text.min(2).max(80),
 export const activeInput = z.object({ ...request,id,revision:z.number().int().positive(),is_active:z.boolean() });
 export const commandSchemas = { person:personInput,directory:directoryInput,programme:programmeInput,run:runInput,fees:feeInput,batch:batchInput,year:yearInput,personActive:activeInput,runActive:activeInput };
 export type Command = keyof typeof commandSchemas;
-export const contextSchema = z.object({profileId:id,academyId:id,name:z.string(),academyName:z.string(),roles:z.array(z.string()),permissions:z.array(z.string()),divisions:z.array(z.object({id,name:z.string(),nameBn:z.string(),code:z.string()})).default([])});
+export const contextSchema = z.object({profileId:id,academyId:id,staffId:z.string().nullable().default(null),name:z.string(),academyName:z.string(),roles:z.array(z.string()),permissions:z.array(z.string()),divisions:z.array(z.object({id,name:z.string(),nameBn:z.string(),code:z.string()})).default([])});
 export type AcademyContext = z.infer<typeof contextSchema>;
 export const choiceSchema = z.object({id,name:z.string(),name_bn:z.string().nullable().optional(),nameBn:z.string().nullable().optional()});
 export type Choice = z.infer<typeof choiceSchema>;

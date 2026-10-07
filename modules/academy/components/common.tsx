@@ -35,17 +35,18 @@ export function Editor({title,command,read,onDone,onCancel,children}:{title:stri
  return <section data-editor="" data-dirty={dirty} data-busy={mutation.pending||mutation.uncertain} className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm"><h2 className="mb-5 text-xl font-semibold">{title}</h2>
  <errorsContext.Provider value={mutation.fields}><form onChange={()=>setDirty(true)} onSubmit={e=>{e.preventDefault();mutation.submit(read(new FormData(e.currentTarget)));}}>
  <fieldset disabled={mutation.pending||mutation.uncertain} className="grid gap-4 sm:grid-cols-2">{children}</fieldset>
- {mutation.error&&<p className="mt-4 rounded-lg border border-red-500/40 p-3 text-sm" role="alert">{t(mutation.error.message,mutation.uncertain?'ফলাফল নিশ্চিত হয়নি। তথ্য পরিবর্তন না করে একই অনুরোধ আবার পাঠান।':mutation.error.code==='conflict'?'একই তথ্যের record আছে। তালিকা থেকে সেটি নির্বাচন বা সংশোধন করুন।':'প্রয়োজনীয় তথ্য, তারিখ ও নির্বাচন যাচাই করুন। আপনার input রাখা হয়েছে।')}</p>}
- <div className="mt-5 flex flex-wrap gap-3">{mutation.uncertain?<button type="button" disabled={mutation.pending} onClick={mutation.retry} className="rounded-lg border px-4 py-2.5">{t('Retry unchanged request','একই অনুরোধ আবার পাঠান')}</button>:<button disabled={mutation.pending} className="rounded-lg bg-primary px-4 py-2.5 text-primary-foreground">{mutation.pending?t('Saving…','সংরক্ষণ হচ্ছে…'):t('Save','সংরক্ষণ')}</button>}
+ {mutation.pending&&<p role="status" className="mt-4 text-sm">{t('Saving your changes… Please wait for confirmation.','পরিবর্তন সংরক্ষণ হচ্ছে… নিশ্চিত বার্তার জন্য অপেক্ষা করুন।')}</p>}{mutation.error&&<p className="mt-4 rounded-lg border border-red-500/40 p-3 text-sm" role="alert">{t(mutation.error.message,mutation.uncertain?'ফলাফল নিশ্চিত হয়নি। তথ্য পরিবর্তন না করে একই অনুরোধ আবার পাঠান।':mutation.error.code==='conflict'?'একই তথ্যের record আছে। তালিকা থেকে সেটি নির্বাচন বা সংশোধন করুন।':'প্রয়োজনীয় তথ্য, তারিখ ও নির্বাচন যাচাই করুন। আপনার input রাখা হয়েছে।')}</p>}
+ <div className="mt-5 flex flex-wrap gap-3">{mutation.uncertain?<button type="button" disabled={mutation.pending} onClick={mutation.retry} className="rounded-lg border px-4 py-2.5">{t('Retry unchanged request','একই অনুরোধ আবার পাঠান')}</button>:<button aria-busy={mutation.pending} disabled={mutation.pending} className="rounded-lg bg-primary px-4 py-2.5 text-primary-foreground">{mutation.pending?t('Saving…','সংরক্ষণ হচ্ছে…'):t('Save','সংরক্ষণ')}</button>}
  <button type="button" disabled={mutation.pending||mutation.uncertain} className="rounded-lg border px-4 py-2.5" onClick={()=>{if(!dirty||window.confirm(t('Discard these unsaved changes?','অসংরক্ষিত পরিবর্তন বাদ দেবেন?')))onCancel();}}>{t('Cancel','বাতিল')}</button></div>
  </form></errorsContext.Provider></section>;
 }
-export function Reason({value='Verified the selected details with the person'}:{value?:string}) {
- const t=useWords();return <Field label={t('Change reason','পরিবর্তনের কারণ')} name="reason"><select id="reason" name="reason" className={inputClass} defaultValue={value} required>
- <option value={value}>{t('Confirmed the selected details','নির্বাচিত তথ্য নিশ্চিত করেছি')}</option>
- <option value="Corrected details after checking the original record">{t('Corrected the original record','মূল record যাচাই করে সংশোধন')}</option>
- <option value="Updated setup for current academy operations">{t('Updated operational setup','বর্তমান পরিচালনার জন্য হালনাগাদ')}</option>
- </select></Field>;
+export function Reason({value='Verified the selected details with the person',options}:{value?:string;options?:string[]}) {
+ const t=useWords(),[selected,setSelected]=useState(value);
+ const choices=options??[value,'Corrected details after checking the original record','Updated setup for current academy operations'];
+ return <Field label={t('Change reason','পরিবর্তনের কারণ')} name="reason"><select id="reason" name={selected==='CUSTOM'?undefined:'reason'} className={inputClass} value={selected} onChange={e=>setSelected(e.target.value)} required>
+ {[...new Set(choices)].map((choice,index)=><option key={choice} value={choice}>{options?choice:t(['Confirmed the selected details','Corrected the original record','Updated operational setup'][index]??choice,['নির্বাচিত তথ্য নিশ্চিত করেছি','মূল record যাচাই করে সংশোধন','বর্তমান পরিচালনার জন্য হালনাগাদ'][index]??choice)}</option>)}
+ <option value="CUSTOM">{t('Other — write a reason','অন্য কারণ — লিখুন')}</option></select>
+ {selected==='CUSTOM'&&<input name="reason" aria-label={t('Custom reason','নিজস্ব কারণ')} className={inputClass} required minLength={5} maxLength={1000} placeholder={t('Briefly explain the change','পরিবর্তনের কারণ সংক্ষেপে লিখুন')}/>}</Field>;
 }
 export function ValueField({name,label,value='',type='text',required=false,...rest}:{name:string;label:string;value?:string|number|null;type?:string;required?:boolean;min?:number;max?:number;step?:string;maxLength?:number}) {
  return <Field name={name} label={label}><input id={name} name={name} className={inputClass} type={type} defaultValue={value??''} required={required} {...rest}/></Field>;
