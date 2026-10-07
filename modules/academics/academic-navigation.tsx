@@ -8,7 +8,10 @@ export function AcademicNavigation({permissions,children}:{permissions:string[];
  const items=[
   {href:'/dashboard/academics',en:'Start here',bn:'এখান থেকে শুরু',show:true},
   {href:'/dashboard/academics/settings',en:'Academic settings',bn:'শিক্ষা সেটিংস',show:permissions.includes('directory.view')||permissions.includes('academics.manage')},
-  {href:'/dashboard/academics/programmes',en:'Programmes',bn:'প্রোগ্রাম',show:permissions.includes('academics.view')},
+  {href:'/dashboard/academics/programmes',en:'Programme offerings',bn:'Programme offerings',show:permissions.includes('academics.view')},
+  {href:'/dashboard/academics/fees',en:'Standard fees',bn:'নির্ধারিত ফি',show:permissions.includes('fees.manage')},
+  {href:'/dashboard/academics/batches',en:'Batches',bn:'ব্যাচ',show:permissions.includes('academics.view')},
+  {href:'/dashboard/academics/website',en:'Website & applications',bn:'Website ও আবেদন',show:permissions.includes('academics.manage')},
   {href:'/dashboard/academics/sessions',en:'Class operation',bn:'ক্লাস পরিচালনা',show:permissions.includes('academics.view')},
  ];
  useEffect(()=>{
