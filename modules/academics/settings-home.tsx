@@ -1,0 +1,8 @@
+'use client';
+import Link from 'next/link';
+import {useWords} from '@/modules/academy/components/common';
+import {academicSettingsSections} from './settings-sections';
+export function AcademicSettingsHome({permissions}:{permissions:string[]}){
+ const t=useWords();
+ return <section className="space-y-6"><header><h1 className="text-3xl font-semibold">{t('Academic settings','শিক্ষা সেটিংস')}</h1><p className="mt-2 text-sm text-muted-foreground">{t('Open one setting at a time. Existing starter choices can be reviewed and reused. Daily classes stay in Class operation.','একবারে একটি সেটিংস খুলুন। আগে থেকে দেওয়া তালিকা যাচাই করে ব্যবহার করুন। দৈনন্দিন ক্লাসের কাজ ক্লাস পরিচালনায় থাকবে।')}</p></header>{([['foundation','1. Academic foundation','১. শিক্ষার মূল তথ্য'],['teaching','2. Classroom & teacher setup','২. শ্রেণিকক্ষ ও শিক্ষক প্রস্তুতি'],['communication','3. Class communication','৩. ক্লাসের যোগাযোগ']] as const).map(([group,en,bn])=>{const items=academicSettingsSections.filter(x=>x.group===group&&permissions.includes(x.permission));return items.length?<section key={group} className="space-y-3"><h2 className="text-lg font-semibold">{t(en,bn)}</h2><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{items.map(x=><Link key={x.id} href={'/dashboard/academics/settings?section='+x.id} prefetch={false} className="rounded-xl border p-4 hover:bg-muted"><h3 className="font-medium">{t(x.en,x.bn)}</h3><p className="mt-2 text-sm text-muted-foreground">{t(x.descriptionEn,x.descriptionBn)}</p></Link>)}</div></section>:null;})}<Link prefetch={false} href="/dashboard/academics/programmes" className="inline-block rounded-lg border px-4 py-2">{t('Settings ready? Next: prepare a programme →','প্রস্তুতি শেষ? এরপর প্রোগ্রাম প্রস্তুত করুন →')}</Link></section>;
+}

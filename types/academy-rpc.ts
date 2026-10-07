@@ -57,6 +57,9 @@ export type AcademyDatabase = {
       guard_session_teacher_and_blocks: { Args: Record<string, never>; Returns: unknown };
       save_academic_resource: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       academic_resource_register: { Args: { p_page?: number }; Returns: Json };
+      academic_session_register: { Args: { p_page?: number }; Returns: Json };
+      academic_operation_choices: { Args: { p_section?: string }; Returns: Json };
+      academic_settings_register: { Args: { p_section: string; p_page?: number }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

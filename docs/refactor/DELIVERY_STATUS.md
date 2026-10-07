@@ -55,3 +55,11 @@ Unified workspace verification: complete route/type generation and production bu
 
 ## Academic operations branch
 `feature/academic_operations` adds migrations 12–13, `/dashboard/academics/sessions`, resource availability, dated sessions, bounded weekday routines, closures, teacher report review and a leased notification outbox. See [Bangla operator guide](ACADEMIC_OPERATIONS_WORKFLOW_BN.md) for exact scope and unfinished extensions. Hosted email delivery needs provider configuration and a scheduler; no live email was sent during verification.
+
+
+## Focused academic navigation and reads
+Current routes supersede the earlier all-in-one tabbed workspace: `/dashboard/academics` is a guided start page; settings, programmes and class operation have separate routes. Settings loads only the chosen section. The start page and settings menu do not fetch academic registers; authentication and academy permission checks remain. Programme registers initialize once, including development effect replay. Class lists use migration 16's session-only RPC; scheduling choices load only when a scheduling form opens. Settings registers are paginated, and notification contacts remain admin-only.
+
+Teacher qualification and dated unavailability controls are implemented by migrations 14–15. Student attendance and routine edit/inactive remain pending; the latest direction prioritizes simple navigation before those extensions. Saving no longer invalidates the entire dashboard layout. Public catalogue edits invalidate the public pages while editors explicitly refresh their own register. See [Bangla navigation guide](ACADEMIC_NAVIGATION_AND_LOADING_BN.md).
+
+Focused navigation verification: production build, TypeScript, targeted ESLint and schema/RPC parity checks passed. Isolated SQL checks covered task-only payloads, 25-row pagination, teacher-only session visibility and denied teacher/anonymous settings reads; existing programme/class/notification fixtures also passed. Hosted browser performance and live email delivery were not measured.

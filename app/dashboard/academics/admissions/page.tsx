@@ -1,0 +1,4 @@
+import Link from 'next/link';
+import {requireAcademyPermission} from '@/modules/academy/queries';
+import {LocalizedText} from '@/components/shared/localized-text';
+export default async function Page(){await requireAcademyPermission('people.view');return <section className="space-y-4"><h1 className="text-2xl font-semibold"><LocalizedText en="Admissions" bn="ভর্তি"/></h1><p><LocalizedText en="The single-page admission desk is not implemented in this fresh version yet. Public submissions remain in the enquiry queue." bn="এই নতুন সংস্করণে এক পাতায় ভর্তি ডেস্ক এখনো তৈরি হয়নি। ওয়েবসাইটের আবেদন অনুসন্ধান তালিকায় রয়েছে।"/></p><Link href="/dashboard/enquiries" prefetch={false} className="underline"><LocalizedText en="Review enquiries and applications →" bn="অনুসন্ধান ও আবেদন দেখুন →"/></Link></section>;}

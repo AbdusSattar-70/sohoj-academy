@@ -26,7 +26,11 @@ export async function mutateAcademy(command:Command,input:unknown):Promise<Mutat
       return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'};
     }
     if(data===null) return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'};
-    revalidatePath('/dashboard','layout');
+    // Editors refresh their own register. Avoid rerendering every ERP workspace.
+    if(['directory','programme','run','fees','batch','year','runActive'].includes(command)){
+      revalidatePath('/');
+      revalidatePath('/interest');
+    }
     return {ok:true,data};
   } catch { return {ok:false,code:'unavailable',message:'The result could not be confirmed. Retry the unchanged request.'}; }
 }

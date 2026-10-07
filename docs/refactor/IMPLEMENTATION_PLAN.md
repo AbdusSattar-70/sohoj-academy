@@ -42,3 +42,7 @@ Start phase 1: dependency map and fresh schema foundation, then phase 2 director
 
 ## Current immediate direction
 Unified Academics navigation and reviewed staff/referrer signup now precede admission. Offering creation/context/subjects/fees/batches/year management is implemented. Next implement verified guardian relationship UI and the one-page admission desk under Academics with invoice/payment/receipt in working context. No generic Person creation; no fabricated Prospect for walk-ins. Finance remains the simple scoped model above; do not restore the old advanced finance menus.
+
+
+## Latest direction: simple academic operation
+Keep one Academics sidebar entry with separate routes for academic settings, programme preparation and daily class operation. No eager all-settings payload on the class page, and no register queries on the start/settings menu. Each screen gives its next action. Implement this before extending attendance or routine lifecycle; their planned features must not turn into additional always-open forms on the daily desk.

@@ -1,2 +1,2 @@
 import {redirect} from 'next/navigation';
-export default function Page(){redirect('/dashboard/academics?tab=programmes');}
+export default function Page(){redirect('/dashboard/academics/programmes');}
