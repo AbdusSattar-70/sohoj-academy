@@ -44,6 +44,7 @@ export default function SignInPage() {
     setLoading(true);
     setError("");
 
+    try {
     const supabase = createClient();
     const { data, error: signInError } = await supabase.auth.signInWithPassword(
       {
@@ -58,9 +59,12 @@ export default function SignInPage() {
       return;
     }
 
+    // Every new sign-in starts with a workspace choice; refreshes retain it for this tab.
+    try { sessionStorage.removeItem(`sohoj-session-workspace:${data.user.id}`); } catch { /* Storage is optional. */ }
     const next = new URLSearchParams(window.location.search).get("next");
     const allowed = ["/dashboard", "/dashboard/academics", "/dashboard/people", "/dashboard/directory", "/dashboard/programmes", "/dashboard/offerings"];
     window.location.assign(next && allowed.includes(next) ? next : ROUTES.DASHBOARD);
+    } catch { setError(copy.failed); setLoading(false); }
   };
 
   return (

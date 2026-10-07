@@ -2,7 +2,7 @@
 
 ## কোথায় কোন কাজ
 
-ড্যাশবোর্ডের উপরে School, Coaching অথবা Training কর্মক্ষেত্র নির্বাচন করুন। এই নির্বাচন account অনুযায়ী browser-এ মনে থাকবে; এটি permission পরিবর্তন করে না। অন্য device বা storage বন্ধ থাকলে আবার নির্বাচন করতে হবে।
+নতুন login-এর পর প্রথমে School, Coaching অথবা Job preparation & training কর্মক্ষেত্র নির্বাচন করুন। নির্বাচন এই browser tab-এর session-এ থাকবে; refresh করলে আবার নির্বাচন লাগবে না। Sidebar থেকে পরিবর্তন করুন। নতুন login বা নতুন tab-এ আবার নির্বাচন করতে হবে। এটি permission পরিবর্তন করে না।
 
 | পেজ | কাজ |
 | --- | --- |
@@ -25,7 +25,7 @@ Subject, school অথবা অন্য directory choice খুঁজুন।
 
 ## Account setup
 
-প্রত্যেক request-এর action button চলাকালীন preparing state দেখাবে। Success/error একই row-তে থাকবে। Error হলে account configuration খুলুন। Server-only service role key, site URL, auth redirect এবং email service সঠিক হতে হবে। UI পরিবর্তন দিয়ে ভুল credential ঠিক করা যায় না। বাস্তব invitation email পাঠিয়ে এই release যাচাই করা হয়নি।
+প্রত্যেক request-এর action button চলাকালীন preparing state দেখাবে। Success/error একই row-তে থাকবে। আগের Auth account থাকলেও এবার fresh password setup/recovery email পাঠানোর অনুরোধ যাবে; শুধু account link করাকে email success বলা হবে না। Error হলে account configuration খুলুন। Server-only service role key, site URL, auth redirect এবং email service সঠিক হতে হবে। UI পরিবর্তন দিয়ে ভুল credential ঠিক করা যায় না। বাস্তব invitation email পাঠিয়ে এই release যাচাই করা হয়নি।
 
 ## পরিচয় ও নিরাপত্তা
 
