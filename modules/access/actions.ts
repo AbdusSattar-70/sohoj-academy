@@ -4,6 +4,8 @@ import {createClient} from '@supabase/supabase-js';
 import {revalidatePath} from 'next/cache';
 import {academyClient} from '@/modules/academy/client';
 import {requireAcademyPermission} from '@/modules/academy/queries';
+import {deliverReviewedSetup} from './setup-delivery';
+import {setupError,type SetupFeedback} from './setup-errors';
 import {boundedFetch} from '@/lib/supabase/fetch';
 import {databaseId} from '@/lib/database-id';
 import {pageSchema} from '@/modules/academy/schema';
@@ -21,22 +23,33 @@ export async function reviewRequest(input:unknown){
  const parsed=reviewInput.safeParse(input);if(!parsed.success)return {ok:false,message:'Check the selected role, identity and verification reason.'};
  try{await requireAcademyPermission('access.manage');const {data,error}=await (await academyClient()).rpc('review_access_request',{p_input:parsed.data});if(error)return {ok:false,message:error.message};revalidatePath('/dashboard','layout');return {ok:true,message:'Review saved.',data:accessRow.parse(data)};}catch{return {ok:false,message:'Review could not be confirmed. Retry the unchanged request.'};}
 }
-export async function sendSetup(id:string){
+function emailClient(){
+ const key=process.env.SUPABASE_SERVICE_ROLE_KEY?.trim(),url=process.env.NEXT_PUBLIC_SUPABASE_URL?.trim(),site=process.env.NEXT_PUBLIC_SITE_URL?.trim();
+ if(!key||!url||!site)return {ok:false as const,feedback:{ok:false,message:'Account setup email is not configured. Check the server environment and restart the application.',messageBn:'Account setup email configuration নেই। Server environment যাচাই করে application restart করুন।',code:'configuration_missing'}};
+ let origin:URL,project:URL;
+ try{origin=new URL(site);project=new URL(url);if(!['http:','https:'].includes(origin.protocol)||!['http:','https:'].includes(project.protocol)||origin.username||origin.password||project.username||project.password)throw Error();}
+ catch{return {ok:false as const,feedback:{ok:false,message:'Configure valid HTTP/HTTPS project and site origins.',messageBn:'Project ও site-এর সঠিক HTTP/HTTPS origin দিন।',code:'configuration_invalid'}};}
+ return {ok:true as const,admin:createClient(url,key,{auth:{autoRefreshToken:false,persistSession:false,flowType:'implicit'},global:{fetch:boundedFetch}}),redirectTo:new URL('/auth/update-password',origin.origin).href};
+}
+export async function checkAccountSetup():Promise<SetupFeedback>{
+ await requireAcademyPermission('access.manage');
+ const config=emailClient();if(!config.ok)return config.feedback;
+ try{const {error}=await config.admin.auth.admin.listUsers({page:1,perPage:1});if(error)return setupError(error);
+  return {ok:true,message:'Server credential is accepted by the configured Auth project. This check sends no email; SMTP delivery and redirect allowlists still need verification in Supabase.',messageBn:'Configured Auth project server credential গ্রহণ করেছে। এই যাচাই ইমেইল পাঠায় না; Supabase-এ SMTP delivery ও redirect allowlist যাচাই করুন।'};
+ }catch{return setupError({code:'request_timeout'});}
+}
+export async function sendSetup(id:string):Promise<SetupFeedback>{
  databaseId.parse(id);await requireAcademyPermission('access.manage');
- const db=await academyClient();
- // Resolve only the reviewed request through its scoped database contract.
- const {data:complete,error:existingError}=await db.rpc('complete_access_setup',{p_request_id:id});
- if(!existingError&&complete){revalidatePath('/dashboard','layout');return {ok:true,message:'Account access is linked. Use the existing setup message or sign in; password recovery is available if needed.'};}
- if(existingError?.message!=='Account setup is not ready. Retry sending instructions.')return {ok:false,message:existingError?.message??'Verify the request first.'};
- const key=process.env.SUPABASE_SERVICE_ROLE_KEY,url=process.env.NEXT_PUBLIC_SUPABASE_URL,site=process.env.NEXT_PUBLIC_SITE_URL;
- if(!key||!url||!site)return {ok:false,message:'Account setup email is not configured. Follow Settings & Help → Account configuration.'};
- let origin:URL;try{origin=new URL(site);if(!['http:','https:'].includes(origin.protocol))throw Error();}catch{return {ok:false,message:'Configure a valid site URL.'};}
- const {data:request,error:requestError}=await db.rpc('access_setup_request',{p_request_id:id});
- if(requestError)return {ok:false,message:requestError.message};const row=accessRow.parse(request);
- const admin=createClient(url,key,{auth:{autoRefreshToken:false,persistSession:false},global:{fetch:boundedFetch}});
- const {error}=await admin.auth.admin.inviteUserByEmail(row.email,{redirectTo:new URL('/auth/update-password',origin.origin).href});
- if(error)return {ok:false,message:error.message.toLowerCase().includes('api key')?'Account setup email credentials are invalid. Check the server-only service role key for this project.':'Account setup instructions could not be sent. Check the email service configuration and retry.'};
- const {error:linkError}=await db.rpc('complete_access_setup',{p_request_id:id});
- if(linkError)return {ok:false,message:'Setup email was sent, but access linking is incomplete. Retry this action; it will reuse the existing account.'};
- revalidatePath('/dashboard','layout');return {ok:true,message:'Secure account setup instructions have been sent.'};
+ const config=emailClient();if(!config.ok)return config.feedback;
+ try{
+  const db=await academyClient();
+  const {data:request,error:requestError}=await db.rpc('access_setup_request',{p_request_id:id});
+  if(requestError)return {ok:false,message:requestError.message,messageBn:'অনুরোধের পরিচয়, অনুমোদন ও বর্তমান অবস্থা যাচাই করুন।',code:'request_not_ready'};
+  const row=accessRow.parse(request);
+  return await deliverReviewedSetup({
+   link:async()=>{const result=await db.rpc('complete_access_setup',{p_request_id:id});return {data:result.data,error:result.error};},
+   invite:()=>config.admin.auth.admin.inviteUserByEmail(row.email,{redirectTo:config.redirectTo}),
+   recover:()=>config.admin.auth.resetPasswordForEmail(row.email,{redirectTo:config.redirectTo}),
+  });
+ }catch{return setupError({code:'request_timeout'});}
 }
