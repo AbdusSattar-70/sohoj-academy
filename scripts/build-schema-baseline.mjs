@@ -25,6 +25,7 @@ const sources = [
   ['18_role_identity_display.sql', 'people/18_role_identity_display.sql'],
   ['19_inline_schedule_availability.sql', 'academics/19_inline_schedule_availability.sql'],
   ['20_schedule_checks.sql', 'academics/20_schedule_checks.sql'],
+  ['21_routine_calendar.sql', 'academics/21_routine_calendar.sql'],
 ];
 const check = process.argv.includes('--check');
 if (process.argv.some(arg => arg.startsWith('--') && arg !== '--check')) throw Error('Unknown option');

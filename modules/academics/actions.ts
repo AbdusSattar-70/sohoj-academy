@@ -51,3 +51,22 @@ export async function checkAcademicSchedule(payload:Record<string,unknown>){
  const result=schedulePreviewSchema.parse(data);
  return{ok:result.ok,message:[result.ok?`${result.classes.length} classes ready; ${result.skipped.length} closed dates skipped.`:'Resolve the following scheduling issues:',...result.issues.map(x=>x.message),...result.warnings.map(x=>`Availability will be added after confirmation: ${x.message}`)].join('\n')};
 }
+
+export async function loadAcademicCalendar(from:string,through:string,page=1,status=''){
+ if(!await verifiedAcademyUser())throw Error('Please sign in again.');
+ const {data,error}=await(await academyClient()).rpc('academic_calendar',{p_from:from,p_through:through,p_page:page,p_status:status});if(error)throw Error(error.message);return data;
+}
+export async function loadAcademicSession(id:string){
+ if(!await verifiedAcademyUser())throw Error('Please sign in again.');
+ const {data,error}=await(await academyClient()).rpc('academic_session_detail',{p_id:id});if(error)throw Error(error.message);return data;
+}
+export async function loadAcademicRoutines(page=1){
+ if(!await verifiedAcademyUser())throw Error('Please sign in again.');
+ const {data,error}=await(await academyClient()).rpc('academic_routine_register',{p_page:page});if(error)throw Error(error.message);return data;
+}
+export async function saveAcademicRoutine(input:unknown){
+ const parsed=envelope.safeParse(input);if(!parsed.success)return{ok:false,message:'Check routine input.'};
+ if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
+ const {error}=await(await academyClient()).rpc('manage_academic_routine',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});
+ return error?{ok:false,message:error.message}:{ok:true,message:'Routine saved. Existing session history is preserved.'};
+}

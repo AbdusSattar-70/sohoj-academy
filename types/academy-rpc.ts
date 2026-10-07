@@ -65,6 +65,10 @@ export type AcademyDatabase = {
       assign_referrer_identity: { Args: Record<string, never>; Returns: unknown };
       resource_window_covers: { Args: { p_academy: string; p_kind: string; p_resource: string; p_start: string; p_end: string }; Returns: boolean };
       preview_academic_schedule: { Args: { p_payload: Json }; Returns: Json };
+      academic_calendar: { Args: { p_from: string; p_through: string; p_page?: number; p_status?: string }; Returns: Json };
+      academic_session_detail: { Args: { p_id: string }; Returns: Json };
+      academic_routine_register: { Args: { p_page?: number }; Returns: Json };
+      manage_academic_routine: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
