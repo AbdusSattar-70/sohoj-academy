@@ -62,6 +62,7 @@ export type AcademyDatabase = {
       academic_settings_register: { Args: { p_section: string; p_page?: number }; Returns: Json };
       assign_staff_identity: { Args: Record<string, never>; Returns: unknown };
       protect_staff_identity: { Args: Record<string, never>; Returns: unknown };
+      assign_referrer_identity: { Args: Record<string, never>; Returns: unknown };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

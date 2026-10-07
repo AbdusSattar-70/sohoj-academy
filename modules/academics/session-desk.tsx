@@ -23,7 +23,7 @@ export function SessionDesk({initial}:{initial:unknown}){
   if(['CREATE','CHANGE','MAKEUP','ROUTINE'].includes(action))startTransition(async()=>{
    try{
     const options=choicesSchema.parse(await loadAcademicChoices('SESSION'));
-    const missing=!options.batches.length?{message:t('Prepare an active programme and batch first.','আগে সক্রিয় প্রোগ্রাম ও ব্যাচ প্রস্তুত করুন।'),href:'/dashboard/academics/programmes'}:!options.rooms.length?{message:t('Create an active classroom first.','আগে সক্রিয় শ্রেণিকক্ষ তৈরি করুন।'),href:'/dashboard/academics/settings?section=rooms'}:!options.teachers.length||!options.qualifications.length?{message:t('Verify a teacher and subject qualification first.','আগে শিক্ষক ও বিষয়ের যোগ্যতা যাচাই করুন।'),href:'/dashboard/academics/settings?section=teachers'}:null;
+    const missing=!options.batches.length?{message:t('Prepare an active programme and batch first.','আগে সক্রিয় প্রোগ্রাম ও ব্যাচ প্রস্তুত করুন।'),href:'/dashboard/academics/batches'}:!options.rooms.length?{message:t('Create an active classroom first.','আগে সক্রিয় শ্রেণিকক্ষ তৈরি করুন।'),href:'/dashboard/academics/settings?section=rooms'}:!options.teachers.length||!options.qualifications.length?{message:t('Verify a teacher and subject qualification first.','আগে শিক্ষক ও বিষয়ের যোগ্যতা যাচাই করুন।'),href:'/dashboard/academics/settings?section=teachers'}:null;
     if(missing){setMessage(missing.message);setNextHref(missing.href);return;}
     setChoices(options);setBatch(item?.batch_id??'');setSubject(item?.subject_id??'');setForm({action,item});
    }catch{setMessage(t('Could not load class choices. Retry.','ক্লাসের তালিকা আসেনি। আবার চেষ্টা করুন।'));}
@@ -38,6 +38,15 @@ export function SessionDesk({initial}:{initial:unknown}){
  {pending&&<p role="status">{t('Loading…','তথ্য আসছে…')}</p>}
  {form&&<OperationForm key={form.action+(form.item?.id??'NEW')} title={labels[form.action]} reasonOptions={reasons[form.action]} save={saveAcademicOperation} onSaved={async()=>{setForm(null);try{await reload();setMessage(t('Saved. The class list shows your next available action.','সংরক্ষিত। ক্লাসের তালিকায় পরের পদক্ষেপ দেখুন।'));}catch{setMessage(t('Saved, but the list could not refresh. Use Refresh before the next action.','সংরক্ষিত; তালিকা refresh হয়নি। পরের কাজের আগে আবার দেখুন বোতাম ব্যবহার করুন।'));}}} onCancel={()=>setForm(null)} serialize={fd=>{
   const payload:Record<string,unknown>={...Object.fromEntries(fd),action:form.action};
+  if(['CREATE','CHANGE','MAKEUP','ROUTINE'].includes(form.action)){
+   payload.confirmAvailability=fd.has('confirmAvailability');
+   if(form.action==='ROUTINE'){
+    const duration=(Date.parse(String(fd.get('endsOn')))-Date.parse(String(fd.get('startsOn'))))/86400000;
+    if(!Number.isFinite(duration)||duration<0||duration>31)throw Error(t('Choose a date range of 1 to 32 days.','১ থেকে ৩২ দিনের তারিখসীমা নির্বাচন করুন।'));
+    if(!fd.getAll('weekdays').length)throw Error(t('Select at least one teaching day.','অন্তত একটি ক্লাসের দিন নির্বাচন করুন।'));
+    if(String(fd.get('endTime'))<=String(fd.get('startTime')))throw Error(t('End time must be after start time.','শেষের সময় শুরুর সময়ের পরে হতে হবে।'));
+   }else if(String(fd.get('end'))<=String(fd.get('start'))||String(fd.get('end')).slice(0,10)!==String(fd.get('start')).slice(0,10))throw Error(t('Choose start and end times on the same day, with end after start.','একই দিনে শুরু ও শেষের সময় দিন; শেষের সময় পরে হতে হবে।'));
+  }
   if(form.item){payload.id=form.item.id;payload.revision=form.item.revision;}
   if(['CREATE','CHANGE','MAKEUP','ROUTINE'].includes(form.action)){payload.batchId=batch;payload.subjectId=subject;}
   if(form.action==='ROUTINE')payload.weekdays=fd.getAll('weekdays').map(Number);
@@ -49,6 +58,7 @@ export function SessionDesk({initial}:{initial:unknown}){
   {picker('teacherId',t('Qualified teacher / substitute','যোগ্য শিক্ষক / বিকল্প শিক্ষক'),choices.teachers.filter(x=>choices.qualifications.some(q=>q.teacherId===x.id&&q.subjectId===subject)),form.item?.teacher_id)}
   {picker('roomId',t('Classroom','শ্রেণিকক্ষ'),choices.rooms,form.item?.room_id)}
   {subject&&!choices.qualifications.some(x=>x.subjectId===subject)&&<p role="status">{t('No qualified teacher for this subject. Verify its qualification under Academic settings first.','এই বিষয়ের যোগ্য শিক্ষক নেই। আগে শিক্ষা সেটিংসে যোগ্যতা যাচাই করুন।')}</p>}
+  <div className="rounded-lg border p-3 md:col-span-2"><p className="text-sm">{t('The teacher and classroom need weekly availability covering every selected time. Existing bookings, closures, qualifications and room capacity are always checked.','প্রতিটি নির্বাচিত সময়ে শিক্ষক ও শ্রেণিকক্ষের সাপ্তাহিক availability প্রয়োজন। আগের ক্লাস, বন্ধের দিন, যোগ্যতা ও আসনসংখ্যা সবসময় যাচাই হবে।')}</p><label className="mt-3 flex gap-2 text-sm"><input type="checkbox" name="confirmAvailability"/>{t('I confirmed the teacher and room are available. Save any missing weekly windows with this schedule.','শিক্ষক ও শ্রেণিকক্ষের availability নিশ্চিত করেছি। প্রয়োজনীয় সাপ্তাহিক সময়সীমা এই ক্লাসের সঙ্গে সংরক্ষণ করুন।')}</label><Link href="/dashboard/academics/settings?section=availability" target="_blank" prefetch={false} className="mt-2 inline-block cursor-pointer underline text-sm">{t('Review availability in a new tab','নতুন ট্যাবে availability যাচাই করুন')}</Link></div>
   {form.action==='ROUTINE'?<>{field('startsOn',t('From date','শুরুর তারিখ'),'date')}{field('endsOn',t('Through date · maximum 32 days','শেষ তারিখ · সর্বোচ্চ ৩২ দিন'),'date')}{field('startTime',t('Starts','শুরু'),'time')}{field('endTime',t('Ends','শেষ'),'time')}<div className="flex flex-wrap gap-3">{days.map((day,index)=><label key={day}><input type="checkbox" name="weekdays" value={index}/> {day}</label>)}</div></>:<>{field('start',t('Starts','শুরু'),'datetime-local',form.item?local(form.item.starts_at):undefined)}{field('end',t('Ends','শেষ'),'datetime-local',form.item?local(form.item.ends_at):undefined)}</>}
  </>}
  {form.action==='SUBMIT'&&<>{field('actualStart',t('Actual start','প্রকৃত শুরুর সময়'),'datetime-local',local(form.item!.starts_at))}{field('actualEnd',t('Actual end','প্রকৃত শেষ সময়'),'datetime-local',local(form.item!.ends_at))}<label>{t('What was taught','কী পড়ানো হয়েছে')}<textarea name="report" required className={inputClass} defaultValue={form.item?.report??''}/></label></>}
