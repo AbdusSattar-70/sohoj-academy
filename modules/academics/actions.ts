@@ -95,3 +95,14 @@ export async function savePlacement(input:unknown){
  const {error}=await(await academyClient()).rpc('change_student_batch',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});
  return error?{ok:false,message:error.message}:{ok:true,message:'Student placement saved.'};
 }
+
+export async function saveAcademicPlan(input:unknown){
+ const parsed=envelope.safeParse(input);if(!parsed.success)return{ok:false,message:'Check planning input.'};
+ if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
+ const {error}=await(await academyClient()).rpc('save_academic_plan',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});return error?{ok:false,message:error.message}:{ok:true,message:'Default plan saved. Create a routine to book actual classes.'};
+}
+export async function saveAcademicWindows(input:unknown){
+ const parsed=envelope.safeParse(input);if(!parsed.success)return{ok:false,message:'Check availability input.'};
+ if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
+ const {error}=await(await academyClient()).rpc('save_academic_windows',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});return error?{ok:false,message:error.message}:{ok:true,message:'Weekly availability saved.'};
+}

@@ -15,7 +15,7 @@ export function OperationForm({title,children,reasonOptions,save,onSaved,onCance
    }catch{setUncertain(true);setMessage(t('The result is unconfirmed. Confirm the same request before changing the input.','ফলাফল নিশ্চিত নয়। তথ্য পরিবর্তনের আগে একই অনুরোধের ফলাফল নিশ্চিত করুন।'));}
   });
  }
- return <form className="space-y-4 rounded-xl border p-5" data-editor data-dirty="true" data-busy={pending||uncertain} onSubmit={e=>{e.preventDefault();if(pending||uncertain)return;const data=new FormData(e.currentTarget);try{const input={requestId:crypto.randomUUID(),payload:{...serialize(data),reason:String(data.get('reason')??'')}};attempt.current=input;send(input);}catch(error){setMessage(error instanceof Error?error.message:t('Check the selected dates and times.','তারিখ ও সময় যাচাই করুন।'));}}}>
+ return <form className="space-y-4 rounded-xl border p-5" data-editor data-dirty="true" data-busy={pending||uncertain} onChange={()=>{if(!pending&&!uncertain)setMessage('');}} onSubmit={e=>{e.preventDefault();if(pending||uncertain)return;const data=new FormData(e.currentTarget);try{const input={requestId:crypto.randomUUID(),payload:{...serialize(data),reason:String(data.get('reason')??'')}};attempt.current=input;send(input);}catch(error){setMessage(error instanceof Error?error.message:t('Check the selected dates and times.','তারিখ ও সময় যাচাই করুন।'));}}}>
   <h3 className="text-lg font-semibold">{title}</h3>
   <fieldset disabled={pending||uncertain} className="grid gap-4 md:grid-cols-2">{children}<Reason value={reasonOptions[0]} options={reasonOptions}/></fieldset>
   {message&&<p role="status" className="whitespace-pre-line rounded-lg border p-3">{message}</p>}

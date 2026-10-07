@@ -52,6 +52,13 @@ begin
  if (result->>'total')::int<>2 then raise exception 'Calendar missing recurring sessions'; end if;
  perform public.manage_academic_routine(gen_random_uuid(),jsonb_build_object('action','CONTINUE','id',routine,'revision',1,'startsOn',through_day+1,'endsOn',through_day+8,'reason','Confirmed next routine period'));
  if (select is_active from public.academic_routines where id=routine) then raise exception 'Continuation can be generated twice'; end if;
+ result:=public.save_academic_plan(gen_random_uuid(),jsonb_build_object('target','RUN','id',run,'revision',1,'weekdays',jsonb_build_array(0,2,4),'reason','Confirmed offering default days'));
+ if result->'default_weekdays'<>jsonb_build_array(0,2,4) then raise exception 'Default teaching days lost'; end if;
+ result:=public.save_academic_plan(gen_random_uuid(),jsonb_build_object('target','BATCH','id',batch2,'revision',1,'slots',jsonb_build_array(jsonb_build_object('weekday',0,'start','07:00','end','09:00'),jsonb_build_object('weekday',2,'start','08:00','end','10:00')),'reason','Confirmed weekday batch times'));
+ if jsonb_array_length(result->'planned_slots')<>2 then raise exception 'Day specific batch times lost'; end if;
+ perform public.save_academic_windows(gen_random_uuid(),jsonb_build_object('kind','ROOM','resourceId',room,'weekdays',jsonb_build_array(0,1,2,3,4,5,6),'startTime','06:00','endTime','12:00','active',true,'reason','Confirmed full week room availability'));
+ if (select count(distinct weekday) from public.academic_resource_windows where resource_id=room and is_active)<>7 then raise exception 'Multiple weekdays not saved'; end if;
+
  perform set_config('request.jwt.claim.sub',teacher_profile::text,true);
  begin
   perform public.save_academic_session_work(gen_random_uuid(),input||jsonb_build_object('revision',revision_value+1));
