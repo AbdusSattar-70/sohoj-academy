@@ -3,7 +3,7 @@ import Link from 'next/link';
 import {useState,useTransition} from 'react';
 import {z} from 'zod';
 import {inputClass,useWords} from '@/modules/academy/components/common';
-import {loadAcademicChoices,loadAcademicDesk,saveAcademicOperation} from './actions';
+import {checkAcademicSchedule,loadAcademicChoices,loadAcademicDesk,saveAcademicOperation} from './actions';
 import {OperationForm} from './operation-form';
 const choice=z.object({id:z.string(),name:z.string()});
 const sessionSchema=z.object({id:z.string(),batch_id:z.string(),subject_id:z.string(),teacher_id:z.string(),room_id:z.string(),starts_at:z.string(),ends_at:z.string(),status:z.string(),revision:z.number(),batch_name:z.string(),subject_name:z.string(),teacher_name:z.string(),room_name:z.string(),report:z.string().nullable(),actual_start:z.string().nullable(),actual_end:z.string().nullable()});
@@ -26,7 +26,7 @@ export function SessionDesk({initial}:{initial:unknown}){
     const missing=!options.batches.length?{message:t('Prepare an active programme and batch first.','আগে সক্রিয় প্রোগ্রাম ও ব্যাচ প্রস্তুত করুন।'),href:'/dashboard/academics/batches'}:!options.rooms.length?{message:t('Create an active classroom first.','আগে সক্রিয় শ্রেণিকক্ষ তৈরি করুন।'),href:'/dashboard/academics/settings?section=rooms'}:!options.teachers.length||!options.qualifications.length?{message:t('Verify a teacher and subject qualification first.','আগে শিক্ষক ও বিষয়ের যোগ্যতা যাচাই করুন।'),href:'/dashboard/academics/settings?section=teachers'}:null;
     if(missing){setMessage(missing.message);setNextHref(missing.href);return;}
     setChoices(options);setBatch(item?.batch_id??'');setSubject(item?.subject_id??'');setForm({action,item});
-   }catch{setMessage(t('Could not load class choices. Retry.','ক্লাসের তালিকা আসেনি। আবার চেষ্টা করুন।'));}
+   }catch(error){setMessage(error instanceof Error?error.message:t('Could not load class choices. Retry.','ক্লাসের তালিকা আসেনি। আবার চেষ্টা করুন।'));}
   });else setForm({action,item});
  }
  function field(name:string,label:string,type='text',value?:string){return <label>{label}<input className={inputClass} name={name} type={type} required defaultValue={value}/></label>;}
@@ -36,7 +36,7 @@ export function SessionDesk({initial}:{initial:unknown}){
  {data.manage&&<div className="flex flex-wrap gap-3">{(['CREATE','ROUTINE'] as const).map(action=><button key={action} disabled={pending||!!form} className="rounded-lg border px-4 py-2" onClick={()=>open(action)}>{labels[action]}</button>)}</div>}
  {message&&<p role="status" className="rounded-lg border p-3">{message}{nextHref&&<Link prefetch={false} href={nextHref} className="ml-3 underline">{t('Next: open the required setup →','পরের কাজ: প্রয়োজনীয় প্রস্তুতি খুলুন →')}</Link>}</p>}
  {pending&&<p role="status">{t('Loading…','তথ্য আসছে…')}</p>}
- {form&&<OperationForm key={form.action+(form.item?.id??'NEW')} title={labels[form.action]} reasonOptions={reasons[form.action]} save={saveAcademicOperation} onSaved={async()=>{setForm(null);try{await reload();setMessage(t('Saved. The class list shows your next available action.','সংরক্ষিত। ক্লাসের তালিকায় পরের পদক্ষেপ দেখুন।'));}catch{setMessage(t('Saved, but the list could not refresh. Use Refresh before the next action.','সংরক্ষিত; তালিকা refresh হয়নি। পরের কাজের আগে আবার দেখুন বোতাম ব্যবহার করুন।'));}}} onCancel={()=>setForm(null)} serialize={fd=>{
+ {form&&<OperationForm key={form.action+(form.item?.id??'NEW')} title={labels[form.action]} check={['CREATE','CHANGE','MAKEUP','ROUTINE'].includes(form.action)?checkAcademicSchedule:undefined} reasonOptions={reasons[form.action]} save={saveAcademicOperation} onSaved={async()=>{setForm(null);try{await reload();setMessage(t('Saved. The class list shows your next available action.','সংরক্ষিত। ক্লাসের তালিকায় পরের পদক্ষেপ দেখুন।'));}catch{setMessage(t('Saved, but the list could not refresh. Use Refresh before the next action.','সংরক্ষিত; তালিকা refresh হয়নি। পরের কাজের আগে আবার দেখুন বোতাম ব্যবহার করুন।'));}}} onCancel={()=>setForm(null)} serialize={fd=>{
   const payload:Record<string,unknown>={...Object.fromEntries(fd),action:form.action};
   if(['CREATE','CHANGE','MAKEUP','ROUTINE'].includes(form.action)){
    payload.confirmAvailability=fd.has('confirmAvailability');

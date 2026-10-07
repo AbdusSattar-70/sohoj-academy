@@ -42,3 +42,12 @@ export async function saveAcademicResource(input:unknown){
  const {error}=await(await academyClient()).rpc('save_academic_resource',{p_request_id:outer.data.requestId,p_payload:parsed.data});
  return error?{ok:false,message:error.message}:{ok:true,message:'Resource settings saved.'};
 }
+
+const schedulePreviewSchema=z.object({ok:z.boolean(),issues:z.array(z.object({message:z.string()})),warnings:z.array(z.object({message:z.string()})),classes:z.array(z.unknown()),skipped:z.array(z.string())});
+export async function checkAcademicSchedule(payload:Record<string,unknown>){
+ if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
+ const {data,error}=await(await academyClient()).rpc('preview_academic_schedule',{p_payload:payload as Json});
+ if(error)return{ok:false,message:error.message};
+ const result=schedulePreviewSchema.parse(data);
+ return{ok:result.ok,message:[result.ok?`${result.classes.length} classes ready; ${result.skipped.length} closed dates skipped.`:'Resolve the following scheduling issues:',...result.issues.map(x=>x.message),...result.warnings.map(x=>`Availability will be added after confirmation: ${x.message}`)].join('\n')};
+}
