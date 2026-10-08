@@ -1,4 +1,5 @@
 "use client";
+import { fieldGuide } from "@/modules/platform/navigation/field-guides";
 import { useLanguage } from "@/components/providers/language-provider";
 import { HelpDisclosure, type HelpText } from "./help-disclosure";
 import type { ReactNode } from "react";
@@ -29,6 +30,7 @@ export function ErpFormField({
   }) => ReactNode;
 }) {
   const { locale } = useLanguage();
+  const guidance = help ?? fieldGuide(label);
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
@@ -38,7 +40,7 @@ export function ErpFormField({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1">
           <Label htmlFor={id}>{label}</Label>
-          {help && <HelpDisclosure text={help} />}
+          {guidance && <HelpDisclosure text={guidance} />}
         </div>
         <span className="text-xs text-muted-foreground">
           {required

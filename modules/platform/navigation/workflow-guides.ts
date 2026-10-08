@@ -345,3 +345,183 @@ Object.assign(workflowGuides, {
     next: ["staff"],
   },
 });
+
+Object.assign(workflowGuides, {
+  referrals: {
+    en: "Referral policy and actual rewards",
+    bn: "রেফারাল নিয়ম ও প্রকৃত বোনাস",
+    steps: [
+      [
+        "Choose a verified referrer or Organic during admission; match existing people before creating another identity.",
+        "ভর্তির সময় যাচাইকৃত referrer অথবা Organic নির্বাচন করুন; নতুন পরিচয়ের আগে বিদ্যমান ব্যক্তিকে মিলিয়ে নিন।",
+      ],
+      [
+        "The configured acquisition percentage applies to eligible net collected tuition, not the invoice face value. Discounts and refunds affect entitlement.",
+        "নির্ধারিত acquisition শতাংশ প্রযোজ্য নিট আদায়কৃত tuition-এর ওপর; invoice-এর মোট অঙ্কের ওপর নয়। ছাড় ও refund বোনাসে প্রভাব ফেলে।",
+      ],
+      [
+        "Posted reward, payment and remaining balance are different figures. Referrers see only their own permitted records.",
+        "পোস্ট করা বোনাস, পরিশোধ ও অবশিষ্ট পাওনা আলাদা অঙ্ক। Referrer শুধু নিজের অনুমোদিত তথ্য দেখেন।",
+      ],
+    ],
+    next: ["operating-rules"],
+  },
+  "operating-rules": {
+    en: "Understand policy before changing it",
+    bn: "পরিবর্তনের আগে নিয়ম বুঝুন",
+    steps: [
+      [
+        "Review capacity, activation and compensation rules. Use the supported edit/create action; a displayed policy is not permission to bypass the workflow.",
+        "Capacity, activation ও compensation নিয়ম দেখুন। অনুমোদিত edit/create action ব্যবহার করুন; নিয়ম দেখা মানে workflow এড়িয়ে যাওয়ার অনুমতি নয়।",
+      ],
+      [
+        "Published financial snapshots remain historical evidence. A rule change does not rewrite issued bills or settled pay.",
+        "প্রকাশিত financial snapshot আগের প্রমাণ হিসেবে থাকে। নিয়ম পরিবর্তনে issued bill বা পরিশোধিত বেতন পুনরায় লেখা হয় না।",
+      ],
+    ],
+  },
+  "finance-overview": {
+    en: "Read income, expenses and operating result",
+    bn: "আয়, খরচ ও পরিচালনার ফল দেখুন",
+    steps: [
+      [
+        "Select the reporting period. Collected income, running expenses and outstanding dues are different measures.",
+        "Report-এর সময়কাল নির্বাচন করুন। আদায়কৃত আয়, পরিচালনার খরচ ও বকেয়া ভিন্ন পরিমাপ।",
+      ],
+      [
+        "Use the linked source record to correct an entry. A dashboard summary is not a place to overwrite money history.",
+        "ভুল ঠিক করতে সংশ্লিষ্ট মূল record খুলুন। Dashboard summary থেকে টাকার ইতিহাস পুনরায় লেখা যাবে না।",
+      ],
+    ],
+    next: ["operating-money", "student-accounts"],
+  },
+  receivables: {
+    en: "Follow up dues without duplicating invoices",
+    bn: "দ্বিতীয় invoice না করে বকেয়ার যোগাযোগ করুন",
+    steps: [
+      [
+        "Search the student, inspect overdue invoices and record the agreed follow-up or payment promise.",
+        "শিক্ষার্থী খুঁজে বকেয়া invoice দেখুন; সম্মত follow-up বা payment promise দিন।",
+      ],
+      [
+        "A promise is not a payment. Receive money through the student account and print its receipt.",
+        "টাকা দেওয়ার প্রতিশ্রুতি payment নয়। Student account থেকে টাকা গ্রহণ ও receipt print করুন।",
+      ],
+    ],
+    next: ["student-accounts"],
+  },
+  payroll: {
+    en: "Review salary before recording payment",
+    bn: "পরিশোধের আগে বেতন যাচাই করুন",
+    steps: [
+      [
+        "Select staff/month and inspect agreed terms and verified workload. Preview is not a posted payable.",
+        "স্টাফ/মাস নির্বাচন করে সম্মত শর্ত ও যাচাইকৃত কাজ দেখুন। Preview পোস্ট করা পাওনা নয়।",
+      ],
+      [
+        "Post once, then record actual full/partial payments. Payslips show posted terms and settlement history.",
+        "একবার post করে প্রকৃত পূর্ণ/আংশিক পরিশোধ রেকর্ড করুন। Payslip-এ পোস্ট করা শর্ত ও পরিশোধের ইতিহাস থাকে।",
+      ],
+    ],
+  },
+  "teaching-pay": {
+    en: "Verified teaching earnings",
+    bn: "যাচাইকৃত পাঠদানের আয়",
+    steps: [
+      [
+        "Review approved actual teaching hours and configured compensation terms for the period.",
+        "নির্দিষ্ট সময়ের অনুমোদিত প্রকৃত পাঠদানের ঘণ্টা ও নির্ধারিত compensation শর্ত দেখুন।",
+      ],
+      [
+        "Expected earnings, approved payable and cash paid are separate. Cancelled classes do not become completed teaching hours.",
+        "সম্ভাব্য আয়, অনুমোদিত পাওনা ও পরিশোধ আলাদা। বাতিল ক্লাস সম্পন্ন পাঠদানের ঘণ্টা হয় না।",
+      ],
+    ],
+  },
+  reimbursements: {
+    en: "Claim a personally paid expense",
+    bn: "নিজের টাকায় দেওয়া খরচের আবেদন",
+    steps: [
+      [
+        "Save the expense date, category, amount and receipt reference; declare that you paid personally and have not claimed it twice.",
+        "খরচের তারিখ, category, টাকা ও receipt reference দিন; নিজের টাকায় দিয়েছেন ও দুইবার দাবি করেননি নিশ্চিত করুন।",
+      ],
+      [
+        "Submit for review. Posting records a payable; payment is recorded separately after approval.",
+        "Review-এর জন্য জমা দিন। Posting পাওনা রেকর্ড করে; অনুমোদনের পরে payment আলাদাভাবে রেকর্ড হয়।",
+      ],
+    ],
+  },
+  prospects: {
+    en: "Verify an application before admission",
+    bn: "ভর্তির আগে আবেদন যাচাই করুন",
+    steps: [
+      [
+        "Public selections are unverified preferences. Correct class, school and intended offering with the student/guardian.",
+        "পাবলিক selection যাচাই হয়নি এমন আগ্রহ। শিক্ষার্থী/অভিভাবকের সঙ্গে শ্রেণি, স্কুল ও intended offering ঠিক করুন।",
+      ],
+      [
+        "Record contact/follow-up or convert the existing enquiry. Owner is the responsible follow-up staff, not the referrer.",
+        "যোগাযোগ/follow-up দিন অথবা একই enquiry থেকে ভর্তি শুরু করুন। Owner দায়িত্বপ্রাপ্ত follow-up staff; referrer নয়।",
+      ],
+    ],
+    next: ["admissions"],
+  },
+  audit: {
+    en: "Trace who changed what",
+    bn: "কে কী পরিবর্তন করেছেন খুঁজুন",
+    steps: [
+      [
+        "Search by person, action, entity and date. Audit events are immutable evidence, not an editable activity list.",
+        "ব্যক্তি, action, entity ও তারিখ দিয়ে খুঁজুন। Audit event অপরিবর্তনীয় প্রমাণ; editable তালিকা নয়।",
+      ],
+      [
+        "Correct the source record through its workflow so the original and correction remain traceable.",
+        "মূল workflow দিয়ে সংশোধন করুন, যাতে আগের তথ্য ও সংশোধন দুটোই খুঁজে পাওয়া যায়।",
+      ],
+    ],
+  },
+  "admin-review-queue": {
+    en: "Review submitted evidence",
+    bn: "জমা প্রমাণ যাচাই করুন",
+    steps: [
+      [
+        "Inspect the underlying work and reason before approving. Return unclear work with specific corrections.",
+        "অনুমোদনের আগে মূল কাজ ও কারণ দেখুন। অস্পষ্ট কাজ নির্দিষ্ট সংশোধনের নির্দেশনাসহ ফেরত দিন।",
+      ],
+      [
+        "Teachers cannot approve their own submitted evidence. Use the question and progress pages for their document review.",
+        "শিক্ষক নিজের জমা তথ্য নিজে অনুমোদন করতে পারেন না। Question ও progress document review সংশ্লিষ্ট পেজে করুন।",
+      ],
+    ],
+    next: ["question-bank", "student-progress"],
+  },
+  account: {
+    en: "Your verified account",
+    bn: "আপনার যাচাইকৃত অ্যাকাউন্ট",
+    steps: [
+      [
+        "Keep login and contact information accurate. A contact email on a person record does not automatically grant account access.",
+        "Login ও যোগাযোগের তথ্য ঠিক রাখুন। Person record-এর contact email নিজে থেকে account access দেয় না।",
+      ],
+      [
+        "Use approved password recovery/setup. Ask admin to review responsibilities instead of creating another identity.",
+        "অনুমোদিত password recovery/setup ব্যবহার করুন। দ্বিতীয় পরিচয় না করে admin-কে দায়িত্ব যাচাই করতে বলুন।",
+      ],
+    ],
+  },
+  help: {
+    en: "Choose a workflow guide",
+    bn: "কাজের নির্দেশনা নির্বাচন করুন",
+    steps: [
+      [
+        "Start with the academic or financial guide, then use the links to the real working page.",
+        "Academic বা financial নির্দেশনা থেকে শুরু করে link দিয়ে মূল কাজের পেজে যান।",
+      ],
+      [
+        "Guides explain the workflow; permission checks still control each action.",
+        "নির্দেশনা কাজের ধাপ বোঝায়; প্রতিটি action permission অনুযায়ী নিয়ন্ত্রিত থাকে।",
+      ],
+    ],
+  },
+});
