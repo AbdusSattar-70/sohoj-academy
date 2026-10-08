@@ -78,6 +78,14 @@ export async function searchErpRecords(
       href: (id) => `/dashboard/admissions/${id}`,
     },
     {
+      permission: "system.master_data.manage",
+      table: "classes",
+      fields: "id,code,name",
+      search: ["code", "name"],
+      label: "Class",
+      href: () => "/dashboard/academics/settings",
+    },
+    {
       permission: "academics.view",
       table: "batches",
       fields: "id,code,name",
@@ -114,6 +122,88 @@ export async function searchErpRecords(
       })),
     };
   }
+  const contactSearch = async (): Promise<{
+    rows: SearchRecord[];
+    failed: boolean;
+  }> => {
+    if (
+      !context.permissions.includes("students.view") ||
+      !/^\+?[0-9 -]{5,}$/.test(q)
+    )
+      return { rows: [], failed: false };
+    const guardians = await db
+      .from("guardians")
+      .select("id")
+      .or(`mobile.ilike.%${q}%,alternate_mobile.ilike.%${q}%`)
+      .limit(5);
+    if (guardians.error || !guardians.data?.length)
+      return { rows: [], failed: Boolean(guardians.error) };
+    const linked = await db
+      .from("student_guardians")
+      .select("students(id,student_no,full_name)")
+      .in(
+        "guardian_id",
+        guardians.data.map((row) => row.id),
+      )
+      .limit(5);
+    const rows = (linked.data ?? []) as unknown as {
+      students: { id: string; student_no: string; full_name: string } | null;
+    }[];
+    return {
+      failed: Boolean(linked.error),
+      rows: rows
+        .filter((row) => row.students)
+        .map((row) => ({
+          id: row.students!.id,
+          title: row.students!.full_name,
+          detail: `Guardian contact · ${row.students!.student_no}`,
+          href: `/dashboard/students/${row.students!.id}`,
+        })),
+    };
+  };
+  const receiptSearch = async (): Promise<{
+    rows: SearchRecord[];
+    failed: boolean;
+  }> => {
+    if (
+      !context.permissions.includes("finance.view") ||
+      !/^RCT[- ]?[0-9]*$/i.test(q)
+    )
+      return { rows: [], failed: false };
+    const payments = await db
+      .from("admission_payments")
+      .select("id,receipt_no")
+      .ilike("receipt_no", `%${q}%`)
+      .limit(5);
+    if (payments.error || !payments.data?.length)
+      return { rows: [], failed: Boolean(payments.error) };
+    const allocations = await db
+      .from("admission_payment_allocations")
+      .select("payment_id,admission_invoices(admission_id)")
+      .in(
+        "payment_id",
+        payments.data.map((row) => row.id),
+      )
+      .limit(10);
+    const rows = (allocations.data ?? []) as unknown as {
+      payment_id: string;
+      admission_invoices: { admission_id: string } | null;
+    }[];
+    return {
+      failed: Boolean(allocations.error),
+      rows: rows
+        .filter((row) => row.admission_invoices)
+        .map((row) => {
+          const payment = payments.data!.find((p) => p.id === row.payment_id)!;
+          return {
+            id: payment.id,
+            title: payment.receipt_no,
+            detail: "Payment receipt",
+            href: `/dashboard/admissions/${row.admission_invoices!.admission_id}/print?receipt=${encodeURIComponent(payment.receipt_no)}`,
+          };
+        }),
+    };
+  };
   const results = await Promise.all(
     config
       .filter((c) => context.permissions.includes(c.permission))
@@ -142,8 +232,10 @@ export async function searchErpRecords(
         };
       }),
   );
-  return {
-    rows: results.flatMap((r) => r.rows),
-    failed: results.some((r) => r.failed),
-  };
+  const related = await Promise.all([contactSearch(), receiptSearch()]);
+  const all = [...results, ...related];
+  const unique = new Map(
+    all.flatMap((r) => r.rows).map((row) => [row.href + row.id, row]),
+  );
+  return { rows: [...unique.values()], failed: all.some((r) => r.failed) };
 }
