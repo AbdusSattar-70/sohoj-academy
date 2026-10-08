@@ -62,5 +62,9 @@ export const fieldGuides: Record<string, HelpText> = {
   },
 };
 export function fieldGuide(label: string) {
-  return fieldGuides[label];
+  return fieldGuides[
+    Object.keys(fieldGuides).find(
+      (key) => key.toLocaleLowerCase() === label.trim().toLocaleLowerCase(),
+    ) ?? label
+  ];
 }
