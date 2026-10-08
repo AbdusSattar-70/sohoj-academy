@@ -79,6 +79,17 @@ export type AcademyDatabase = {
       save_academic_windows: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       academic_teacher_agenda: { Args: Record<string, never>; Returns: Json };
       teacher_resource_name: { Args: { p_id: string }; Returns: string };
+      require_account_admin: { Args: Record<string, never>; Returns: string };
+      can_use_workspace: { Args: { p_division: string }; Returns: boolean };
+      account_access_settings: { Args: { p_query?: string; p_page?: number }; Returns: Json };
+      save_account_access: { Args: { p_request_id: string; p_input: Json }; Returns: Json };
+      current_workspace_id: { Args: Record<string, never>; Returns: string };
+      require_workspace_run: { Args: { p_run: string }; Returns: undefined };
+      guard_workspace_write: { Args: Record<string, never>; Returns: unknown };
+      teacher_in_workspace: { Args: { p_person: string }; Returns: boolean };
+      check_workspace_payload: { Args: { p_payload: Json; p_kind: string }; Returns: undefined };
+      academic_session_command: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
+      person_in_workspace: { Args: { p_person: string }; Returns: boolean };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

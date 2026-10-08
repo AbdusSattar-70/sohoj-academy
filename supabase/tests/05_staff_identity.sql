@@ -3,6 +3,7 @@ begin;
 insert into auth.users(id,email,email_confirmed_at) values('10000000-0000-4000-8000-000000000051','staff-id@example.test',now());
 select public.initialize_academy('staff-id@example.test','Staff ID Administrator');
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000051',true);
+select set_config('request.headers',jsonb_build_object('x-sohoj-workspace',(select id from public.operating_divisions where code='SCHOOL'))::text,true);
 do $$ declare academy uuid; person uuid; number bigint; result jsonb; begin
  result:=public.academy_account_context();
  if result->>'staffId' is null or result->>'staffId' !~ '^SA-STF-[0-9]{5,}$' then raise exception 'Bootstrap staff ID missing'; end if;
@@ -14,6 +15,10 @@ do $$ declare academy uuid; person uuid; number bigint; result jsonb; begin
  insert into public.person_responsibilities values(person,academy,'STAFF',true);
  insert into public.person_responsibilities values(person,academy,'REFERRER',true);
  if (select referrer_no from public.people where id=person) is null then raise exception 'Referrer ID missing'; end if;
+ insert into auth.users(id,email,email_confirmed_at) values('10000000-0000-4000-8000-000000000052','identity-teacher@example.test',now());
+ insert into public.account_profiles(id,academy_id,display_name) values('10000000-0000-4000-8000-000000000052',academy,'Identity fixture teacher');
+ insert into public.person_accounts values('10000000-0000-4000-8000-000000000052',person,academy);
+ insert into public.account_workspaces select '10000000-0000-4000-8000-000000000052',id from public.operating_divisions where code='SCHOOL';
  result:=public.search_people_by_role('SA-STF-'||lpad(number::text,5,'0'),1,'TEACHER');
  if (result->>'total')::int<>1 or result->'rows'->0->>'staff_no' is null or result->'rows'->0->>'referrer_no' is null then raise exception 'Role identity search failed'; end if;
  begin

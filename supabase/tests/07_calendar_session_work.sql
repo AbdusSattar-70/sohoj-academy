@@ -3,6 +3,7 @@ begin;
 insert into auth.users(id,email,email_confirmed_at) values('10000000-0000-4000-8000-000000000071','academic-admin@example.test',now()),('10000000-0000-4000-8000-000000000072','academic-teacher@example.test',now());
 select public.initialize_academy('academic-admin@example.test','Academic Test Admin');
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000071',true);
+select set_config('request.headers',jsonb_build_object('x-sohoj-workspace',(select id from public.operating_divisions where code='TRAINING'))::text,true);
 do $$ declare aid uuid; programme uuid; subject uuid; run uuid; batch uuid; batch2 uuid; room uuid; teacher uuid; student uuid; session uuid; routine uuid; placement uuid; teacher_profile uuid:='10000000-0000-4000-8000-000000000072'; revision_value int; result jsonb; input jsonb; request uuid; today date:=(now() at time zone 'Asia/Dhaka')::date; teaching_day date:=today-1; from_day date:=today+7; through_day date:=today+14;
 begin
  select id into aid from public.academies;
@@ -17,6 +18,7 @@ begin
  insert into public.person_responsibilities values(teacher,aid,'TEACHER',true);
  insert into public.account_profiles(id,academy_id,display_name) values(teacher_profile,aid,'Fixture teacher');
  insert into public.account_roles values(teacher_profile,'TEACHER');
+ insert into public.account_workspaces select teacher_profile,id from public.operating_divisions where academy_id=aid and code='TRAINING';
  insert into public.person_accounts values(teacher_profile,teacher,aid);
  insert into public.teacher_subject_qualifications values(aid,teacher,subject,true,1);
  result:=public.academic_operation_choices('SESSION');

@@ -12,7 +12,7 @@ export const academyClient = cache(async () => {
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) throw new Error('Academy connection is not configured.');
   return createServerClient<AcademyDatabase>(url, key, {
-    global: { fetch: boundedFetch },
+    global: { fetch: boundedFetch, headers: { 'x-sohoj-workspace': jar.get('sohoj-workspace')?.value ?? '' } },
     cookies: {
       getAll: () => jar.getAll(),
       setAll(values) {
