@@ -1,0 +1,5 @@
+import {notFound} from 'next/navigation';
+import {admissionCase,admissionBilling} from '@/modules/admissions/actions';
+import {AdmissionPaper,InvoicePaper} from '@/modules/admissions/admission-paper';
+import {PrintControls} from '@/modules/admissions/print-controls';
+export default async function Page({params,searchParams}:{params:Promise<{admissionId:string}>;searchParams:Promise<{invoice?:string;receipt?:string}>}){const query=await searchParams;const admission=await admissionCase((await params).admissionId);if(query.invoice||query.receipt){const invoices=await admissionBilling(admission.id),invoice=invoices.find(i=>query.invoice?i.id===query.invoice:i.payments.some(p=>p.id===query.receipt));if(!invoice)notFound();return <><PrintControls back={'/dashboard/academics/admissions/'+admission.id}/><InvoicePaper admission={admission} invoice={invoice} receiptId={query.receipt}/></>;}return <><PrintControls back={'/dashboard/academics/admissions/'+admission.id}/><AdmissionPaper admission={admission}/></>;}

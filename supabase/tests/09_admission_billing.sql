@@ -2,12 +2,13 @@ begin;
 insert into auth.users(id,email,email_confirmed_at) values('10000000-0000-4000-8000-000000000091','admission-admin@example.test',now());
 select public.initialize_academy('admission-admin@example.test','Admission administrator');
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000091',true);
-do $$declare aid uuid;workspace uuid;run uuid;batch uuid;relationship uuid;draft uuid;invoice uuid;receipt uuid;request uuid;payload jsonb;result jsonb;before_count int;day_value date:=(now() at time zone 'Asia/Dhaka')::date;
+do $$declare aid uuid;workspace uuid;run uuid;batch uuid;relationship uuid;draft uuid;invoice uuid;receipt uuid;request uuid;payload jsonb;result jsonb;before_count int;sid uuid;gid uuid;enquiry uuid;second uuid;other_run uuid;other_batch uuid;day_value date:=(now() at time zone 'Asia/Dhaka')::date;
 begin
  select id into aid from public.academies;select id into workspace from public.operating_divisions where code='COACHING';
  perform set_config('request.headers',jsonb_build_object('x-sohoj-workspace',workspace)::text,true);
  select id into run from public.programme_runs where division_id=workspace limit 1;select id into batch from public.teaching_batches where run_id=run limit 1;
  update public.programme_runs set starts_on=day_value,ends_on=day_value+365 where id=run;
+ update public.teaching_batches set capacity=2 where id=batch;
  select id into relationship from public.directory_entries where kind='RELATIONSHIP' limit 1;
  select count(*) into before_count from public.enquiries;
  result:=public.save_admission_draft(gen_random_uuid(),jsonb_build_object('runId',run,'batchId',batch,'details',jsonb_build_object('studentName','Admission student','dateOfBirth','2015-01-01','guardianName','Admission guardian','guardianMobile','01775804072','relationshipId',relationship,'enrollmentDate',day_value,'newStudentConfirmed',true,'newGuardianConfirmed',true,'sourceVerified',true),'reason','Staff assisted admission fixture'));draft:=(result->>'id')::uuid;
@@ -26,8 +27,22 @@ begin
  begin perform public.student_billing_command(gen_random_uuid(),jsonb_build_object('action','PAYMENT','admissionId',draft,'invoiceId',invoice,'amount',999999,'method','CASH','receivedOn',day_value,'reason','Invalid overpayment fixture'));raise exception 'Overpayment accepted';exception when others then if sqlerrm='Overpayment accepted' then raise;end if;end;
  perform public.student_billing_command(gen_random_uuid(),jsonb_build_object('action','NEXT_INVOICE','admissionId',draft,'reason','Next monthly tuition fixture'));
  if (select count(*) from public.student_invoices where admission_id=draft)<>2 then raise exception 'Next tuition missing';end if;
+
+ select student_id,guardian_id into sid,gid from public.student_admissions where id=draft;
+ insert into public.enquiries(academy_id,request_id,payload) values(aid,gen_random_uuid(),jsonb_build_object('studentName','Wrong public name','classId','CLASS_8','offeringId',run,'guardianName','Admission guardian','mobile','01775804072')) returning id into enquiry;
+ result:=public.save_admission_draft(gen_random_uuid(),jsonb_build_object('runId',run,'batchId',batch,'enquiryId',enquiry,'details',jsonb_build_object('studentName','Sibling student','dateOfBirth','2016-01-01','guardianId',gid,'guardianName','Admission guardian','guardianMobile','01775804072','relationshipId',relationship,'enrollmentDate',day_value,'newStudentConfirmed',true,'sourceVerified',true),'reason','Verified public preferences fixture'));second:=(result->>'id')::uuid;
+ perform public.finalize_admission(gen_random_uuid(),jsonb_build_object('id',second,'revision',1,'reviewed',true,'paperReceived',true,'reason','Confirmed sibling enquiry fixture'));
+ if (select guardian_id from public.student_admissions where id=second)<>gid or (select status from public.enquiries where id=enquiry)<>'CLOSED' or (select e.payload->>'classId' from public.enquiries e where e.id=enquiry)<>'CLASS_8' then raise exception 'Enquiry claims or shared guardian incorrect';end if;
+ result:=public.save_admission_draft(gen_random_uuid(),jsonb_build_object('runId',run,'batchId',batch,'details',jsonb_build_object('studentName','Third student','enrollmentDate',day_value),'reason','Full batch draft fixture'));
+ begin perform public.finalize_admission(gen_random_uuid(),jsonb_build_object('id',result->>'id','revision',1,'reviewed',true,'paperReceived',true,'reason','Invalid full batch fixture'));raise exception 'Full batch accepted';exception when others then if sqlerrm='Full batch accepted' then raise;end if;end;
+ request:=gen_random_uuid();payload:=jsonb_build_object('id',result->>'id','revision',1,'reason','Cancelled incomplete draft fixture');perform public.cancel_admission_draft(request,payload);perform public.cancel_admission_draft(request,payload);
  select id into workspace from public.operating_divisions where code='SCHOOL';perform set_config('request.headers',jsonb_build_object('x-sohoj-workspace',workspace)::text,true);
  begin perform public.admission_billing(draft);raise exception 'Cross workspace billing leaked';exception when others then if sqlerrm='Cross workspace billing leaked' then raise;end if;end;
+ select id into other_run from public.programme_runs where division_id=workspace limit 1;select id into other_batch from public.teaching_batches where run_id=other_run limit 1;
+ update public.programme_runs set starts_on=day_value,ends_on=day_value+365 where id=other_run;
+ result:=public.save_admission_draft(gen_random_uuid(),jsonb_build_object('runId',other_run,'batchId',other_batch,'details',jsonb_build_object('studentId',sid,'studentName','Admission student','dateOfBirth','2015-01-01','guardianId',gid,'guardianName','Admission guardian','guardianMobile','01775804072','relationshipId',relationship,'enrollmentDate',day_value,'sourceVerified',true),'reason','Existing student new programme fixture'));second:=(result->>'id')::uuid;
+ perform public.finalize_admission(gen_random_uuid(),jsonb_build_object('id',second,'revision',1,'reviewed',true,'paperReceived',true,'reason','Confirmed existing identity fixture'));
+ if (select student_id from public.student_admissions where id=second)<>sid or (select count(*) from public.people where full_name='Admission student')<>1 then raise exception 'Existing student duplicated';end if;
  if has_table_privilege('authenticated','public.student_payments','INSERT') or has_function_privilege('authenticated','public.invoice_balance(uuid)','EXECUTE') then raise exception 'Financial bypass exposed';end if;
 end $$;
 rollback;

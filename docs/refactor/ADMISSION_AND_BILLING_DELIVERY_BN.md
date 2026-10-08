@@ -32,3 +32,18 @@ School/Coaching/Training-এর admission, invoice, payment ও collection regis
 - একই request retry → দ্বিতীয় student/invoice/payment নয়; last seat concurrent admission → একটিই সফল।
 
 এটি নতুন simple model; master-এর advanced GL/advance/assets/payroll architecture ফিরিয়ে আনা হবে না। এই delivery document implementation-এর সঙ্গে সম্পন্ন অবস্থা ও সীমা হালনাগাদ হবে।
+
+## বাস্তবায়িত delivery — ৮ অক্টোবর ২০২৬
+
+- 28: সরাসরি/website enquiry/existing identity admission draft, compact register, school/relationship/discount reason inline directory selection।
+- 29: reviewed paper acknowledgement, permanent Student ID, batch roll, enrollment ও initial invoice একই transaction-এ।
+- 30: payment/numbered receipt, explicit discount ও scholarship, original receipt-linked refund, operator-run next tuition, workspace-scoped billing search।
+- 31: ভুল/বন্ধ unconfirmed draft বাতিল; ইতিহাস অক্ষত।
+- একই case থেকে application, invoice ও actual payment receipt print; letterhead-এর জন্য branding header নেই। Printable acknowledgement টাকা গ্রহণের প্রমাণ নয়।
+- ERP-তে বাংলা সাহায্য: `/dashboard/help/admission`; ভর্তি `/dashboard/academics/admissions`; student account search `/dashboard/billing`।
+
+### যাচাই ও সীমা
+
+Fresh baseline isolated PostgreSQL-compatible execution, TypeScript ও production build যাচাই করা হয়েছে। পরীক্ষা: direct entry-তে enquiry তৈরি না হওয়া, confirmation/payment retry, Student ID/enrollment, unpaid due, scholarship/refund balance, overpayment rejection, next tuition ও cross-workspace denial। Hosted database বা real email পরিবর্তন হয়নি। Local browser/letterhead printer acceptance admin করবেন।
+
+Confirmed identity correction existing People workflow-তে হয়; admission draft নিজেরাই existing identity বদলায় না। Referrer reward settlement, salary, academy expenses/profit ও full assessment/question bank এই admission delivery-এর অংশ নয়। Recurring invoices operator চালান; background auto-billing নয়। Student IDs permanent; guardian-এর shared mobile দিয়ে automatic merge হয় না।
