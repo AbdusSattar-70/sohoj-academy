@@ -63,7 +63,7 @@ enabled = true
 schema_paths = []
 
 [db.seed]
-# Development examples require an existing bootstrap admin. Use --no-seed for a fresh reset before bootstrap.
+# Only reusable production reference data runs automatically. No bootstrap account required.
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"

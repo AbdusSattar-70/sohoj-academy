@@ -30,7 +30,7 @@ Obsolete publish_fee_plan and legacy wrapper/approval paths are removed. Admin F
 
 ## Initial data
 
-Seed only organization/campus placeholders, staff roles/permissions, essential payment methods, relationship/source choices, chart of accounts and editable operating defaults. There are no demo students, staff, prospects, academic years, classes, subjects or programmes. Setup creates the actual academic directory. Existing Auth identities can acquire profiles without automatically receiving privileges.
+Seed only organization/campus placeholders, staff roles/permissions, essential payment methods, relationship/source choices, chart of accounts and editable operating defaults. There are no demo students, staff or prospects in automatic seeds. Migration 45 adds reusable academic years, classes, groups, subjects, programmes, local areas and expense categories; operators review/edit the catalogue and create actual offerings, fees and batches. Existing Auth identities can acquire profiles without automatically receiving privileges.
 
 ## Integrity and evolution
 

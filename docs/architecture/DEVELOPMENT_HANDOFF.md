@@ -4,7 +4,7 @@ The current branch is `feature/redesign_refactor`. This is a fresh-install schem
 
 There are 15 ordered migrations, 92 application tables and 126 functions. Files 01–13 are the clean baseline; 14 is a forward upgrade for already installed projects. Historical concatenated migrations, dynamic function patches, parallel wrapper RPCs, obsolete public application tables, uploaded-consent storage contracts, public content version queues and generic setting registries are removed. Previous implementations are not archived in this branch.
 
-Admin-authorized financial posting, compensation, student transfers and duplicate correction run directly with permission checks and audit evidence. Teacher academic review remains. Public submissions are unverified preferences; direct staff admissions never fabricate a Prospect. Academic directory records are created during setup, not supplied as demo seeds.
+Admin-authorized financial posting, compensation, student transfers and duplicate correction run directly with permission checks and audit evidence. Teacher academic review remains. Public submissions are unverified preferences; direct staff admissions never fabricate a Prospect. Migration 45 supplies reusable academic directory choices; setup reviews these and creates actual offerings, fees and batches.
 
 The UI uses domain modules, controlled RPC writes and permission-scoped reads. Keep existing public visual styling. Do not add client service-role access or bypass prerequisites to mask errors.
 
@@ -113,6 +113,10 @@ Finance extension 44: paginated counter duty and opening-receipt history within 
 
 ## Master development demo seed
 
-An explicit development-only `supabase/seed.sql` now creates academic masters, two public offerings, fee plans, three batches, six unverified Prospects, five staff-direct admission cases, three student identities and paid/part-paid/unpaid ledger examples. Pending staff access requests do not create Auth accounts. Run `pnpm seed:demo` after an existing bootstrap ADMIN is available. Repeated runs preserve the demo through an audit completion marker; no data/password reset is performed. Enrollment respects the configured payment policy. Fresh resets use `--no-seed` until bootstrap. See [Instant demo setup](../testing/INSTANT_DEMO_SETUP.md).
+An explicit development-only `supabase/seeds/development_demo.sql` now creates academic masters, two public offerings, fee plans, three batches, six unverified Prospects, five staff-direct admission cases, three student identities and paid/part-paid/unpaid ledger examples. Pending staff access requests do not create Auth accounts. Execute this optional script manually in a disposable development project SQL Editor after bootstrap. Repeated runs preserve the demo through an audit completion marker; no data/password reset is performed. Enrollment respects the configured payment policy. Fresh resets use `--no-seed` until bootstrap. See [Instant demo setup](../testing/INSTANT_DEMO_SETUP.md).
 
 Verified all master migrations and seed in isolated PostgreSQL-compatible PGlite, including missing-admin rejection, amounts due and duplicate-free repeat execution. Hosted Supabase and browser execution remain local acceptance steps.
+
+## Production reference seed
+
+Migration 45 and automatic `supabase/seed.sql` now add reusable directories only, without overwriting edits or deactivations. Fictional examples are excluded from automatic seeding. See [reference data](../testing/REUSABLE_REFERENCE_DATA.md).

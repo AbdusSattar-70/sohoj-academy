@@ -49,7 +49,7 @@ Create your own Auth user in Supabase Authentication. In the project's SQL Edito
 select public.bootstrap_admin('YOUR_ADMIN_EMAIL', 'YOUR_NAME');
 ```
 
-Sign in, complete /dashboard/setup, then operate admissions. Create academic years/classes/subjects/programmes yourself; multiple academic years may be active. Configure standard fees, permitted discounts and batches before admitting students.
+Sign in, complete /dashboard/setup, then operate admissions. Reusable academic years/classes/subjects/programmes are installed by migration 45; review and edit these choices in Manage CRM; multiple academic years may be active. Configure standard fees, permitted discounts and batches before admitting students.
 
 Staff requests access through /auth/sign-up. Verify their actual responsibilities, assign permissions and send the server-side Supabase invitation. Configure Site URL and allowed redirects <origin>/auth/confirm and <origin>/auth/update-password. Invite/recovery templates can use /auth/confirm?token_hash={{ .TokenHash }}&type=invite or type=recovery. Keep secure email-change confirmation enabled.
 
@@ -66,4 +66,4 @@ For account email setup, follow [Secure account setup](ACCOUNT_SETUP_CONFIGURATI
 
 ## Optional development examples
 
-After creating your own bootstrap administrator, follow [Instant demo setup](../testing/INSTANT_DEMO_SETUP.md). Run `pnpm seed:demo` only on a development database. No reset is needed for an already compatible database. Fresh resets must use `--no-seed` until bootstrap is complete.
+After creating your own bootstrap administrator, follow [Instant demo setup](../testing/INSTANT_DEMO_SETUP.md). Execute `supabase/seeds/development_demo.sql` manually in SQL Editor only on a development database. No reset is needed for an already compatible database. Automatic seeds now contain only reusable reference data and do not require bootstrap. See [reference data](../testing/REUSABLE_REFERENCE_DATA.md).
