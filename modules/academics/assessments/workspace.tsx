@@ -1,6 +1,7 @@
 "use client";
 import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { runAssessmentCommand } from "./actions";
 import type { AssessmentCommand, AssessmentWorkspace } from "./schema";
@@ -16,18 +17,24 @@ export function AssessmentWorkspaceView({
   actorId,
   canRecord,
   canReview,
+  canPlan = false,
 }: {
   data: AssessmentWorkspace;
   actorId: string;
   canRecord: boolean;
   canReview: boolean;
+  canPlan?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [notice, setNotice] = useState("");
   function run(input: AssessmentCommand) {
     setNotice("");
     startTransition(async () => {
-      const result = await runAssessmentCommand(input);
+      const result = await runAssessmentCommand(input).catch(() => ({
+        ok: false,
+        message:
+          "Could not confirm the action. Your input remains; check the test register before retrying.",
+      }));
       setNotice(result.message);
       if (result.ok) announceSaved(result.message);
     });
@@ -39,8 +46,30 @@ export function AssessmentWorkspaceView({
           {notice}
         </p>
       )}
-      {canRecord && (
-        <ActionPanel title="Create assessment">
+      {canRecord && !data.scopes.length && (
+        <div role="status" className="space-y-3 rounded-xl border p-4">
+          <p>
+            No batch/subject teaching scope is available yet. Schedule an
+            authorized class first, then return here to create its test.
+          </p>
+          {canPlan ? (
+            <Link
+              prefetch={false}
+              className="inline-flex min-h-11 items-center rounded-lg border px-4"
+              href="/dashboard/academics/routine"
+            >
+              Prepare routine and dated classes
+            </Link>
+          ) : (
+            <p>
+              Ask the administrator to assign your batch/subject and schedule
+              its classes.
+            </p>
+          )}
+        </div>
+      )}
+      {canRecord && data.scopes.length > 0 && (
+        <ActionPanel title="Create batch test">
           <form
             data-editor
             data-busy={pending ? "true" : "false"}
@@ -64,10 +93,14 @@ export function AssessmentWorkspaceView({
           >
             <fieldset disabled={pending} className="contents">
               <div className="sm:col-span-2">
-                <h2 className="font-semibold">Create assessment</h2>
+                <h2 className="font-semibold">
+                  Create a test, then enter student marks
+                </h2>
                 <p className="text-sm text-muted-foreground">
-                  Choose a batch and subject with scheduled teaching. Publishing
-                  fixes the assessment terms; marks are entered separately.
+                  Create one test for the batch and subject. Each student
+                  receives an individual marks record under that test.
+                  Publishing fixes the test terms; enter student results
+                  separately.
                 </p>
               </div>
               <label className="space-y-1 text-sm">
