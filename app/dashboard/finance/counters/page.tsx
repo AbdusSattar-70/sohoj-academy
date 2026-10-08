@@ -1,7 +1,5 @@
-import {redirect} from "next/navigation";
-import {requireErpContext} from "@/modules/platform/auth/erp-context";
-import {getCounters} from "@/modules/finance/counters/queries";
-import {CounterWorkspace} from "@/modules/finance/counters/workspace";
-import {getCounterTransfers} from "@/modules/finance/counters/transfer-queries";
-import {LocalizedText} from "@/components/shared/localized-text";
-export default async function Counters({searchParams}:{searchParams:Promise<{page?:string;close?:string;cashReturn?:string;transfersPage?:string;pending?:string}>}){const ctx=await requireErpContext();if(!ctx.permissions.some(p=>["accounting.reconcile","workforce.self.view"].includes(p)))redirect("/dashboard?access=denied");const q=await searchParams;const page=Math.max(1,Math.min(10000,parseInt(q.page??"1",10)||1));const transfersPage=Math.max(1,Math.min(10000,parseInt(q.transfersPage??"1",10)||1));const data=await getCounters(page);const transfers=await getCounterTransfers(transfersPage,data.records.map(c=>c.id),q.pending==="1");return <div className="space-y-6"><h1 className="text-2xl font-semibold"><LocalizedText en="Cash counters & opening float" bn="নগদ কাউন্টার ও প্রারম্ভিক তহবিল"/></h1><CounterWorkspace data={data} transfers={transfers} page={page} transfersPage={transfersPage} pendingOnly={q.pending==="1"} resumeCloseId={q.close} resumeReturnId={q.cashReturn} actorId={ctx.profileId}/></div>;}
+import { redirect } from "next/navigation";
+/** Advanced finance is outside the academy operator workflow. */
+export default function Page() {
+  redirect("/dashboard/finance");
+}

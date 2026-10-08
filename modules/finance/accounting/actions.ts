@@ -7,16 +7,8 @@ import { requireErpContext } from "@/modules/platform/auth/erp-context";
 import { createClient } from "@/lib/supabase/server";
 
 const commands = {
-  CREATE_ACCOUNT: "accounting.manage",
-  CREATE_VENDOR: "finance.advances.manage",
-  CREATE_ADVANCE: "finance.advances.manage",
-  PAY_ADVANCE: "finance.advances.manage",
-  APPLY_ADVANCE: "finance.advances.manage",
-  REFUND_ADVANCE: "finance.advances.manage",
   CREATE_EXPENSE_DIRECT: "accounting.expense.manage",
   SETTLE_PAYABLE: "finance.payments.post",
-  RECONCILE_EXPENSE: "accounting.reconcile",
-  RECONCILE_ACCOUNT: "accounting.reconcile",
   RUN_COMPENSATION: "staff.compensation.manage",
   SETTLE_COMPENSATION: "staff.compensation.manage",
   APPLY_COMP_ADJUSTMENT: "staff.compensation.manage",
@@ -30,24 +22,51 @@ const inputSchema = z.object({
   values: z.record(z.string(), z.union([z.string(), z.number()])).default({}),
 });
 
-export async function submitAccountingCommand(input: unknown): Promise<{ ok: boolean; message: string }> {
+export async function submitAccountingCommand(
+  input: unknown,
+): Promise<{ ok: boolean; message: string; uncertain?: boolean }> {
   const parsed = inputSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, message: parsed.error.issues.some(i => i.path[0] === "reason") ? "Reason needs at least five characters after removing spaces. Your entries have been kept." : "Choose a valid action and check the entered details." };
+  if (!parsed.success)
+    return {
+      ok: false,
+      message: parsed.error.issues.some((i) => i.path[0] === "reason")
+        ? "Reason needs at least five characters after removing spaces. Your entries have been kept."
+        : "Choose a valid action and check the entered details.",
+    };
   try {
-  const context = await requireErpContext();
-  const permission = commands[parsed.data.action];
-  if (!context.permissions.includes(permission)) return { ok: false, message: "You do not have permission for this action." };
-  const supabase = (await createClient()) as unknown as SupabaseClient;
-  const { data, error } = await supabase.rpc("finance_accounting_command", {
-    p_input: {
-      ...parsed.data.values,
-      action: parsed.data.action,
-      reason: parsed.data.reason,
-      request_id: parsed.data.request_id,
-    },
-  });
-  if (error) return { ok: false, message: error.message };
-  revalidatePath("/dashboard/finance/accounting");
-  return { ok: true, message: (data as { message?: string } | null)?.message ?? "Finance action completed." };
-  } catch { return {ok:false,message:"Could not confirm the result. Check the record before changing inputs; retrying unchanged inputs uses the same request identity."}; }
+    const context = await requireErpContext();
+    const permission = commands[parsed.data.action];
+    if (!context.permissions.includes(permission))
+      return {
+        ok: false,
+        message: "You do not have permission for this action.",
+      };
+    const supabase = (await createClient()) as unknown as SupabaseClient;
+    const { data, error } = await supabase.rpc("finance_accounting_command", {
+      p_input: {
+        ...parsed.data.values,
+        action: parsed.data.action,
+        reason: parsed.data.reason,
+        request_id: parsed.data.request_id,
+      },
+    });
+    if (error)
+      return { ok: false, uncertain: !error.code, message: error.message };
+    revalidatePath("/dashboard/finance");
+    revalidatePath("/dashboard/finance/earnings");
+    revalidatePath("/dashboard/finance/operations");
+    return {
+      ok: true,
+      message:
+        (data as { message?: string } | null)?.message ??
+        "Finance action completed.",
+    };
+  } catch {
+    return {
+      ok: false,
+      uncertain: true,
+      message:
+        "Could not confirm the result. Check the record before changing inputs; retrying unchanged inputs uses the same request identity.",
+    };
+  }
 }
