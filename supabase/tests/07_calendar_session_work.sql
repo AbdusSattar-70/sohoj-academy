@@ -19,6 +19,10 @@ begin
  insert into public.account_roles values(teacher_profile,'TEACHER');
  insert into public.person_accounts values(teacher_profile,teacher,aid);
  insert into public.teacher_subject_qualifications values(aid,teacher,subject,true,1);
+ result:=public.academic_operation_choices('SESSION');
+ if not exists(select 1 from jsonb_array_elements(result->'teachers') item where item->>'id'=teacher::text and item->>'name' like '%SA-STF-%') then raise exception 'Teacher selector lacks permanent ID'; end if;
+ if has_function_privilege('authenticated','public.teacher_resource_name(uuid)','EXECUTE') then raise exception 'Internal name helper exposed'; end if;
+
  insert into public.people(academy_id,full_name) values(aid,'Fixture student') returning id into student;
  insert into public.person_responsibilities values(student,aid,'STUDENT',true);
  result:=public.change_student_batch(gen_random_uuid(),jsonb_build_object('action','ENROLL','personId',student,'batchId',batch,'fromDate',teaching_day,'reason','Verified fixture enrollment'));

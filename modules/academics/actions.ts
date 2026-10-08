@@ -111,3 +111,13 @@ export async function loadTeacherAgenda(){
  if(!await verifiedAcademyUser())throw Error('Please sign in again.');
  const {data,error}=await(await academyClient()).rpc('academic_teacher_agenda');if(error)throw Error(error.message);return data;
 }
+
+export async function createClassroom(input:unknown){
+ const parsed=z.object({requestId:z.uuid(),payload:z.object({name:z.string().trim().min(2).max(160),capacity:z.coerce.number().int().min(1).max(500),reason:z.string().trim().min(5).max(1000)})}).safeParse(input);
+ if(!parsed.success)return{ok:false,message:'Enter a classroom name, 1–500 seats and a change reason.'};
+ if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
+ const {data,error}=await(await academyClient()).rpc('academic_command',{p_request_id:parsed.data.requestId,p_payload:{...parsed.data.payload,action:'ROOM',active:true}});
+ if(error)return{ok:false,message:error.message};
+ const created=z.object({id:z.string()}).parse(data);
+ return{ok:true,message:'Classroom created and selected.',room:{id:created.id,name:parsed.data.payload.name,capacity:parsed.data.payload.capacity}};
+}

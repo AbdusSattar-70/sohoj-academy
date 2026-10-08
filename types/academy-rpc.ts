@@ -78,6 +78,7 @@ export type AcademyDatabase = {
       save_academic_plan: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       save_academic_windows: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       academic_teacher_agenda: { Args: Record<string, never>; Returns: Json };
+      teacher_resource_name: { Args: { p_id: string }; Returns: string };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
