@@ -53,7 +53,7 @@ export function WebsiteWorkspace({
                     variant="outline"
                     onClick={(event) => {
                       guardWorkspaceNavigation(event, locale);
-                      if(event.defaultPrevented) return;
+                      if (event.defaultPrevented) return;
                       setSelected(row.id);
                       setNotice("");
                     }}
@@ -76,10 +76,17 @@ export function WebsiteWorkspace({
       )}
       {offering && (
         <section className="space-y-3 rounded-xl border p-4">
-          <Button variant="outline" onClick={(event) => {guardWorkspaceNavigation(event, locale); if(!event.defaultPrevented) setSelected(null);}}>
+          <Button
+            variant="outline"
+            onClick={(event) => {
+              guardWorkspaceNavigation(event, locale);
+              if (!event.defaultPrevented) setSelected(null);
+            }}
+          >
             {t("Close editor", "সম্পাদনা বন্ধ করুন")}
           </Button>
           <PublicControlsForm
+            allowSubjectEditing={false}
             key={offering.id}
             offering={offering}
             subjects={data.subjects}

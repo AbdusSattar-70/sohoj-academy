@@ -1,4 +1,6 @@
 "use client";
+import { guardWorkspaceNavigation } from "@/modules/platform/navigation/navigation-guard";
+import { useLanguage } from "@/components/providers/language-provider";
 import { finishWorkflow } from "@/modules/platform/navigation/workflow-return";
 
 import { useMemo, useState, useTransition } from "react";
@@ -189,6 +191,7 @@ export function MasterDataWorkspace({
   data: ManageCrmOverview;
   canManage: boolean;
 }) {
+  const { locale } = useLanguage();
   const [entity, setEntity] = useState<MasterEntity>("class");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -203,7 +206,10 @@ export function MasterDataWorkspace({
           <button
             key={item.entity}
             type="button"
-            onClick={() => {
+            onClick={(event) => {
+              if (entity === item.entity) return;
+              guardWorkspaceNavigation(event, locale);
+              if (event.defaultPrevented) return;
               setEntity(item.entity);
               setEditingId(null);
               setFormOpen(false);
@@ -236,7 +242,9 @@ export function MasterDataWorkspace({
               <button
                 type="button"
                 aria-expanded={formOpen}
-                onClick={() => {
+                onClick={(event) => {
+                  guardWorkspaceNavigation(event, locale);
+                  if (event.defaultPrevented) return;
                   setEditingId(null);
                   setFormOpen(!formOpen);
                   setNotice("");
@@ -309,7 +317,9 @@ export function MasterDataWorkspace({
                       <button
                         type="button"
                         className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
-                        onClick={() => {
+                        onClick={(event) => {
+                          guardWorkspaceNavigation(event, locale);
+                          if (event.defaultPrevented) return;
                           setEditingId(row.id);
                           setFormOpen(true);
                           setNotice("");
@@ -380,6 +390,7 @@ function MasterRecordForm({
   onSuccess: (text: string) => void;
 }) {
   const router = useRouter();
+  const { locale } = useLanguage();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
     null,
@@ -432,6 +443,7 @@ function MasterRecordForm({
   return (
     <form
       data-editor
+      data-dirty={isDirty ? "true" : "false"}
       data-busy={pending ? "true" : "false"}
       onSubmit={submit}
       className="mt-6 space-y-4 border-t pt-6"
@@ -446,7 +458,13 @@ function MasterRecordForm({
             <button
               type="button"
               className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
-              onClick={() => {
+              onClick={(event) => {
+                guardWorkspaceNavigation(
+                  event,
+                  locale,
+                  event.currentTarget.closest("form"),
+                );
+                if (event.defaultPrevented) return;
                 reset(emptyDefaults(entity));
                 onCancelEdit();
               }}
@@ -657,7 +675,11 @@ function MasterRecordForm({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button loading={pending} type="submit" disabled={!isDirty || !isValid || pending}>
+          <Button
+            loading={pending}
+            type="submit"
+            disabled={!isDirty || !isValid || pending}
+          >
             {pending
               ? "Saving\u2026"
               : isEdit

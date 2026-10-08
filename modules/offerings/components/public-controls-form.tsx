@@ -38,11 +38,13 @@ export function PublicControlsForm({
   subjects,
   linkedSubjectIds,
   onSuccess,
+  allowSubjectEditing = true,
 }: {
   offering: OfferingRow;
   subjects: OfferingOverview["subjects"];
   linkedSubjectIds: string[];
   onSuccess?: () => void;
+  allowSubjectEditing?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -457,32 +459,34 @@ export function PublicControlsForm({
               />
             )}
           </ErpFormField>
-          <ErpFormField
-            id={`${offering.id}-subjects`}
-            label="Subjects on this offering"
-            className="sm:col-span-2"
-            hint="Hold Ctrl/Cmd to select multiple. Used on public cards and forms."
-            error={errors.subjectIds?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <select
-                id={id}
-                multiple
-                size={Math.min(8, Math.max(3, subjects.length))}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                className={`${controlClass} h-auto min-h-24 py-2`}
-                disabled={pending}
-                {...register("subjectIds")}
-              >
-                {subjects.map((subject) => (
-                  <option key={subject.id} value={subject.id}>
-                    {subject.code} — {subject.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </ErpFormField>
+          {allowSubjectEditing && (
+            <ErpFormField
+              id={`${offering.id}-subjects`}
+              label="Subjects on this offering"
+              className="sm:col-span-2"
+              hint="Hold Ctrl/Cmd to select multiple. Used on public cards and forms."
+              error={errors.subjectIds?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <select
+                  id={id}
+                  multiple
+                  size={Math.min(8, Math.max(3, subjects.length))}
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  className={`${controlClass} h-auto min-h-24 py-2`}
+                  disabled={pending}
+                  {...register("subjectIds")}
+                >
+                  {subjects.map((subject) => (
+                    <option key={subject.id} value={subject.id}>
+                      {subject.code} — {subject.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </ErpFormField>
+          )}
           <ErpFormField
             id={`${offering.id}-reason`}
             label="Reason"
