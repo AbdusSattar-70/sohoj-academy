@@ -80,7 +80,7 @@ vm.runInNewContext(
   assert.equal(calls.length, 3);
   assert.ok(calls.every((c) => c.limit === 5));
   assert.ok(calls.every((c) => !c.or.includes("),")));
-  assert.ok(calls.some((c) => c.table === "invoices"));
+  assert.ok(calls.some((c) => c.table === "admission_invoices"));
   calls = [];
   context.status = "SUSPENDED";
   await sandbox.exports.searchErpRecords("student");

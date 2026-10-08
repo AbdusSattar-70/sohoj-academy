@@ -48,8 +48,8 @@ export async function searchErpRecords(
     {
       permission: "staff.view",
       table: "staff",
-      fields: "id,staff_no,full_name",
-      search: ["staff_no", "full_name"],
+      fields: "id,staff_no,full_name,mobile,email",
+      search: ["staff_no", "full_name", "mobile", "email"],
       label: "Staff",
       href: () => "/dashboard/staff",
     },
@@ -63,11 +63,35 @@ export async function searchErpRecords(
     },
     {
       permission: "finance.view",
-      table: "invoices",
+      table: "admission_invoices",
       fields: "id,invoice_no",
       search: ["invoice_no"],
       label: "Invoice",
       href: (id) => `/dashboard/finance/billing/${id}/print`,
+    },
+    {
+      permission: "admissions.view",
+      table: "admission_cases",
+      fields: "id,admission_no",
+      search: ["admission_no"],
+      label: "Admission",
+      href: (id) => `/dashboard/admissions/${id}`,
+    },
+    {
+      permission: "academics.view",
+      table: "batches",
+      fields: "id,code,name",
+      search: ["code", "name"],
+      label: "Batch",
+      href: () => "/dashboard/academics/batches",
+    },
+    {
+      permission: "referrals.manage",
+      table: "referral_people",
+      fields: "id,full_name,mobile",
+      search: ["full_name", "mobile"],
+      label: "Referrer",
+      href: (id) => `/dashboard/referrals?person=${id}`,
     },
   ];
   if (!context.roles.includes("ADMIN")) {
@@ -107,8 +131,12 @@ export async function searchErpRecords(
             .map((row) => ({
               id: row.id,
               title:
-                row.full_name ?? row.student_name ?? row.name ?? row.invoice_no,
-              detail: `${c.label} · ${row.student_no ?? row.prospect_no ?? row.staff_no ?? row.code ?? row.invoice_no}`,
+                row.full_name ??
+                row.student_name ??
+                row.name ??
+                row.invoice_no ??
+                row.admission_no,
+              detail: `${c.label} · ${row.student_no ?? row.prospect_no ?? row.staff_no ?? row.code ?? row.invoice_no ?? row.admission_no ?? row.mobile ?? ""}`,
               href: c.href(row.id),
             })),
         };
