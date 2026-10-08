@@ -66,13 +66,19 @@ function Button({
       disabled={props.disabled || loading}
       aria-busy={loading || undefined}
     >
-      {loading && !asChild && (
-        <span
-          aria-hidden="true"
-          className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent"
-        />
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {loading && (
+            <span
+              aria-hidden="true"
+              className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+            />
+          )}
+          {children}
+        </>
       )}
-      {children}
     </Comp>
   );
 }
