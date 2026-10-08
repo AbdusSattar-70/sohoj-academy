@@ -77,6 +77,7 @@ export type AcademyDatabase = {
       academic_placement_register: { Args: { p_batch: string; p_page?: number }; Returns: Json };
       save_academic_plan: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       save_academic_windows: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
+      academic_teacher_agenda: { Args: Record<string, never>; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

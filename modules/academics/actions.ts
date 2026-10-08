@@ -106,3 +106,8 @@ export async function saveAcademicWindows(input:unknown){
  if(!await verifiedAcademyUser())return{ok:false,message:'Please sign in again.'};
  const {error}=await(await academyClient()).rpc('save_academic_windows',{p_request_id:parsed.data.requestId,p_payload:parsed.data.payload as Json});return error?{ok:false,message:error.message}:{ok:true,message:'Weekly availability saved.'};
 }
+
+export async function loadTeacherAgenda(){
+ if(!await verifiedAcademyUser())throw Error('Please sign in again.');
+ const {data,error}=await(await academyClient()).rpc('academic_teacher_agenda');if(error)throw Error(error.message);return data;
+}

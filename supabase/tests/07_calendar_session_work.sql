@@ -50,8 +50,17 @@ begin
  routine:=(result->>'id')::uuid;
  result:=public.academic_calendar(from_day::text,through_day::text,1,'');
  if (result->>'total')::int<>2 then raise exception 'Calendar missing recurring sessions'; end if;
- perform public.manage_academic_routine(gen_random_uuid(),jsonb_build_object('action','CONTINUE','id',routine,'revision',1,'startsOn',through_day+1,'endsOn',through_day+8,'reason','Confirmed next routine period'));
+ result:=public.manage_academic_routine(gen_random_uuid(),jsonb_build_object('action','CONTINUE','id',routine,'revision',1,'startsOn',through_day+1,'endsOn',through_day+8,'reason','Confirmed next routine period'));
  if (select is_active from public.academic_routines where id=routine) then raise exception 'Continuation can be generated twice'; end if;
+ routine:=(result->>'id')::uuid;
+ begin
+  perform public.manage_academic_routine(gen_random_uuid(),jsonb_build_object('action','REPLACE','id',routine,'revision',1,'startsOn',through_day+1,'endsOn',through_day+8,'teacherId',gen_random_uuid(),'roomId',room,'weekdays',jsonb_build_array(extract(dow from from_day)::int),'startTime','09:00','endTime','10:00','confirmAvailability',true,'confirmReplacement',true,'reason','Failed replacement fixture'));
+  raise exception 'Invalid replacement accepted';
+ exception when others then if sqlerrm='Invalid replacement accepted' then raise; end if; end;
+ if not(select is_active from public.academic_routines where id=routine) or not exists(select 1 from public.academic_sessions where routine_id=routine and status='SCHEDULED') then raise exception 'Failed replacement lost old schedule'; end if;
+ result:=public.manage_academic_routine(gen_random_uuid(),jsonb_build_object('action','REPLACE','id',routine,'revision',1,'startsOn',through_day+1,'endsOn',through_day+8,'teacherId',teacher,'roomId',room,'weekdays',jsonb_build_array(extract(dow from from_day)::int),'startTime','09:00','endTime','10:00','confirmAvailability',true,'confirmReplacement',true,'reason','Confirmed replacement fixture'));
+ if (result->>'replaced')::int<>1 or (select status from public.academic_sessions where id=session)<>'APPROVED' then raise exception 'Replacement changed past teaching history'; end if;
+
  result:=public.save_academic_plan(gen_random_uuid(),jsonb_build_object('target','RUN','id',run,'revision',1,'weekdays',jsonb_build_array(0,2,4),'reason','Confirmed offering default days'));
  if result->'default_weekdays'<>jsonb_build_array(0,2,4) then raise exception 'Default teaching days lost'; end if;
  result:=public.save_academic_plan(gen_random_uuid(),jsonb_build_object('target','BATCH','id',batch2,'revision',1,'slots',jsonb_build_array(jsonb_build_object('weekday',0,'start','07:00','end','09:00'),jsonb_build_object('weekday',2,'start','08:00','end','10:00')),'reason','Confirmed weekday batch times'));
