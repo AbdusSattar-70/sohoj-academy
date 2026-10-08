@@ -47,3 +47,7 @@ These checks do not establish hosted Supabase Auth/email, production PostgREST r
 ## Commit discipline
 
 One focused implementation/fix, verify, commit, then continue. Publish source per file and verify the Git blob checksum; reject truncated tool output. Run source integrity before build. Do not reset a live database or introduce a competing fee/admission workflow to mask a bug.
+
+## Guided teacher class workspace
+
+Teacher sessions now use a single start → student attendance → dated topics → homework → finish → review/submit workspace. Migration 56 adds durable class clocks and an atomic submission coordinator around existing attendance/class-log review engines. Clock duration alone is not verified/paid workload. Exam question drafts link to a published assessment so ordinary class preparation cannot satisfy exam readiness. Read [the Bengali operator workflow](TEACHER_CLASS_WORKSPACE_BN.md) before extending this path. Existing report corrections and independent review remain available; no second attendance or compensation model was introduced.

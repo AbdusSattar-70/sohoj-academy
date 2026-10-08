@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getClassFlow } from "@/modules/teacher/classroom/queries";
+import { ClassPreparation } from "@/modules/teacher/classroom/preparation";
 import { LocalizedText } from "@/components/shared/localized-text";
 import { PageHeader } from "@/components/erp/page-header";
 import { getCalendar } from "@/modules/academics/planning/queries";
@@ -26,7 +28,10 @@ export default async function TeacherDashboardPage() {
   // Include a short look-back so teachers can finish recent attendance.
   const from = addDays(today, -7);
   const to = addDays(today, 14);
-  const calendar = await getCalendar(from, to, 1);
+  const [calendar, flow] = await Promise.all([
+    getCalendar(from, to, 1),
+    getClassFlow(),
+  ]);
 
   const data = {
     branches: [],
@@ -127,6 +132,7 @@ export default async function TeacherDashboardPage() {
           "academics.sessions.manage",
         )}
       />
+      <ClassPreparation reminders={flow.reminders} />
     </div>
   );
 }

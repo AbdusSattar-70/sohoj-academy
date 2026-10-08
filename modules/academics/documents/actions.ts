@@ -23,7 +23,7 @@ export async function saveAcademicDocument(
       await platformClient()
     ).rpc(
       kind === "questions"
-        ? "class_question_document_command"
+        ? "teacher_class_question_command"
         : "student_progress_command",
       { p_input: p.data },
     );
@@ -38,6 +38,7 @@ export async function saveAcademicDocument(
       };
     revalidatePath("/dashboard/academics/" + kind);
     revalidatePath("/dashboard/teacher");
+    revalidatePath("/dashboard/academics/sessions/[sessionId]", "page");
     return { ok: true, message: "Saved successfully.", id };
   } catch {
     return {

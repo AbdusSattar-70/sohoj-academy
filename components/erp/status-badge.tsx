@@ -22,6 +22,8 @@ const tones: Record<string, string> = {
 Object.assign(tones, {
   PRESENT: tones.APPROVED,
   ABSENT: tones.REJECTED,
+  LATE: tones.PENDING,
+  EXCUSED: tones.NEW,
   LEAVE: tones.PENDING,
   HOLIDAY: tones.NEW,
   ACTIVE_ENROLLMENT: tones.ACTIVE,

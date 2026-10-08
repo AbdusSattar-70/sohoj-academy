@@ -47,7 +47,7 @@ const coreGuides: Record<string, WorkflowGuideData> = {
         "আজকের নির্ধারিত ক্লাস খুলুন; আসন্ন ক্লাস থেকে প্রশ্ন প্রস্তুত করতে পারেন।",
       ],
       [
-        "Record student attendance, actual teaching time, topics and homework; submit for admin review.",
+        "Start the class, save student attendance, confirm topics/homework, then Finish and submit the combined report for admin review.",
         "শিক্ষার্থীর উপস্থিতি, প্রকৃত পাঠদানের সময়, টপিক ও বাড়ির কাজ লিখে admin review-এর জন্য জমা দিন।",
       ],
       [

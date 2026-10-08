@@ -108,6 +108,7 @@ export const commandEnvelope = z.object({
   action: z.enum(["SAVE", "SUBMIT", "RETURN", "FINALIZE", "GENERATE"]),
   id: id.optional(),
   session_id: id.optional(),
+  assessment_id: id.optional(),
   batch_id: id.optional(),
   student_id: id.optional(),
   topic: z.string().max(300).optional(),

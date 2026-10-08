@@ -10,7 +10,8 @@ import {
   getSessionWorkspace,
   getClassLogWorkspace,
 } from "@/modules/academics/operations/queries";
-import { ClassLogForm } from "@/modules/academics/operations/class-log-form";
+import { TeacherClassroom } from "@/modules/teacher/classroom/workspace";
+import { getClassFlow } from "@/modules/teacher/classroom/queries";
 import { getHomeworkWorkspace } from "@/modules/academics/homework/queries";
 import { HomeworkFollowup } from "@/modules/academics/homework/workspace";
 import { AcademicForm } from "@/modules/academics/operations/command-form";
@@ -22,10 +23,11 @@ export default async function SessionPage({
   const context = await requirePermission("academics.view");
   const { sessionId } = await params;
   if (!z.string().uuid().safeParse(sessionId).success) notFound();
-  const [data, classLogs, homework] = await Promise.all([
+  const [data, classLogs, homework, flow] = await Promise.all([
     getSessionWorkspace(sessionId),
     getClassLogWorkspace(sessionId),
     getHomeworkWorkspace(sessionId),
+    getClassFlow(sessionId),
   ]);
   const s = data.session;
   const latest = data.submissions[0];
@@ -47,26 +49,28 @@ export default async function SessionPage({
           Academic Operations
         </Link>
       </div>
-      <nav className="flex flex-wrap gap-3">
-        <Link
-          className="rounded-lg border px-4 py-2"
-          href={"/dashboard/academics/questions?session=" + s.id}
-        >
-          <LocalizedText
-            en="Prepare / review class questions"
-            bn="ক্লাসের প্রশ্ন প্রস্তুতি / যাচাই"
-          />
-        </Link>
-        <Link
-          className="rounded-lg border px-4 py-2"
-          href="/dashboard/academics/progress"
-        >
-          <LocalizedText
-            en="Student progress reports"
-            bn="শিক্ষার্থীর অগ্রগতি প্রতিবেদন"
-          />
-        </Link>
-      </nav>
+      {can("academics.attendance.approve") && (
+        <nav className="flex flex-wrap gap-3">
+          <Link
+            className="rounded-lg border px-4 py-2"
+            href={"/dashboard/academics/questions?session=" + s.id}
+          >
+            <LocalizedText
+              en="Prepare / review class questions"
+              bn="ক্লাসের প্রশ্ন প্রস্তুতি / যাচাই"
+            />
+          </Link>
+          <Link
+            className="rounded-lg border px-4 py-2"
+            href="/dashboard/academics/progress"
+          >
+            <LocalizedText
+              en="Student progress reports"
+              bn="শিক্ষার্থীর অগ্রগতি প্রতিবেদন"
+            />
+          </Link>
+        </nav>
+      )}
       <section className="space-y-3 rounded-2xl border bg-card p-5">
         <StatusBadge value={s.status} />
         <p className="text-sm">
@@ -104,236 +108,218 @@ export default async function SessionPage({
           <p className="text-sm">Cancellation reason: {s.cancellationReason}</p>
         )}
       </section>
-      <section className="rounded-2xl border bg-card p-5">
-        <h2 className="font-semibold">Official Attendance</h2>
-        {approved ? (
-          <>
-            <p className="mt-2 text-sm">
-              Approved revision {approved.revision}. Later drafts or rejected
-              corrections do not replace this record.
-            </p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-4">
-              {["PRESENT", "ABSENT", "LATE", "EXCUSED"].map((status) => (
-                <p key={status} className="rounded-lg bg-muted/40 p-3 text-sm">
-                  {status}:{" "}
-                  <strong>
-                    {approved.entries.filter((e) => e.status === status).length}
-                  </strong>
-                </p>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">
-            No attendance has been approved for this class.
-          </p>
-        )}
-      </section>
-      {s.status === "SCHEDULED" && !began && (
-        <p className="text-sm text-muted-foreground">
-          Attendance opens after the class starts.
-        </p>
-      )}
       {s.status === "SCHEDULED" &&
-        began &&
-        latest?.status !== "SUBMITTED" &&
         can("academics.attendance.record") &&
-        (data.roster.length ? (
-          <AcademicForm
-            key={latest?.id ?? "first"}
-            defaults={{
-              action: "SAVE_ATTENDANCE",
-              session_id: s.id,
-              base_id: latest?.id,
-            }}
-            roster={data.roster}
-            fields={[]}
-            label={
-              latest ? "Save Attendance Revision" : "Save Attendance Draft"
-            }
-            description="Choose a status for every student. No one is marked present automatically. Saving creates a draft; an independent approval is needed to finalize it. The first saved roster is retained for corrections."
-          />
-        ) : (
-          <p className="rounded-xl border border-dashed p-5 text-sm">
-            No eligible enrollments on the class date. Check the batch placement
-            and enrollment dates.
-          </p>
-        ))}
-      {s.status === "SCHEDULED" &&
-        latest?.status === "DRAFT" &&
-        latest.recordedBy === context.profileId &&
-        can("academics.attendance.record") && (
-          <AcademicForm
-            defaults={{
-              action: "SUBMIT_ATTENDANCE",
-              session_id: s.id,
-              attendance_id: latest.id,
-            }}
-            fields={[]}
-            label="Submit Saved Attendance"
-            description={`Submit saved revision ${latest.revision} for independent approval. Save any unsaved edits above before submitting.`}
-          />
+        (can("academics.sessions.manage") ||
+          s.teacherProfileId === context.profileId) && (
+          <TeacherClassroom data={data} logs={classLogs} flow={flow} />
         )}
-      {latest?.status === "SUBMITTED" &&
-        (latest.recordedBy === context.profileId ? (
-          <p className="rounded-xl border p-5 text-sm">
-            Awaiting review by a different authorized person. You cannot approve
-            your own attendance.
-          </p>
-        ) : (
-          can("academics.attendance.approve") && (
-            <AcademicForm
-              defaults={{
-                action: "DECIDE_ATTENDANCE",
-                approval_id: latest.approvalId ?? undefined,
-              }}
-              fields={[
-                {
-                  key: "decision",
-                  label: "Decision",
-                  options: [
-                    { id: "APPROVED", name: "Approve" },
-                    { id: "REJECTED", name: "Reject for correction" },
-                  ],
-                },
-              ]}
-              label="Record Attendance Decision"
-              description="Review every saved student status and note below before approving. Rejection preserves the submitted revision and permits a corrected draft."
-            />
-          )
-        ))}
-      <section className="space-y-4">
-        {s.status === "SCHEDULED" &&
-          began &&
-          (can("academics.attendance.record") ||
-            can("academics.sessions.manage")) && (
-            <ClassLogForm sessionId={s.id} workspace={classLogs} />
-          )}
-        <div>
-          <h2 className="font-semibold">Actual Class Log History</h2>
-          <p className="text-sm text-muted-foreground">
-            Submitted records are immutable. Corrections create a new revision.
-          </p>
-        </div>
-        {classLogs.logs
-          .filter((log) => log.status !== "DRAFT")
-          .map((log) => (
-            <article
-              key={log.id}
-              className="space-y-2 rounded-xl border bg-card p-4"
-            >
-              <p className="text-sm font-semibold">
-                Revision {log.revision} · {log.status}{" "}
-                {new Date(log.submitted_at!).toLocaleString("en-GB", {
-                  timeZone: s.timezone,
-                })}
-              </p>
-              <p className="text-sm">{log.class_summary}</p>
-              <p className="text-sm">
-                <LocalizedText
-                  en="Actual teaching hours"
-                  bn="বাস্তব পাঠদানের ঘণ্টা"
-                />
-                :{" "}
-                {log.actual_starts_at && log.actual_ends_at
-                  ? (
-                      (new Date(log.actual_ends_at).getTime() -
-                        new Date(log.actual_starts_at).getTime()) /
-                      3600000
-                    ).toFixed(2)
-                  : "—"}{" "}
-                · {log.review_note}
-              </p>
-              {log.status === "SUBMITTED" &&
-                can("academics.attendance.approve") &&
-                log.authored_by !== context.profileId && (
-                  <ClassLogReview sessionId={s.id} logId={log.id} />
-                )}
-
-              {log.unit_progress.length > 0 && (
-                <ul className="list-disc pl-5 text-sm">
-                  {log.unit_progress.map((entry) => (
-                    <li key={entry.unit_index}>
-                      {classLogs.units[entry.unit_index]?.title}:{" "}
-                      {entry.status.replaceAll("_", " ")}
-                      {entry.note ? ` — ${entry.note}` : ""}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {log.unfinished_reason && (
-                <p className="text-sm">
-                  <strong>Unfinished content:</strong> {log.unfinished_reason}
-                </p>
-              )}
-              {log.homework && (
-                <p className="text-sm">
-                  <strong>Homework:</strong> {log.homework}
-                </p>
-              )}
-              {log.next_session_plan && (
-                <p className="text-sm">
-                  <strong>Next class:</strong> {log.next_session_plan}
-                </p>
-              )}
-            </article>
-          ))}
-        {!classLogs.logs.some((log) => log.status !== "DRAFT") && (
-          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-            No actual teaching log has been submitted for this class.
-          </p>
-        )}
-      </section>
-      <HomeworkFollowup
-        sessionId={sessionId}
-        workspace={homework}
-        canRecord={
-          s.status === "SCHEDULED" &&
-          began &&
-          (can("academics.attendance.record") ||
-            can("academics.sessions.manage"))
+      <details
+        className="space-y-4 rounded-xl border p-4"
+        open={
+          can("academics.attendance.approve") &&
+          (latest?.status === "SUBMITTED" ||
+            classLogs.logs.some((l) => l.status === "SUBMITTED"))
         }
-      />
-      <section className="space-y-3">
-        <h2 className="font-semibold">Attendance Revision History</h2>
-        {data.submissions.map((a) => (
-          <details
-            key={a.id}
-            open={a.id === latest?.id}
-            className="rounded-xl border bg-card p-4"
-          >
-            <summary className="cursor-pointer text-sm font-semibold">
-              Revision {a.revision} · {a.status} · {a.recorder}
-            </summary>
-            <p className="mt-3 text-sm">{a.reason}</p>
-            {a.decisionNote && (
-              <p className="mt-1 text-sm">Decision: {a.decisionNote}</p>
-            )}
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="py-2">Student</th>
-                    <th>Status</th>
-                    <th>Note</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {a.entries.map((e) => (
-                    <tr key={e.enrollment_id} className="border-b">
-                      <td className="py-2">
-                        {e.number} · {e.name}
-                      </td>
-                      <td>{e.status}</td>
-                      <td>{e.note || "—"}</td>
+      >
+        <summary className="cursor-pointer font-semibold">
+          <LocalizedText
+            en="Review, attendance history & homework follow-up"
+            bn="যাচাই, উপস্থিতির ইতিহাস ও বাড়ির কাজের follow-up"
+          />
+        </summary>
+        <section className="rounded-2xl border bg-card p-5">
+          <h2 className="font-semibold">Official Attendance</h2>
+          {approved ? (
+            <>
+              <p className="mt-2 text-sm">
+                Approved revision {approved.revision}. Later drafts or rejected
+                corrections do not replace this record.
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                {["PRESENT", "ABSENT", "LATE", "EXCUSED"].map((status) => (
+                  <p
+                    key={status}
+                    className="rounded-lg bg-muted/40 p-3 text-sm"
+                  >
+                    {status}:{" "}
+                    <strong>
+                      {
+                        approved.entries.filter((e) => e.status === status)
+                          .length
+                      }
+                    </strong>
+                  </p>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              No attendance has been approved for this class.
+            </p>
+          )}
+        </section>
+        {s.status === "SCHEDULED" && !began && (
+          <p className="text-sm text-muted-foreground">
+            Attendance opens after the class starts.
+          </p>
+        )}
+        {latest?.status === "SUBMITTED" &&
+          (latest.recordedBy === context.profileId ? (
+            <p className="rounded-xl border p-5 text-sm">
+              Awaiting review by a different authorized person. You cannot
+              approve your own attendance.
+            </p>
+          ) : (
+            can("academics.attendance.approve") && (
+              <AcademicForm
+                defaults={{
+                  action: "DECIDE_ATTENDANCE",
+                  approval_id: latest.approvalId ?? undefined,
+                }}
+                fields={[
+                  {
+                    key: "decision",
+                    label: "Decision",
+                    options: [
+                      { id: "APPROVED", name: "Approve" },
+                      { id: "REJECTED", name: "Reject for correction" },
+                    ],
+                  },
+                ]}
+                label="Record Attendance Decision"
+                description="Review every saved student status and note below before approving. Rejection preserves the submitted revision and permits a corrected draft."
+              />
+            )
+          ))}
+        <section className="space-y-4">
+          <div>
+            <h2 className="font-semibold">Actual Class Log History</h2>
+            <p className="text-sm text-muted-foreground">
+              Submitted records are immutable. Corrections create a new
+              revision.
+            </p>
+          </div>
+          {classLogs.logs
+            .filter((log) => log.status !== "DRAFT")
+            .map((log) => (
+              <article
+                key={log.id}
+                className="space-y-2 rounded-xl border bg-card p-4"
+              >
+                <p className="text-sm font-semibold">
+                  Revision {log.revision} · {log.status}{" "}
+                  {new Date(log.submitted_at!).toLocaleString("en-GB", {
+                    timeZone: s.timezone,
+                  })}
+                </p>
+                <p className="text-sm">{log.class_summary}</p>
+                <p className="text-sm">
+                  <LocalizedText
+                    en="Actual teaching hours"
+                    bn="বাস্তব পাঠদানের ঘণ্টা"
+                  />
+                  :{" "}
+                  {log.actual_starts_at && log.actual_ends_at
+                    ? (
+                        (new Date(log.actual_ends_at).getTime() -
+                          new Date(log.actual_starts_at).getTime()) /
+                        3600000
+                      ).toFixed(2)
+                    : "—"}{" "}
+                  · {log.review_note}
+                </p>
+                {log.status === "SUBMITTED" &&
+                  can("academics.attendance.approve") &&
+                  log.authored_by !== context.profileId && (
+                    <ClassLogReview sessionId={s.id} logId={log.id} />
+                  )}
+
+                {log.unit_progress.length > 0 && (
+                  <ul className="list-disc pl-5 text-sm">
+                    {log.unit_progress.map((entry) => (
+                      <li key={entry.unit_index}>
+                        {classLogs.units[entry.unit_index]?.title}:{" "}
+                        {entry.status.replaceAll("_", " ")}
+                        {entry.note ? ` — ${entry.note}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {log.unfinished_reason && (
+                  <p className="text-sm">
+                    <strong>Unfinished content:</strong> {log.unfinished_reason}
+                  </p>
+                )}
+                {log.homework && (
+                  <p className="text-sm">
+                    <strong>Homework:</strong> {log.homework}
+                  </p>
+                )}
+                {log.next_session_plan && (
+                  <p className="text-sm">
+                    <strong>Next class:</strong> {log.next_session_plan}
+                  </p>
+                )}
+              </article>
+            ))}
+          {!classLogs.logs.some((log) => log.status !== "DRAFT") && (
+            <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+              No actual teaching log has been submitted for this class.
+            </p>
+          )}
+        </section>
+        <HomeworkFollowup
+          sessionId={sessionId}
+          workspace={homework}
+          canRecord={
+            s.status === "SCHEDULED" &&
+            began &&
+            (can("academics.attendance.record") ||
+              can("academics.sessions.manage"))
+          }
+        />
+        <section className="space-y-3">
+          <h2 className="font-semibold">Attendance Revision History</h2>
+          {data.submissions.map((a) => (
+            <details
+              key={a.id}
+              open={a.id === latest?.id}
+              className="rounded-xl border bg-card p-4"
+            >
+              <summary className="cursor-pointer text-sm font-semibold">
+                Revision {a.revision} · {a.status} · {a.recorder}
+              </summary>
+              <p className="mt-3 text-sm">{a.reason}</p>
+              {a.decisionNote && (
+                <p className="mt-1 text-sm">Decision: {a.decisionNote}</p>
+              )}
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2">Student</th>
+                      <th>Status</th>
+                      <th>Note</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-        ))}
-      </section>
+                  </thead>
+                  <tbody>
+                    {a.entries.map((e) => (
+                      <tr key={e.enrollment_id} className="border-b">
+                        <td className="py-2">
+                          {e.number} · {e.name}
+                        </td>
+                        <td>{e.status}</td>
+                        <td>{e.note || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          ))}
+        </section>
+      </details>
       {can("academics.sessions.manage") &&
         s.status === "SCHEDULED" &&
         !(
