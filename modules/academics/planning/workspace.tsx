@@ -125,7 +125,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
         </Link>
         <Link
           className="rounded-lg border px-3 py-2"
-          href="/dashboard/crm/manage"
+          href="/dashboard/academics/settings"
         >
           {t("Classes, subjects & years", "শ্রেণি, বিষয় ও শিক্ষাবর্ষ")}
         </Link>

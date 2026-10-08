@@ -26,7 +26,7 @@ export function ErpShell({
         ? group.items.filter((item) =>
             [
               "/dashboard/settings",
-              "/dashboard/crm/manage",
+              "/dashboard/academics/settings",
               "/dashboard/academics/offerings",
               "/dashboard/finance/fee-plans",
               "/dashboard/academics/batches",

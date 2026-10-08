@@ -5,6 +5,7 @@ export type WorkflowGuideData = {
   next?: string[];
 };
 const coreGuides: Record<string, WorkflowGuideData> = {
+ "website-management": { en: "Manage public programme content", bn: "প্রোগ্রামের প্রকাশ্য তথ্য পরিচালনা", steps: [["Choose Edit public content on a programme row; update showcase copy, visibility and application intake.", "প্রোগ্রামের row-তে প্রকাশ্য তথ্য সম্পাদনা খুলে description, দৃশ্যমানতা ও আবেদন গ্রহণ বদলান।"], ["Classes, subjects and years belong to Academic settings. This page does not edit fees, batches or verified student records.", "শ্রেণি, বিষয় ও বছর Academic settings-এ। এই পেজে fees, batches বা যাচাইকৃত student record সম্পাদনা নয়।"]] },
   admissions: {
     en: "Complete one admission case",
     bn: "একটি ভর্তি সম্পন্ন করুন",

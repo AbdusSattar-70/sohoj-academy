@@ -120,14 +120,14 @@ export default async function ProspectDetailPage({
               <p className="mt-1 leading-6">
                 Submitted as free text:{" "}
                 <span className="font-semibold">{prospect.schoolName}</span>.
-                Confirm or create the school in Manage CRM, then continue
+                Confirm or create the school in Academic & registration settings, then continue
                 follow-up or admission.
               </p>
               <Link
-                href="/dashboard/crm/manage"
+                href="/dashboard/academics/settings"
                 className="mt-3 inline-flex text-sm font-semibold underline underline-offset-4"
               >
-                Open Manage CRM
+                Open Academic & registration settings
               </Link>
             </div>
           ) : null}

@@ -152,6 +152,7 @@ export async function publishFeePlan(
     return { ok: false, error: "Fee Plan publish returned no identity." };
   revalidatePath("/dashboard/academics/offerings");
   revalidatePath("/dashboard/finance/fee-plans");
+  revalidatePath("/dashboard/crm/manage");
   revalidatePath("/");
   return { ok: true, reference: result.fee_plan_id };
 }
@@ -211,6 +212,7 @@ export async function updateProgrammeOfferingPublicControls(
     return { ok: false, error: "Public controls update returned no identity." };
   }
   revalidatePath("/dashboard/academics/offerings");
+  revalidatePath("/dashboard/crm/manage");
   revalidatePath("/");
   revalidatePath("/interest");
   return { ok: true, reference: result.offering_id };

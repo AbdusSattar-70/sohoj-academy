@@ -29,10 +29,10 @@ export default async function ProspectsPage({
         actions={
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/dashboard/crm/manage"
+              href="/dashboard/academics/settings"
               className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-muted"
             >
-              Manage CRM
+              Academic & registration settings
             </Link>
             <Link
               href="/interest"

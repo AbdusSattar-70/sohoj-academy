@@ -93,7 +93,7 @@ export async function manageCrmMasterRecord(
   }
   if (!savedId) return { ok: false, error: "Could not confirm the saved record. Refresh the list before trying again." };
 
-  revalidatePath("/dashboard/crm/manage");
+  revalidatePath("/dashboard/academics/settings");
   revalidatePath("/dashboard/crm/prospects");
   revalidatePath("/dashboard/academics/offerings");
   revalidatePath("/interest");

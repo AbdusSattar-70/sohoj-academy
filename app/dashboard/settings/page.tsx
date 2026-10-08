@@ -24,7 +24,7 @@ export default async function AccessSecurityPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {can(context, "system.master_data.manage") && (
             <SetupLink
-              href="/dashboard/crm/manage"
+              href="/dashboard/academics/settings"
               title="Academic Directory"
               description="Years, classes, subjects, schools and programmes."
             />

@@ -23,7 +23,7 @@ const setup: Step[] = [
     do: "In Manage CRM, check the academic years, branch, classes and groups, subjects taught, programme definitions, schools and public form choices. Add missing entries and deactivate outdated choices instead of deleting historical data.",
     check:
       "The year, class, subject and programme you need can be selected in the ERP forms. More than one academic year may be active while preparing a future intake.",
-    href: "/dashboard/crm/manage",
+    href: "/dashboard/academics/settings",
     page: "Manage CRM",
     permission: "system.master_data.manage",
   },

@@ -146,3 +146,28 @@ export async function getPublicProgrammeOfferings(): Promise<
     return null;
   }
 }
+
+/** Website workspace fetches only public-editing data, not fees or academic directories. */
+export async function getWebsiteOfferings() {
+  const db = await createOfferingClient();
+  const base = await createClient();
+  const [a, b, c] = await Promise.all([
+    db
+      .from("programme_offerings")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    base
+      .from("subjects")
+      .select("id,code,name")
+      .eq("is_active", true)
+      .order("name"),
+    db
+      .from("programme_offering_subjects")
+      .select("offering_id,subject_id,sort_order"),
+  ]);
+  return {
+    offerings: dataOrThrow(a.data, a.error),
+    subjects: dataOrThrow(b.data, b.error),
+    offeringSubjects: dataOrThrow(c.data, c.error),
+  };
+}

@@ -1,67 +1,23 @@
-import Link from "next/link";
 import { PageHeader } from "@/components/erp/page-header";
-import { MasterDataWorkspace } from "@/modules/crm/manage/components/master-data-workspace";
-import { getManageCrmOverview } from "@/modules/crm/manage/queries";
+import { LocalizedText } from "@/components/shared/localized-text";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
-import { can } from "@/types/erp";
-
-export default async function ManageCrmPage() {
-  const context = await requirePermission("system.master_data.manage");
-  const data = await getManageCrmOverview();
-  const canManage = can(context, "system.master_data.manage");
-
+import { getWebsiteOfferings } from "@/modules/offerings/queries";
+import { WebsiteWorkspace } from "@/modules/crm/website/workspace";
+export default async function WebsiteManagementPage() {
+  await requirePermission("academics.manage");
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <PageHeader
-        eyebrow="CRM & Student Bank"
-        title="Manage CRM"
-        description="Edit shared academic and registration master data used by public forms, programme offerings and admissions. Deactivate rather than delete so history stays intact."
+        eyebrow={<LocalizedText en="Website & CRM" bn="ওয়েবসাইট ও CRM" />}
+        title={<LocalizedText en="Website management" bn="ওয়েবসাইট পরিচালনা" />}
+        description={
+          <LocalizedText
+            en="Edit programme showcase copy, visibility and application intake. Academic list creation belongs in Academic settings."
+            bn="প্রোগ্রামের প্রকাশ্য তথ্য, দৃশ্যমানতা ও আবেদন গ্রহণ সম্পাদনা করুন। শিক্ষা তালিকা তৈরি Academic settings-এর কাজ।"
+          />
+        }
       />
-
-      <section className="grid gap-3 rounded-2xl border bg-card p-5 sm:grid-cols-2 lg:grid-cols-4 sm:p-6">
-        <SetupLink
-          href="/dashboard/academics/offerings"
-          title="Programme offerings"
-          body="Year, branch, eligibility and public showcase content."
-        />
-        <SetupLink
-          href="/dashboard/finance/fee-plans"
-          title="Fee plans"
-          body="Publish standard fees before opening applications."
-        />
-        <SetupLink
-          href="/dashboard/academics/batches"
-          title="Batches"
-          body="Capacity and placement options for active offerings."
-        />
-        <SetupLink
-          href="/dashboard/crm/prospects"
-          title="Prospects"
-          body="Verification queue for interest and admission submissions."
-        />
-      </section>
-
-      <MasterDataWorkspace data={data} canManage={canManage} />
+      <WebsiteWorkspace data={await getWebsiteOfferings()} />
     </div>
-  );
-}
-
-function SetupLink({
-  href,
-  title,
-  body,
-}: {
-  href: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="rounded-xl border bg-background p-4 transition hover:border-primary/40 hover:bg-muted/40"
-    >
-      <p className="text-sm font-semibold">{title}</p>
-      <p className="mt-1 text-xs leading-5 text-muted-foreground">{body}</p>
-    </Link>
   );
 }
