@@ -27,7 +27,13 @@ export function WorkspaceFormSafety() {
       if (e.defaultPrevented) e.stopPropagation();
     };
     const saved = () => {
-      if (submitted?.isConnected) submitted.dataset.dirty = "false";
+      if (submitted?.isConnected) {
+        submitted.dataset.dirty = "false";
+        const panel = submitted.closest<HTMLDetailsElement>(
+          "details[data-action-panel]",
+        );
+        if (panel) panel.dataset.savedPending = "true";
+      }
       submitted = null;
     };
     const click = (e: MouseEvent) => {
@@ -74,6 +80,28 @@ export function WorkspaceFormSafety() {
         e.returnValue = "";
       }
     };
+    const closeSavedPanels = () => {
+      root
+        .querySelectorAll<HTMLDetailsElement>(
+          'details[data-saved-pending="true"]',
+        )
+        .forEach((panel) => {
+          if (
+            panel.querySelector(
+              '[data-editor][data-dirty="true"], [data-editor][data-busy="true"]',
+            )
+          )
+            return;
+          panel.open = false;
+          delete panel.dataset.savedPending;
+        });
+    };
+    const observer = new MutationObserver(closeSavedPanels);
+    observer.observe(root, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-busy", "data-dirty", "data-saved-pending"],
+    });
     root.addEventListener("input", changed, true);
     root.addEventListener("change", changed, true);
     root.addEventListener("submit", submit, true);
@@ -81,6 +109,7 @@ export function WorkspaceFormSafety() {
     window.addEventListener("beforeunload", unload);
     window.addEventListener("erp:saved", saved);
     return () => {
+      observer.disconnect();
       root.removeEventListener("input", changed, true);
       root.removeEventListener("change", changed, true);
       root.removeEventListener("submit", submit, true);
