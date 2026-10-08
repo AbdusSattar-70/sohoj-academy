@@ -4,6 +4,7 @@ Branch: `feature/sohoj_final`. Each implementation/fix is committed separately. 
 
 | Item | Status |
 | --- | --- |
+| Source delivery integrity | Public controls source restored after truncated upload; check:source rejects tool markers and syntax errors |
 | Slotted Button runtime render | Fixed single-child composition; real React/Radix render regression covers link + icon and pending button |
 | Default saved feedback locale | Recognizes both bn and provider HTML language bn-BD |
 | Explicit guide coverage for every registered work area | Implemented |
@@ -17,3 +18,5 @@ Branch: `feature/sohoj_final`. Each implementation/fix is committed separately. 
 | Authenticated live-browser/database acceptance | Requires the actual local/deployed environment; not represented by isolated checks |
 
 Retired advanced finance routes are excluded from the operator rollout; they are not silently reintroduced. No new financial model or schema reset is part of this task.
+
+Source changes must be read per file without truncated tool output. Compare the expected Git blob SHA with the created blob before committing. Never assemble code from a truncated display. The normal pnpm check pipeline runs source integrity before lint/type/build.

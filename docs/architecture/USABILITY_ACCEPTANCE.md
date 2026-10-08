@@ -5,6 +5,7 @@
 Use the same feature/sohoj_final branch. These checks do not write to the live database:
 
 ```sh
+pnpm check:source
 pnpm exec tsc --noEmit
 node scripts/check-workspace-navigation.cjs
 node scripts/check-workflow-return.cjs

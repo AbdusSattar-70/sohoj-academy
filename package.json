@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && next typegen && tsc --noEmit",
-    "check": "pnpm lint && pnpm typecheck && pnpm build",
-    "seed:reference": "supabase db push --include-seed"
+    "check": "pnpm check:source && pnpm lint && pnpm typecheck && pnpm build",
+    "seed:reference": "supabase db push --include-seed",
+    "check:source": "node scripts/check-source-integrity.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
