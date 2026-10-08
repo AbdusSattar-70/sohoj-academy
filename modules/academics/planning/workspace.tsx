@@ -99,8 +99,18 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
           <Link
             key={s}
             prefetch={false}
-            className="rounded-lg border px-3 py-2 hover:bg-muted"
-            href={"/dashboard/academics/planning?section=" + s}
+            aria-current={data.section === s ? "page" : undefined}
+            className={
+              "rounded-lg border px-3 py-2 " +
+              (data.section === s
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted")
+            }
+            href={
+              s === "routines"
+                ? "/dashboard/academics/routine"
+                : "/dashboard/academics/planning?section=" + s
+            }
           >
             {t(...(titles[s] as [string, string]))}
           </Link>

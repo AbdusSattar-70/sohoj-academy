@@ -7,7 +7,7 @@ export default async function Page({
   searchParams: Promise<{ section?: string; page?: string }>;
 }) {
   const q = await searchParams,
-    section = sections.find((s) => s === q.section) ?? "offerings";
+    section = sections.find((s) => s === q.section) ?? "rooms";
   return (
     <PlanningWorkspace
       key={section}
