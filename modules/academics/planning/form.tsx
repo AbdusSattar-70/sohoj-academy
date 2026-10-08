@@ -48,6 +48,14 @@ export function PlanningForm({
       start_time: "07:00",
       end_time: "09:00",
       planned_scope: "Planned subject class",
+      ...(action === "QUALIFICATION"
+        ? {
+            starts_on: new Intl.DateTimeFormat("en-CA", {
+              timeZone: "Asia/Dhaka",
+            }).format(new Date()),
+            ends_on: "",
+          }
+        : {}),
       ...initial,
     }),
     [days, setDays] = useState<number[]>(
@@ -116,7 +124,7 @@ export function PlanningForm({
         end_time: b?.windows?.[0]?.end_time ?? "09:00",
       }));
     }
-    if (key === "subject_id")
+    if (key === "subject_id" && action === "ROUTINE")
       setValues((v) => ({ ...v, teacher_id: "", curriculum_id: "" }));
   }
   function input(
@@ -417,14 +425,33 @@ export function PlanningForm({
                 "পড়ানোর বিষয়",
                 data.choices.subjects,
               )}
-              {input("starts_on", "Qualified from", "যোগ্যতা শুরু", "date")}
-              {input(
-                "ends_on",
-                "Qualified through (optional)",
-                "শেষ তারিখ (ঐচ্ছিক)",
-                "date",
-                false,
-              )}
+              <p className="sm:col-span-2 text-sm text-muted-foreground">
+                {t(
+                  "Assigning a subject permits this teacher to teach it; it does not schedule a class. Dates default to today with no expiry. Change them only for earlier or time-limited authorization.",
+                  "বিষয় বরাদ্দ করলে শিক্ষক বিষয়টি পড়াতে পারবেন; এতে ক্লাস তৈরি হয় না। আজ থেকে কার্যকর, মেয়াদ শেষ নেই। আগের তারিখ বা নির্দিষ্ট মেয়াদ প্রয়োজন হলে তারিখ বদলান।",
+                )}
+              </p>
+              <details
+                className="sm:col-span-2 rounded-lg border p-3"
+                open={Boolean(initial.id || initial.ends_on)}
+              >
+                <summary className="min-h-9 cursor-pointer font-medium">
+                  {t(
+                    "Effective dates (optional to change)",
+                    "কার্যকর তারিখ (প্রয়োজনে পরিবর্তন)",
+                  )}
+                </summary>
+                <div className="grid gap-3 pt-3 sm:grid-cols-2">
+                  {input("starts_on", "Effective from", "কার্যকর শুরু", "date")}
+                  {input(
+                    "ends_on",
+                    "Until (optional)",
+                    "শেষ তারিখ (ঐচ্ছিক)",
+                    "date",
+                    false,
+                  )}
+                </div>
+              </details>
             </>
           )}
           {action === "ROUTINE" && (
