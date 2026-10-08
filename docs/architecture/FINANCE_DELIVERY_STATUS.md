@@ -1,23 +1,25 @@
+> **Current finance scope (feature/sohoj_final):** [Simple academy finance](SIMPLE_ACADEMY_FINANCE.md) supersedes the advanced accounting/asset roadmap below. Daily student fees, staff earnings, running income/expenses and operating profit remain; advanced accounting screens are retired. Existing protected posting records remain internal.
+
 # Finance delivery status — 2026-10-03
 
 This is the current status; older roadmap paragraphs describe the state when written. Implemented does not mean hosted/browser acceptance has been performed.
 
 ## Delivered this continuation, one feature per commit
 
-| Migration | Feature | Operator page |
-|---|---|---|
-| 33 | Historical salary agreements and signed earning corrections | Payroll |
-| 34 | Recurring expense schedules and duplicate-safe purchase drafts | `/dashboard/finance/recurring` |
-| 35 | Receivable aging, commitments, guardian statements and reminder drafts | `/dashboard/finance/receivables` |
-| 36 | Actual owner contributions and contributed-capital returns | `/dashboard/finance/capital` |
-| 37 | Cost centres, monthly budgets and evidence-based programme contribution | `/dashboard/finance/planning` |
-| 38 | Verified bank CSV import, exact matching and release history | `/dashboard/finance/bank` |
-| 39 | Classified cash flow, export and print | `/dashboard/finance/cash-flow` |
-| 40 | Twelve-month year closing, retained-result transfer and reversal | `/dashboard/finance/year-end` |
-| 41 | Current supplier accounts, settlement and separate advances/refunds | `/dashboard/finance/suppliers` |
-| 42 | Physical consumable receipt/use/count register and reorder attention | `/dashboard/finance/stock` |
-| 43 | Orders, partial received quantities, exact supplier invoice matching and inline settlement | `/dashboard/finance/procurement` |
-| 44 | On-demand counter duty and opening-receipt history with dates and pagination | `/dashboard/finance/counters` |
+| Migration | Feature                                                                                    | Operator page                    |
+| --------- | ------------------------------------------------------------------------------------------ | -------------------------------- |
+| 33        | Historical salary agreements and signed earning corrections                                | Payroll                          |
+| 34        | Recurring expense schedules and duplicate-safe purchase drafts                             | `/dashboard/finance/recurring`   |
+| 35        | Receivable aging, commitments, guardian statements and reminder drafts                     | `/dashboard/finance/receivables` |
+| 36        | Actual owner contributions and contributed-capital returns                                 | `/dashboard/finance/capital`     |
+| 37        | Cost centres, monthly budgets and evidence-based programme contribution                    | `/dashboard/finance/planning`    |
+| 38        | Verified bank CSV import, exact matching and release history                               | `/dashboard/finance/bank`        |
+| 39        | Classified cash flow, export and print                                                     | `/dashboard/finance/cash-flow`   |
+| 40        | Twelve-month year closing, retained-result transfer and reversal                           | `/dashboard/finance/year-end`    |
+| 41        | Current supplier accounts, settlement and separate advances/refunds                        | `/dashboard/finance/suppliers`   |
+| 42        | Physical consumable receipt/use/count register and reorder attention                       | `/dashboard/finance/stock`       |
+| 43        | Orders, partial received quantities, exact supplier invoice matching and inline settlement | `/dashboard/finance/procurement` |
+| 44        | On-demand counter duty and opening-receipt history with dates and pagination               | `/dashboard/finance/counters`    |
 
 ## Explicitly excluded
 

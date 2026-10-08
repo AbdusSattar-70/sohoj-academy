@@ -1,25 +1,27 @@
+> **Current finance scope (feature/sohoj_final):** [Simple academy finance](SIMPLE_ACADEMY_FINANCE.md) supersedes the advanced accounting/asset roadmap below. Daily student fees, staff earnings, running income/expenses and operating profit remain; advanced accounting screens are retired. Existing protected posting records remain internal.
+
 # Paperless finance and workforce management
 
 Branch: `feature/finance_accounting_management`. Base: redesign_refactor, migration 16. This extends the existing ledger, billing and identity architecture; it does not introduce competing student, staff or accounting records.
 
 ## Review findings and ordered delivery plan
 
-| Priority | Area | Existing capability | Gap / required outcome |
-| --- | --- | --- | --- |
-| P0 | Staff attendance | Approved academic session attendance | Staff daily presence, check-in/out, breaks, absence/leave, corrected evidence and monthly own hours are missing. Student attendance is not staff attendance. |
-| P0 | Personal workspace | Teacher class lists and own referral statement | A common staff page for attendance, tasks and financial position; teacher shortcuts must lead directly to student attendance. |
-| P0 | Compensation terms | Revenue-share teacher policy and approved runs | Fixed/hourly/hybrid terms, agreed pay day and a clearly labelled estimate. Never present an estimate as approved debt or promise payment. |
-| P0 | Tasks and accountability | Academic workflow review | Staff assignments, due dates, progress, blocker explanation, completion submission and admin acceptance. Completion percentage is declared progress, not a salary deduction formula. |
-| P0 | Payroll | Migration 19: fixed/hourly/hybrid salary preview, posting, payslips and cash/advance settlement | Historical contract recovery, statutory deduction policies and documented payroll corrections remain. No automatic task/absence deduction or second acquisition accrual. |
-| P0 | Daily close | Migration 20: denomination count, statement comparison, variance/recount evidence and stale detection | Migration 30 adds recipient receipt/dispute evidence. Migration 31 adds counter responsibility and internal opening-float transfers; migration 32 adds top-ups and reconciled returns. |
-| P0 | Month close | Migration 21: monthly P&L, balance sheet, trial balance, cash movement, close/reopen and write guards | Migrations 37–40 add cost-centre contribution, classified cash flow and fiscal year closing/reversal. |
-| P1 | Expenses and procurement | Vendors, expenses, advances and payables | Inline vendor/category selection, attachments with private storage, reimbursements, recurring rent/utilities, purchase order and receipt matching. |
-| P1 | Assets | Permission names exist | Asset register, custody, purchase cost, depreciation, maintenance, disposal and linked ledger evidence. |
-| P1 | Collections | Invoices, discounts, scholarships, payment/refund and recurring invoices | Aging buckets, parent statement, arrears tasks, instalment commitments, safe reminders, online payment verification and duplicate transaction protection. |
-| P1 | Reporting | Audit day totals and referral net collection | Programme/batch contribution after discounts, teacher expense and referral expense; distinguish accrual profit, collected cash and owner withdrawals. |
-| P1 | Reliability | Request IDs, audit, row locks and scoped reads | Bounded paginated registers, recovery after interrupted saves, failed operation visibility, backups and a demonstrated restore procedure. |
-| Excluded | Digital admission consent | Paper signatures and physical file references remain | Owner explicitly excluded digital consent on 2026-10-03. It is not a remaining implementation task or admission prerequisite. |
-| P2 | Planning | Operating policies | Budgets versus actuals, cash runway, cost centres, bank import matching, recurring expense reminders, inventory consumables and supplier statements. |
+| Priority | Area                      | Existing capability                                                                                   | Gap / required outcome                                                                                                                                                                 |
+| -------- | ------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0       | Staff attendance          | Approved academic session attendance                                                                  | Staff daily presence, check-in/out, breaks, absence/leave, corrected evidence and monthly own hours are missing. Student attendance is not staff attendance.                           |
+| P0       | Personal workspace        | Teacher class lists and own referral statement                                                        | A common staff page for attendance, tasks and financial position; teacher shortcuts must lead directly to student attendance.                                                          |
+| P0       | Compensation terms        | Revenue-share teacher policy and approved runs                                                        | Fixed/hourly/hybrid terms, agreed pay day and a clearly labelled estimate. Never present an estimate as approved debt or promise payment.                                              |
+| P0       | Tasks and accountability  | Academic workflow review                                                                              | Staff assignments, due dates, progress, blocker explanation, completion submission and admin acceptance. Completion percentage is declared progress, not a salary deduction formula.   |
+| P0       | Payroll                   | Migration 19: fixed/hourly/hybrid salary preview, posting, payslips and cash/advance settlement       | Historical contract recovery, statutory deduction policies and documented payroll corrections remain. No automatic task/absence deduction or second acquisition accrual.               |
+| P0       | Daily close               | Migration 20: denomination count, statement comparison, variance/recount evidence and stale detection | Migration 30 adds recipient receipt/dispute evidence. Migration 31 adds counter responsibility and internal opening-float transfers; migration 32 adds top-ups and reconciled returns. |
+| P0       | Month close               | Migration 21: monthly P&L, balance sheet, trial balance, cash movement, close/reopen and write guards | Migrations 37–40 add cost-centre contribution, classified cash flow and fiscal year closing/reversal.                                                                                  |
+| P1       | Expenses and procurement  | Vendors, expenses, advances and payables                                                              | Inline vendor/category selection, attachments with private storage, reimbursements, recurring rent/utilities, purchase order and receipt matching.                                     |
+| P1       | Assets                    | Permission names exist                                                                                | Asset register, custody, purchase cost, depreciation, maintenance, disposal and linked ledger evidence.                                                                                |
+| P1       | Collections               | Invoices, discounts, scholarships, payment/refund and recurring invoices                              | Aging buckets, parent statement, arrears tasks, instalment commitments, safe reminders, online payment verification and duplicate transaction protection.                              |
+| P1       | Reporting                 | Audit day totals and referral net collection                                                          | Programme/batch contribution after discounts, teacher expense and referral expense; distinguish accrual profit, collected cash and owner withdrawals.                                  |
+| P1       | Reliability               | Request IDs, audit, row locks and scoped reads                                                        | Bounded paginated registers, recovery after interrupted saves, failed operation visibility, backups and a demonstrated restore procedure.                                              |
+| Excluded | Digital admission consent | Paper signatures and physical file references remain                                                  | Owner explicitly excluded digital consent on 2026-10-03. It is not a remaining implementation task or admission prerequisite.                                                          |
+| P2       | Planning                  | Operating policies                                                                                    | Budgets versus actuals, cash runway, cost centres, bank import matching, recurring expense reminders, inventory consumables and supplier statements.                                   |
 
 Implement one coherent feature, commit it, then move to the next. Baseline percentages come from current operating rules and the teacher Revenue Sharing proposal; contract-specific terms must be agreed and recorded, not inferred from job title. Do not reset the live database.
 
@@ -113,7 +115,6 @@ CLOSE stores an immutable snapshot and blocks new journal headers and additional
 
 Delivery update: migrations 28–40 implement assets, handover/counters, historical payroll terms and earning corrections, budgets/contribution, operator-verified bank import, classified cash flow and fiscal year transfer/reversal. See FINANCE_DELIVERY_STATUS.md for current remaining scope. Isolated tests verify reporting arithmetic, rejected unverified close, one-time close, blocked backdated posting, authorised reopen and teacher access denial. Hosted concurrency and browser acceptance still need local verification.
 
-
 ## Purchase draft, receipt and supplier settlement — delivery 22
 
 Finance → Purchases & supplier expenses starts a purchase register, filtered/searchable and paginated at 25 records. Create a draft, select supplier and expense category, enter item quantities/unit prices and optional expected delivery. Add a missing supplier within the draft without navigating away or clearing the draft. Saving is a planning record only: no cash, expense or payable is created. Edit unused drafts; cancel unused drafts rather than delete them. Concurrent stale revisions are rejected.
@@ -144,7 +145,6 @@ Posted purchase rows expose Returns & expense corrections. Confirm supplier retu
 
 Staff expense claims is available to authorized staff for their own claims and finance managers for the academy register. Save an actual personal-fund expense draft, attach private receipt evidence, declare that no academy advance/other claim funded it, and submit. Staff can edit/cancel only drafts; finance may return submitted claims to Draft with a correction note. Finance verifies and posts one staff reimbursement payable, then records actual partial/full payments. Staff cannot post their own liability or payment and cannot see another person's documents/claims. Managers may record on behalf of staff without a second admin review. Duplicate submitted/posted receipt references for the same staff are blocked. Posted claims are immutable, and settlement does not create another expense. Existing direct-expense history is not covered by claim-specific receipt uniqueness. Advance-funded expenses belong in advance reconciliation, not reimbursement claims.
 
-
 ## Assets, custody and straight-line depreciation — delivery 28
 
 Finance → Assets & custody provides a searched, paginated register and on-demand forms. Create/edit/cancel an unused asset draft: identify the unit or group, serial/tag, location, supplier, fixed-asset account, cost, residual, useful life, acquisition/service date and first depreciation month. An invoice reference may include its supplier line identity for multiple assets. Verify and capitalize once, using paid-now cash or supplier payable. Actual supplier payments may be partial and remain payable even after disposal.
@@ -159,7 +159,6 @@ Before month close, all acquired assets due that month must have scheduled depre
 
 Operational walkthrough: create draft → attach invoice → verify/capitalize → assign custodian → staff acknowledges → log inspections → post monthly depreciation → settle supplier balance as paid → dispose with evidence when necessary. The academy's existing P&L/balance sheet/cash movement automatically include the resulting journals.
 
-
 ## Cash handover recipient confirmation (migration 30)
 
 Finance → Daily cash close records the sender count and designated staff recipient. Finance → Cash handover receipts is the recipient inbox and administrator register, paginated at 25 rows. The designated active staff account counts the cash and records Received (must match the sender amount) or Disputed with their actual amount and an explanation. The sender cannot confirm their own handover. A named recipient with no active linked account cannot confirm; provision the account before using authenticated handover.
@@ -170,7 +169,6 @@ This completes receiver acknowledgement only. Till ownership, opening float, han
 
 The Bengali operator guide is available inside ERP at `/dashboard/help/finance`. Its canonical content is `modules/help/finance-guide.bn.json`; run `node scripts/sync-finance-guide.mjs` after editing it to synchronize the repository Markdown guide.
 
-
 ## Counter ownership and opening float (migration 31)
 
 Finance → Cash counters & opening float registers a dedicated CASH account (existing unused account or inline account creation), an editable name and active/inactive state. The ledger account identity stays fixed. Admin/reconciliation permission opens one duty per counter and one per active linked cashier. Opening money is transferred from a funded academy cash/bank/mobile account to the dedicated counter account; an already open counter cannot be a funding source. Remaining cash carries to the next duty; a zero additional float requires no journal. Existing-account funding is not initial owner-capital recognition.
@@ -180,7 +178,6 @@ All controlled journal calls now acquire period/shared and sorted account locks 
 The assigned active cashier receives the historical opening count or appends a dispute. A later matching recount is appended, never overwrites the dispute. The sole admin may be the cashier and receive their own opening count. This is different from sender-to-another-person handover acknowledgement. Closing requires a matching opening receipt and a fresh, non-handover, zero-variance current-day daily close recorded after opening; changed ledger evidence is rejected. Closing keeps cash in the counter and does not invent a return payment.
 
 Roles continue to determine who can post financial operations. Registration creates a dedicated mapped payment method, enabled only after matching opening receipt and disabled on close. The journal wrapper rejects ordinary counter transactions with no open received duty, and non-reconciliation actors can post only to their assigned active cashier counter. Assignment does not grant payment permissions; existing operation permission gates remain. Operators must select the counter method/account. Register is 25/page; recent duty panels show the latest 10 scoped duties. All duty/receipt audit evidence remains. Inactivate only with no open duty. Interrupted duty reassignment, automatic counter selection on every legacy posting screen and fully paginated long-term duty statements remain extensions. See the Bengali operator guide section 21a for examples.
-
 
 ## Additional counter cash and reconciled returns (migration 32)
 
@@ -218,28 +215,23 @@ Bank/mobile CSV normalization uses date, unique transaction reference, signed BD
 
 Posted cash/bank/mobile movements are grouped by journal, net internal transfers excluded. Explicit known owner and asset sources receive financing/investing defaults; payment/refund/expense and salary settlement defaults are operating. Ambiguous manual, advance and general payable movements stay unclassified until reviewed. Immutable classification replacements require a current order and open month. Summary inflow/outflow/net reconcile exactly to opening/closing cash, with 25-row drill-down, CSV and letterhead-safe print. This is operational management reporting, not a certified statutory filing. No receipt, expense or journal is invented.
 
-
 ## Fiscal year close and reversal (migration 40)
 
 A selected start month defines twelve months. The first eleven must be closed; the last stays open after verified cash/statement month-end checks. Nonzero nominal balances transfer to retained earnings through a balanced dated closing journal, then the final month closes atomically. Prior unclosed years and overlapping definitions are rejected. Monthly P&L, operating summary and programme contribution exclude closing/reversal journals from activity while trial balance and balance sheet include them. Year guards prevent independent monthly reopening or posting. Authorised year reopening appends evidence, opens the final month and reverses the original closing journal; later closed years must be reopened first. No posted history is deleted. Fresh preview tokens and stable request identity protect repeat actions. This is an internal accounting close, not certification of statutory filings.
-
 
 ## Supplier account statements (migration 41)
 
 Scoped accounting reads provide a searched 25-row supplier directory and 25-row payable statement. Whole-supplier totals distinguish paid cash, advance offsets, credit notes and remaining payables; unsettled advances and refund receivables stay separate assets. Paid-now expenses have no payable and remain in Purchases. Inactive supplier history stays available. This is a current-balance statement, not a reconstructed historical-as-of ledger. Printing is black/white and page-specific; no branding is added over letterhead. No financial writes or automatic netting occur.
 
-
 ## Consumable physical stock (migration 42)
 
 Editable/inactivatable item identities have a fixed unit after first movement. Actual receipt, usage and observed physical count append quantity evidence with actor, reference and reason. Item-row locking, expected event order and stable request identity prevent stale/double posting; issues cannot exceed stock. Counts record the difference without rewriting history. This is physical control, not financial inventory valuation; purchase expenses remain separate, avoiding duplicate journals. Items are 25/page with latest ten movements per item and reorder attention. Optional posted purchase linkage exists at the database boundary; inline forms use verified reference. Full historical stock statements and cost valuation remain extensions.
-
 
 ## Partial procurement and invoice matching (migration 43)
 
 Orders record commitments without journal/payable posting. Before any receipt, an open order may be edited; after receiving, its quoted lines, supplier/category and identity remain fixed. Each receipt selects one or more line quantities not exceeding outstanding delivery and records actual invoice unit prices. Invoice total must exactly equal the rounded line amounts for that portion; a price difference requires an explicit explanation. Tax/freight not represented in received lines must be resolved separately, never silently absorbed into a matching total. A whole-order invoice is not treated as a partial bill. Use separately invoiced deliveries, or wait/resolve supplier terms. Posted receipt creates a separate governed Purchase using the existing expense/payment/payable engine atomically. Existing supplier invoice uniqueness, financial period/counter guards and actual payment permissions apply. Stable outer request identity prevents duplicate receipts; parent row locking and revision checks serialize outstanding quantities. Any failed match rolls back its new draft and journal.
 
 All received lines completes the order. Closing an open outstanding commitment cancels only its unreceived portion; actual receipts and unpaid liabilities remain. Returns/credit notes use the linked Purchase and do not erase original delivery quantity or silently reopen the order. Paid-now and on-account options are explicit; later supplier payments can be posted inline on this page. The linked Purchase provides existing credits/refund/documents; payment completion returns to the order when the return link is used. Physical consumable stock is entered separately after actual receipt; order quantities do not auto-duplicate stock movements. Lists are 25/page with latest ten receipts per order; progress sums all receipts. Supplier/category/account choices are capped at 200. Full historical receipt pagination is a further reliability extension.
-
 
 ## Paginated counter duty and opening-receipt history (migration 44)
 

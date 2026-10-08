@@ -1,3 +1,5 @@
+> **Current finance scope (feature/sohoj_final):** [Simple academy finance](SIMPLE_ACADEMY_FINANCE.md) supersedes the advanced accounting/asset roadmap below. Daily student fees, staff earnings, running income/expenses and operating profit remain; advanced accounting screens are retired. Existing protected posting records remain internal.
+
 # Development handoff
 
 The current branch is `feature/redesign_refactor`. This is a fresh-install schema, not an upgrade replay. Read [Workflow](REDESIGN_REFACTOR_WORKFLOW.md), [Database schema](DATABASE_SCHEMA.md), [Fresh setup](FRESH_DATABASE_SETUP.md), and [Interaction standard](ERP_INTERACTION_WORKFLOW_STANDARD.md).
@@ -46,7 +48,6 @@ Migration 20 adds cash denomination counts, statement comparison, explained vari
 
 Migration 21 supplies monthly P&L, balance sheet, trial balance, cash movement, CSV/print and audited close/reopen. Posting guards enforce closed months on journal headers and lines. Fixed payroll expense is dated at month end; payments retain actual payment dates. Month-end cash/bank/mobile verification and balanced reports are required before close. Read the period-control section of [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md).
 
-
 ### Next committed delivery: purchases and supplier expense workflow
 
 Migration `22_purchase_drafts_receipt_and_expense_posting.sql` and `/dashboard/finance/purchases` add a paginated/searchable purchase register. On-demand draft creation/edit/cancellation, inline supplier creation, verified full receipt, paid-now expense or supplier payable, and partial supplier payment reuse the current ledger engine. Drafts do not post; finalized evidence cannot be overwritten. Stable request identities, revision checks, active-account permission boundaries and normalized supplier invoice uniqueness protect posting.
@@ -64,7 +65,6 @@ Migration 25 and SQL fixture 15 implement purchase credit notes/overstated expen
 Migration 26 adds own-scope reimbursement drafts, private receipt attachment, submission, finance correction/verification/posting and actual partial/full payment. Route `/dashboard/finance/reimbursements` and SQL fixture 16 cover teacher own claims and prohibited self-posting. Documents now permit workforce users only for their authorized claim records; other purchase/expense documents remain finance-only.
 
 Migration 27 preserves the existing claim migration and allows newly verified global staff identities to claim before a campus assignment exists. Non-null campus assignments must still belong to the academy. The teacher fixture includes the required signup mobile field.
-
 
 Migration 28 implements `/dashboard/finance/assets`: draft acquisition, capitalized cash/payable posting, reclassification of an existing unadjusted purchase without double payment, staff custody acknowledgement, maintenance history, in-order complete-month straight-line depreciation and actual-proceeds disposal. Month close requires due depreciation; shared asset-register/exclusive close locks and period guards protect posting. Posted asset financial terms remain immutable; edit name/tag and use inactive/reactivate for operational changes. Asset documents use private evidence. SQL fixture 17 covers acquisition, retry-safe depreciation, own custody, denied teacher lifecycle changes, vendor installments and disposal book value. Read the documented first-month convention and remaining extensions before release.
 
@@ -96,18 +96,13 @@ Migration 38 adds `/dashboard/finance/bank`: atomic verified CSV import, duplica
 
 Migration 39 adds `/dashboard/finance/cash-flow`: reconciled operating/investing/financing/unclassified cash reporting and audited classification correction. Ambiguous sources remain visible; internal transfers do not inflate flows.
 
-
 Finance extension 40: fiscal year preview/close/reopen at `/dashboard/finance/year-end`, nominal transfer and reversal, monthly write guards, preserved operational P&L. SQL fixture 29 checks arithmetic, retries, closed-year guard and reversal. Current delivery status: `FINANCE_DELIVERY_STATUS.md`.
-
 
 Finance extension 41: supplier account statements at `/dashboard/finance/suppliers`; bounded directory/payables, separate advances/refund receivables, scoped read and print. Fixture 30 verifies settlement arithmetic and outsider denial.
 
-
 Finance extension 42: physical consumable stock at `/dashboard/finance/stock`, receipt/use/count evidence, edit/inactivation and low-stock attention. Fixture 31 covers retry, stale evidence, negative stock denial, unit stability, unchanged journals and outsider denial.
 
-
 Owner scope update 2026-10-03: digital admission consent excluded. Preserve paper-signature/file-reference workflow; it is not pending work. Finance extension 43 adds `/dashboard/finance/procurement`: order commitments, partial receipts, exact invoice amount matching, price variance evidence, inline supplier payments and commitment closure. Fixture 32 checks no pre-receipt journal, partial/final quantities, duplicate request/invoice rollback, stale/over-receipt denial, price-variance requirement and outsider scope.
-
 
 Finance extension 44: paginated counter duty and opening-receipt history within the counter page. Dates, 25-row pages, preserved return-to-duty-page navigation and active staff own-scope; bounded nested receipts in operational snapshot. Fixture 33 covers 28 duties, date filtering, receipt pagination and cross-cashier/public denial.
 
