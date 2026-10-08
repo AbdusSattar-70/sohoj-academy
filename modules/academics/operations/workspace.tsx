@@ -132,7 +132,16 @@ export function AcademicOperations({
                     {s.teacher} · {s.room}
                   </p>
                 </div>
-                <StatusBadge value={s.status} />
+                <div className="flex flex-wrap items-center gap-3">
+                  <StatusBadge value={s.status} />
+                  <Link
+                    prefetch={false}
+                    className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-medium hover:bg-muted"
+                    href={`/dashboard/academics/sessions/${s.id}`}
+                  >
+                    Open class & student attendance
+                  </Link>
+                </div>
               </div>
               <p className="mt-3 text-sm">Plan: {s.scope}</p>
               <p className="mt-2 text-xs text-muted-foreground">
