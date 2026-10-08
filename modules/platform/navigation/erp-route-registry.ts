@@ -284,8 +284,8 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
   // Academy Setup
   {
     id: "academic-directory",
-    title: "Academic Directory",
-    eyebrow: "Academy Setup",
+    title: "Manage CRM & Academic Lists",
+    eyebrow: "CRM",
     href: "/dashboard/crm/manage",
     navGroup: "Academy Setup",
     permission: "system.master_data.manage",
