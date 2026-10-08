@@ -87,6 +87,45 @@ export default async function Page() {
           পেলে due থাকবে।
         </p>
       </article>
+      <article className="space-y-3 rounded-xl border p-5">
+        <h2 className="font-semibold">প্রশ্ন প্রস্তুতি ও অগ্রগতি প্রতিবেদন</h2>
+        <p>
+          শিক্ষক নির্ধারিত ক্লাস থেকে অধ্যায়/টপিক নির্বাচন করে নিজের Google
+          Docs-এ প্রশ্ন ও উত্তর লিখবেন। লিংক Draft হিসেবে সংরক্ষণ করে review-এর
+          জন্য জমা দিন। Admin আলাদা করে কাজ assign করবেন না। সংশোধনের নির্দেশনা
+          এলে একই Draft সংশোধন ও পুনরায় জমা দিন।
+        </p>
+        <p>
+          Admin Submitted তালিকা থেকে document যাচাই করে Return অথবা
+          academy-owned প্রশ্ন ও answer-key আলাদা document-এর লিংক দিয়ে Final
+          করবেন। ERP নিজে Google Docs copy বা sharing পরিবর্তন করে না। Answer
+          key শিক্ষার্থীদের সঙ্গে share করবেন না।
+        </p>
+        <Link
+          className="inline-flex rounded-lg border px-4 py-2 hover:bg-muted"
+          href="/dashboard/academics/questions"
+        >
+          প্রশ্ন প্রস্তুতি / review খুলুন →
+        </Link>
+        <p>
+          Report preview তৈরি করতে ব্যাচ, শিক্ষার্থী ও সময়কাল (সর্বোচ্চ ৯৩ দিন)
+          নির্বাচন করুন। কেবল অনুমোদিত attendance, পরীক্ষার ফল ও পাঠদানের
+          evidence আসবে। Missing result শূন্য নয়। শিক্ষকের মন্তব্য ও বাড়িতে
+          সহায়তার tick দিন, সংরক্ষণ ও submit করুন। Admin প্রয়োজন হলে Return
+          করবেন, অথবা সর্বশেষ approved evidence নিয়ে Final করবেন।
+        </p>
+        <p>
+          Final report Print / PDF দিয়ে letterhead-এ black-and-white প্রিন্ট
+          করুন; browser header/footer বন্ধ রাখুন। Final record edit করা যায় না;
+          পরের সংশোধনের জন্য নতুন report তৈরি করুন।
+        </p>
+        <Link
+          className="inline-flex rounded-lg border px-4 py-2 hover:bg-muted"
+          href="/dashboard/academics/progress"
+        >
+          অগ্রগতি প্রতিবেদন খুলুন →
+        </Link>
+      </article>
     </section>
   );
 }

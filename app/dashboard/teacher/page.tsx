@@ -71,6 +71,26 @@ export default async function TeacherDashboardPage() {
         title="My Classes"
         description="Your assigned class sessions only. Record attendance on the session page after the class starts; an independent reviewer approves the submission."
       />
+      <nav className="flex flex-wrap gap-3">
+        <Link
+          className="rounded-lg border px-4 py-2"
+          href="/dashboard/academics/questions"
+        >
+          <LocalizedText
+            en="Class question preparation"
+            bn="ক্লাসের প্রশ্ন প্রস্তুতি"
+          />
+        </Link>
+        <Link
+          className="rounded-lg border px-4 py-2"
+          href="/dashboard/academics/progress"
+        >
+          <LocalizedText
+            en="Student progress reports"
+            bn="শিক্ষার্থীর অগ্রগতি প্রতিবেদন"
+          />
+        </Link>
+      </nav>
       <Link
         href="/dashboard/referrals"
         className="block space-y-2 rounded-xl border p-5"

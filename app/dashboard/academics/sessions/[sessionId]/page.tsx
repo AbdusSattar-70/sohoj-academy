@@ -47,6 +47,26 @@ export default async function SessionPage({
           Academic Operations
         </Link>
       </div>
+      <nav className="flex flex-wrap gap-3">
+        <Link
+          className="rounded-lg border px-4 py-2"
+          href={"/dashboard/academics/questions?session=" + s.id}
+        >
+          <LocalizedText
+            en="Prepare / review class questions"
+            bn="ক্লাসের প্রশ্ন প্রস্তুতি / যাচাই"
+          />
+        </Link>
+        <Link
+          className="rounded-lg border px-4 py-2"
+          href="/dashboard/academics/progress"
+        >
+          <LocalizedText
+            en="Student progress reports"
+            bn="শিক্ষার্থীর অগ্রগতি প্রতিবেদন"
+          />
+        </Link>
+      </nav>
       <section className="space-y-3 rounded-2xl border bg-card p-5">
         <StatusBadge value={s.status} />
         <p className="text-sm">
