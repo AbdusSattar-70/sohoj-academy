@@ -24,7 +24,14 @@ export function finishWorkflow(router: {
 }) {
   document
     .querySelectorAll<HTMLDetailsElement>("details[data-action-panel]")
-    .forEach((el) => (el.open = false));
+    .forEach((el) => {
+      if (
+        !el.querySelector(
+          '[data-editor][data-dirty="true"], [data-editor][data-busy="true"]',
+        )
+      )
+        el.open = false;
+    });
   window.dispatchEvent(
     new CustomEvent("erp:saved", {
       detail:
