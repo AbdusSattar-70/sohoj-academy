@@ -25,7 +25,12 @@ export async function runTeacherClass(input: unknown) {
   try {
     const { data, error } = await (
       await platformClient()
-    ).rpc("teacher_class_command", { p_input: parsed.data });
+    ).rpc(
+      parsed.data.action === "CORRECT_CLOCK"
+        ? "teacher_class_recover_clock"
+        : "teacher_class_command",
+      { p_input: parsed.data },
+    );
     if (error)
       return { ok: false, message: error.message, uncertain: !error.code };
     if (data?.id !== parsed.data.session_id)

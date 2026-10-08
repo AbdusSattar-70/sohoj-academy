@@ -29,10 +29,15 @@ declare paid_case uuid;preview jsonb;rid uuid;teacher uuid;branch uuid;y public.
  end loop;
  insert into public.class_sessions(batch_id,subject_id,teacher_id,room_id,planned_scope,session_date,starts_at,ends_at,created_by) values(batch,subject,teacher,room,'Guided class scope',today,(today+'00:00'::time) at time zone 'Asia/Dhaka',(today+'23:59'::time) at time zone 'Asia/Dhaka',admin) returning id into session;
  insert into public.class_sessions(batch_id,subject_id,teacher_id,room_id,planned_scope,session_date,starts_at,ends_at,created_by) values(batch,subject,teacher,room,'Tomorrow test practice',today+1,((today+1)+'08:00'::time) at time zone 'Asia/Dhaka',((today+1)+'09:00'::time) at time zone 'Asia/Dhaka',admin) returning id into past_session;
+ insert into public.class_sessions(batch_id,subject_id,teacher_id,room_id,planned_scope,session_date,starts_at,ends_at,created_by) values(batch,subject,teacher,room,'Missed start recovery',today-1,((today-1)+'08:00'::time) at time zone 'Asia/Dhaka',((today-1)+'09:00'::time) at time zone 'Asia/Dhaka',admin) returning id into replaced;
  insert into public.students(organization_id,student_no,full_name,status,created_by) values((select organization_id from public.batches where id=batch),'SA-GUIDED-TEST','Guided roster student','ACTIVE',admin) returning id into student;
  insert into public.enrollments(student_id,organization_id,branch_id,academic_year_id,class_id,program_id,batch_id,admission_date,status,created_by) values(student,(select organization_id from public.batches where id=batch),branch,y.id,class_id,program,batch,today,'ACTIVE',admin) returning id into enrollment;
  insert into public.academic_assessments(batch_id,subject_id,title,assessment_date,max_marks,status,author_id,published_at) values(batch,subject,'Tomorrow planned exam',today+1,100,'PUBLISHED',admin,now()) returning id into approval;
  perform set_config('request.jwt.claim.sub',teacher_profile::text,true);
+ payload:=jsonb_build_object('action','CORRECT_CLOCK','session_id',replaced,'request_id',gen_random_uuid(),'reason','Recovered missed Start from actual class record','started_at',((today-1)+'08:00'::time) at time zone 'Asia/Dhaka','ended_at',((today-1)+'08:40'::time) at time zone 'Asia/Dhaka');
+ perform public.teacher_class_recover_clock(payload);perform public.teacher_class_recover_clock(payload);
+ if not exists(select 1 from public.class_teaching_clocks where session_id=replaced and ended_at-started_at=interval '40 minutes') then raise exception 'Missed start recovery failed';end if;
+
  payload:=jsonb_build_object('action','START','session_id',session,'request_id',gen_random_uuid(),'reason','Starting my assigned class');
  result:=public.teacher_class_command(payload);perform public.teacher_class_command(payload);
  if(select count(*) from public.class_teaching_clocks where session_id=session)<>1 then raise exception 'Clock retry duplicated';end if;

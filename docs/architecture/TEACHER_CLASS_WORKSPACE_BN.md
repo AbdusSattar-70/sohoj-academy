@@ -1,6 +1,6 @@
 # শিক্ষকের দৈনন্দিন ক্লাস পরিচালনা
 
-Branch: `feature/sohoj_final`। Database migration: `56_guided_teacher_class_workspace.sql`।
+Branch: `feature/sohoj_final`। Database migration: `56_guided_teacher_class_workspace.sql`, `57_missed_class_clock_recovery.sql`।
 
 ## আগে Admin কী প্রস্তুত করবেন
 
@@ -51,7 +51,7 @@ Clock capture শুধু evidence। Admin actual teaching ও student attenda
 
 ## ভুলে Start/Finish চাপা না হলে
 
-সংরক্ষিত clock থাকলে **সময় সংশোধন প্রয়োজন?** খুলে session-এর তারিখে প্রকৃত start/end ও কারণ দিন। ভবিষ্যতের সময়, শেষের আগে শুরু বা অন্য ক্লাসের সঙ্গে overlapping সময় গ্রহণ হবে না। Submitted/approved সময় সরাসরি rewrite হবে না; review-এর পরে correction report ব্যবহার করুন।
+Start চাপতে ভুলে গেলেও **সময় সংশোধন প্রয়োজন?** খুলে session-এর তারিখে প্রকৃত start/end ও কারণ দিন। ভবিষ্যতের সময়, শেষের আগে শুরু বা অন্য ক্লাসের সঙ্গে overlapping সময় গ্রহণ হবে না। Submitted/approved সময় সরাসরি rewrite হবে না; review-এর পরে correction report ব্যবহার করুন।
 
 পুরোনো session-এ আগে teaching report তৈরি থাকলে দ্বিতীয় clock শুরু হবে না। Existing report এবং attendance-এর recovery controls দিয়ে কাজ চালানো যাবে।
 

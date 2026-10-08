@@ -16,7 +16,7 @@ export function ClockCorrection({
   disabled,
   onCorrect,
 }: {
-  clock: NonNullable<ClassFlow["clock"]>;
+  clock: ClassFlow["clock"];
   sessionDate: string;
   disabled: boolean;
   onCorrect: (start: string, end: string, reason: string) => void;
@@ -50,7 +50,7 @@ export function ClockCorrection({
               required
               type="time"
               name="start"
-              defaultValue={format(clock.started_at)}
+              defaultValue={clock ? format(clock.started_at) : ""}
               className={input}
             />
           </label>
@@ -60,7 +60,7 @@ export function ClockCorrection({
               required
               type="time"
               name="end"
-              defaultValue={clock.ended_at ? format(clock.ended_at) : ""}
+              defaultValue={clock?.ended_at ? format(clock.ended_at) : ""}
               className={input}
             />
           </label>

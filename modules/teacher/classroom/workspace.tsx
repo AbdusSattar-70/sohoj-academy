@@ -286,7 +286,7 @@ export function TeacherClassroom({
                 setStep={setStep}
               />
             )}
-            {clock && (
+            {
               <ClockCorrection
                 clock={clock}
                 sessionDate={data.session.date}
@@ -299,11 +299,11 @@ export function TeacherClassroom({
                       ended_at,
                       reason,
                     },
-                    4,
+                    attendance ? 4 : 1,
                   )
                 }
               />
-            )}
+            }
           </>
         )}
       </section>
