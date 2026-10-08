@@ -100,7 +100,21 @@ export default async function MyWorkPage({
     );
   } else {
     const data = await getWorkData(q.month, undefined, q.page);
-    content = <WorkWorkspace data={data} page={q.page} />;
+    content = (
+      <>
+        <WorkWorkspace
+          data={data}
+          page={q.page}
+          canRecordAttendance={context.permissions.includes("workforce.manage")}
+        />
+        <p className="text-sm text-muted-foreground">
+          <LocalizedText
+            en="This tab shows attendance. Total referral earnings and payments are under Earnings & payments; previous-month cash is not total earned rewards. Staff attendance is recorded by authorized management."
+            bn="এটি উপস্থিতির tab। মোট রেফারাল আয় ও পরিশোধ দেখতে পাওনা ও পরিশোধ tab খুলুন; গত মাসের পরিশোধ মোট অর্জিত বোনাস নয়। অনুমোদিত ব্যবস্থাপক স্টাফ উপস্থিতি রেকর্ড করেন।"
+          />
+        </p>
+      </>
+    );
   }
   return (
     <div className="space-y-6">

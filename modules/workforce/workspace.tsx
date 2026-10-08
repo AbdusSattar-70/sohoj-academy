@@ -12,10 +12,12 @@ export function WorkWorkspace({
   data,
   page,
   admin = false,
+  canRecordAttendance = admin,
 }: {
   data: WorkData;
   page: number;
   admin?: boolean;
+  canRecordAttendance?: boolean;
 }) {
   const { locale } = useLanguage();
   const t = (en: string, bn: string) => (locale === "bn" ? bn : en);
@@ -138,70 +140,77 @@ export function WorkWorkspace({
                 data.scheduledPayDate ??
                   t("Not configured", "নির্ধারণ করা হয়নি"),
               ],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground">{label}</p>
-                <p className="text-xl font-semibold">{value}</p>
-              </div>
-            ))}
+            ]
+              .slice(0, admin ? 4 : 2)
+              .map(([label, value]) => (
+                <div key={String(label)} className="rounded-xl border p-4">
+                  <p className="text-sm text-muted-foreground">{label}</p>
+                  <p className="text-xl font-semibold">{value}</p>
+                </div>
+              ))}
           </div>
-          <section className="space-y-2 rounded-xl border p-5">
-            <h3 className="font-semibold">
-              {t("Current compensation agreement", "বর্তমান পারিশ্রমিকের শর্ত")}
-            </h3>
-            {data.terms ? (
-              <>
-                <p>
-                  {data.terms.model.replaceAll("_", " ")} ·{" "}
-                  {t("Effective", "কার্যকর")} {data.terms.effective_from}
-                </p>
-                <p>
-                  {t("Monthly base", "মাসিক মূল বেতন")}: BDT{" "}
-                  {data.terms.monthly_base.toLocaleString()} ·{" "}
-                  {t("Hourly rate", "প্রতি ঘণ্টার হার")}: BDT{" "}
-                  {data.terms.hourly_rate.toLocaleString()}
-                </p>
+          {admin && (
+            <section className="space-y-2 rounded-xl border p-5">
+              <h3 className="font-semibold">
+                {t(
+                  "Current compensation agreement",
+                  "বর্তমান পারিশ্রমিকের শর্ত",
+                )}
+              </h3>
+              {data.terms ? (
+                <>
+                  <p>
+                    {data.terms.model.replaceAll("_", " ")} ·{" "}
+                    {t("Effective", "কার্যকর")} {data.terms.effective_from}
+                  </p>
+                  <p>
+                    {t("Monthly base", "মাসিক মূল বেতন")}: BDT{" "}
+                    {data.terms.monthly_base.toLocaleString()} ·{" "}
+                    {t("Hourly rate", "প্রতি ঘণ্টার হার")}: BDT{" "}
+                    {data.terms.hourly_rate.toLocaleString()}
+                  </p>
+                  <p>
+                    {t(
+                      "Recorded hourly estimate for this month",
+                      "এই মাসের রেকর্ড অনুযায়ী ঘণ্টাভিত্তিক আনুমানিক আয়",
+                    )}
+                    : BDT {data.hourlyEstimate.toLocaleString()}
+                  </p>
+                </>
+              ) : (
                 <p>
                   {t(
-                    "Recorded hourly estimate for this month",
-                    "এই মাসের রেকর্ড অনুযায়ী ঘণ্টাভিত্তিক আনুমানিক আয়",
+                    "Terms have not been configured; no salary amount is assumed.",
+                    "শর্ত নির্ধারণ করা হয়নি; কোনো বেতনের পরিমাণ অনুমান করা হচ্ছে না।",
                   )}
-                  : BDT {data.hourlyEstimate.toLocaleString()}
                 </p>
-              </>
-            ) : (
-              <p>
+              )}
+              <p className="text-sm text-muted-foreground">
                 {t(
-                  "Terms have not been configured; no salary amount is assumed.",
-                  "শর্ত নির্ধারণ করা হয়নি; কোনো বেতনের পরিমাণ অনুমান করা হচ্ছে না।",
+                  "Estimates and scheduled dates are not approved salary or payment confirmations. Post agreed fixed/hourly payroll in Payroll & payslips. Revenue-share earnings use approved teaching workload, not these daily hours.",
+                  "আনুমানিক আয় ও নির্ধারিত তারিখ অনুমোদিত বেতন বা পরিশোধের প্রমাণ নয়। সম্মত fixed/hourly বেতন Payroll & payslips থেকে পোস্ট করা যায়। Revenue-share আয় অনুমোদিত পাঠদানের কাজ অনুযায়ী, এই দৈনিক ঘণ্টা অনুযায়ী নয়।",
                 )}
               </p>
-            )}
-            <p className="text-sm text-muted-foreground">
-              {t(
-                "Estimates and scheduled dates are not approved salary or payment confirmations. Post agreed fixed/hourly payroll in Payroll & payslips. Revenue-share earnings use approved teaching workload, not these daily hours.",
-                "আনুমানিক আয় ও নির্ধারিত তারিখ অনুমোদিত বেতন বা পরিশোধের প্রমাণ নয়। সম্মত fixed/hourly বেতন Payroll & payslips থেকে পোস্ট করা যায়। Revenue-share আয় অনুমোদিত পাঠদানের কাজ অনুযায়ী, এই দৈনিক ঘণ্টা অনুযায়ী নয়।",
+              {!admin && (
+                <Link
+                  href="/dashboard/referrals"
+                  className="inline-block underline"
+                >
+                  {t(
+                    "Referral and approved teaching financial statement →",
+                    "রেফারাল ও অনুমোদিত পাঠদানের আর্থিক হিসাব →",
+                  )}
+                </Link>
               )}
-            </p>
-            {!admin && (
               <Link
-                href="/dashboard/referrals"
-                className="inline-block underline"
+                href="/dashboard/finance/payroll"
+                className="ml-4 inline-block underline"
               >
-                {t(
-                  "Referral and approved teaching financial statement →",
-                  "রেফারাল ও অনুমোদিত পাঠদানের আর্থিক হিসাব →",
-                )}
+                {t("Payroll & payslips →", "বেতন ও স্লিপ →")}
               </Link>
-            )}
-            <Link
-              href="/dashboard/finance/payroll"
-              className="ml-4 inline-block underline"
-            >
-              {t("Payroll & payslips →", "বেতন ও স্লিপ →")}
-            </Link>
-          </section>
-          {admin && (
+            </section>
+          )}
+          {canRecordAttendance && (
             <div className="flex gap-3">
               <button
                 disabled={pending}
@@ -390,7 +399,8 @@ export function WorkWorkspace({
                   <Button loading={pending} disabled={pending}>
                     {t("Save", "সংরক্ষণ করুন")}
                   </Button>
-                  <Button loading={pending}
+                  <Button
+                    loading={pending}
                     type="button"
                     variant="outline"
                     disabled={pending}
