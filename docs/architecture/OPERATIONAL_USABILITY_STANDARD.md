@@ -31,7 +31,7 @@ Support routes are added to the registry. Review queue remains reachable from Ac
 
 Use existing records before creating choices. Required/optional labels follow selected locale. A short hint is visible; longer help must support tap, focus and hover. Actions describe their actual effect: draft save is not submit; submit is not approval; invoice is not payment; teacher task completion is not admin acceptance. Add meaningful help explicitly; do not manufacture generic descriptions for every input.
 
-Show pending state and prevent double-clicks. Preserve invalid input. Store a stable request identity for retries where supported. A saved banner remains visible after an inline form closes. For the migrated task/document editors, sidebar navigation blocks pending saves and confirms unsaved input. This guard does not replace server idempotency and does not yet cover every legacy editor or browser tab close.
+Show pending state and prevent double-clicks. Preserve invalid input. Store a stable request identity for retries where supported. A saved banner remains visible after an inline form closes. Active mutation forms listed in ERP_ACTIVE_FORM_AUDIT.md disable controls while saving and share pending/dirty link-navigation and browser-close protection. Admission discount/final review sections also participate. This guard does not replace server idempotency; native browser back/forward behavior still needs target-browser acceptance.
 
 Academic questions originate from teacher routine, not administrator task assignment. Admin staff tasks cover other named responsibilities with due date, instructions, progress, blockers and review. No task percentage automatically adjusts pay.
 
@@ -50,3 +50,7 @@ Extend the explicit help catalog to fees, rooms, curriculum, student lifecycle, 
 ## Verification
 
 Run `node scripts/check-workspace-navigation.cjs` for permission filtering, unique destinations, role landing and deepest-route regression checks. Changed TypeScript components pass local lint/type checks and `next build --webpack` with placeholder configuration. No live Supabase write or authenticated browser acceptance is represented by these checks.
+
+## Rollout evidence
+
+See [USABILITY_ROLLOUT_CHECKLIST.md](USABILITY_ROLLOUT_CHECKLIST.md), [ERP_ACTIVE_FORM_AUDIT.md](ERP_ACTIVE_FORM_AUDIT.md), and [USABILITY_ACCEPTANCE.md](USABILITY_ACCEPTANCE.md). Common labels and explicit help are localized; bespoke legacy hints/error text outside the catalog are not claimed fully translated.
