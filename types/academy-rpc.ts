@@ -90,6 +90,15 @@ export type AcademyDatabase = {
       check_workspace_payload: { Args: { p_payload: Json; p_kind: string }; Returns: undefined };
       academic_session_command: { Args: { p_request_id: string; p_payload: Json }; Returns: Json };
       person_in_workspace: { Args: { p_person: string }; Returns: boolean };
+      admission_fee_snapshot: { Args: { p_run: string }; Returns: Json };
+      admission_options: { Args: { p_query?: string; p_page?: number; p_run?: string }; Returns: Json };
+      admission_person_search: { Args: { p_query: string; p_page?: number }; Returns: Json };
+      assign_student_identity: { Args: Record<string, never>; Returns: unknown };
+      protect_student_identity: { Args: Record<string, never>; Returns: unknown };
+      save_admission_draft: { Args: { p_request_id: string; p_input: Json }; Returns: Json };
+      admission_case: { Args: { p_id: string }; Returns: Json };
+      admission_register: { Args: { p_query?: string; p_page?: number; p_status?: string }; Returns: Json };
+      admission_enquiry: { Args: { p_id: string }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

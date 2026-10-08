@@ -32,6 +32,7 @@ const sources = [
   ['25_resource_identity_diagnostics.sql', 'academics/25_resource_identity_diagnostics.sql'],
   ['26_account_permissions_and_workspaces.sql', 'access/26_account_permissions_and_workspaces.sql'],
   ['27_scoped_academic_workspaces.sql', 'access/27_scoped_academic_workspaces.sql'],
+  ['28_admission_drafts.sql', 'admissions/28_admission_drafts.sql'],
 ];
 const check = process.argv.includes('--check');
 if (process.argv.some(arg => arg.startsWith('--') && arg !== '--check')) throw Error('Unknown option');

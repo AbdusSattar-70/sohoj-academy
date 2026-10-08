@@ -1,4 +1,10 @@
-import Link from 'next/link';
+import {redirect} from 'next/navigation';
 import {requireAcademyPermission} from '@/modules/academy/queries';
-import {LocalizedText} from '@/components/shared/localized-text';
-export default async function Page(){await requireAcademyPermission('people.view');return <section className="space-y-4"><h1 className="text-2xl font-semibold"><LocalizedText en="Admissions" bn="ভর্তি"/></h1><p><LocalizedText en="The single-page admission desk is not implemented in this fresh version yet. Public submissions remain in the enquiry queue." bn="এই নতুন সংস্করণে এক পাতায় ভর্তি ডেস্ক এখনো তৈরি হয়নি। ওয়েবসাইটের আবেদন অনুসন্ধান তালিকায় রয়েছে।"/></p><Link href="/dashboard/enquiries" prefetch={false} className="underline"><LocalizedText en="Review enquiries and applications →" bn="অনুসন্ধান ও আবেদন দেখুন →"/></Link></section>;}
+import {admissionRegister,admissionOptions,admissionEnquiry} from '@/modules/admissions/actions';
+import {AdmissionRegister} from '@/modules/admissions/register';
+export default async function Page({searchParams}:{searchParams:Promise<{enquiry?:string}>}){
+ const context=await requireAcademyPermission('admissions.view'),query=await searchParams;
+ let prefill:Record<string,unknown>|undefined;
+ if(query.enquiry){const source=await admissionEnquiry(query.enquiry);if(source.admissionId)redirect('/dashboard/academics/admissions/'+source.admissionId);const p=source.payload;prefill={studentName:p.studentName??'',studentNameBn:p.studentNameBn??'',guardianName:p.guardianName??'',guardianMobile:p.mobile??'',presentAddress:p.guardianAddress??p.area??''};}
+ return <AdmissionRegister initial={await admissionRegister()} canManage={context.permissions.includes('admissions.manage')} canCreate={context.permissions.includes('directory.manage')} prefill={prefill} enquiryId={query.enquiry} initialOptions={query.enquiry?await admissionOptions():undefined}/>;
+}

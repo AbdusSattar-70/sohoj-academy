@@ -15,6 +15,7 @@ export function AcademicNavigation({permissions,children}:{permissions:string[];
   {href:'/dashboard/academics/routines',en:'Weekly routine',bn:'সাপ্তাহিক রুটিন',show:permissions.includes('academics.view')},
   {href:'/dashboard/academics/calendar',en:'Class calendar',bn:'ক্লাস ক্যালেন্ডার',show:permissions.includes('academics.view')},
   {href:'/dashboard/academics/teaching-hours',en:'Teaching hours',bn:'পাঠদানের সময়',show:permissions.includes('academics.view')},
+  {href:'/dashboard/academics/admissions',en:'Admissions',bn:'ভর্তি',show:permissions.includes('admissions.view')},
   {href:'/dashboard/academics/sessions',en:'Class operation',bn:'ক্লাস পরিচালনা',show:permissions.includes('academics.view')},
  ];
  useEffect(()=>{
