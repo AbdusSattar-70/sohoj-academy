@@ -443,327 +443,76 @@ export function PublicControlsForm({
             {({ id, describedBy, invalid }) => (
               <input
                 id={id}
-                type=…18276 tokens truncated…          ["notes", "Contact notes", person?.notes],
-                ].map(([name, label, value]) => (
-                  <label key={name} className="text-sm">
-                    {label}
-                    <input
-                      name={name!}
-                      defaultValue={value ?? ""}
-                      required={name === "name"}
-                      type={name === "email" ? "email" : "text"}
-                      readOnly={name === "email" && !!person?.profileId}
-                      className={input}
-                    />
-                  </label>
-                ))}
-                <label className="text-sm">
-                  Correction reason
-                  <input
-                    name="reason"
-                    required
-                    minLength={5}
-                    defaultValue="Verified referral contact details"
-                    className={input}
-                  />
-                </label>
-                <div className="flex gap-3 sm:col-span-2">
-                  <button
-                    disabled={pending}
-                    className="rounded-lg bg-primary px-4 py-2 text-primary-foreground"
-                  >
-                    {pending ? "Saving…" : "Save referrer"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => setEditing(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </fieldset>
-            </form>
-          )}
-        </section>
-      )}
-      {data.selected && (
-        <>
-          <h2 className="text-xl font-semibold">{data.name}</h2>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              ["Earned after corrections", data.earned],
-              ["Actually settled", data.settled],
-              [
-                outstanding < 0
-                  ? "Recovery / future offset"
-                  : "Outstanding reward",
-                Math.abs(outstanding),
-              ],
-            ].map(([label, n]) => (
-              <div key={String(label)} className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground">{label}</p>
-                <p className="mt-2 text-xl font-semibold">{money(Number(n))}</p>
-              </div>
-            ))}
-          </div>
-          {data.manager && outstanding > 0 && (
-            <button
-              className="rounded-lg border px-4 py-2"
-              onClick={() => {
-                request.current = "";
-                setPay(!pay);
-              }}
-            >
-              Record referrer payment
-            </button>
-          )}
-          {pay && (
-            <form
-              data-editor
-              data-busy={pending ? "true" : "false"}
-              className="grid gap-4 rounded-xl border p-4 sm:grid-cols-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const f = new FormData(e.currentTarget);
-                run({
-                  action: "SETTLE",
-                  id: data.selected,
-                  amount: Number(f.get("amount")),
-                  account_id: String(f.get("account_id")),
-                  reference: String(f.get("reference")),
-                  reason: String(f.get("reason")),
-                });
-              }}
-            >
-              <fieldset disabled={pending} className="contents">
-                <label>
-                  Actual amount paid
-                  <input
-                    className={input}
-                    name="amount"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    max={outstanding}
-                    required
-                  />
-                </label>
-                <label>
-                  Cash / bank
-                  <select className={input} name="account_id" required>
-                    <option value="">Choose…</option>
-                    {data.accounts.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Payment reference
-                  <input name="reference" className={input} />
-                </label>
-                <label>
-                  Reason
-                  <input
-                    name="reason"
-                    className={input}
-                    required
-                    minLength={5}
-                    defaultValue="Paid verified referral reward"
-                  />
-                </label>
-                <button disabled={pending}>
-                  {pending ? "Recording…" : "Record actual payment"}
-                </button>
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => setPay(false)}
-                >
-                  Cancel
-                </button>
-              </fieldset>
-            </form>
-          )}
-          <section className="overflow-x-auto rounded-2xl border p-4">
-            <h3 className="mb-3 font-semibold">
-              {t("Referred students", "রেফার করা শিক্ষার্থী")}
-            </h3>
-            {!data.students.length && (
-              <p className="mb-3 text-sm">
-                {t(
-                  "No referred admissions recorded yet.",
-                  "এখনো রেফার করা ভর্তি রেকর্ড হয়নি।",
-                )}
-              </p>
+                type="date"
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                className={controlClass}
+                disabled={pending}
+                {...register("applicationsCloseOn")}
+              />
             )}
-            <table className="w-full min-w-[700px] text-sm">
-              <thead>
-                <tr className="border-b text-left">
-                  <th>Student / programme</th>
-                  <th>Status</th>
-                  <th>Discounts / scholarships</th>
-                  <th>Net tuition collected</th>
-                  <th>Acquisition reward</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.students.map((s) => (
-                  <tr className="border-b align-top" key={s.id}>
-                    <td className="py-4">
-                      <p className="font-semibold">
-                        {s.name} · {s.studentNo ?? s.number}
-                      </p>
-                      <p className="text-xs">{s.programme}</p>
-                      <details className="mt-2">
-                        <summary className="cursor-pointer">
-                          Collections ({s.collections.length})
-                        </summary>
-                        <ul className="mt-2 space-y-2">
-                          {s.collections.map((c) => (
-                            <li key={c.receipt}>
-                              {new Date(c.receivedOn).toLocaleDateString(
-                                "en-GB",
-                              )}{" "}
-                              · {c.receipt} · {money(c.allocated)} · billing{" "}
-                              {c.billingPeriod}
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </td>
-                    <td className="py-4">
-                      <StatusBadge value={s.status} />
-                    </td>
-                    <td className="py-4">
-                      {s.discountPercent}% admission discount
-                      <br />
-                      {money(s.discountAmount)} total reductions
-                    </td>
-                    <td className="py-4">{money(s.netTuition)}</td>
-                    <td className="py-4">
-                      {money(s.reward)}
-                      <br />
-                      <span className="text-xs">
-                        {s.rate ?? "—"}% · first qualifying billing month
-                      </span>
-                    </td>
-                  </tr>
+          </ErpFormField>
+          <ErpFormField
+            id={`${offering.id}-subjects`}
+            label="Subjects on this offering"
+            className="sm:col-span-2"
+            hint="Hold Ctrl/Cmd to select multiple. Used on public cards and forms."
+            error={errors.subjectIds?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <select
+                id={id}
+                multiple
+                size={Math.min(8, Math.max(3, subjects.length))}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                className={`${controlClass} h-auto min-h-24 py-2`}
+                disabled={pending}
+                {...register("subjectIds")}
+              >
+                {subjects.map((subject) => (
+                  <option key={subject.id} value={subject.id}>
+                    {subject.code} — {subject.name}
+                  </option>
                 ))}
-              </tbody>
-            </table>
-          </section>
-          {data.teacher && (
-            <section className="space-y-4 rounded-2xl border p-5">
-              <h3 className="font-semibold">
-                {t(
-                  "Teaching and retention account",
-                  "পাঠদান ও রিটেনশনের হিসাব",
-                )}
-              </h3>
-              <div className="grid gap-3 sm:grid-cols-4">
-                {[
-                  [t("Approved earnings", "অনুমোদিত আয়"), data.teachingEarned],
-                  [
-                    t(
-                      "Settled including advance offsets",
-                      "অগ্রিম সমন্বয়সহ পরিশোধ",
-                    ),
-                    data.teachingSettled,
-                  ],
-                  [
-                    t("Outstanding compensation", "বকেয়া পারিশ্রমিক"),
-                    data.teachingEarned - data.teachingSettled,
-                  ],
-                  [
-                    t("Unsettled advances", "অসমন্বিত অগ্রিম"),
-                    data.advanceOutstanding,
-                  ],
-                ].map(([label, n]) => (
-                  <div key={String(label)} className="rounded-xl border p-3">
-                    <p className="text-sm">{label}</p>
-                    <p className="font-semibold">{money(Number(n))}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {t(
-                  "Approved runs only. Acquisition rewards appear separately above and are not counted twice. Pending calculations do not constitute payable earnings.",
-                  "শুধু অনুমোদিত হিসাব দেখানো হয়। শিক্ষার্থী আনার বোনাস উপরে আলাদা দেখানো হয়েছে, দুবার গণনা হয়নি। অপেক্ষমাণ হিসাব এখনো প্রাপ্য আয় নয়।",
-                )}
-              </p>
-              <details>
-                <summary className="cursor-pointer">
-                  {t("Earnings details", "আয়ের বিবরণ")} (
-                  {data.teachingLines.length})
-                </summary>
-                {data.teachingLines.map((l) => (
-                  <div key={l.id} className="border-b py-3 text-sm">
-                    <p>
-                      {l.run} · {l.from} — {l.to} ·{" "}
-                      {l.type.replaceAll("_", " ")} ·{" "}
-                      <strong>{money(l.amount)}</strong>
-                    </p>
-                    {l.netTuition !== null && (
-                      <p>
-                        {t("Net tuition basis", "নিট টিউশনের ভিত্তি")}:{" "}
-                        {money(l.netTuition)} · {t("Pool", "তহবিল")}:{" "}
-                        {l.poolPercent}% ·{" "}
-                        {l.workloadUnit === "HOURS"
-                          ? t(
-                              "Approved teaching hours",
-                              "অনুমোদিত পাঠদানের ঘণ্টা",
-                            )
-                          : t("Approved sessions", "অনুমোদিত ক্লাস")}
-                        : {l.approvedSessions}/{l.batchApprovedSessions}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </details>
-              <details>
-                <summary className="cursor-pointer">
-                  {t("Payments and advance offsets", "পরিশোধ ও অগ্রিম সমন্বয়")}{" "}
-                  ({data.teachingPayments.length})
-                </summary>
-                {data.teachingPayments.map((p, i) => (
-                  <p className="py-3 text-sm" key={i}>
-                    {p.date.slice(0, 10)} · {p.run} ·{" "}
-                    {t("Cash / bank paid", "নগদ / ব্যাংকে পরিশোধ")}{" "}
-                    {money(p.cash)} · {t("Advance offset", "অগ্রিম সমন্বয়")}{" "}
-                    {money(p.advanceOffset)} · {p.reference ?? "—"}
-                  </p>
-                ))}
-              </details>
-            </section>
+              </select>
+            )}
+          </ErpFormField>
+          <ErpFormField
+            id={`${offering.id}-reason`}
+            label="Reason"
+            required
+            className="sm:col-span-2"
+            hint="Audit action: UPDATE_PUBLIC_CONTROLS."
+            error={errors.reason?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <input
+                id={id}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                className={controlClass}
+                disabled={pending}
+                placeholder="e.g. Open SSC Science admissions for 2026"
+                {...register("reason")}
+              />
+            )}
+          </ErpFormField>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" disabled={!canSubmit}>
+            {pending ? "Saving\u2026" : "Save public controls"}
+          </Button>
+          {!isActive && (
+            <p className="text-xs text-muted-foreground">
+              Publish a Fee Plan so this offering becomes ACTIVE before enabling
+              website visibility.
+            </p>
           )}
-          <details className="rounded-xl border p-4">
-            <summary className="cursor-pointer font-semibold">
-              Reward calculation history
-            </summary>
-            {data.entries.map((e) => (
-              <p className="mt-3 text-sm" key={e.id}>
-                {new Date(e.date).toLocaleString("en-GB")} · {money(e.amount)}{" "}
-                {e.amount < 0 ? "correction" : "accrual"} · {e.rate}% of{" "}
-                {money(e.collected)} net tuition
-              </p>
-            ))}
-          </details>
-          <details className="rounded-xl border p-4">
-            <summary className="cursor-pointer font-semibold">
-              Settlement history
-            </summary>
-            {data.settlements.map((s, i) => (
-              <p className="mt-3 text-sm" key={i}>
-                {new Date(s.date).toLocaleString("en-GB")} · {money(s.amount)} ·{" "}
-                {s.reference ?? "Office cash record"}
-              </p>
-            ))}
-          </details>
-        </>
-      )}
-    </div>
+        </div>
+        <ErpFormStatus message={message} />
+      </fieldset>
+    </form>
   );
 }
