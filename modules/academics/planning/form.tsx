@@ -81,9 +81,22 @@ export function PlanningForm({
     setValues((v) => ({ ...v, [key]: value }));
     if (key === "id" && action === "BATCH_PLAN") {
       const b = data.choices.batches.find((x) => x.id === value);
-      setDays(b?.days ?? []);
+      setDays(
+        b?.windows?.length ? b.windows.map((w) => w.weekday) : (b?.days ?? []),
+      );
       setWindows(b?.windows ?? []);
     }
+    if (key === "id" && action === "OFFERING_PLAN") {
+      const o = data.choices.offerings.find((x) => x.id === value);
+      setDays(o?.days ?? []);
+      setValues((v) => ({
+        ...v,
+        operation_kind: o?.operation_kind ?? "COACHING",
+        starts_on: o?.starts_on ?? "",
+        ends_on: o?.ends_on ?? "",
+      }));
+    }
+    if (key === "resource_kind") setValues((v) => ({ ...v, resource_id: "" }));
     if (key === "batch_id") {
       const b = data.choices.batches.find((x) => x.id === value),
         o = data.choices.offerings.find((x) => x.id === b?.offering_id);
@@ -92,6 +105,7 @@ export function PlanningForm({
       );
       setValues((v) => ({
         ...v,
+        curriculum_id: "",
         subject_id: "",
         teacher_id: "",
         room_id: "",
@@ -101,7 +115,8 @@ export function PlanningForm({
         end_time: b?.windows?.[0]?.end_time ?? "09:00",
       }));
     }
-    if (key === "subject_id") setValues((v) => ({ ...v, teacher_id: "" }));
+    if (key === "subject_id")
+      setValues((v) => ({ ...v, teacher_id: "", curriculum_id: "" }));
   }
   function input(
     key: string,
@@ -386,6 +401,25 @@ export function PlanningForm({
                 {input("start_time", "Available from", "সময় শুরু", "time")}
                 {input("end_time", "Until", "সময় শেষ", "time")}
               </>
+            )}
+          </>
+        )}
+        {action === "QUALIFICATION" && (
+          <>
+            {select("teacher_id", "Teacher", "শিক্ষক", data.choices.teachers)}
+            {select(
+              "subject_id",
+              "Qualified subject",
+              "পড়ানোর বিষয়",
+              data.choices.subjects,
+            )}
+            {input("starts_on", "Qualified from", "যোগ্যতা শুরু", "date")}
+            {input(
+              "ends_on",
+              "Qualified through (optional)",
+              "শেষ তারিখ (ঐচ্ছিক)",
+              "date",
+              false,
             )}
           </>
         )}

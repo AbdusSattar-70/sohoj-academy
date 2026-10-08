@@ -6,6 +6,7 @@ export const sections = [
   "availability",
   "closures",
   "routines",
+  "qualifications",
 ] as const;
 export type PlanningSection = (typeof sections)[number];
 export const choiceSchema = z.object({
@@ -19,6 +20,7 @@ export const choiceSchema = z.object({
   subjects: z.array(z.string()).optional(),
   offerings: z.array(z.string()).optional(),
   days: z.array(z.number()).optional(),
+  operation_kind: z.enum(["SCHOOL", "COACHING", "TRAINING"]).optional(),
   starts_on: z.string().nullable().optional(),
   ends_on: z.string().nullable().optional(),
   windows: z

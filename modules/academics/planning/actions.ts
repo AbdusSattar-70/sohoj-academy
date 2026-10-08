@@ -7,6 +7,7 @@ const envelope = z
   .object({
     request_id: z.string().uuid(),
     action: z.enum([
+      "QUALIFICATION",
       "OFFERING_PLAN",
       "BATCH_PLAN",
       "ROOM",
@@ -44,6 +45,7 @@ export async function saveAcademicPlan(input: unknown) {
     };
   try {
     const planning = [
+      "QUALIFICATION",
       "OFFERING_PLAN",
       "BATCH_PLAN",
       "ROOM",

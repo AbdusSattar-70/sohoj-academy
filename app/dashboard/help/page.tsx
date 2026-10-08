@@ -215,6 +215,12 @@ export default async function HelpPage() {
       >
         আর্থিক ও হিসাব পরিচালনার পূর্ণাঙ্গ বাংলা নির্দেশিকা →
       </Link>
+      <Link
+        href="/dashboard/help/academics"
+        className="block rounded-xl border bg-card p-5 font-semibold text-primary"
+      >
+        শিক্ষা কার্যক্রম, রুটিন ও ক্লাস পরিচালনার বাংলা নির্দেশিকা →
+      </Link>
       <PageHeader
         eyebrow="Getting Started"
         title="Help & Workflows"

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PlanningForm, weekdays, weekdaysBn } from "./form";
 import { sections, type PlanningData } from "./schema";
 const titles = {
+  qualifications: ["Teacher subject qualifications", "শিক্ষকের পাঠদানের বিষয়"],
   offerings: ["Programme teaching plan", "প্রোগ্রামের পাঠদান পরিকল্পনা"],
   batches: ["Batch days & times", "ব্যাচের দিন ও সময়"],
   rooms: ["Classrooms", "শ্রেণিকক্ষ"],
@@ -13,7 +14,23 @@ const titles = {
   closures: ["Holidays & unavailability", "ছুটি ও অনুপস্থিতি"],
   routines: ["Weekly subject routine", "সাপ্তাহিক বিষয়ের রুটিন"],
 };
+function generationDates(row: Record<string, unknown>) {
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dhaka",
+  }).format(new Date());
+  const starts = String(row.starts_on) > today ? String(row.starts_on) : today;
+  const through = new Date(starts + "T00:00:00Z");
+  through.setUTCDate(through.getUTCDate() + 30);
+  return {
+    starts_on: starts,
+    ends_on:
+      String(row.ends_on) < through.toISOString().slice(0, 10)
+        ? String(row.ends_on)
+        : through.toISOString().slice(0, 10),
+  };
+}
 const actions = {
+  qualifications: "QUALIFICATION",
   offerings: "OFFERING_PLAN",
   batches: "BATCH_PLAN",
   rooms: "ROOM",
@@ -43,6 +60,12 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
           )}
         </p>
       </header>
+      <Link
+        className="inline-flex rounded-lg border px-3 py-2 hover:bg-muted"
+        href="/dashboard/help/academics"
+      >
+        {t("Academic workflow guide", "শিক্ষা কার্যক্রমের নির্দেশিকা")}
+      </Link>
       <nav className="flex flex-wrap gap-2">
         {sections.map((s) => (
           <Link
@@ -74,7 +97,10 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
         >
           {t("Offerings & fees", "অফারিং ও ফি")}
         </Link>
-        <Link className="rounded-lg border px-3 py-2" href="/dashboard/staff">
+        <Link
+          className="rounded-lg border px-3 py-2"
+          href="/dashboard/academics/planning?section=qualifications"
+        >
           {t("Teacher qualifications", "শিক্ষকের যোগ্যতা")}
         </Link>
         <Button
@@ -105,6 +131,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
             {[
               ["ROOM", "Add classroom", "শ্রেণিকক্ষ যোগ"],
               ["AVAILABILITY", "Set availability", "সময় নির্ধারণ"],
+              ["QUALIFICATION", "Assign teaching subject", "পাঠদানের বিষয় দিন"],
               ["CLOSURE", "Record holiday", "ছুটি যোগ"],
             ].map(([action, en, bn]) => (
               <Button
@@ -244,8 +271,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
                                 action: "GENERATE",
                                 initial: {
                                   routine_id: r.id,
-                                  starts_on: r.starts_on,
-                                  ends_on: r.ends_on,
+                                  ...generationDates(r),
                                   planned_scope: "Planned subject class",
                                 },
                               })
