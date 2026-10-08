@@ -7,10 +7,10 @@ export function WorkspaceFormSafety() {
   useEffect(() => {
     const root = document.querySelector("#erp-main");
     if (!root) return;
-    let submitted: HTMLFormElement | null = null;
+    let submitted: HTMLElement | null = null;
     const editor = (target: EventTarget | null) =>
       target instanceof HTMLElement
-        ? target.closest<HTMLFormElement>("form[data-editor]")
+        ? target.closest<HTMLElement>("[data-editor]")
         : null;
     const changed = (e: Event) => {
       const form = editor(e.target);
@@ -40,6 +40,9 @@ export function WorkspaceFormSafety() {
         e.altKey
       )
         return;
+      const activeEditor = editor(e.target);
+      if (activeEditor && !activeEditor.matches("form"))
+        submitted = activeEditor;
       const link =
         e.target instanceof Element
           ? e.target.closest<HTMLAnchorElement>("a[href]")

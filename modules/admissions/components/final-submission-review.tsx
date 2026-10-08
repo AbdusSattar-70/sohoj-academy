@@ -1,6 +1,7 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { announceSaved } from "@/components/erp/action-panel";
 import { runAdmissionCommand } from "../actions";
 export function FinalSubmissionReview({
   admissionId,
@@ -17,6 +18,7 @@ export function FinalSubmissionReview({
     [message, setMessage] = useState("");
   const [pending, start] = useTransition();
   const router = useRouter();
+  const request = useRef<string | null>(null);
   const labels = [
     "Student and guardian details are correct",
     "Programme, class and batch are correct",
@@ -24,7 +26,11 @@ export function FinalSubmissionReview({
     "Referral source and signed paper consent are on file",
   ];
   return (
-    <section className="mt-5 space-y-4 rounded-xl border p-4">
+    <section
+      data-editor
+      data-busy={pending ? "true" : "false"}
+      className="mt-5 space-y-4 rounded-xl border p-4"
+    >
       <h3 className="font-semibold">Review before final submission</h3>
       <p className="text-sm text-muted-foreground">
         Standard initial charges: BDT {total.toFixed(2)}. Saved tuition
@@ -40,6 +46,7 @@ export function FinalSubmissionReview({
             className="flex items-start gap-3 rounded-lg border p-3 text-sm"
           >
             <input
+              disabled={pending}
               type="checkbox"
               checked={checks.includes(label)}
               onChange={(e) =>
@@ -55,6 +62,7 @@ export function FinalSubmissionReview({
         ))}
       </div>
       <button
+        aria-busy={pending}
         disabled={pending || checks.length !== labels.length}
         className="min-h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:opacity-40"
         onClick={() =>
@@ -63,12 +71,15 @@ export function FinalSubmissionReview({
               const r = await runAdmissionCommand({
                 action: "FINALIZE",
                 admissionId,
-                requestId: crypto.randomUUID(),
+                requestId: (request.current ??= crypto.randomUUID()),
                 reason:
                   "Reviewed identity, placement, standard charges, discount, referral and signed paper consent",
               });
               setMessage(r.message);
-              if (r.ok) router.refresh();
+              if (r.ok) {
+                announceSaved(r.message);
+                router.refresh();
+              }
             } catch {
               setMessage(
                 "Could not finalize. Check the case status before retrying.",

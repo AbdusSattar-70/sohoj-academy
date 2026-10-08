@@ -1,6 +1,7 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { announceSaved } from "@/components/erp/action-panel";
 import { runAdmissionCommand } from "../actions";
 export const discountReasons = {
   FINANCIAL_HARDSHIP: "Financial hardship",
@@ -26,8 +27,13 @@ export function AdmissionDiscountForm({
     [message, setMessage] = useState("");
   const [pending, start] = useTransition();
   const router = useRouter();
+  const request = useRef<string | null>(null);
   return (
-    <section className="space-y-3 rounded-xl border p-4">
+    <section
+      data-editor
+      data-busy={pending ? "true" : "false"}
+      className="space-y-3 rounded-xl border p-4"
+    >
       <h3 className="font-semibold">Tuition discount</h3>
       <p className="text-sm text-muted-foreground">
         Applies to tuition from the initial billing month through this academic
@@ -36,9 +42,13 @@ export function AdmissionDiscountForm({
       <label className="block text-sm">
         Discount
         <select
+          disabled={pending}
           className="ml-3 rounded-lg border bg-background p-2"
           value={percent}
-          onChange={(e) => setPercent(Number(e.target.value))}
+          onChange={(e) => (
+            (request.current = null),
+            setPercent(Number(e.target.value))
+          )}
         >
           <option value={0}>No discount</option>
           {allowed.map((p) => (
@@ -58,10 +68,14 @@ export function AdmissionDiscountForm({
                 className="flex items-center gap-2 rounded border p-2 text-sm"
               >
                 <input
+                  disabled={pending}
                   type="radio"
                   name="discount-reason"
                   checked={why === key}
-                  onChange={() => setWhy(key)}
+                  onChange={() => {
+                    request.current = null;
+                    setWhy(key);
+                  }}
                 />
                 {label}
               </label>
@@ -70,25 +84,36 @@ export function AdmissionDiscountForm({
         </fieldset>
       )}
       <button
+        aria-busy={pending}
         disabled={pending || (percent > 0 && !why)}
         className="rounded-lg border px-4 py-2 text-sm"
         onClick={() =>
           start(async () => {
-            const result = await runAdmissionCommand({
-              action: "SAVE_DISCOUNT",
-              admissionId,
-              requestId: crypto.randomUUID(),
-              reason:
-                "Confirmed selected discount and eligibility with guardian",
-              discountPercent: percent,
-              discountReason: why,
-            });
-            setMessage(result.message);
-            if (result.ok) router.refresh();
+            try {
+              const result = await runAdmissionCommand({
+                action: "SAVE_DISCOUNT",
+                admissionId,
+                requestId: (request.current ??= crypto.randomUUID()),
+                reason:
+                  "Confirmed selected discount and eligibility with guardian",
+                discountPercent: percent,
+                discountReason: why,
+              });
+              setMessage(result.message);
+              if (result.ok) {
+                request.current = null;
+                announceSaved(result.message);
+                router.refresh();
+              }
+            } catch {
+              setMessage(
+                "Could not confirm the save. Your selection is retained; check the case before retrying.",
+              );
+            }
           })
         }
       >
-        Save discount choice
+        {pending ? "Saving discount…" : "Save discount choice"}
       </button>
       {message && (
         <p role="status" className="text-sm">
