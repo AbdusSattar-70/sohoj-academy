@@ -126,3 +126,39 @@ for (locale of ["en", "bn"]) {
 console.log(
   "PASS: native associated field labels, bilingual label content and visible hints",
 );
+
+const { WorkflowSteps } = load("modules/help/workflow-guide.tsx");
+const stepGroups = ["setup", "admission", "daily"].map(
+  (name) => Object.values(load(`modules/help/${name}-steps.ts`))[0],
+);
+for (const steps of stepGroups) {
+  for (const step of steps) {
+    assert.ok(
+      step.title.every((s) => s.trim()) && step.body.every((s) => s.trim()),
+    );
+    const route = erpRouteRegistry.find(
+      (r) => r.href === step.href.split("?")[0],
+    );
+    assert.ok(route, `Guide destination must exist: ${step.href}`);
+    assert.equal(
+      step.permission,
+      route.permission,
+      `Guide permissions must match destination: ${step.href}`,
+    );
+  }
+  const permitted = renderToStaticMarkup(
+    React.createElement(WorkflowSteps, {
+      steps,
+      permissions: erpRouteRegistry.map((r) => r.permission),
+    }),
+  );
+  assert.ok(permitted.includes("href="));
+  const restricted = renderToStaticMarkup(
+    React.createElement(WorkflowSteps, { steps, permissions: [] }),
+  );
+  assert.ok(!restricted.includes("href="));
+  assert.ok(restricted.includes("authorized colleague"));
+}
+console.log(
+  "PASS: operator guide destinations, bilingual content and permission-restricted action links",
+);
