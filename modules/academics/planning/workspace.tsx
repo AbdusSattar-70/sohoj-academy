@@ -60,6 +60,34 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
           )}
         </p>
       </header>
+      <div className="flex flex-wrap items-center gap-3">
+        {" "}
+        <Button
+          onClick={() => {
+            setNotice("");
+            setPanel({ action: actions[data.section], initial: {} });
+          }}
+        >
+          {t(
+            data.section === "offerings" || data.section === "batches"
+              ? "Set teaching plan"
+              : data.section === "routines"
+                ? "Create weekly routine"
+                : "Create",
+            data.section === "offerings" || data.section === "batches"
+              ? "পাঠদান পরিকল্পনা দিন"
+              : data.section === "routines"
+                ? "সাপ্তাহিক রুটিন তৈরি করুন"
+                : "তৈরি করুন",
+          )}
+        </Button>
+        <p className="text-sm text-muted-foreground">
+          {t(
+            "Start here. Save the plan, then generate dated classes from its row.",
+            "এখান থেকে শুরু করুন। পরিকল্পনা সংরক্ষণ করে তার row থেকে তারিখভিত্তিক ক্লাস তৈরি করুন।",
+          )}
+        </p>
+      </div>
       <Link
         className="inline-flex rounded-lg border px-3 py-2 hover:bg-muted"
         href="/dashboard/help/academics"
@@ -103,21 +131,6 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
         >
           {t("Teacher qualifications", "শিক্ষকের যোগ্যতা")}
         </Link>
-        <Button
-          onClick={() => {
-            setNotice("");
-            setPanel({ action: actions[data.section], initial: {} });
-          }}
-        >
-          {t(
-            data.section === "offerings" || data.section === "batches"
-              ? "Set teaching plan"
-              : "Create",
-            data.section === "offerings" || data.section === "batches"
-              ? "পাঠদান পরিকল্পনা দিন"
-              : "তৈরি করুন",
-          )}
-        </Button>
       </div>
       {data.section === "routines" && (
         <div className="space-y-3 rounded-xl border p-4">
@@ -328,7 +341,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
         {!data.rows.length && (
           <p className="p-5">
             {t(
-              "No records yet. Use Create to start.",
+              "No records yet. Use the create button above to open the form.",
               "রেকর্ড নেই। তৈরি করুন বোতাম ব্যবহার করুন।",
             )}
           </p>
