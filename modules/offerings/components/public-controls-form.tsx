@@ -3,7 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type FieldPath, type Resolver } from "react-hook-form";
+import {
+  useForm,
+  useWatch,
+  type FieldPath,
+  type Resolver,
+} from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
 import { updateProgrammeOfferingPublicControls } from "@/modules/offerings/actions";
@@ -50,7 +55,7 @@ export function PublicControlsForm({
     register,
     handleSubmit,
     setError,
-    watch,
+    control,
     formState: { errors, isDirty, isValid },
   } = useForm<UpdateOfferingPublicControlsInput>({
     resolver: zodResolver(
@@ -84,7 +89,7 @@ export function PublicControlsForm({
     },
   });
 
-  const isVisible = watch("isWebsiteVisible");
+  const isVisible = useWatch({ control, name: "isWebsiteVisible" });
   const canSubmit = isDirty && isValid && !pending;
 
   const submit = handleSubmit((input) => {
