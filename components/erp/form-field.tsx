@@ -1,4 +1,5 @@
 "use client";
+import { localizedFieldLabel } from "@/modules/platform/navigation/field-labels";
 import { fieldGuide } from "@/modules/platform/navigation/field-guides";
 import { useLanguage } from "@/components/providers/language-provider";
 import { HelpDisclosure, type HelpText } from "./help-disclosure";
@@ -39,7 +40,7 @@ export function ErpFormField({
     <div className={cn("grid gap-2", className)}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1">
-          <Label htmlFor={id}>{label}</Label>
+          <Label htmlFor={id}>{localizedFieldLabel(label, locale)}</Label>
           {guidance && <HelpDisclosure text={guidance} />}
         </div>
         <span className="text-xs text-muted-foreground">
