@@ -1,4 +1,6 @@
 "use client";
+import { useLanguage } from "@/components/providers/language-provider";
+import { guardWorkspaceNavigation } from "@/modules/platform/navigation/navigation-guard";
 import { useEffect, useRef, type ReactNode } from "react";
 /** Explicitly opened working region; clicking outside never destroys form input. */
 export function InlineWorkPanel({
@@ -12,6 +14,7 @@ export function InlineWorkPanel({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const { locale } = useLanguage();
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -33,10 +36,13 @@ export function InlineWorkPanel({
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={(event) => {
+            guardWorkspaceNavigation(event, locale, ref.current);
+            if (!event.defaultPrevented) onClose();
+          }}
           className="rounded-lg border px-3 py-2 text-sm"
         >
-          Close editor
+          {locale === "bn" ? "সম্পাদনা বন্ধ করুন" : "Close editor"}
         </button>
       </header>
       {children}

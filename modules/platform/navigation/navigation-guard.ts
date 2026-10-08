@@ -2,8 +2,9 @@
 export function guardWorkspaceNavigation(
   e: { preventDefault: () => void },
   locale: string,
+  region?: Element | null,
 ) {
-  const root = document.querySelector("#erp-main");
+  const root = region ?? document.querySelector("#erp-main");
   if (root?.querySelector('[data-editor][data-busy="true"]')) {
     e.preventDefault();
     window.dispatchEvent(
