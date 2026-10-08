@@ -1,4 +1,5 @@
 "use client";
+import { LocalizedText } from "@/components/shared/localized-text";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CircleHelp, ArrowRight } from "lucide-react";
@@ -29,10 +30,14 @@ export function PageWorkflowGuide({ permissions }: { permissions: string[] }) {
         </span>
       </summary>
       <div className="space-y-3 border-t px-4 py-4">
-        <p className="font-semibold">{locale === "bn" ? guide.bn : guide.en}</p>
+        <p className="font-semibold">
+          <LocalizedText en={guide.en} bn={guide.bn} />
+        </p>
         <ol className="list-decimal space-y-2 pl-5 text-sm leading-6">
           {guide.steps.map(([en, bn], i) => (
-            <li key={i}>{locale === "bn" ? bn : en}</li>
+            <li key={i}>
+              <LocalizedText en={en} bn={bn} />
+            </li>
           ))}
         </ol>
         <div className="flex flex-wrap gap-2">
