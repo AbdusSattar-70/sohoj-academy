@@ -99,6 +99,11 @@ export type AcademyDatabase = {
       admission_case: { Args: { p_id: string }; Returns: Json };
       admission_register: { Args: { p_query?: string; p_page?: number; p_status?: string }; Returns: Json };
       admission_enquiry: { Args: { p_id: string }; Returns: Json };
+      finalize_admission: { Args: { p_request_id: string; p_input: Json }; Returns: Json };
+      invoice_balance: { Args: { p_id: string }; Returns: Json };
+      admission_billing: { Args: { p_admission: string }; Returns: Json };
+      student_billing_command: { Args: { p_request_id: string; p_input: Json }; Returns: Json };
+      student_billing_register: { Args: { p_query?: string; p_page?: number }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

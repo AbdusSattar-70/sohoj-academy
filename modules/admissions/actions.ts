@@ -2,7 +2,7 @@
 import {z} from 'zod';
 import {academyClient} from '@/modules/academy/client';
 import {requireAcademyPermission} from '@/modules/academy/queries';
-import {caseSchema,optionsSchema,registerSchema,personSchema} from './contracts';
+import {caseSchema,optionsSchema,registerSchema,personSchema,invoiceSchema} from './contracts';
 import type {Json} from '@/types/academy-rpc';
 import {revalidatePath} from 'next/cache';
 const id=z.guid();
@@ -17,3 +17,13 @@ export async function saveAdmissionDraft(input:{requestId:string;payload:Record<
  if(error){if(!error.code)throw Error(error.message);return{ok:false,message:error.message};}
  const result=z.object({id:z.string()}).parse(data);revalidatePath('/dashboard/academics/admissions');return{ok:true,message:'Draft saved.',id:result.id};
 }
+
+export async function finalizeAdmission(input:{requestId:string;payload:Record<string,unknown>}){
+ await requireAcademyPermission('admissions.manage');z.uuid().parse(input.requestId);
+ const {data,error}=await(await academyClient()).rpc('finalize_admission',{p_request_id:input.requestId,p_input:input.payload as Json});
+ if(error){if(!error.code)throw Error(error.message);return{ok:false,message:error.message};}
+ z.object({id:z.string()}).parse(data);revalidatePath('/dashboard/academics/admissions');return{ok:true,message:'Admission confirmed; enrollment and invoice created.'};
+}
+export async function admissionBilling(admissionId:string){await requireAcademyPermission('billing.view');id.parse(admissionId);const {data,error}=await(await academyClient()).rpc('admission_billing',{p_admission:admissionId});if(error)throw Error(error.message);return z.array(invoiceSchema).parse(data);}
+export async function studentBillingCommand(input:{requestId:string;payload:Record<string,unknown>}){await requireAcademyPermission('billing.manage');z.uuid().parse(input.requestId);const{data,error}=await(await academyClient()).rpc('student_billing_command',{p_request_id:input.requestId,p_input:input.payload as Json});if(error){if(!error.code)throw Error(error.message);return{ok:false,message:error.message};}z.object({id:z.string()}).parse(data);revalidatePath('/dashboard/academics/admissions');return{ok:true,message:'Student account updated.'};}
+export async function billingRegister(query='',page=1){await requireAcademyPermission('billing.view');const{data,error}=await(await academyClient()).rpc('student_billing_register',{p_query:query,p_page:page});if(error)throw Error(error.message);return z.array(z.object({id:z.string(),admission_no:z.number(),full_name:z.string(),mobile:z.string().nullable(),student_no:z.number(),programme:z.string(),due:z.number()})).parse(data);}

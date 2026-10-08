@@ -5,6 +5,7 @@ export const navigation:{group:[string,string];items:Route[]}[]=[
  {group:['CRM','সিআরএম'],items:[{href:'/dashboard/enquiries',label:['Enquiries & applications','অনুসন্ধান ও আবেদন'],permission:'people.view'}]},
  {group:['People','ব্যক্তি ও পরিচয়'],items:[{href:'/dashboard/people',label:['People directory','পরিচয় তালিকা'],permission:'people.view'},{href:'/dashboard/people/access',label:['Account access requests','প্রবেশাধিকারের অনুরোধ'],permission:'access.manage'}]},
  {group:['Academy','একাডেমি'],items:[{href:'/dashboard/academics',label:['Academics','শিক্ষা পরিচালনা'],permission:'academic.workspace'}]},
+ {group:['Billing','বিল ও টাকা গ্রহণ'],items:[{href:'/dashboard/billing',label:['Student accounts & receipts','শিক্ষার্থীর account ও রসিদ'],permission:'billing.view'}]},
  {group:['Settings & Help','সেটিংস ও সহায়তা'],items:[{href:'/dashboard/settings',label:['Setup & help','Setup ও সহায়তা'],permission:''}]},
 ];
 export function currentRoute(path:string){return navigation.flatMap(g=>g.items).filter(r=>r.href==='/dashboard'?path===r.href:path===r.href||path.startsWith(r.href+'/')).sort((a,b)=>b.href.length-a.href.length)[0];}
