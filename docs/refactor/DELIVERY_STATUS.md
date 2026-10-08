@@ -74,3 +74,9 @@ Implemented: read-only date/resource/conflict preview; combined contiguous weekl
 Public CRM design is unchanged. One-page new-student admission, payments/receipts, full assessments/question bank, staff presence and payroll calculation remain outside this academic delivery. Enrollment integration is a controlled contract available to the upcoming admission workflow; do not describe the admission placeholder as complete.
 
 Validation: production build and TypeScript passed; changed-component lint and isolated SQL lifecycle/permission/retry tests passed. No live database reset, hosted migration, browser acceptance or real email was performed.
+
+## Account access and workspace boundaries
+
+Master's account/logout, role permission and user access editor concepts are restored against the fresh schema. Desktop/mobile/workspace chooser sign out, personal account help, ERP language toggle, protected ADMIN settings, paginated account search, role permission editing and per-account workspace assignments are delivered in migrations 26–27. Teacher report editing and report review are separate capabilities. New accounts need explicit workspace assignment; existing accounts are backfilled for upgrade continuity.
+
+Workspace selection is a verified server cookie forwarded to PostgREST; DB scope checks apply to operational reads, direct URLs, mutations and request retries. Programme/batch/session/routine/calendar/enrollment/workspace People registers, contacts and email-status reads are scoped. Physical rooms, identity matching and common directory choices remain shared; cross-workspace resource conflicts still prevent double bookings. Unrouted public claims are an admin-only verification inbox. See [বাংলা account/workspace guide](ACCOUNT_ACCESS_AND_WORKSPACES_BN.md).
