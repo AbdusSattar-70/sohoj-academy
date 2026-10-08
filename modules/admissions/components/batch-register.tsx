@@ -70,6 +70,9 @@ export function BatchRegister({
                   <tr key={batch.id} className="border-t align-top">
                     <td className="px-4 py-4">
                       <p className="font-semibold">{batch.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {batch.scheduleSummary}
+                      </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {batch.className}
                       </p>

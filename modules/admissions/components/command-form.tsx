@@ -477,7 +477,7 @@ export function AdmissionCommandForm({
                 .filter((b) => b.isActive && b.offeringId === offeringId)
                 .map((b) => ({
                   id: b.id,
-                  name: `${b.name} · ${b.occupied}/${b.capacity} seats`,
+                  name: `${b.name} · ${b.scheduleSummary ?? ""} · ${Math.max(0, b.capacity - b.occupied)} seats free`,
                   disabled:
                     b.occupied >=
                     Math.min(b.capacity, data.capacityLimit ?? b.capacity),
@@ -622,7 +622,8 @@ export function AdmissionCommandForm({
           <Button
             type="button"
             variant="outline"
-            disabled={pending} loading={pending}
+            disabled={pending}
+            loading={pending}
             onClick={onCancel}
           >
             Cancel

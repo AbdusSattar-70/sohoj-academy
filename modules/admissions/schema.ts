@@ -120,6 +120,7 @@ export const workspaceSchema = z.object({
       capacity: z.number(),
       occupied: z.number(),
       isActive: z.boolean(),
+      scheduleSummary: z.string().nullable().default(null),
     }),
   ),
   prospects: z.array(

@@ -59,7 +59,7 @@ export function StaffAdmissionIntakeForm({
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const bypassReview = useRef(false);
-  const [sameAddress,setSameAddress]=useState(false);
+  const [sameAddress, setSameAddress] = useState(false);
   const [review, setReview] = useState<Record<string, string> | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -92,7 +92,10 @@ export function StaffAdmissionIntakeForm({
     startTransition(async () => {
       setError("");
       const result = await createStaffAdmissionIntake({
-        studentMobile:value("studentMobile"),studentEmail:value("studentEmail"),presentLandmark:value("presentLandmark"),permanentSameAsPresent:sameAddress,
+        studentMobile: value("studentMobile"),
+        studentEmail: value("studentEmail"),
+        presentLandmark: value("presentLandmark"),
+        permanentSameAsPresent: sameAddress,
         fatherName: value("fatherName"),
         motherName: value("motherName"),
         birthRegistration: value("birthRegistration"),
@@ -198,7 +201,8 @@ export function StaffAdmissionIntakeForm({
                 </option>
                 {batches.map((row) => (
                   <option key={row.id} value={row.id}>
-                    {row.name} · {row.occupied}/{row.capacity} seats
+                    {row.name} · {row.scheduleSummary} ·{" "}
+                    {Math.max(0, row.capacity - row.occupied)} seats free
                   </option>
                 ))}
               </select>
@@ -227,8 +231,16 @@ export function StaffAdmissionIntakeForm({
               name="studentNameBn"
               maxLength={160}
             />
-            <TextField label="Student mobile (optional)" name="studentMobile" pattern={phonePattern} />
-            <TextField label="Student email (optional)" name="studentEmail" type="email" />
+            <TextField
+              label="Student mobile (optional)"
+              name="studentMobile"
+              pattern={phonePattern}
+            />
+            <TextField
+              label="Student email (optional)"
+              name="studentEmail"
+              type="email"
+            />
             <TextField label="Date of birth" name="dateOfBirth" type="date" />
             <label className="block space-y-1.5 text-sm">
               <span className="font-medium">Gender</span>
@@ -304,14 +316,28 @@ export function StaffAdmissionIntakeForm({
               maxLength={300}
               className="md:col-span-2"
             />
-            <TextField label="Nearby landmark / special location" name="presentLandmark" maxLength={160} className="md:col-span-2" />
-            <label className="flex gap-2 text-sm md:col-span-2"><input type="checkbox" checked={sameAddress} onChange={e=>setSameAddress(e.target.checked)}/> Permanent address is the same as present address</label>
-            {!sameAddress && <TextField
-              label="Permanent address (if different)"
-              name="permanentAddress"
-              maxLength={300}
+            <TextField
+              label="Nearby landmark / special location"
+              name="presentLandmark"
+              maxLength={160}
               className="md:col-span-2"
-            />}
+            />
+            <label className="flex gap-2 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                checked={sameAddress}
+                onChange={(e) => setSameAddress(e.target.checked)}
+              />{" "}
+              Permanent address is the same as present address
+            </label>
+            {!sameAddress && (
+              <TextField
+                label="Permanent address (if different)"
+                name="permanentAddress"
+                maxLength={300}
+                className="md:col-span-2"
+              />
+            )}
             <TextField
               label="Emergency contact name / relationship"
               name="emergencyContact"
@@ -380,14 +406,16 @@ export function StaffAdmissionIntakeForm({
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="submit"
-            disabled={pending || data.offerings.length === 0} loading={pending}
+            disabled={pending || data.offerings.length === 0}
+            loading={pending}
           >
             {pending ? "Creating admission draft…" : "Review application"}
           </Button>
           <Button
             type="button"
             variant="outline"
-            disabled={pending} loading={pending}
+            disabled={pending}
+            loading={pending}
             onClick={() => {
               bypassReview.current = true;
               formRef.current?.requestSubmit();
@@ -438,7 +466,8 @@ export function StaffAdmissionIntakeForm({
           <Button
             type="button"
             className="ml-3"
-            disabled={pending} loading={pending}
+            disabled={pending}
+            loading={pending}
             onClick={() => {
               bypassReview.current = true;
               formRef.current?.requestSubmit();
