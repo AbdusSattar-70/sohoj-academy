@@ -347,218 +347,224 @@ export function SimpleFinance({
           )}
           {panel && (
             <form
+              data-editor
+              data-busy={pending ? "true" : "false"}
               key={panel.action + panel.payable?.id}
               onSubmit={prepare}
               className="space-y-4 rounded-xl border p-5"
             >
-              <h2 className="font-semibold">{t(...labels[panel.action])}</h2>
-              <fieldset
-                disabled={pending || uncertain}
-                className="grid gap-4 sm:grid-cols-2"
-              >
-                {panel.action === "CATEGORY" ? (
-                  <label>
-                    {t("Category name", "খরচের ধরন")}
-                    <input
-                      name="description"
-                      required
-                      minLength={2}
-                      maxLength={120}
-                      className={inputClass}
-                    />
-                  </label>
-                ) : (
-                  <>
+              <fieldset disabled={pending} className="contents">
+                <h2 className="font-semibold">{t(...labels[panel.action])}</h2>
+                <fieldset
+                  disabled={pending || uncertain}
+                  className="grid gap-4 sm:grid-cols-2"
+                >
+                  {panel.action === "CATEGORY" ? (
                     <label>
-                      {t("Amount (BDT)", "টাকার পরিমাণ (BDT)")}
+                      {t("Category name", "খরচের ধরন")}
                       <input
-                        name="amount"
+                        name="description"
                         required
-                        type="number"
-                        min=".01"
-                        step=".01"
-                        max={panel.payable?.remaining}
+                        minLength={2}
+                        maxLength={120}
                         className={inputClass}
                       />
                     </label>
-                    {panel.action !== "PAY_COST" && (
+                  ) : (
+                    <>
                       <label>
-                        {t("Actual date", "প্রকৃত তারিখ")}
+                        {t("Amount (BDT)", "টাকার পরিমাণ (BDT)")}
                         <input
+                          name="amount"
                           required
-                          name="date"
-                          type="date"
-                          defaultValue={today}
-                          max={today}
+                          type="number"
+                          min=".01"
+                          step=".01"
+                          max={panel.payable?.remaining}
                           className={inputClass}
                         />
                       </label>
-                    )}
-                    {panel.action === "EXPENSE" && (
-                      <>
+                      {panel.action !== "PAY_COST" && (
                         <label>
-                          {t("Expense category", "খরচের ধরন")}
+                          {t("Actual date", "প্রকৃত তারিখ")}
+                          <input
+                            required
+                            name="date"
+                            type="date"
+                            defaultValue={today}
+                            max={today}
+                            className={inputClass}
+                          />
+                        </label>
+                      )}
+                      {panel.action === "EXPENSE" && (
+                        <>
+                          <label>
+                            {t("Expense category", "খরচের ধরন")}
+                            <select
+                              name="category_id"
+                              required
+                              className={inputClass}
+                            >
+                              <option value="">
+                                {t("Select…", "নির্বাচন…")}
+                              </option>
+                              {data.categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  {c.name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label>
+                            {t("Payment status", "টাকা দেওয়া হয়েছে?")}
+                            <select
+                              value={paymentMode}
+                              onChange={(e) => setPaymentMode(e.target.value)}
+                              className={inputClass}
+                            >
+                              <option value="PAID_NOW">
+                                {t("Paid now", "এখন পরিশোধ")}
+                              </option>
+                              <option value="ON_ACCOUNT">
+                                {t(
+                                  "Pay later — keep due",
+                                  "পরে পরিশোধ — বকেয়া থাকবে",
+                                )}
+                              </option>
+                            </select>
+                          </label>
+                        </>
+                      )}
+                      {(panel.action !== "EXPENSE" ||
+                        paymentMode === "PAID_NOW") && (
+                        <label>
+                          {t(
+                            "Money source / destination",
+                            "টাকা দেওয়া / রাখার জায়গা",
+                          )}
                           <select
-                            name="category_id"
+                            name="account_id"
                             required
                             className={inputClass}
                           >
                             <option value="">
                               {t("Select…", "নির্বাচন…")}
                             </option>
-                            {data.categories.map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.name}
+                            {data.accounts.map((a) => (
+                              <option key={a.id} value={a.id}>
+                                {a.name} · {money(a.balance)}
                               </option>
                             ))}
                           </select>
                         </label>
+                      )}
+                      {panel.action !== "PAY_COST" && (
                         <label>
-                          {t("Payment status", "টাকা দেওয়া হয়েছে?")}
-                          <select
-                            value={paymentMode}
-                            onChange={(e) => setPaymentMode(e.target.value)}
+                          {t(
+                            panel.action === "EXPENSE"
+                              ? "Details (optional; category used if blank)"
+                              : "Income / funding details",
+                            panel.action === "EXPENSE"
+                              ? "বিবরণ (ঐচ্ছিক; ফাঁকা হলে খরচের ধরন)"
+                              : "আয় / দেওয়া টাকার বিবরণ",
+                          )}
+                          <input
+                            name="description"
+                            required={panel.action !== "EXPENSE"}
+                            maxLength={300}
+                            defaultValue={
+                              panel.action === "OWNER_FUNDS"
+                                ? t(
+                                    "Owner startup / opening funds",
+                                    "মালিকের শুরুর টাকা",
+                                  )
+                                : ""
+                            }
                             className={inputClass}
-                          >
-                            <option value="PAID_NOW">
-                              {t("Paid now", "এখন পরিশোধ")}
-                            </option>
-                            <option value="ON_ACCOUNT">
-                              {t(
-                                "Pay later — keep due",
-                                "পরে পরিশোধ — বকেয়া থাকবে",
-                              )}
-                            </option>
-                          </select>
+                          />
                         </label>
-                      </>
-                    )}
-                    {(panel.action !== "EXPENSE" ||
-                      paymentMode === "PAID_NOW") && (
+                      )}
                       <label>
                         {t(
-                          "Money source / destination",
-                          "টাকা দেওয়া / রাখার জায়গা",
-                        )}
-                        <select
-                          name="account_id"
-                          required
-                          className={inputClass}
-                        >
-                          <option value="">{t("Select…", "নির্বাচন…")}</option>
-                          {data.accounts.map((a) => (
-                            <option key={a.id} value={a.id}>
-                              {a.name} · {money(a.balance)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    )}
-                    {panel.action !== "PAY_COST" && (
-                      <label>
-                        {t(
-                          panel.action === "EXPENSE"
-                            ? "Details (optional; category used if blank)"
-                            : "Income / funding details",
-                          panel.action === "EXPENSE"
-                            ? "বিবরণ (ঐচ্ছিক; ফাঁকা হলে খরচের ধরন)"
-                            : "আয় / দেওয়া টাকার বিবরণ",
+                          "Receipt / transaction reference (optional)",
+                          "রসিদ / লেনদেনের নম্বর (ঐচ্ছিক)",
                         )}
                         <input
-                          name="description"
-                          required={panel.action !== "EXPENSE"}
-                          maxLength={300}
-                          defaultValue={
-                            panel.action === "OWNER_FUNDS"
-                              ? t(
-                                  "Owner startup / opening funds",
-                                  "মালিকের শুরুর টাকা",
-                                )
-                              : ""
-                          }
+                          name="reference"
+                          maxLength={160}
                           className={inputClass}
                         />
                       </label>
-                    )}
+                    </>
+                  )}
+                  <label>
+                    {t("Reason", "কারণ")}
+                    <select
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="RECORDED">
+                        {t(
+                          "Verified the actual transaction",
+                          "প্রকৃত লেনদেন যাচাই করেছি",
+                        )}
+                      </option>
+                      <option value="OTHER">
+                        {t("Other — write a note", "অন্য কারণ — লিখুন")}
+                      </option>
+                    </select>
+                  </label>
+                  {reason === "OTHER" && (
                     <label>
-                      {t(
-                        "Receipt / transaction reference (optional)",
-                        "রসিদ / লেনদেনের নম্বর (ঐচ্ছিক)",
-                      )}
+                      {t("Note", "সংক্ষিপ্ত কারণ")}
                       <input
-                        name="reference"
-                        maxLength={160}
+                        name="customReason"
+                        required
+                        minLength={5}
+                        maxLength={1000}
                         className={inputClass}
                       />
                     </label>
-                  </>
-                )}
-                <label>
-                  {t("Reason", "কারণ")}
-                  <select
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    className={inputClass}
+                  )}
+                </fieldset>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    "Student fee collections belong in Student fees & dues. Do not record salary twice as a running expense. Owner/opening funds are not profit.",
+                    "শিক্ষার্থীর টাকা ফি ও বকেয়া পাতায় লিখুন। বেতনকে আবার দৈনন্দিন খরচ হিসেবে লিখবেন না। মালিকের দেওয়া টাকা লাভ নয়।",
+                  )}
+                </p>
+                {uncertain ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    className={buttonClass}
+                    onClick={() => request && send(request)}
                   >
-                    <option value="RECORDED">
-                      {t(
-                        "Verified the actual transaction",
-                        "প্রকৃত লেনদেন যাচাই করেছি",
-                      )}
-                    </option>
-                    <option value="OTHER">
-                      {t("Other — write a note", "অন্য কারণ — লিখুন")}
-                    </option>
-                  </select>
-                </label>
-                {reason === "OTHER" && (
-                  <label>
-                    {t("Note", "সংক্ষিপ্ত কারণ")}
-                    <input
-                      name="customReason"
-                      required
-                      minLength={5}
-                      maxLength={1000}
-                      className={inputClass}
-                    />
-                  </label>
+                    {pending
+                      ? t("Confirming…", "নিশ্চিত হচ্ছে…")
+                      : t(
+                          "Confirm the previous request",
+                          "আগের অনুরোধ নিশ্চিত করুন",
+                        )}
+                  </button>
+                ) : (
+                  <button disabled={pending} className={buttonClass}>
+                    {pending
+                      ? t("Saving…", "সংরক্ষণ হচ্ছে…")
+                      : t("Save", "সংরক্ষণ")}
+                  </button>
                 )}
-              </fieldset>
-              <p className="text-sm text-muted-foreground">
-                {t(
-                  "Student fee collections belong in Student fees & dues. Do not record salary twice as a running expense. Owner/opening funds are not profit.",
-                  "শিক্ষার্থীর টাকা ফি ও বকেয়া পাতায় লিখুন। বেতনকে আবার দৈনন্দিন খরচ হিসেবে লিখবেন না। মালিকের দেওয়া টাকা লাভ নয়।",
-                )}
-              </p>
-              {uncertain ? (
                 <button
                   type="button"
-                  disabled={pending}
-                  className={buttonClass}
-                  onClick={() => request && send(request)}
+                  disabled={pending || uncertain}
+                  className={"ml-3 " + buttonClass}
+                  onClick={() => setPanel(null)}
                 >
-                  {pending
-                    ? t("Confirming…", "নিশ্চিত হচ্ছে…")
-                    : t(
-                        "Confirm the previous request",
-                        "আগের অনুরোধ নিশ্চিত করুন",
-                      )}
+                  {t("Cancel", "বাতিল")}
                 </button>
-              ) : (
-                <button disabled={pending} className={buttonClass}>
-                  {pending
-                    ? t("Saving…", "সংরক্ষণ হচ্ছে…")
-                    : t("Save", "সংরক্ষণ")}
-                </button>
-              )}
-              <button
-                type="button"
-                disabled={pending || uncertain}
-                className={"ml-3 " + buttonClass}
-                onClick={() => setPanel(null)}
-              >
-                {t("Cancel", "বাতিল")}
-              </button>
+              </fieldset>
             </form>
           )}
           <div className="overflow-x-auto rounded-xl border">

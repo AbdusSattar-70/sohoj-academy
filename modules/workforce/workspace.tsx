@@ -238,161 +238,168 @@ export function WorkWorkspace({
               data-busy={pending ? "true" : "false"}
               className="grid gap-4 rounded-xl border p-5 sm:grid-cols-2"
             >
-              <h3 className="font-semibold sm:col-span-2">
-                {form === "attendance"
-                  ? t("Actual attendance evidence", "প্রকৃত উপস্থিতির রেকর্ড")
-                  : t("Agreed terms", "সম্মত পারিশ্রমিকের শর্ত")}
-              </h3>
-              {form === "attendance" ? (
-                <>
-                  <label>
-                    {t("Work date", "কাজের তারিখ")}
-                    <input
-                      type="date"
-                      name="work_date"
-                      required
-                      defaultValue={editing?.work_date ?? data.month}
-                      className={cls}
-                    />
-                  </label>
-                  <label>
-                    {t("Status", "অবস্থা")}
-                    <select
-                      name="status"
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className={cls}
-                    >
-                      {["PRESENT", "ABSENT", "LEAVE", "HOLIDAY"].map((v) => (
-                        <option key={v}>{v}</option>
-                      ))}
-                    </select>
-                  </label>
-                  {status === "PRESENT" && (
-                    <>
-                      <label>
-                        {t("Started (Bangladesh time)", "শুরু (বাংলাদেশ সময়)")}
-                        <input
-                          className={cls}
-                          type="datetime-local"
-                          name="started_at"
-                          required
-                          defaultValue={localTime(editing?.started_at ?? null)}
-                        />
-                      </label>
-                      <label>
-                        {t("Ended (Bangladesh time)", "শেষ (বাংলাদেশ সময়)")}
-                        <input
-                          className={cls}
-                          type="datetime-local"
-                          name="ended_at"
-                          required
-                          defaultValue={localTime(editing?.ended_at ?? null)}
-                        />
-                      </label>
-                      <label>
-                        {t("Break minutes", "বিরতি মিনিট")}
-                        <input
-                          className={cls}
-                          name="break_minutes"
-                          type="number"
-                          min="0"
-                          max="1440"
-                          defaultValue={editing?.break_minutes ?? 0}
-                          required
-                        />
-                      </label>
-                    </>
-                  )}
-                  {status !== "PRESENT" && (
-                    <input type="hidden" name="break_minutes" value="0" />
-                  )}
-                </>
-              ) : (
-                <>
-                  <label>
-                    {t("Model", "ধরন")}
-                    <select
-                      name="model"
-                      className={cls}
-                      defaultValue={data.terms?.model ?? "REVENUE_SHARE"}
-                    >
-                      {["FIXED", "HOURLY", "REVENUE_SHARE", "HYBRID"].map(
-                        (v) => (
-                          <option key={v}>{v}</option>
-                        ),
-                      )}
-                    </select>
-                  </label>
-                  {[
-                    [
-                      "monthly_base",
-                      t("Monthly base (BDT)", "মাসিক মূল বেতন (টাকা)"),
-                      data.terms?.monthly_base ?? 0,
-                    ],
-                    [
-                      "hourly_rate",
-                      t("Hourly rate (BDT)", "প্রতি ঘণ্টা (টাকা)"),
-                      data.terms?.hourly_rate ?? 0,
-                    ],
-                    [
-                      "pay_day",
-                      t("Pay day (1–28)", "বেতন দিন (১–২৮)"),
-                      data.terms?.pay_day ?? 10,
-                    ],
-                  ].map(([name, label, value]) => (
-                    <label key={String(name)}>
-                      {label}
+              <fieldset disabled={pending} className="contents">
+                <h3 className="font-semibold sm:col-span-2">
+                  {form === "attendance"
+                    ? t("Actual attendance evidence", "প্রকৃত উপস্থিতির রেকর্ড")
+                    : t("Agreed terms", "সম্মত পারিশ্রমিকের শর্ত")}
+                </h3>
+                {form === "attendance" ? (
+                  <>
+                    <label>
+                      {t("Work date", "কাজের তারিখ")}
                       <input
-                        name={String(name)}
+                        type="date"
+                        name="work_date"
+                        required
+                        defaultValue={editing?.work_date ?? data.month}
                         className={cls}
-                        type="number"
-                        min={name === "pay_day" ? 1 : 0}
-                        max={name === "pay_day" ? 28 : undefined}
-                        step={name === "pay_day" ? 1 : "0.01"}
-                        defaultValue={value}
+                      />
+                    </label>
+                    <label>
+                      {t("Status", "অবস্থা")}
+                      <select
+                        name="status"
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        className={cls}
+                      >
+                        {["PRESENT", "ABSENT", "LEAVE", "HOLIDAY"].map((v) => (
+                          <option key={v}>{v}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {status === "PRESENT" && (
+                      <>
+                        <label>
+                          {t(
+                            "Started (Bangladesh time)",
+                            "শুরু (বাংলাদেশ সময়)",
+                          )}
+                          <input
+                            className={cls}
+                            type="datetime-local"
+                            name="started_at"
+                            required
+                            defaultValue={localTime(
+                              editing?.started_at ?? null,
+                            )}
+                          />
+                        </label>
+                        <label>
+                          {t("Ended (Bangladesh time)", "শেষ (বাংলাদেশ সময়)")}
+                          <input
+                            className={cls}
+                            type="datetime-local"
+                            name="ended_at"
+                            required
+                            defaultValue={localTime(editing?.ended_at ?? null)}
+                          />
+                        </label>
+                        <label>
+                          {t("Break minutes", "বিরতি মিনিট")}
+                          <input
+                            className={cls}
+                            name="break_minutes"
+                            type="number"
+                            min="0"
+                            max="1440"
+                            defaultValue={editing?.break_minutes ?? 0}
+                            required
+                          />
+                        </label>
+                      </>
+                    )}
+                    {status !== "PRESENT" && (
+                      <input type="hidden" name="break_minutes" value="0" />
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <label>
+                      {t("Model", "ধরন")}
+                      <select
+                        name="model"
+                        className={cls}
+                        defaultValue={data.terms?.model ?? "REVENUE_SHARE"}
+                      >
+                        {["FIXED", "HOURLY", "REVENUE_SHARE", "HYBRID"].map(
+                          (v) => (
+                            <option key={v}>{v}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    {[
+                      [
+                        "monthly_base",
+                        t("Monthly base (BDT)", "মাসিক মূল বেতন (টাকা)"),
+                        data.terms?.monthly_base ?? 0,
+                      ],
+                      [
+                        "hourly_rate",
+                        t("Hourly rate (BDT)", "প্রতি ঘণ্টা (টাকা)"),
+                        data.terms?.hourly_rate ?? 0,
+                      ],
+                      [
+                        "pay_day",
+                        t("Pay day (1–28)", "বেতন দিন (১–২৮)"),
+                        data.terms?.pay_day ?? 10,
+                      ],
+                    ].map(([name, label, value]) => (
+                      <label key={String(name)}>
+                        {label}
+                        <input
+                          name={String(name)}
+                          className={cls}
+                          type="number"
+                          min={name === "pay_day" ? 1 : 0}
+                          max={name === "pay_day" ? 28 : undefined}
+                          step={name === "pay_day" ? 1 : "0.01"}
+                          defaultValue={value}
+                          required
+                        />
+                      </label>
+                    ))}
+                    <label>
+                      {t("Effective from", "কার্যকর তারিখ")}
+                      <input
+                        className={cls}
+                        type="date"
+                        name="effective_from"
+                        defaultValue={data.terms?.effective_from ?? data.month}
                         required
                       />
                     </label>
-                  ))}
-                  <label>
-                    {t("Effective from", "কার্যকর তারিখ")}
-                    <input
-                      className={cls}
-                      type="date"
-                      name="effective_from"
-                      defaultValue={data.terms?.effective_from ?? data.month}
-                      required
-                    />
-                  </label>
-                </>
-              )}
-              <label className="sm:col-span-2">
-                {t(
-                  "Reason / correction explanation",
-                  "কারণ / সংশোধনের ব্যাখ্যা",
+                  </>
                 )}
-                <input
-                  name="reason"
-                  className={cls}
-                  minLength={5}
-                  maxLength={1000}
-                  required
-                />
-              </label>
-              <div className="flex gap-3 sm:col-span-2">
-                <Button loading={pending} disabled={pending}>
-                  {t("Save", "সংরক্ষণ করুন")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pending}
-                  onClick={() => setForm(null)}
-                >
-                  {t("Cancel", "বাতিল")}
-                </Button>
-              </div>
+                <label className="sm:col-span-2">
+                  {t(
+                    "Reason / correction explanation",
+                    "কারণ / সংশোধনের ব্যাখ্যা",
+                  )}
+                  <input
+                    name="reason"
+                    className={cls}
+                    minLength={5}
+                    maxLength={1000}
+                    required
+                  />
+                </label>
+                <div className="flex gap-3 sm:col-span-2">
+                  <Button loading={pending} disabled={pending}>
+                    {t("Save", "সংরক্ষণ করুন")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={pending}
+                    onClick={() => setForm(null)}
+                  >
+                    {t("Cancel", "বাতিল")}
+                  </Button>
+                </div>
+              </fieldset>
             </form>
           )}
           <div className="overflow-x-auto rounded-xl border">

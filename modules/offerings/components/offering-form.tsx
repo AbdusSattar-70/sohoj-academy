@@ -176,66 +176,104 @@ export function OfferingForm({
     });
   });
   return (
-    <form onSubmit={submit} noValidate className="space-y-5">
-      <label className="block space-y-2">
-        Learning context
-        <select
-          className={controlClass}
-          disabled={contextLocked}
-          {...register("operationKind")}
-        >
-          <option value="SCHOOL">School</option>
-          <option value="COACHING">Coaching</option>
-          <option value="TRAINING">Preparation &amp; Training</option>
-        </select>
-      </label>
-      {operationKind === "TRAINING" && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label>
-            Course starts
-            <input
-              required
-              type="date"
-              className={controlClass}
-              {...register("teachingStartsOn")}
-            />
-          </label>
-          <label>
-            Course ends
-            <input
-              required
-              type="date"
-              className={controlClass}
-              {...register("teachingEndsOn")}
-            />
-          </label>
-          <p className="sm:col-span-2 text-sm text-muted-foreground">
-            Class and academic year are optional for a training course.
-          </p>
-        </div>
-      )}
-      {isEditing && (
-        <>
-          <input type="hidden" {...register("offeringId")} />
-          <input type="hidden" {...register("requestId")} />
-        </>
-      )}
-      <div className="grid gap-5 md:grid-cols-2">
-        {choices.map((choice) => (
+    <form
+      data-editor
+      data-busy={pending ? "true" : "false"}
+      onSubmit={submit}
+      noValidate
+      className="space-y-5"
+    >
+      <fieldset disabled={pending} className="contents">
+        <label className="block space-y-2">
+          Learning context
+          <select
+            className={controlClass}
+            disabled={contextLocked}
+            {...register("operationKind")}
+          >
+            <option value="SCHOOL">School</option>
+            <option value="COACHING">Coaching</option>
+            <option value="TRAINING">Preparation &amp; Training</option>
+          </select>
+        </label>
+        {operationKind === "TRAINING" && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label>
+              Course starts
+              <input
+                required
+                type="date"
+                className={controlClass}
+                {...register("teachingStartsOn")}
+              />
+            </label>
+            <label>
+              Course ends
+              <input
+                required
+                type="date"
+                className={controlClass}
+                {...register("teachingEndsOn")}
+              />
+            </label>
+            <p className="sm:col-span-2 text-sm text-muted-foreground">
+              Class and academic year are optional for a training course.
+            </p>
+          </div>
+        )}
+        {isEditing && (
+          <>
+            <input type="hidden" {...register("offeringId")} />
+            <input type="hidden" {...register("requestId")} />
+          </>
+        )}
+        <div className="grid gap-5 md:grid-cols-2">
+          {choices.map((choice) => (
+            <ErpFormField
+              key={choice.key}
+              id={
+                "offering-" + (initialOffering?.id ?? "new") + "-" + choice.key
+              }
+              label={choice.label}
+              required={
+                operationKind !== "TRAINING" ||
+                (choice.key !== "classId" && choice.key !== "academicYearId")
+              }
+              hint={
+                contextLocked
+                  ? "Academic context is locked after an offering becomes active."
+                  : choice.hint
+              }
+              error={errors[choice.key]?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <select
+                  id={id}
+                  disabled={contextLocked}
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  className={controlClass}
+                  {...register(choice.key)}
+                >
+                  <option value="">Select {choice.label}</option>
+                  {choice.values.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </ErpFormField>
+          ))}
           <ErpFormField
-            key={choice.key}
-            id={"offering-" + (initialOffering?.id ?? "new") + "-" + choice.key}
-            label={choice.label}
-            required={
-              operationKind !== "TRAINING" ||
-              (choice.key !== "classId" && choice.key !== "academicYearId")
-            }
+            id={"offering-" + (initialOffering?.id ?? "new") + "-group"}
+            label="Academic Group"
             hint={
               contextLocked
-                ? "Academic context is locked after an offering becomes active."
-                : choice.hint
+                ? "Academic context is locked after activation."
+                : "Choose Science when this class is restricted to the Science group."
             }
-            error={errors[choice.key]?.message}
+            error={errors.groupId?.message}
           >
             {({ id, describedBy, invalid }) => (
               <select
@@ -244,121 +282,93 @@ export function OfferingForm({
                 aria-describedby={describedBy}
                 aria-invalid={invalid}
                 className={controlClass}
-                {...register(choice.key)}
+                {...register("groupId")}
               >
-                <option value="">Select {choice.label}</option>
-                {choice.values.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.name}
+                <option value="">All groups / not applicable</option>
+                {data.groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
                   </option>
                 ))}
               </select>
             )}
           </ErpFormField>
-        ))}
-        <ErpFormField
-          id={"offering-" + (initialOffering?.id ?? "new") + "-group"}
-          label="Academic Group"
-          hint={
-            contextLocked
-              ? "Academic context is locked after activation."
-              : "Choose Science when this class is restricted to the Science group."
-          }
-          error={errors.groupId?.message}
-        >
-          {({ id, describedBy, invalid }) => (
-            <select
-              id={id}
-              disabled={contextLocked}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              className={controlClass}
-              {...register("groupId")}
-            >
-              <option value="">All groups / not applicable</option>
-              {data.groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </ErpFormField>
-        <ErpFormField
-          id={"offering-" + (initialOffering?.id ?? "new") + "-code"}
-          label="Offering Code"
-          required
-          hint="Unique staff-facing code, for example SSC10-SCI-MAIN."
-          error={errors.code?.message}
-        >
-          {({ id, describedBy, invalid }) => (
-            <input
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              className={controlClass}
-              {...register("code")}
-            />
-          )}
-        </ErpFormField>
-        <ErpFormField
-          id={"offering-" + (initialOffering?.id ?? "new") + "-name"}
-          label="Custom offering title"
-          hint={`Optional. Leave blank to use ${programmeName}.`}
-          error={errors.name?.message}
-        >
-          {({ id, describedBy, invalid }) => (
-            <input
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              className={controlClass}
-              placeholder={programmeName}
-              {...register("name")}
-            />
-          )}
-        </ErpFormField>
-        <ErpFormField
-          id={"offering-" + (initialOffering?.id ?? "new") + "-reason"}
-          label={isEditing ? "Reason for edit" : "Creation Reason"}
-          required
-          hint="Saved with the audit record so staff can understand the change."
-          error={errors.reason?.message}
-          className="md:col-span-2"
-        >
-          {({ id, describedBy, invalid }) => (
-            <textarea
-              id={id}
-              rows={2}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              className={controlClass + " py-3"}
-              {...register("reason")}
-            />
-          )}
-        </ErpFormField>
-      </div>
-      <ErpFormStatus message={message} />
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={!isDirty || !isValid || pending}>
-          {pending
-            ? "Saving…"
-            : isEditing
-              ? "Save offering changes"
-              : "Create draft offering"}
-        </Button>
-        {onCancel && (
-          <Button
-            type="button"
-            variant="outline"
-            disabled={pending}
-            loading={pending}
-            onClick={onCancel}
+          <ErpFormField
+            id={"offering-" + (initialOffering?.id ?? "new") + "-code"}
+            label="Offering Code"
+            required
+            hint="Unique staff-facing code, for example SSC10-SCI-MAIN."
+            error={errors.code?.message}
           >
-            Cancel
+            {({ id, describedBy, invalid }) => (
+              <input
+                id={id}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                className={controlClass}
+                {...register("code")}
+              />
+            )}
+          </ErpFormField>
+          <ErpFormField
+            id={"offering-" + (initialOffering?.id ?? "new") + "-name"}
+            label="Custom offering title"
+            hint={`Optional. Leave blank to use ${programmeName}.`}
+            error={errors.name?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <input
+                id={id}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                className={controlClass}
+                placeholder={programmeName}
+                {...register("name")}
+              />
+            )}
+          </ErpFormField>
+          <ErpFormField
+            id={"offering-" + (initialOffering?.id ?? "new") + "-reason"}
+            label={isEditing ? "Reason for edit" : "Creation Reason"}
+            required
+            hint="Saved with the audit record so staff can understand the change."
+            error={errors.reason?.message}
+            className="md:col-span-2"
+          >
+            {({ id, describedBy, invalid }) => (
+              <textarea
+                id={id}
+                rows={2}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                className={controlClass + " py-3"}
+                {...register("reason")}
+              />
+            )}
+          </ErpFormField>
+        </div>
+        <ErpFormStatus message={message} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" disabled={!isDirty || !isValid || pending}>
+            {pending
+              ? "Saving…"
+              : isEditing
+                ? "Save offering changes"
+                : "Create draft offering"}
           </Button>
-        )}
-      </div>
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              loading={pending}
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          )}
+        </div>
+      </fieldset>
     </form>
   );
 }

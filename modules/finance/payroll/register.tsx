@@ -117,111 +117,125 @@ export function PayrollRegister({
             )}
           </Link>
           <form
+            data-editor
+            data-busy={pending ? "true" : "false"}
             onSubmit={review}
             onChange={() => setPreview(null)}
             className="grid gap-4 sm:grid-cols-2"
           >
-            <label>
-              {t("Staff", "স্টাফ")}
-              <select
+            <fieldset disabled={pending} className="contents">
+              <label>
+                {t("Staff", "স্টাফ")}
+                <select
+                  disabled={pending}
+                  className={cls}
+                  name="staff_id"
+                  required
+                >
+                  <option value="">{t("Choose…", "নির্বাচন করুন…")}</option>
+                  {data.people.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                {t("Payroll month", "বেতনের মাস")}
+                <input
+                  disabled={pending}
+                  className={cls}
+                  type="month"
+                  name="month"
+                  required
+                />
+              </label>
+              <label>
+                {t("Allowance (BDT, optional)", "ভাতা (টাকা, ঐচ্ছিক)")}
+                <input
+                  disabled={pending}
+                  type="number"
+                  name="allowance"
+                  step="0.01"
+                  min="0"
+                  defaultValue="0"
+                  className={cls}
+                />
+              </label>
+              <label>
+                {t("Allowance purpose", "ভাতার কারণ")}
+                <select
+                  disabled={pending}
+                  className={cls}
+                  name="allowance_label"
+                >
+                  {[
+                    "Meal allowance",
+                    "Travel allowance",
+                    "Extra duty allowance",
+                    "Other agreed allowance",
+                  ].map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                {t(
+                  "Earning correction (BDT, optional)",
+                  "আয়ের সংশোধন (টাকা, ঐচ্ছিক)",
+                )}
+                <input
+                  disabled={pending}
+                  className={cls}
+                  type="number"
+                  name="correction"
+                  step="0.01"
+                  min="0"
+                  defaultValue="0"
+                />
+              </label>
+              <label>
+                {t("Correction type", "সংশোধনের ধরন")}
+                <select
+                  disabled={pending}
+                  name="correction_kind"
+                  className={cls}
+                >
+                  {["UNPAID_LEAVE", "ABSENCE", "EARNING_CORRECTION"].map(
+                    (v) => (
+                      <option key={v}>{v}</option>
+                    ),
+                  )}
+                </select>
+              </label>
+              <label className="sm:col-span-2">
+                {t("Explain the earning correction", "আয়ের সংশোধনের ব্যাখ্যা")}
+                <input
+                  disabled={pending}
+                  name="correction_note"
+                  className={cls}
+                  maxLength={300}
+                />
+              </label>
+              <p className="text-sm text-muted-foreground sm:col-span-2">
+                {t(
+                  "Corrections reduce remuneration expense. Tax, loan recovery and advance offsets must not be entered here; advance recovery belongs to settlement.",
+                  "সংশোধন পারিশ্রমিকের ব্যয় কমায়। কর, ঋণ বা অগ্রিম সমন্বয় এখানে দেবেন না; অগ্রিম settlement-এ সমন্বয় হবে।",
+                )}
+              </p>
+              <button className="rounded-lg border p-3" disabled={pending}>
+                {pending
+                  ? t("Preparing…", "প্রস্তুত হচ্ছে…")
+                  : t("Preview payroll", "বেতনের preview")}
+              </button>
+              <button
+                type="button"
                 disabled={pending}
-                className={cls}
-                name="staff_id"
-                required
+                onClick={() => setCreating(false)}
               >
-                <option value="">{t("Choose…", "নির্বাচন করুন…")}</option>
-                {data.people.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              {t("Payroll month", "বেতনের মাস")}
-              <input
-                disabled={pending}
-                className={cls}
-                type="month"
-                name="month"
-                required
-              />
-            </label>
-            <label>
-              {t("Allowance (BDT, optional)", "ভাতা (টাকা, ঐচ্ছিক)")}
-              <input
-                disabled={pending}
-                type="number"
-                name="allowance"
-                step="0.01"
-                min="0"
-                defaultValue="0"
-                className={cls}
-              />
-            </label>
-            <label>
-              {t("Allowance purpose", "ভাতার কারণ")}
-              <select disabled={pending} className={cls} name="allowance_label">
-                {[
-                  "Meal allowance",
-                  "Travel allowance",
-                  "Extra duty allowance",
-                  "Other agreed allowance",
-                ].map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              {t(
-                "Earning correction (BDT, optional)",
-                "আয়ের সংশোধন (টাকা, ঐচ্ছিক)",
-              )}
-              <input
-                disabled={pending}
-                className={cls}
-                type="number"
-                name="correction"
-                step="0.01"
-                min="0"
-                defaultValue="0"
-              />
-            </label>
-            <label>
-              {t("Correction type", "সংশোধনের ধরন")}
-              <select disabled={pending} name="correction_kind" className={cls}>
-                {["UNPAID_LEAVE", "ABSENCE", "EARNING_CORRECTION"].map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-            </label>
-            <label className="sm:col-span-2">
-              {t("Explain the earning correction", "আয়ের সংশোধনের ব্যাখ্যা")}
-              <input
-                disabled={pending}
-                name="correction_note"
-                className={cls}
-                maxLength={300}
-              />
-            </label>
-            <p className="text-sm text-muted-foreground sm:col-span-2">
-              {t(
-                "Corrections reduce remuneration expense. Tax, loan recovery and advance offsets must not be entered here; advance recovery belongs to settlement.",
-                "সংশোধন পারিশ্রমিকের ব্যয় কমায়। কর, ঋণ বা অগ্রিম সমন্বয় এখানে দেবেন না; অগ্রিম settlement-এ সমন্বয় হবে।",
-              )}
-            </p>
-            <button className="rounded-lg border p-3" disabled={pending}>
-              {pending
-                ? t("Preparing…", "প্রস্তুত হচ্ছে…")
-                : t("Preview payroll", "বেতনের preview")}
-            </button>
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => setCreating(false)}
-            >
-              {t("Cancel", "বাতিল")}
-            </button>
+                {t("Cancel", "বাতিল")}
+              </button>
+            </fieldset>
           </form>
           {preview && (
             <div className="space-y-4 rounded-xl border p-4">
@@ -255,6 +269,8 @@ export function PayrollRegister({
               </p>
               {preview.canPost ? (
                 <form
+                  data-editor
+                  data-busy={pending ? "true" : "false"}
                   onSubmit={(e) => {
                     e.preventDefault();
                     run({
@@ -268,32 +284,34 @@ export function PayrollRegister({
                   }}
                   className="space-y-3"
                 >
-                  <label className="block">
-                    <input disabled={pending} type="checkbox" required />{" "}
-                    {t(
-                      "I reviewed the agreed terms, attendance and earning adjustments.",
-                      "শর্ত, উপস্থিতি ও আয়ের সমন্বয় পর্যালোচনা করেছি।",
-                    )}
-                  </label>
-                  <label className="block">
-                    {t("Posting reason", "পোস্ট করার কারণ")}
-                    <input
+                  <fieldset disabled={pending} className="contents">
+                    <label className="block">
+                      <input disabled={pending} type="checkbox" required />{" "}
+                      {t(
+                        "I reviewed the agreed terms, attendance and earning adjustments.",
+                        "শর্ত, উপস্থিতি ও আয়ের সমন্বয় পর্যালোচনা করেছি।",
+                      )}
+                    </label>
+                    <label className="block">
+                      {t("Posting reason", "পোস্ট করার কারণ")}
+                      <input
+                        disabled={pending}
+                        name="reason"
+                        className={cls}
+                        minLength={5}
+                        maxLength={1000}
+                        required
+                      />
+                    </label>
+                    <button
+                      className="rounded-lg bg-primary p-3 text-primary-foreground"
                       disabled={pending}
-                      name="reason"
-                      className={cls}
-                      minLength={5}
-                      maxLength={1000}
-                      required
-                    />
-                  </label>
-                  <button
-                    className="rounded-lg bg-primary p-3 text-primary-foreground"
-                    disabled={pending}
-                  >
-                    {pending
-                      ? t("Posting…", "পোস্ট হচ্ছে…")
-                      : t("Post salary payable", "প্রাপ্য বেতন পোস্ট করুন")}
-                  </button>
+                    >
+                      {pending
+                        ? t("Posting…", "পোস্ট হচ্ছে…")
+                        : t("Post salary payable", "প্রাপ্য বেতন পোস্ট করুন")}
+                    </button>
+                  </fieldset>
                 </form>
               ) : (
                 <p>
@@ -309,6 +327,8 @@ export function PayrollRegister({
       )}
       {pay && (
         <form
+          data-editor
+          data-busy={pending ? "true" : "false"}
           className="grid gap-4 rounded-xl border p-5 sm:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
@@ -329,72 +349,74 @@ export function PayrollRegister({
             });
           }}
         >
-          <h2 className="font-semibold sm:col-span-2">
-            {pay.snapshot.name} · {t("Remaining", "বাকি")}{" "}
-            {money(pay.net - pay.settled)}
-          </h2>
-          <label>
-            {t("Actual cash / bank payment", "প্রকৃত নগদ / ব্যাংক পরিশোধ")}
-            <input
-              disabled={pending}
-              name="cash"
-              className={cls}
-              type="number"
-              min="0"
-              step="0.01"
-              max={pay.net - pay.settled}
-              defaultValue="0"
-              required
-            />
-          </label>
-          <label>
-            {t("Payment account", "পরিশোধের অ্যাকাউন্ট")}
-            <select disabled={pending} name="account_id" className={cls}>
-              <option value="">{t("Choose…", "নির্বাচন করুন…")}</option>
-              {data.accounts.map((a) => (
-                <option value={a.id} key={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("Payment reference", "পরিশোধের রেফারেন্স")}
-            <input
-              disabled={pending}
-              name="reference"
-              className={cls}
-              maxLength={300}
-            />
-          </label>
-          <label>
-            {t("Reason", "কারণ")}
-            <input
-              disabled={pending}
-              className={cls}
-              name="reason"
-              minLength={5}
-              maxLength={1000}
-              required
-            />
-          </label>
-          <div className="flex gap-3 sm:col-span-2">
-            <button
-              className="rounded-lg bg-primary p-3 text-primary-foreground"
-              disabled={pending}
-            >
-              {pending
-                ? t("Recording…", "রেকর্ড হচ্ছে…")
-                : t("Record settlement", "পরিশোধ রেকর্ড করুন")}
-            </button>
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => setPay(null)}
-            >
-              {t("Cancel", "বাতিল")}
-            </button>
-          </div>
+          <fieldset disabled={pending} className="contents">
+            <h2 className="font-semibold sm:col-span-2">
+              {pay.snapshot.name} · {t("Remaining", "বাকি")}{" "}
+              {money(pay.net - pay.settled)}
+            </h2>
+            <label>
+              {t("Actual cash / bank payment", "প্রকৃত নগদ / ব্যাংক পরিশোধ")}
+              <input
+                disabled={pending}
+                name="cash"
+                className={cls}
+                type="number"
+                min="0"
+                step="0.01"
+                max={pay.net - pay.settled}
+                defaultValue="0"
+                required
+              />
+            </label>
+            <label>
+              {t("Payment account", "পরিশোধের অ্যাকাউন্ট")}
+              <select disabled={pending} name="account_id" className={cls}>
+                <option value="">{t("Choose…", "নির্বাচন করুন…")}</option>
+                {data.accounts.map((a) => (
+                  <option value={a.id} key={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {t("Payment reference", "পরিশোধের রেফারেন্স")}
+              <input
+                disabled={pending}
+                name="reference"
+                className={cls}
+                maxLength={300}
+              />
+            </label>
+            <label>
+              {t("Reason", "কারণ")}
+              <input
+                disabled={pending}
+                className={cls}
+                name="reason"
+                minLength={5}
+                maxLength={1000}
+                required
+              />
+            </label>
+            <div className="flex gap-3 sm:col-span-2">
+              <button
+                className="rounded-lg bg-primary p-3 text-primary-foreground"
+                disabled={pending}
+              >
+                {pending
+                  ? t("Recording…", "রেকর্ড হচ্ছে…")
+                  : t("Record settlement", "পরিশোধ রেকর্ড করুন")}
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => setPay(null)}
+              >
+                {t("Cancel", "বাতিল")}
+              </button>
+            </div>
+          </fieldset>
         </form>
       )}
       <div className="overflow-x-auto rounded-xl border">

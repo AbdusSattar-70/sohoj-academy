@@ -92,73 +92,81 @@ export function FinanceForm({
     })(event);
   return (
     <form
+      data-editor
+      data-busy={pending ? "true" : "false"}
       noValidate
       onSubmit={submit}
       className="space-y-4 rounded-xl border bg-card p-4"
     >
-      <div>
-        <h3 className="font-semibold">{label}</h3>
-        {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        )}
-      </div>
-      <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
-        {[
-          ...fields,
-          {
-            key: "reason",
-            label: "Reason / Verification Note",
-            hint: "Explain the decision or verify the actual money movement.",
-          } as FinanceField,
-        ].map((field) => (
-          <ErpFormField
-            key={field.key}
-            id={`${formId}-${field.key}`}
-            label={field.label}
-            hint={field.hint}
-            required={!field.optional}
-            error={errors[field.key]?.message}
-          >
-            {({ id, describedBy, invalid }) =>
-              field.options ? (
-                <select
-                  id={id}
-                  className={inputClass}
-                  aria-describedby={describedBy}
-                  aria-invalid={invalid}
-                  {...register(field.key)}
-                >
-                  <option value="">Select {field.label}</option>
-                  {field.options.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  id={id}
-                  className={inputClass}
-                  type={field.type ?? "text"}
-                  step={field.type === "number" ? "0.01" : undefined}
-                  min={field.type === "number" ? 0 : undefined}
-                  max={field.max}
-                  aria-describedby={describedBy}
-                  aria-invalid={invalid}
-                  {...register(
-                    field.key,
-                    field.type === "number" ? { valueAsNumber: true } : {},
-                  )}
-                />
-              )
-            }
-          </ErpFormField>
-        ))}
+      <fieldset disabled={pending} className="contents">
+        <div>
+          <h3 className="font-semibold">{label}</h3>
+          {description && (
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          )}
+        </div>
+        <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
+          {[
+            ...fields,
+            {
+              key: "reason",
+              label: "Reason / Verification Note",
+              hint: "Explain the decision or verify the actual money movement.",
+            } as FinanceField,
+          ].map((field) => (
+            <ErpFormField
+              key={field.key}
+              id={`${formId}-${field.key}`}
+              label={field.label}
+              hint={field.hint}
+              required={!field.optional}
+              error={errors[field.key]?.message}
+            >
+              {({ id, describedBy, invalid }) =>
+                field.options ? (
+                  <select
+                    id={id}
+                    className={inputClass}
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    {...register(field.key)}
+                  >
+                    <option value="">Select {field.label}</option>
+                    {field.options.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id={id}
+                    className={inputClass}
+                    type={field.type ?? "text"}
+                    step={field.type === "number" ? "0.01" : undefined}
+                    min={field.type === "number" ? 0 : undefined}
+                    max={field.max}
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    {...register(
+                      field.key,
+                      field.type === "number" ? { valueAsNumber: true } : {},
+                    )}
+                  />
+                )
+              }
+            </ErpFormField>
+          ))}
+        </fieldset>
+        <Button
+          type="submit"
+          disabled={pending || !isValid || !isDirty}
+          loading={pending}
+        >
+          {pending ? "Saving…" : label}
+        </Button>
+        <ErpFormStatus message={message} />
       </fieldset>
-      <Button type="submit" disabled={pending || !isValid || !isDirty} loading={pending}>
-        {pending ? "Saving…" : label}
-      </Button>
-      <ErpFormStatus message={message} />
     </form>
   );
 }

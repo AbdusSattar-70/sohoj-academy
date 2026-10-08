@@ -60,6 +60,8 @@ export function TeachingPay({ data }: { data: TeachingEarnings }) {
       )}
       {panel && (
         <form
+          data-editor
+          data-busy={pending ? "true" : "false"}
           className="space-y-4 rounded-xl border p-5"
           onSubmit={(e) => {
             e.preventDefault();
@@ -125,77 +127,79 @@ export function TeachingPay({ data }: { data: TeachingEarnings }) {
             });
           }}
         >
-          <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
-            {panel === "prepare" ? (
-              <label>
-                {t("Teaching month", "পাঠদানের মাস")}
-                <input
-                  readOnly={uncertain}
-                  name="month"
-                  type="month"
-                  required
-                  className={cls}
-                />
-              </label>
-            ) : (
-              <>
-                <p>
-                  {panel.name} · BDT {panel.amount.toFixed(2)}
-                  <br />
-                  {t(
-                    "This action pays the remaining earned amount; it does not create another expense.",
-                    "এতে অর্জিত বকেয়া পরিশোধ হবে; নতুন খরচ তৈরি হবে না।",
-                  )}
-                </p>
+          <fieldset disabled={pending} className="contents">
+            <fieldset disabled={pending} className="grid gap-4 sm:grid-cols-2">
+              {panel === "prepare" ? (
                 <label>
-                  {t("Pay from", "টাকা দেবেন")}
-                  <select
-                    onChange={(e) => {
-                      if (uncertain)
-                        e.target.value = String(
-                          attempt.current.signature
-                            ? JSON.parse(attempt.current.signature).values
-                                .payment_account_id
-                            : "",
-                        );
-                    }}
-                    name="account"
-                    required
-                    className={cls}
-                  >
-                    <option value="">{t("Select…", "নির্বাচন…")}</option>
-                    {data.accounts.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  {t("Payment reference", "পরিশোধের নম্বর")}
+                  {t("Teaching month", "পাঠদানের মাস")}
                   <input
                     readOnly={uncertain}
-                    name="reference"
-                    maxLength={160}
+                    name="month"
+                    type="month"
+                    required
                     className={cls}
                   />
                 </label>
-              </>
-            )}
+              ) : (
+                <>
+                  <p>
+                    {panel.name} · BDT {panel.amount.toFixed(2)}
+                    <br />
+                    {t(
+                      "This action pays the remaining earned amount; it does not create another expense.",
+                      "এতে অর্জিত বকেয়া পরিশোধ হবে; নতুন খরচ তৈরি হবে না।",
+                    )}
+                  </p>
+                  <label>
+                    {t("Pay from", "টাকা দেবেন")}
+                    <select
+                      onChange={(e) => {
+                        if (uncertain)
+                          e.target.value = String(
+                            attempt.current.signature
+                              ? JSON.parse(attempt.current.signature).values
+                                  .payment_account_id
+                              : "",
+                          );
+                      }}
+                      name="account"
+                      required
+                      className={cls}
+                    >
+                      <option value="">{t("Select…", "নির্বাচন…")}</option>
+                      {data.accounts.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    {t("Payment reference", "পরিশোধের নম্বর")}
+                    <input
+                      readOnly={uncertain}
+                      name="reference"
+                      maxLength={160}
+                      className={cls}
+                    />
+                  </label>
+                </>
+              )}
+            </fieldset>
+            <button disabled={pending} className={button}>
+              {pending
+                ? t("Saving…", "সংরক্ষণ হচ্ছে…")
+                : t("Confirm and save", "নিশ্চিত করে সংরক্ষণ")}
+            </button>
+            <button
+              type="button"
+              disabled={pending || uncertain}
+              className={"ml-3 " + button}
+              onClick={() => setPanel(null)}
+            >
+              {t("Cancel", "বাতিল")}
+            </button>
           </fieldset>
-          <button disabled={pending} className={button}>
-            {pending
-              ? t("Saving…", "সংরক্ষণ হচ্ছে…")
-              : t("Confirm and save", "নিশ্চিত করে সংরক্ষণ")}
-          </button>
-          <button
-            type="button"
-            disabled={pending || uncertain}
-            className={"ml-3 " + button}
-            onClick={() => setPanel(null)}
-          >
-            {t("Cancel", "বাতিল")}
-          </button>
         </form>
       )}
       <div className="overflow-x-auto">

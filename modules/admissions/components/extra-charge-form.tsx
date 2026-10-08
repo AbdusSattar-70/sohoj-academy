@@ -80,37 +80,44 @@ export function ExtraChargeForm({
           </li>
         ))}
       </ul>
-      <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-3">
-        <label className="text-sm">
-          Charge
-          <select
-            name="type"
-            className="mt-1 w-full rounded border bg-background p-3"
+      <form
+        data-editor
+        data-busy={pending ? "true" : "false"}
+        onSubmit={submit}
+        className="mt-4 grid gap-3 sm:grid-cols-3"
+      >
+        <fieldset disabled={pending} className="contents">
+          <label className="text-sm">
+            Charge
+            <select
+              name="type"
+              className="mt-1 w-full rounded border bg-background p-3"
+            >
+              <option value="ADMISSION">Registration</option>
+              <option value="EXAM">Exam</option>
+              <option value="MATERIAL">Materials</option>
+              <option value="OTHER">Other one-time fee</option>
+            </select>
+          </label>
+          <label className="text-sm">
+            Amount (BDT)
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              max="99999999"
+              required
+              name="amount"
+              className="mt-1 w-full rounded border bg-background p-3"
+            />
+          </label>
+          <button
+            disabled={pending}
+            className="self-end rounded border p-3 text-sm"
           >
-            <option value="ADMISSION">Registration</option>
-            <option value="EXAM">Exam</option>
-            <option value="MATERIAL">Materials</option>
-            <option value="OTHER">Other one-time fee</option>
-          </select>
-        </label>
-        <label className="text-sm">
-          Amount (BDT)
-          <input
-            type="number"
-            step="0.01"
-            min="0.01"
-            max="99999999"
-            required
-            name="amount"
-            className="mt-1 w-full rounded border bg-background p-3"
-          />
-        </label>
-        <button
-          disabled={pending}
-          className="self-end rounded border p-3 text-sm"
-        >
-          Add to draft
-        </button>
+            Add to draft
+          </button>
+        </fieldset>
       </form>
       {message && (
         <p role="status" className="mt-3 text-sm">

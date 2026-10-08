@@ -131,38 +131,40 @@ export function DocumentAction({
         send(payload);
       }}
     >
-      {instructions[String(values.action)] && (
-        <p
-          id={instructionId}
-          className="text-sm leading-6 text-muted-foreground"
-        >
-          {instructions[String(values.action)][locale === "bn" ? 1 : 0]}
-        </p>
-      )}
-      <fieldset disabled={pending || uncertain} className="space-y-3">
-        {children}
-      </fieldset>
-      <Button
-        loading={pending}
-        disabled={pending || uncertain}
-        aria-describedby={instructionId}
-      >
-        {label}
-      </Button>
-      {uncertain && (
+      <fieldset disabled={pending} className="contents">
+        {instructions[String(values.action)] && (
+          <p
+            id={instructionId}
+            className="text-sm leading-6 text-muted-foreground"
+          >
+            {instructions[String(values.action)][locale === "bn" ? 1 : 0]}
+          </p>
+        )}
+        <fieldset disabled={pending || uncertain} className="space-y-3">
+          {children}
+        </fieldset>
         <Button
-          type="button"
-          variant="outline"
           loading={pending}
-          disabled={pending}
-          onClick={() => attempt.current && send(attempt.current)}
+          disabled={pending || uncertain}
+          aria-describedby={instructionId}
         >
-          {locale === "bn"
-            ? "একই কাজের ফল নিশ্চিত করুন"
-            : "Confirm same request"}
+          {label}
         </Button>
-      )}
-      {message && <p role="status">{message}</p>}
+        {uncertain && (
+          <Button
+            type="button"
+            variant="outline"
+            loading={pending}
+            disabled={pending}
+            onClick={() => attempt.current && send(attempt.current)}
+          >
+            {locale === "bn"
+              ? "একই কাজের ফল নিশ্চিত করুন"
+              : "Confirm same request"}
+          </Button>
+        )}
+        {message && <p role="status">{message}</p>}
+      </fieldset>
     </form>
   );
 }

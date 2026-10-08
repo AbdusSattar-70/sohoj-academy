@@ -249,6 +249,8 @@ export function PlanningForm({
   }
   return (
     <form
+      data-editor
+      data-busy={pending ? "true" : "false"}
       onSubmit={(e) => {
         e.preventDefault();
         if (pending || uncertain) return;
@@ -281,276 +283,278 @@ export function PlanningForm({
       }}
       className="space-y-4 rounded-xl border bg-card p-5"
     >
-      <fieldset
-        disabled={pending || uncertain}
-        className="grid gap-4 sm:grid-cols-2"
-      >
-        {action === "OFFERING_PLAN" && (
-          <>
-            {select(
-              "id",
-              "Programme offering",
-              "প্রোগ্রাম অফারিং",
-              data.choices.offerings,
-            )}
-            {select("operation_kind", "Operation", "কার্যক্রম", [
-              { id: "SCHOOL", name: t("School", "স্কুল") },
-              { id: "COACHING", name: t("Coaching", "কোচিং") },
-              {
-                id: "TRAINING",
-                name: t("Training / preparation", "প্রশিক্ষণ / প্রস্তুতি"),
-              },
-            ])}
-            {input("starts_on", "Teaching from", "ক্লাস শুরু", "date")}
-            {input("ends_on", "Teaching through", "ক্লাস শেষ", "date")}
-            {dayPicker}
-          </>
-        )}
-        {action === "BATCH_PLAN" && (
-          <>
-            {select("id", "Batch", "ব্যাচ", data.choices.batches)}
-            {dayPicker}
-            {days.map((d) => {
-              const w = windows.find((x) => x.weekday === d) ?? {
-                weekday: d,
-                start_time: "07:00",
-                end_time: "09:00",
-              };
-              return (
-                <div
-                  key={d}
-                  className="sm:col-span-2 grid gap-3 sm:grid-cols-3"
-                >
-                  <strong>{t(weekdays[d], weekdaysBn[d])}</strong>
-                  {(["start_time", "end_time"] as const).map((k) => (
-                    <label key={k}>
-                      {t(
-                        k === "start_time" ? "Starts" : "Ends",
-                        k === "start_time" ? "শুরু" : "শেষ",
-                      )}
-                      <input
-                        type="time"
-                        required
-                        value={w[k]}
-                        className={cls}
-                        onChange={(e) =>
-                          setWindows((old) => [
-                            ...old.filter((x) => x.weekday !== d),
-                            { ...w, [k]: e.target.value },
-                          ])
-                        }
-                      />
-                    </label>
-                  ))}
-                </div>
-              );
-            })}
-            <p className="sm:col-span-2 text-sm">
-              {t(
-                "No override days means inherit programme days without a fixed time window.",
-                "ব্যাচের দিন না দিলে প্রোগ্রামের দিন অনুসরণ করবে; সময়ের বাধ্যতামূলক সীমা থাকবে না।",
-              )}
-            </p>
-          </>
-        )}
-        {action === "ROOM" && (
-          <>
-            {select("branch_id", "Campus", "শাখা", data.choices.branches)}
-            {input("name", "Classroom name", "কক্ষের নাম")}
-            {input("capacity", "Seats", "আসন", "number")}
-          </>
-        )}
-        {(action === "AVAILABILITY" || action === "CLOSURE") && (
-          <>
-            {select("resource_kind", "For", "যার জন্য", [
-              { id: "ROOM", name: t("Classroom", "শ্রেণিকক্ষ") },
-              { id: "TEACHER", name: t("Teacher", "শিক্ষক") },
-              ...(action === "CLOSURE"
-                ? [
-                    {
-                      id: "ACADEMY",
-                      name: t("Academy holiday", "একাডেমির ছুটি"),
-                    },
-                  ]
-                : []),
-            ])}
-            {resource !== "ACADEMY" &&
-              select(
-                "resource_id",
-                "Resource",
-                "শিক্ষক / কক্ষ",
-                resource === "ROOM"
-                  ? data.choices.rooms
-                  : data.choices.teachers,
-              )}
-            {action === "CLOSURE" &&
-              input("name", "Closure / absence reason", "ছুটি / বন্ধের কারণ")}
-            {input("starts_on", "Effective from", "কার্যকর শুরু", "date")}
-            {input("ends_on", "Through", "শেষ", "date")}
-            {action === "AVAILABILITY" && (
-              <>
-                {select(
-                  "weekday",
-                  "Weekday",
-                  "বার",
-                  weekdays.map((name, i) => ({
-                    id: String(i),
-                    name: t(name, weekdaysBn[i]),
-                  })),
-                )}
-                {input("start_time", "Available from", "সময় শুরু", "time")}
-                {input("end_time", "Until", "সময় শেষ", "time")}
-              </>
-            )}
-          </>
-        )}
-        {action === "QUALIFICATION" && (
-          <>
-            {select("teacher_id", "Teacher", "শিক্ষক", data.choices.teachers)}
-            {select(
-              "subject_id",
-              "Qualified subject",
-              "পড়ানোর বিষয়",
-              data.choices.subjects,
-            )}
-            {input("starts_on", "Qualified from", "যোগ্যতা শুরু", "date")}
-            {input(
-              "ends_on",
-              "Qualified through (optional)",
-              "শেষ তারিখ (ঐচ্ছিক)",
-              "date",
-              false,
-            )}
-          </>
-        )}
-        {action === "ROUTINE" && (
-          <>
-            {placement}
-            {select(
-              "curriculum_id",
-              "Teaching plan (optional)",
-              "পাঠদান পরিকল্পনা (ঐচ্ছিক)",
-              data.choices.curricula.filter(
-                (x) =>
-                  x.batch_id === values.batch_id && x.subject_id === subject,
-              ),
-              false,
-            )}
-            {dayPicker}
-            {input("starts_on", "Effective from", "কার্যকর শুরু", "date")}
-            {input("ends_on", "Through", "শেষ", "date")}
-            {input("start_time", "Starts", "শুরু", "time")}
-            {input("end_time", "Ends", "শেষ", "time")}
-          </>
-        )}
-        {action === "CREATE_SESSION" && (
-          <>
-            {placement}
-            {input("starts_on", "Class date", "ক্লাসের তারিখ", "date")}
-            {input("start_time", "Starts", "শুরু", "time")}
-            {input("end_time", "Ends", "শেষ", "time")}
-            {input("planned_scope", "Planned topics", "পরিকল্পিত পাঠ")}
-          </>
-        )}
-        {action === "GENERATE" && (
-          <>
-            {input("starts_on", "Generate from", "ক্লাস তৈরি শুরু", "date")}
-            {input(
-              "ends_on",
-              "Through (maximum 94 days)",
-              "শেষ (সর্বোচ্চ ৯৪ দিন)",
-              "date",
-            )}
-            {input("planned_scope", "Planned topics", "পরিকল্পিত পাঠ")}
-          </>
-        )}
-        {["RESCHEDULE", "SUBSTITUTE", "ROOM_CHANGE", "MAKEUP"].includes(
-          action,
-        ) && (
-          <>
-            {input("starts_on", "New class date", "নতুন তারিখ", "date")}
-            {select(
-              "teacher_id",
-              "Teacher / substitute",
-              "শিক্ষক / বিকল্প",
-              data.choices.teachers.filter((x) =>
-                x.subjects?.includes(subject),
-              ),
-            )}
-            {select(
-              "room_id",
-              "Classroom",
-              "শ্রেণিকক্ষ",
-              data.choices.rooms.filter(
-                (x) =>
-                  x.branch_id === batch?.branch_id &&
-                  (x.capacity ?? 0) >= (batch?.capacity ?? 0),
-              ),
-            )}
-            {input("start_time", "Starts", "শুরু", "time")}
-            {input("end_time", "Ends", "শেষ", "time")}
-          </>
-        )}
-        {["ROOM", "AVAILABILITY", "CLOSURE"].includes(action) &&
-          Boolean(values.id) && (
-            <label>
-              <input
-                type="checkbox"
-                checked={Boolean(values.is_active)}
-                onChange={(e) => update("is_active", e.target.checked)}
-              />
-              {t("Active for new use", "নতুন কাজে সক্রিয়")}
-            </label>
-          )}
-        <label className={field}>
-          {t("Change reason", "পরিবর্তনের কারণ")}
-          <select
-            className={cls}
-            value={customReason ? "OTHER" : "CONFIRMED"}
-            onChange={(e) => setCustomReason(e.target.value === "OTHER")}
-          >
-            <option value="CONFIRMED">
-              {t(
-                "Confirmed the selected details",
-                "নির্বাচিত তথ্য যাচাই করেছি",
-              )}
-            </option>
-            <option value="OTHER">
-              {t("Other — write a reason", "অন্য কারণ — লিখুন")}
-            </option>
-          </select>
-        </label>
-        {customReason && input("reason", "Reason", "কারণ")}
-      </fieldset>
-      {message && (
-        <p role="status" className="rounded-lg border p-3">
-          {message}
-        </p>
-      )}
-      <div className="flex gap-3">
-        {uncertain ? (
-          <Button
-            loading={pending}
-            disabled={pending}
-            type="button"
-            onClick={() => attempt && send(attempt)}
-          >
-            {t("Confirm previous request", "আগের অনুরোধ নিশ্চিত করুন")}
-          </Button>
-        ) : (
-          <Button loading={pending} disabled={pending} type="submit">
-            {t("Save", "সংরক্ষণ")}
-          </Button>
-        )}
-        <Button
-          variant="outline"
-          type="button"
+      <fieldset disabled={pending} className="contents">
+        <fieldset
           disabled={pending || uncertain}
-          onClick={() => onDone()}
+          className="grid gap-4 sm:grid-cols-2"
         >
-          {t("Cancel", "বাতিল")}
-        </Button>
-      </div>
+          {action === "OFFERING_PLAN" && (
+            <>
+              {select(
+                "id",
+                "Programme offering",
+                "প্রোগ্রাম অফারিং",
+                data.choices.offerings,
+              )}
+              {select("operation_kind", "Operation", "কার্যক্রম", [
+                { id: "SCHOOL", name: t("School", "স্কুল") },
+                { id: "COACHING", name: t("Coaching", "কোচিং") },
+                {
+                  id: "TRAINING",
+                  name: t("Training / preparation", "প্রশিক্ষণ / প্রস্তুতি"),
+                },
+              ])}
+              {input("starts_on", "Teaching from", "ক্লাস শুরু", "date")}
+              {input("ends_on", "Teaching through", "ক্লাস শেষ", "date")}
+              {dayPicker}
+            </>
+          )}
+          {action === "BATCH_PLAN" && (
+            <>
+              {select("id", "Batch", "ব্যাচ", data.choices.batches)}
+              {dayPicker}
+              {days.map((d) => {
+                const w = windows.find((x) => x.weekday === d) ?? {
+                  weekday: d,
+                  start_time: "07:00",
+                  end_time: "09:00",
+                };
+                return (
+                  <div
+                    key={d}
+                    className="sm:col-span-2 grid gap-3 sm:grid-cols-3"
+                  >
+                    <strong>{t(weekdays[d], weekdaysBn[d])}</strong>
+                    {(["start_time", "end_time"] as const).map((k) => (
+                      <label key={k}>
+                        {t(
+                          k === "start_time" ? "Starts" : "Ends",
+                          k === "start_time" ? "শুরু" : "শেষ",
+                        )}
+                        <input
+                          type="time"
+                          required
+                          value={w[k]}
+                          className={cls}
+                          onChange={(e) =>
+                            setWindows((old) => [
+                              ...old.filter((x) => x.weekday !== d),
+                              { ...w, [k]: e.target.value },
+                            ])
+                          }
+                        />
+                      </label>
+                    ))}
+                  </div>
+                );
+              })}
+              <p className="sm:col-span-2 text-sm">
+                {t(
+                  "No override days means inherit programme days without a fixed time window.",
+                  "ব্যাচের দিন না দিলে প্রোগ্রামের দিন অনুসরণ করবে; সময়ের বাধ্যতামূলক সীমা থাকবে না।",
+                )}
+              </p>
+            </>
+          )}
+          {action === "ROOM" && (
+            <>
+              {select("branch_id", "Campus", "শাখা", data.choices.branches)}
+              {input("name", "Classroom name", "কক্ষের নাম")}
+              {input("capacity", "Seats", "আসন", "number")}
+            </>
+          )}
+          {(action === "AVAILABILITY" || action === "CLOSURE") && (
+            <>
+              {select("resource_kind", "For", "যার জন্য", [
+                { id: "ROOM", name: t("Classroom", "শ্রেণিকক্ষ") },
+                { id: "TEACHER", name: t("Teacher", "শিক্ষক") },
+                ...(action === "CLOSURE"
+                  ? [
+                      {
+                        id: "ACADEMY",
+                        name: t("Academy holiday", "একাডেমির ছুটি"),
+                      },
+                    ]
+                  : []),
+              ])}
+              {resource !== "ACADEMY" &&
+                select(
+                  "resource_id",
+                  "Resource",
+                  "শিক্ষক / কক্ষ",
+                  resource === "ROOM"
+                    ? data.choices.rooms
+                    : data.choices.teachers,
+                )}
+              {action === "CLOSURE" &&
+                input("name", "Closure / absence reason", "ছুটি / বন্ধের কারণ")}
+              {input("starts_on", "Effective from", "কার্যকর শুরু", "date")}
+              {input("ends_on", "Through", "শেষ", "date")}
+              {action === "AVAILABILITY" && (
+                <>
+                  {select(
+                    "weekday",
+                    "Weekday",
+                    "বার",
+                    weekdays.map((name, i) => ({
+                      id: String(i),
+                      name: t(name, weekdaysBn[i]),
+                    })),
+                  )}
+                  {input("start_time", "Available from", "সময় শুরু", "time")}
+                  {input("end_time", "Until", "সময় শেষ", "time")}
+                </>
+              )}
+            </>
+          )}
+          {action === "QUALIFICATION" && (
+            <>
+              {select("teacher_id", "Teacher", "শিক্ষক", data.choices.teachers)}
+              {select(
+                "subject_id",
+                "Qualified subject",
+                "পড়ানোর বিষয়",
+                data.choices.subjects,
+              )}
+              {input("starts_on", "Qualified from", "যোগ্যতা শুরু", "date")}
+              {input(
+                "ends_on",
+                "Qualified through (optional)",
+                "শেষ তারিখ (ঐচ্ছিক)",
+                "date",
+                false,
+              )}
+            </>
+          )}
+          {action === "ROUTINE" && (
+            <>
+              {placement}
+              {select(
+                "curriculum_id",
+                "Teaching plan (optional)",
+                "পাঠদান পরিকল্পনা (ঐচ্ছিক)",
+                data.choices.curricula.filter(
+                  (x) =>
+                    x.batch_id === values.batch_id && x.subject_id === subject,
+                ),
+                false,
+              )}
+              {dayPicker}
+              {input("starts_on", "Effective from", "কার্যকর শুরু", "date")}
+              {input("ends_on", "Through", "শেষ", "date")}
+              {input("start_time", "Starts", "শুরু", "time")}
+              {input("end_time", "Ends", "শেষ", "time")}
+            </>
+          )}
+          {action === "CREATE_SESSION" && (
+            <>
+              {placement}
+              {input("starts_on", "Class date", "ক্লাসের তারিখ", "date")}
+              {input("start_time", "Starts", "শুরু", "time")}
+              {input("end_time", "Ends", "শেষ", "time")}
+              {input("planned_scope", "Planned topics", "পরিকল্পিত পাঠ")}
+            </>
+          )}
+          {action === "GENERATE" && (
+            <>
+              {input("starts_on", "Generate from", "ক্লাস তৈরি শুরু", "date")}
+              {input(
+                "ends_on",
+                "Through (maximum 94 days)",
+                "শেষ (সর্বোচ্চ ৯৪ দিন)",
+                "date",
+              )}
+              {input("planned_scope", "Planned topics", "পরিকল্পিত পাঠ")}
+            </>
+          )}
+          {["RESCHEDULE", "SUBSTITUTE", "ROOM_CHANGE", "MAKEUP"].includes(
+            action,
+          ) && (
+            <>
+              {input("starts_on", "New class date", "নতুন তারিখ", "date")}
+              {select(
+                "teacher_id",
+                "Teacher / substitute",
+                "শিক্ষক / বিকল্প",
+                data.choices.teachers.filter((x) =>
+                  x.subjects?.includes(subject),
+                ),
+              )}
+              {select(
+                "room_id",
+                "Classroom",
+                "শ্রেণিকক্ষ",
+                data.choices.rooms.filter(
+                  (x) =>
+                    x.branch_id === batch?.branch_id &&
+                    (x.capacity ?? 0) >= (batch?.capacity ?? 0),
+                ),
+              )}
+              {input("start_time", "Starts", "শুরু", "time")}
+              {input("end_time", "Ends", "শেষ", "time")}
+            </>
+          )}
+          {["ROOM", "AVAILABILITY", "CLOSURE"].includes(action) &&
+            Boolean(values.id) && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={Boolean(values.is_active)}
+                  onChange={(e) => update("is_active", e.target.checked)}
+                />
+                {t("Active for new use", "নতুন কাজে সক্রিয়")}
+              </label>
+            )}
+          <label className={field}>
+            {t("Change reason", "পরিবর্তনের কারণ")}
+            <select
+              className={cls}
+              value={customReason ? "OTHER" : "CONFIRMED"}
+              onChange={(e) => setCustomReason(e.target.value === "OTHER")}
+            >
+              <option value="CONFIRMED">
+                {t(
+                  "Confirmed the selected details",
+                  "নির্বাচিত তথ্য যাচাই করেছি",
+                )}
+              </option>
+              <option value="OTHER">
+                {t("Other — write a reason", "অন্য কারণ — লিখুন")}
+              </option>
+            </select>
+          </label>
+          {customReason && input("reason", "Reason", "কারণ")}
+        </fieldset>
+        {message && (
+          <p role="status" className="rounded-lg border p-3">
+            {message}
+          </p>
+        )}
+        <div className="flex gap-3">
+          {uncertain ? (
+            <Button
+              loading={pending}
+              disabled={pending}
+              type="button"
+              onClick={() => attempt && send(attempt)}
+            >
+              {t("Confirm previous request", "আগের অনুরোধ নিশ্চিত করুন")}
+            </Button>
+          ) : (
+            <Button loading={pending} disabled={pending} type="submit">
+              {t("Save", "সংরক্ষণ")}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            type="button"
+            disabled={pending || uncertain}
+            onClick={() => onDone()}
+          >
+            {t("Cancel", "বাতিল")}
+          </Button>
+        </div>
+      </fieldset>
     </form>
   );
 }

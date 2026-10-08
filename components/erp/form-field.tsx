@@ -2,7 +2,7 @@
 import { fieldGuide } from "@/modules/platform/navigation/field-guides";
 import { useLanguage } from "@/components/providers/language-provider";
 import { HelpDisclosure, type HelpText } from "./help-disclosure";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -79,10 +79,18 @@ export function ErpFormStatus({
 }: {
   message: { ok: boolean; text: string } | null;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (message?.ok) {
+      const form = ref.current?.closest("form");
+      if (form) form.dataset.dirty = "false";
+    }
+  }, [message]);
   if (!message) return null;
 
   return (
     <div
+      ref={ref}
       role={message.ok ? "status" : "alert"}
       aria-live="polite"
       aria-atomic="true"

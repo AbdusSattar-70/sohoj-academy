@@ -192,124 +192,128 @@ export function TaskRegister({
           data-busy={pending ? "true" : "false"}
           className="grid gap-4 rounded-xl border p-5 sm:grid-cols-2"
         >
-          <h3 className="font-semibold sm:col-span-2">
-            {action.replaceAll("_", " ")} {row?.title}
-          </h3>
-          {assignment && (
-            <>
-              <label>
-                {t("Responsible staff", "দায়িত্বপ্রাপ্ত স্টাফ")}
-                <select
-                  name="staff_id"
-                  className={input}
-                  defaultValue={row?.staff_id ?? data.staffId ?? ""}
-                  required
-                >
-                  {people
-                    .filter((p) => action !== "EDIT" || p.id === row?.staff_id)
-                    .map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.number} · {p.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label>
-                {t("Task title", "কাজের নাম")}
-                <input
-                  name="title"
-                  className={input}
-                  required
-                  minLength={3}
-                  maxLength={160}
-                  defaultValue={row?.title ?? ""}
-                />
-              </label>
-              <label>
-                {t("Due date", "শেষ করার তারিখ")}
-                <input
-                  name="due_on"
-                  type="date"
-                  className={input}
-                  required
-                  defaultValue={row?.due_on ?? ""}
-                />
-              </label>
-              <label>
-                {t("Instructions", "নির্দেশনা")}
-                <textarea
-                  name="instructions"
-                  className={input}
-                  maxLength={4000}
-                  defaultValue={row?.instructions ?? ""}
-                />
-              </label>
-            </>
-          )}
-          {report && (
-            <>
-              {action === "REPORT" && (
+          <fieldset disabled={pending} className="contents">
+            <h3 className="font-semibold sm:col-span-2">
+              {action.replaceAll("_", " ")} {row?.title}
+            </h3>
+            {assignment && (
+              <>
                 <label>
-                  {t(
-                    "Reported progress (0–99%)",
-                    "রিপোর্ট করা অগ্রগতি (০–৯৯%)",
-                  )}
-                  <input
-                    name="progress"
-                    type="number"
-                    min="0"
-                    max="99"
+                  {t("Responsible staff", "দায়িত্বপ্রাপ্ত স্টাফ")}
+                  <select
+                    name="staff_id"
                     className={input}
-                    defaultValue={Math.min(row?.progress ?? 0, 99)}
+                    defaultValue={row?.staff_id ?? data.staffId ?? ""}
                     required
+                  >
+                    {people
+                      .filter(
+                        (p) => action !== "EDIT" || p.id === row?.staff_id,
+                      )
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.number} · {p.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <label>
+                  {t("Task title", "কাজের নাম")}
+                  <input
+                    name="title"
+                    className={input}
+                    required
+                    minLength={3}
+                    maxLength={160}
+                    defaultValue={row?.title ?? ""}
                   />
                 </label>
-              )}
-              <label>
-                {t(
-                  "What is blocking completion? (optional)",
-                  "শেষ করতে কী বাধা আছে? (ঐচ্ছিক)",
+                <label>
+                  {t("Due date", "শেষ করার তারিখ")}
+                  <input
+                    name="due_on"
+                    type="date"
+                    className={input}
+                    required
+                    defaultValue={row?.due_on ?? ""}
+                  />
+                </label>
+                <label>
+                  {t("Instructions", "নির্দেশনা")}
+                  <textarea
+                    name="instructions"
+                    className={input}
+                    maxLength={4000}
+                    defaultValue={row?.instructions ?? ""}
+                  />
+                </label>
+              </>
+            )}
+            {report && (
+              <>
+                {action === "REPORT" && (
+                  <label>
+                    {t(
+                      "Reported progress (0–99%)",
+                      "রিপোর্ট করা অগ্রগতি (০–৯৯%)",
+                    )}
+                    <input
+                      name="progress"
+                      type="number"
+                      min="0"
+                      max="99"
+                      className={input}
+                      defaultValue={Math.min(row?.progress ?? 0, 99)}
+                      required
+                    />
+                  </label>
                 )}
-                <textarea
-                  name="blocker"
-                  className={input}
-                  maxLength={2000}
-                  defaultValue={row?.blocker ?? ""}
-                />
-              </label>
-              {action === "SUBMIT" && (
-                <p className="sm:col-span-2">
+                <label>
                   {t(
-                    "Submit completed work (100%) for administrative acceptance.",
-                    "সম্পন্ন কাজ (১০০%) প্রশাসকের গ্রহণের জন্য জমা দিন।",
+                    "What is blocking completion? (optional)",
+                    "শেষ করতে কী বাধা আছে? (ঐচ্ছিক)",
                   )}
-                </p>
-              )}
-            </>
-          )}
-          <label className="sm:col-span-2">
-            {t("Work note / explanation", "কাজের নোট / ব্যাখ্যা")}
-            <textarea
-              name="reason"
-              className={input}
-              required
-              minLength={5}
-              maxLength={1000}
-            />
-          </label>
-          <div className="flex gap-3 sm:col-span-2">
-            <Button loading={pending} disabled={pending}>
-              {t("Confirm", "নিশ্চিত করুন")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={pending}
-              onClick={() => setAction(null)}
-            >
-              {t("Cancel", "বাতিল")}
-            </Button>
-          </div>
+                  <textarea
+                    name="blocker"
+                    className={input}
+                    maxLength={2000}
+                    defaultValue={row?.blocker ?? ""}
+                  />
+                </label>
+                {action === "SUBMIT" && (
+                  <p className="sm:col-span-2">
+                    {t(
+                      "Submit completed work (100%) for administrative acceptance.",
+                      "সম্পন্ন কাজ (১০০%) প্রশাসকের গ্রহণের জন্য জমা দিন।",
+                    )}
+                  </p>
+                )}
+              </>
+            )}
+            <label className="sm:col-span-2">
+              {t("Work note / explanation", "কাজের নোট / ব্যাখ্যা")}
+              <textarea
+                name="reason"
+                className={input}
+                required
+                minLength={5}
+                maxLength={1000}
+              />
+            </label>
+            <div className="flex gap-3 sm:col-span-2">
+              <Button loading={pending} disabled={pending}>
+                {t("Confirm", "নিশ্চিত করুন")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={pending}
+                onClick={() => setAction(null)}
+              >
+                {t("Cancel", "বাতিল")}
+              </Button>
+            </div>
+          </fieldset>
         </form>
       )}
       <div className="overflow-x-auto">

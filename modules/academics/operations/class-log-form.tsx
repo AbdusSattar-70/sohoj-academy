@@ -103,6 +103,8 @@ export function ClassLogForm({
       )}
       {open && (
         <form
+          data-editor
+          data-busy={pending ? "true" : "false"}
           onSubmit={(e) => {
             e.preventDefault();
             const f = new FormData(e.currentTarget);
@@ -127,111 +129,118 @@ export function ClassLogForm({
           }}
           className="space-y-4"
         >
-          <fieldset
-            disabled={pending || uncertain}
-            className="grid gap-4 sm:grid-cols-2"
-          >
-            <label>
-              {t(
-                "Actual start · Bangladesh time",
-                "বাস্তব শুরু · বাংলাদেশ সময়",
-              )}
-              <input
-                name="start"
-                type="datetime-local"
-                required
-                defaultValue={local(last?.actual_starts_at)}
-                className={cls}
-              />
-            </label>
-            <label>
-              {t("Actual end", "বাস্তব শেষ")}
-              <input
-                name="end"
-                type="datetime-local"
-                required
-                defaultValue={local(last?.actual_ends_at)}
-                className={cls}
-              />
-            </label>
-            {workspace.units.map((u, i) => (
-              <label key={i}>
-                {u.title}
-                <select
-                  className={cls}
-                  value={progress[i].status}
-                  onChange={(e) =>
-                    setProgress((p) =>
-                      p.map((x, n) =>
-                        n === i
-                          ? { ...x, status: e.target.value as typeof x.status }
-                          : x,
-                      ),
-                    )
-                  }
-                >
-                  <option value="NOT_COVERED">
-                    {t("Not covered", "পড়ানো হয়নি")}
-                  </option>
-                  <option value="PARTIAL">{t("Partial", "আংশিক")}</option>
-                  <option value="COVERED">{t("Covered", "পড়ানো হয়েছে")}</option>
-                </select>
-              </label>
-            ))}
-            <label className="sm:col-span-2">
-              {t("What was taught?", "কী পড়িয়েছেন?")}
-              <textarea
-                name="summary"
-                required
-                minLength={2}
-                maxLength={4000}
-                defaultValue={last?.class_summary}
-                className={cls}
-              />
-            </label>
-            <label>
-              {t("Reason for incomplete topics", "অসম্পূর্ণ পাঠের কারণ")}
-              <textarea
-                name="unfinished"
-                required={progress.some((x) => x.status !== "COVERED")}
-                maxLength={2000}
-                defaultValue={last?.unfinished_reason}
-                className={cls}
-              />
-            </label>
-            <label>
-              {t("Homework / practice", "বাড়ির কাজ / অনুশীলন")}
-              <textarea
-                name="homework"
-                maxLength={2000}
-                defaultValue={last?.homework}
-                className={cls}
-              />
-            </label>
-            <label>
-              {t("Next class plan", "পরবর্তী ক্লাসের পরিকল্পনা")}
-              <textarea
-                name="next"
-                maxLength={2000}
-                defaultValue={last?.next_session_plan}
-                className={cls}
-              />
-            </label>
-          </fieldset>
-          {uncertain ? (
-            <Button
-              type="button"
-              loading={pending}
-              disabled={pending}
-              onClick={() => attempt && send(attempt)}
+          <fieldset disabled={pending} className="contents">
+            <fieldset
+              disabled={pending || uncertain}
+              className="grid gap-4 sm:grid-cols-2"
             >
-              {t("Confirm previous request", "আগের অনুরোধ নিশ্চিত করুন")}
-            </Button>
-          ) : (
-            <Button loading={pending} disabled={pending} type="submit">
-              {t("Save draft", "খসড়া রাখুন")}
-            </Button>
-          )}
+              <label>
+                {t(
+                  "Actual start · Bangladesh time",
+                  "বাস্তব শুরু · বাংলাদেশ সময়",
+                )}
+                <input
+                  name="start"
+                  type="datetime-local"
+                  required
+                  defaultValue={local(last?.actual_starts_at)}
+                  className={cls}
+                />
+              </label>
+              <label>
+                {t("Actual end", "বাস্তব শেষ")}
+                <input
+                  name="end"
+                  type="datetime-local"
+                  required
+                  defaultValue={local(last?.actual_ends_at)}
+                  className={cls}
+                />
+              </label>
+              {workspace.units.map((u, i) => (
+                <label key={i}>
+                  {u.title}
+                  <select
+                    className={cls}
+                    value={progress[i].status}
+                    onChange={(e) =>
+                      setProgress((p) =>
+                        p.map((x, n) =>
+                          n === i
+                            ? {
+                                ...x,
+                                status: e.target.value as typeof x.status,
+                              }
+                            : x,
+                        ),
+                      )
+                    }
+                  >
+                    <option value="NOT_COVERED">
+                      {t("Not covered", "পড়ানো হয়নি")}
+                    </option>
+                    <option value="PARTIAL">{t("Partial", "আংশিক")}</option>
+                    <option value="COVERED">
+                      {t("Covered", "পড়ানো হয়েছে")}
+                    </option>
+                  </select>
+                </label>
+              ))}
+              <label className="sm:col-span-2">
+                {t("What was taught?", "কী পড়িয়েছেন?")}
+                <textarea
+                  name="summary"
+                  required
+                  minLength={2}
+                  maxLength={4000}
+                  defaultValue={last?.class_summary}
+                  className={cls}
+                />
+              </label>
+              <label>
+                {t("Reason for incomplete topics", "অসম্পূর্ণ পাঠের কারণ")}
+                <textarea
+                  name="unfinished"
+                  required={progress.some((x) => x.status !== "COVERED")}
+                  maxLength={2000}
+                  defaultValue={last?.unfinished_reason}
+                  className={cls}
+                />
+              </label>
+              <label>
+                {t("Homework / practice", "বাড়ির কাজ / অনুশীলন")}
+                <textarea
+                  name="homework"
+                  maxLength={2000}
+                  defaultValue={last?.homework}
+                  className={cls}
+                />
+              </label>
+              <label>
+                {t("Next class plan", "পরবর্তী ক্লাসের পরিকল্পনা")}
+                <textarea
+                  name="next"
+                  maxLength={2000}
+                  defaultValue={last?.next_session_plan}
+                  className={cls}
+                />
+              </label>
+            </fieldset>
+            {uncertain ? (
+              <Button
+                type="button"
+                loading={pending}
+                disabled={pending}
+                onClick={() => attempt && send(attempt)}
+              >
+                {t("Confirm previous request", "আগের অনুরোধ নিশ্চিত করুন")}
+              </Button>
+            ) : (
+              <Button loading={pending} disabled={pending} type="submit">
+                {t("Save draft", "খসড়া রাখুন")}
+              </Button>
+            )}
+          </fieldset>
         </form>
       )}
       {last?.status === "DRAFT" && !open && (

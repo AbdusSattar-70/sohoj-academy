@@ -1,4 +1,5 @@
 import { PageWorkflowGuide } from "./page-workflow-guide";
+import { WorkspaceFormSafety } from "./workspace-form-safety";
 import { MutationFeedback } from "./mutation-feedback";
 import { Suspense } from "react";
 import { WorkflowReturn } from "./workflow-return";
@@ -49,6 +50,7 @@ export function ErpShell({
           <Suspense>
             <WorkflowReturn />
           </Suspense>
+          <WorkspaceFormSafety />
           <MutationFeedback />
           <PageWorkflowGuide permissions={context.permissions} />
           {children}

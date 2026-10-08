@@ -30,7 +30,10 @@ export function AdmissionPlacementEditor({
           reason: "Corrected academic placement with student or guardian",
         });
         setMessage(result.message);
-        if (result.ok) { announceSaved(result.message); router.refresh(); }
+        if (result.ok) {
+          announceSaved(result.message);
+          router.refresh();
+        }
       } catch {
         setMessage("Could not save placement. Please try again.");
       }
@@ -41,62 +44,69 @@ export function AdmissionPlacementEditor({
       <summary className="cursor-pointer font-semibold">
         Correct programme / batch or refresh fees
       </summary>
-      <form className="mt-4 space-y-3" onSubmit={submit}>
-        <label className="block text-sm">
-          Programme offering
-          <select
-            required
-            value={offering}
-            onChange={(e) => {
-              setOffering(e.target.value);
-              setBatch("");
-            }}
-            className="mt-1 w-full rounded-lg border bg-background p-3"
-          >
-            <option value="">Select offering</option>
-            {data.offerings.map((o) => (
-              <option key={o.id} value={o.id} disabled={o.feeReady === false}>
-                {o.name} · {o.className} · {o.yearName}
-                {o.feeReady === false ? " · fee setup needed" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-sm">
-          Available batch
-          <select
-            required
-            value={batch}
-            onChange={(e) => setBatch(e.target.value)}
-            className="mt-1 w-full rounded-lg border bg-background p-3"
-          >
-            <option value="">Select batch</option>
-            {data.batches
-              .filter((b) => b.offeringId === offering && b.isActive)
-              .map((b) => (
-                <option
-                  key={b.id}
-                  value={b.id}
-                  disabled={b.occupied >= b.capacity}
-                >
-                  {b.name} · {b.capacity - b.occupied} seats available
+      <form
+        data-editor
+        data-busy={pending ? "true" : "false"}
+        className="mt-4 space-y-3"
+        onSubmit={submit}
+      >
+        <fieldset disabled={pending} className="contents">
+          <label className="block text-sm">
+            Programme offering
+            <select
+              required
+              value={offering}
+              onChange={(e) => {
+                setOffering(e.target.value);
+                setBatch("");
+              }}
+              className="mt-1 w-full rounded-lg border bg-background p-3"
+            >
+              <option value="">Select offering</option>
+              {data.offerings.map((o) => (
+                <option key={o.id} value={o.id} disabled={o.feeReady === false}>
+                  {o.name} · {o.className} · {o.yearName}
+                  {o.feeReady === false ? " · fee setup needed" : ""}
                 </option>
               ))}
-          </select>
-        </label>
-        <p className="text-sm text-muted-foreground">
-          Changing placement or refreshing the fee plan returns to Draft. Review
-          fees, discounts and signed consent again. Earlier records stay in the
-          audit history.
-        </p>
-        <button disabled={pending} className="rounded-lg border px-4 py-2">
-          {pending ? "Saving…" : "Save verified placement"}
-        </button>
-        {message && (
-          <p role="status" className="text-sm">
-            {message}
+            </select>
+          </label>
+          <label className="block text-sm">
+            Available batch
+            <select
+              required
+              value={batch}
+              onChange={(e) => setBatch(e.target.value)}
+              className="mt-1 w-full rounded-lg border bg-background p-3"
+            >
+              <option value="">Select batch</option>
+              {data.batches
+                .filter((b) => b.offeringId === offering && b.isActive)
+                .map((b) => (
+                  <option
+                    key={b.id}
+                    value={b.id}
+                    disabled={b.occupied >= b.capacity}
+                  >
+                    {b.name} · {b.capacity - b.occupied} seats available
+                  </option>
+                ))}
+            </select>
+          </label>
+          <p className="text-sm text-muted-foreground">
+            Changing placement or refreshing the fee plan returns to Draft.
+            Review fees, discounts and signed consent again. Earlier records
+            stay in the audit history.
           </p>
-        )}
+          <button disabled={pending} className="rounded-lg border px-4 py-2">
+            {pending ? "Saving…" : "Save verified placement"}
+          </button>
+          {message && (
+            <p role="status" className="text-sm">
+              {message}
+            </p>
+          )}
+        </fieldset>
       </form>
     </details>
   );

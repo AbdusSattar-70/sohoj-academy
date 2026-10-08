@@ -19,6 +19,8 @@ export function ClassLogReview({
     attempt = useRef<{ signature: string; id: string } | null>(null);
   return (
     <form
+      data-editor
+      data-busy={pending ? "true" : "false"}
       className="space-y-3 rounded-lg border p-4"
       onSubmit={(e) => {
         e.preventDefault();
@@ -62,40 +64,42 @@ export function ClassLogReview({
         });
       }}
     >
-      <fieldset disabled={pending} className="grid gap-3 sm:grid-cols-2">
-        <label>
-          {t("Admin review", "প্রশাসকের যাচাই")}
-          <select
-            name="decision"
-            className="mt-1 w-full rounded-lg border bg-background p-3"
-          >
-            <option value="APPROVED">
-              {t("Approve actual teaching", "বাস্তব পাঠদান অনুমোদন")}
-            </option>
-            <option value="REJECTED">
-              {t("Return for correction", "সংশোধনের জন্য ফেরত")}
-            </option>
-          </select>
-        </label>
-        <label>
-          {t("Review note", "যাচাইয়ের মন্তব্য")}
-          <input
-            name="note"
-            required
-            minLength={5}
-            maxLength={1000}
-            defaultValue={t(
-              "Verified teaching topics and actual duration",
-              "পড়ানো বিষয় ও বাস্তব সময় যাচাই করেছি",
-            )}
-            className="mt-1 w-full rounded-lg border bg-background p-3"
-          />
-        </label>
+      <fieldset disabled={pending} className="contents">
+        <fieldset disabled={pending} className="grid gap-3 sm:grid-cols-2">
+          <label>
+            {t("Admin review", "প্রশাসকের যাচাই")}
+            <select
+              name="decision"
+              className="mt-1 w-full rounded-lg border bg-background p-3"
+            >
+              <option value="APPROVED">
+                {t("Approve actual teaching", "বাস্তব পাঠদান অনুমোদন")}
+              </option>
+              <option value="REJECTED">
+                {t("Return for correction", "সংশোধনের জন্য ফেরত")}
+              </option>
+            </select>
+          </label>
+          <label>
+            {t("Review note", "যাচাইয়ের মন্তব্য")}
+            <input
+              name="note"
+              required
+              minLength={5}
+              maxLength={1000}
+              defaultValue={t(
+                "Verified teaching topics and actual duration",
+                "পড়ানো বিষয় ও বাস্তব সময় যাচাই করেছি",
+              )}
+              className="mt-1 w-full rounded-lg border bg-background p-3"
+            />
+          </label>
+        </fieldset>
+        <Button loading={pending} disabled={pending}>
+          {t("Save review", "যাচাই সংরক্ষণ")}
+        </Button>
+        {message && <p role="status">{message}</p>}
       </fieldset>
-      <Button loading={pending} disabled={pending}>
-        {t("Save review", "যাচাই সংরক্ষণ")}
-      </Button>
-      {message && <p role="status">{message}</p>}
     </form>
   );
 }

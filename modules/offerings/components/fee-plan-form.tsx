@@ -122,306 +122,318 @@ export function FeePlanForm({
         allowed tuition discounts below. Authorized admission personnel can
         apply them with a recorded reason.
       </p>
-      <form onSubmit={submit} noValidate className="mt-5 space-y-6">
-        <div className="grid gap-5 md:grid-cols-2">
-          <ErpFormField
-            id="fee-offering"
-            label="Programme Offering"
-            required
-            hint="Choose the exact year, branch, class and programme context."
-            error={errors.offeringId?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <select
-                id={id}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                className={controlClass}
-                {...register("offeringId", {
-                  onChange: (event) => {
-                    const plan = data.plans.find(
-                      (row) =>
-                        row.offering_id === event.target.value &&
-                        row.status === "ACTIVE",
-                    );
-                    setValue("billingCycle", plan?.billing_cycle ?? "MONTHLY", {
-                      shouldDirty: true,
-                    });
-                    setValue("dueDay", plan?.due_day ?? null, {
-                      shouldDirty: true,
-                    });
-                    replace(
-                      plan ? planComponents(plan.id) : [initialComponent],
-                    );
-                  },
-                })}
-              >
-                <option value="">Select an offering</option>
-                {data.offerings
-                  .filter((offering) => offering.status !== "RETIRED")
-                  .map((offering) => (
-                    <option key={offering.id} value={offering.id}>
-                      {offering.code} — {offering.name}
-                    </option>
-                  ))}
-              </select>
-            )}
-          </ErpFormField>
-          <ErpFormField
-            id="fee-cycle"
-            label="Billing Cycle"
-            required
-            hint="Tuition repeats with this cycle; one-time charges do not."
-            error={errors.billingCycle?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <select
-                id={id}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                className={controlClass}
-                {...register("billingCycle", {
-                  onChange: (event) => {
-                    if (event.target.value !== "MONTHLY")
-                      setValue("dueDay", null, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      });
-                  },
-                })}
-              >
-                <option value="MONTHLY">Monthly</option>
-                <option value="TERM">Per term</option>
-                <option value="ONE_TIME">One-time programme</option>
-              </select>
-            )}
-          </ErpFormField>
-          {cycle === "MONTHLY" && (
+      <form
+        data-editor
+        data-busy={pending ? "true" : "false"}
+        onSubmit={submit}
+        noValidate
+        className="mt-5 space-y-6"
+      >
+        <fieldset disabled={pending} className="contents">
+          <div className="grid gap-5 md:grid-cols-2">
             <ErpFormField
-              id="fee-due-day"
-              label="Monthly Due Day"
+              id="fee-offering"
+              label="Programme Offering"
               required
-              hint="Use a day from 1 to 28 to avoid missing dates in shorter months."
-              error={errors.dueDay?.message}
+              hint="Choose the exact year, branch, class and programme context."
+              error={errors.offeringId?.message}
             >
               {({ id, describedBy, invalid }) => (
-                <input
+                <select
                   id={id}
-                  type="number"
-                  min={1}
-                  max={28}
                   aria-describedby={describedBy}
                   aria-invalid={invalid}
                   className={controlClass}
-                  {...register("dueDay", {
-                    setValueAs: (value: string) =>
-                      value === "" ? null : Number(value),
+                  {...register("offeringId", {
+                    onChange: (event) => {
+                      const plan = data.plans.find(
+                        (row) =>
+                          row.offering_id === event.target.value &&
+                          row.status === "ACTIVE",
+                      );
+                      setValue(
+                        "billingCycle",
+                        plan?.billing_cycle ?? "MONTHLY",
+                        {
+                          shouldDirty: true,
+                        },
+                      );
+                      setValue("dueDay", plan?.due_day ?? null, {
+                        shouldDirty: true,
+                      });
+                      replace(
+                        plan ? planComponents(plan.id) : [initialComponent],
+                      );
+                    },
                   })}
-                />
+                >
+                  <option value="">Select an offering</option>
+                  {data.offerings
+                    .filter((offering) => offering.status !== "RETIRED")
+                    .map((offering) => (
+                      <option key={offering.id} value={offering.id}>
+                        {offering.code} — {offering.name}
+                      </option>
+                    ))}
+                </select>
               )}
             </ErpFormField>
-          )}
-          <ErpFormField
-            id="fee-effective"
-            label="Effective Date"
-            required
-            hint="Publication starts today. Future scheduling is a later controlled workflow."
-            error={errors.effectiveFrom?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <input
-                id={id}
-                type="date"
-                min={today}
-                max={today}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                className={controlClass}
-                {...register("effectiveFrom")}
-              />
-            )}
-          </ErpFormField>
-        </div>
-
-        {active && (
-          <p className="rounded-xl border bg-muted/40 p-3 text-sm">
-            Current plan: saved effective {active.effective_from}. Editing
-            updates current charges. Historical admission terms remain
-            preserved.
-          </p>
-        )}
-
-        <fieldset className="space-y-4 rounded-xl border p-4">
-          <legend className="px-2 font-semibold">Fee Components</legend>
-          <p className="text-sm text-muted-foreground">
-            Keep Tuition as a per-cycle component. Add admission, exam or
-            material charges separately. Amounts are in BDT.
-          </p>
-          {fields.map((field, index) => (
-            <div
-              key={field.id}
-              className="grid gap-3 rounded-xl border bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-5"
+            <ErpFormField
+              id="fee-cycle"
+              label="Billing Cycle"
+              required
+              hint="Tuition repeats with this cycle; one-time charges do not."
+              error={errors.billingCycle?.message}
             >
+              {({ id, describedBy, invalid }) => (
+                <select
+                  id={id}
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  className={controlClass}
+                  {...register("billingCycle", {
+                    onChange: (event) => {
+                      if (event.target.value !== "MONTHLY")
+                        setValue("dueDay", null, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                    },
+                  })}
+                >
+                  <option value="MONTHLY">Monthly</option>
+                  <option value="TERM">Per term</option>
+                  <option value="ONE_TIME">One-time programme</option>
+                </select>
+              )}
+            </ErpFormField>
+            {cycle === "MONTHLY" && (
               <ErpFormField
-                id={`fee-code-${index}`}
-                label="Code"
+                id="fee-due-day"
+                label="Monthly Due Day"
                 required
-                error={errors.components?.[index]?.code?.message}
-              >
-                {({ id, describedBy, invalid }) => (
-                  <input
-                    id={id}
-                    aria-describedby={describedBy}
-                    aria-invalid={invalid}
-                    className={controlClass}
-                    {...register(`components.${index}.code`)}
-                  />
-                )}
-              </ErpFormField>
-              <ErpFormField
-                id={`fee-name-${index}`}
-                label="Name"
-                required
-                error={errors.components?.[index]?.name?.message}
-              >
-                {({ id, describedBy, invalid }) => (
-                  <input
-                    id={id}
-                    aria-describedby={describedBy}
-                    aria-invalid={invalid}
-                    className={controlClass}
-                    {...register(`components.${index}.name`)}
-                  />
-                )}
-              </ErpFormField>
-              <ErpFormField
-                id={`fee-amount-${index}`}
-                label="Amount (BDT)"
-                required
-                error={errors.components?.[index]?.amount?.message}
+                hint="Use a day from 1 to 28 to avoid missing dates in shorter months."
+                error={errors.dueDay?.message}
               >
                 {({ id, describedBy, invalid }) => (
                   <input
                     id={id}
                     type="number"
-                    min={0}
-                    step="0.01"
+                    min={1}
+                    max={28}
                     aria-describedby={describedBy}
                     aria-invalid={invalid}
                     className={controlClass}
-                    {...register(`components.${index}.amount`, {
-                      valueAsNumber: true,
+                    {...register("dueDay", {
+                      setValueAs: (value: string) =>
+                        value === "" ? null : Number(value),
                     })}
                   />
                 )}
               </ErpFormField>
-              <ErpFormField
-                id={`fee-type-${index}`}
-                label="Charge Type"
-                required
-                error={errors.components?.[index]?.chargeType?.message}
-              >
-                {({ id, describedBy, invalid }) => (
-                  <select
-                    id={id}
-                    aria-describedby={describedBy}
-                    aria-invalid={invalid}
-                    className={controlClass}
-                    {...register(`components.${index}.chargeType`)}
-                  >
-                    {(
-                      [
-                        "TUITION",
-                        "ADMISSION",
-                        "EXAM",
-                        "MATERIAL",
-                        "OTHER",
-                      ] as const
-                    ).map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </ErpFormField>
-              <ErpFormField
-                id={`fee-recurrence-${index}`}
-                label="Frequency"
-                required
-                error={errors.components?.[index]?.recurrence?.message}
-              >
-                {({ id, describedBy, invalid }) => (
-                  <select
-                    id={id}
-                    aria-describedby={describedBy}
-                    aria-invalid={invalid}
-                    className={controlClass}
-                    {...register(`components.${index}.recurrence`)}
-                  >
-                    <option value="PER_CYCLE">Per billing cycle</option>
-                    <option value="ONE_TIME">One time</option>
-                  </select>
-                )}
-              </ErpFormField>
-              {fields.length > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-fit"
-                  onClick={() => remove(index)}
-                >
-                  Remove component
-                </Button>
+            )}
+            <ErpFormField
+              id="fee-effective"
+              label="Effective Date"
+              required
+              hint="Publication starts today. Future scheduling is a later controlled workflow."
+              error={errors.effectiveFrom?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <input
+                  id={id}
+                  type="date"
+                  min={today}
+                  max={today}
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  className={controlClass}
+                  {...register("effectiveFrom")}
+                />
               )}
-            </div>
-          ))}
-          {errors.components?.root?.message && (
-            <p role="alert" className="text-sm text-destructive">
-              {errors.components.root.message}
+            </ErpFormField>
+          </div>
+
+          {active && (
+            <p className="rounded-xl border bg-muted/40 p-3 text-sm">
+              Current plan: saved effective {active.effective_from}. Editing
+              updates current charges. Historical admission terms remain
+              preserved.
             </p>
           )}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              append({
-                code: "",
-                name: "",
-                amount: 0,
-                chargeType: "OTHER",
-                recurrence: "ONE_TIME",
-              })
-            }
-          >
-            Add Component
-          </Button>
-        </fieldset>
 
-        <ErpFormField
-          id="fee-reason"
-          label="Publication Reason"
-          required
-          hint="This explanation is recorded with the save and audit event."
-          error={errors.reason?.message}
-        >
-          {({ id, describedBy, invalid }) => (
-            <textarea
-              id={id}
-              rows={2}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              className={`${controlClass} py-3`}
-              {...register("reason")}
-            />
-          )}
-        </ErpFormField>
-        <div className="flex flex-wrap items-center gap-4">
-          <Button type="submit" disabled={!isDirty || !isValid || pending}>
-            {pending ? "Saving…" : "Save Fee Plan"}
-          </Button>
-          <ErpFormStatus message={message} />
-        </div>
+          <fieldset className="space-y-4 rounded-xl border p-4">
+            <legend className="px-2 font-semibold">Fee Components</legend>
+            <p className="text-sm text-muted-foreground">
+              Keep Tuition as a per-cycle component. Add admission, exam or
+              material charges separately. Amounts are in BDT.
+            </p>
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="grid gap-3 rounded-xl border bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-5"
+              >
+                <ErpFormField
+                  id={`fee-code-${index}`}
+                  label="Code"
+                  required
+                  error={errors.components?.[index]?.code?.message}
+                >
+                  {({ id, describedBy, invalid }) => (
+                    <input
+                      id={id}
+                      aria-describedby={describedBy}
+                      aria-invalid={invalid}
+                      className={controlClass}
+                      {...register(`components.${index}.code`)}
+                    />
+                  )}
+                </ErpFormField>
+                <ErpFormField
+                  id={`fee-name-${index}`}
+                  label="Name"
+                  required
+                  error={errors.components?.[index]?.name?.message}
+                >
+                  {({ id, describedBy, invalid }) => (
+                    <input
+                      id={id}
+                      aria-describedby={describedBy}
+                      aria-invalid={invalid}
+                      className={controlClass}
+                      {...register(`components.${index}.name`)}
+                    />
+                  )}
+                </ErpFormField>
+                <ErpFormField
+                  id={`fee-amount-${index}`}
+                  label="Amount (BDT)"
+                  required
+                  error={errors.components?.[index]?.amount?.message}
+                >
+                  {({ id, describedBy, invalid }) => (
+                    <input
+                      id={id}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      aria-describedby={describedBy}
+                      aria-invalid={invalid}
+                      className={controlClass}
+                      {...register(`components.${index}.amount`, {
+                        valueAsNumber: true,
+                      })}
+                    />
+                  )}
+                </ErpFormField>
+                <ErpFormField
+                  id={`fee-type-${index}`}
+                  label="Charge Type"
+                  required
+                  error={errors.components?.[index]?.chargeType?.message}
+                >
+                  {({ id, describedBy, invalid }) => (
+                    <select
+                      id={id}
+                      aria-describedby={describedBy}
+                      aria-invalid={invalid}
+                      className={controlClass}
+                      {...register(`components.${index}.chargeType`)}
+                    >
+                      {(
+                        [
+                          "TUITION",
+                          "ADMISSION",
+                          "EXAM",
+                          "MATERIAL",
+                          "OTHER",
+                        ] as const
+                      ).map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </ErpFormField>
+                <ErpFormField
+                  id={`fee-recurrence-${index}`}
+                  label="Frequency"
+                  required
+                  error={errors.components?.[index]?.recurrence?.message}
+                >
+                  {({ id, describedBy, invalid }) => (
+                    <select
+                      id={id}
+                      aria-describedby={describedBy}
+                      aria-invalid={invalid}
+                      className={controlClass}
+                      {...register(`components.${index}.recurrence`)}
+                    >
+                      <option value="PER_CYCLE">Per billing cycle</option>
+                      <option value="ONE_TIME">One time</option>
+                    </select>
+                  )}
+                </ErpFormField>
+                {fields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-fit"
+                    onClick={() => remove(index)}
+                  >
+                    Remove component
+                  </Button>
+                )}
+              </div>
+            ))}
+            {errors.components?.root?.message && (
+              <p role="alert" className="text-sm text-destructive">
+                {errors.components.root.message}
+              </p>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                append({
+                  code: "",
+                  name: "",
+                  amount: 0,
+                  chargeType: "OTHER",
+                  recurrence: "ONE_TIME",
+                })
+              }
+            >
+              Add Component
+            </Button>
+          </fieldset>
+
+          <ErpFormField
+            id="fee-reason"
+            label="Publication Reason"
+            required
+            hint="This explanation is recorded with the save and audit event."
+            error={errors.reason?.message}
+          >
+            {({ id, describedBy, invalid }) => (
+              <textarea
+                id={id}
+                rows={2}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                className={`${controlClass} py-3`}
+                {...register("reason")}
+              />
+            )}
+          </ErpFormField>
+          <div className="flex flex-wrap items-center gap-4">
+            <Button type="submit" disabled={!isDirty || !isValid || pending}>
+              {pending ? "Saving…" : "Save Fee Plan"}
+            </Button>
+            <ErpFormStatus message={message} />
+          </div>
+        </fieldset>
       </form>
       {chosenOffering && (
         <div className="mt-6">

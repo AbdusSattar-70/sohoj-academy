@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { guardWorkspaceNavigation } from "@/modules/platform/navigation/navigation-guard";
 import { useState } from "react";
 import { useLanguage } from "@/components/providers/language-provider";
 import {
@@ -201,9 +200,6 @@ export function ErpSidebar({
                           href={item.href}
                           prefetch={false}
                           onClick={() => setOpenMobile(false)}
-                          onNavigate={(e) =>
-                            guardWorkspaceNavigation(e, locale)
-                          }
                           aria-current={active ? "page" : undefined}
                         >
                           <Icon aria-hidden="true" />
