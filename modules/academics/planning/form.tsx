@@ -1,4 +1,5 @@
 "use client";
+import { guardWorkspaceNavigation } from "@/modules/platform/navigation/navigation-guard";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -545,11 +546,19 @@ export function PlanningForm({
               {t("Save", "সংরক্ষণ")}
             </Button>
           )}
-          <Button loading={pending}
+          <Button
+            loading={pending}
             variant="outline"
             type="button"
             disabled={pending || uncertain}
-            onClick={() => onDone()}
+            onClick={(event) => {
+              guardWorkspaceNavigation(
+                event,
+                locale,
+                event.currentTarget.closest("form"),
+              );
+              if (!event.defaultPrevented) onDone();
+            }}
           >
             {t("Cancel", "বাতিল")}
           </Button>

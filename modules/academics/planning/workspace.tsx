@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLanguage } from "@/components/providers/language-provider";
 import { Button } from "@/components/ui/button";
 import { PlanningForm, weekdays, weekdaysBn } from "./form";
+import { guardWorkspaceNavigation } from "@/modules/platform/navigation/navigation-guard";
 import { sections, type PlanningData } from "./schema";
 const titles = {
   qualifications: ["Teacher subject qualifications", "শিক্ষকের পাঠদানের বিষয়"],
@@ -13,6 +14,36 @@ const titles = {
   availability: ["Teacher / room availability", "শিক্ষক / কক্ষের সময়"],
   closures: ["Holidays & unavailability", "ছুটি ও অনুপস্থিতি"],
   routines: ["Weekly subject routine", "সাপ্তাহিক বিষয়ের রুটিন"],
+};
+const instructions: Record<PlanningData["section"], [string, string]> = {
+  qualifications: [
+    "Select a verified teacher and the subjects they can teach. Next, set their weekly available hours.",
+    "যাচাইকৃত শিক্ষক ও তাঁর পাঠদানের বিষয় নির্বাচন করুন। এরপর সাপ্তাহিক ব্যবহারযোগ্য সময় দিন।",
+  ],
+  offerings: [
+    "Set teaching dates and default weekdays for an existing offering. This does not schedule a teacher or room. Next, prepare batch times.",
+    "বিদ্যমান অফারিংয়ের পাঠদানের তারিখ ও সাধারণ দিন দিন। এতে শিক্ষক বা কক্ষ বুক হয় না। এরপর ব্যাচের সময় দিন।",
+  ],
+  batches: [
+    "Choose an existing batch and set its days and time windows. Each subject class will be assigned separately in Weekly routines.",
+    "বিদ্যমান ব্যাচের দিন ও সময় দিন। সাপ্তাহিক রুটিনে প্রতিটি বিষয়ের ক্লাস আলাদা বরাদ্দ হবে।",
+  ],
+  rooms: [
+    "Add the room, branch and seat capacity, then set its available hours. A room being available does not mean it is unbooked.",
+    "কক্ষ, শাখা ও আসনসংখ্যা দিন; এরপর ব্যবহারযোগ্য সময় দিন। ব্যবহারযোগ্য কক্ষ আগে থেকে বুক থাকতে পারে।",
+  ],
+  availability: [
+    "Choose Teacher or Room and set weekdays and local start/end times. This permits scheduling within the window; it does not create classes.",
+    "শিক্ষক বা কক্ষ নির্বাচন করে দিন ও স্থানীয় শুরু–শেষ সময় দিন। এই সময়ের মধ্যে রুটিন করা যাবে; এতে ক্লাস তৈরি হয় না।",
+  ],
+  closures: [
+    "Record academy holidays or resource unavailability. Generated classes skip closed dates; existing sessions need their own change action.",
+    "একাডেমির ছুটি বা শিক্ষক/কক্ষের বন্ধ সময় দিন। নতুন ক্লাস তৈরিতে বন্ধ দিন বাদ যায়; বিদ্যমান ক্লাস পৃথকভাবে পরিবর্তন করতে হবে।",
+  ],
+  routines: [
+    "Create a weekly routine with batch, subject, qualified teacher, room and time. After saving, use Generate classes on its row, then open the class calendar for attendance.",
+    "ব্যাচ, বিষয়, যোগ্য শিক্ষক, কক্ষ ও সময় দিয়ে সাপ্তাহিক রুটিন তৈরি করুন। সংরক্ষণের পর ওই row থেকে তারিখভিত্তিক ক্লাস তৈরি করুন; উপস্থিতির জন্য ক্লাস ক্যালেন্ডার খুলুন।",
+  ],
 };
 function generationDates(row: Record<string, unknown>) {
   const today = new Intl.DateTimeFormat("en-CA", {
@@ -47,6 +78,21 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
     } | null>(null),
     [notice, setNotice] = useState(""),
     [setup, setSetup] = useState<string | null>(null);
+  const openPanel = (next: NonNullable<typeof panel>) => {
+    let blocked = false;
+    guardWorkspaceNavigation(
+      {
+        preventDefault: () => {
+          blocked = true;
+        },
+      },
+      locale,
+    );
+    if (!blocked) {
+      setSetup(null);
+      setPanel(next);
+    }
+  };
   return (
     <section className="space-y-5">
       <header>
@@ -54,10 +100,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
           {t(...(titles[data.section] as [string, string]))}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          {t(
-            "Prepare programme → batch → rooms and qualified teacher availability → routine → generate dated classes. Availability and occupied time are checked separately.",
-            "প্রোগ্রাম → ব্যাচ → কক্ষ ও যোগ্য শিক্ষকের সময় → রুটিন → তারিখভিত্তিক ক্লাস। ব্যবহারযোগ্য সময় ও আগে থেকে বুকিং আলাদা যাচাই হবে।",
-          )}
+          {t(...instructions[data.section])}
         </p>
       </header>
       <div className="flex flex-wrap items-center gap-3">
@@ -65,7 +108,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
         <Button
           onClick={() => {
             setNotice("");
-            setPanel({ action: actions[data.section], initial: {} });
+            openPanel({ action: actions[data.section], initial: {} });
           }}
         >
           {t(
@@ -83,8 +126,12 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
         </Button>
         <p className="text-sm text-muted-foreground">
           {t(
-            "Start here. Save the plan, then generate dated classes from its row.",
-            "এখান থেকে শুরু করুন। পরিকল্পনা সংরক্ষণ করে তার row থেকে তারিখভিত্তিক ক্লাস তৈরি করুন।",
+            data.section === "routines"
+              ? "Save a routine first; Generate classes becomes available on its row."
+              : "Open the form to add or update this setup. No class is created by this action.",
+            data.section === "routines"
+              ? "আগে রুটিন সংরক্ষণ করুন; তারপর তার row থেকে ক্লাস তৈরি করুন।"
+              : "তথ্য যোগ বা পরিবর্তনের জন্য form খুলুন। এই action ক্লাস তৈরি করে না।",
           )}
         </p>
       </div>
@@ -123,24 +170,6 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
         >
           {t("Class calendar / today", "ক্লাস ক্যালেন্ডার / আজ")}
         </Link>
-        <Link
-          className="rounded-lg border px-3 py-2"
-          href="/dashboard/academics/settings"
-        >
-          {t("Classes, subjects & years", "শ্রেণি, বিষয় ও শিক্ষাবর্ষ")}
-        </Link>
-        <Link
-          className="rounded-lg border px-3 py-2"
-          href="/dashboard/academics/offerings"
-        >
-          {t("Offerings & fees", "অফারিং ও ফি")}
-        </Link>
-        <Link
-          className="rounded-lg border px-3 py-2"
-          href="/dashboard/academics/planning?section=qualifications"
-        >
-          {t("Teacher qualifications", "শিক্ষকের যোগ্যতা")}
-        </Link>
       </div>
       {data.section === "routines" && (
         <div className="space-y-3 rounded-xl border p-4">
@@ -160,7 +189,12 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
               <Button
                 key={action}
                 variant="outline"
-                onClick={() => setSetup(setup === action ? null : action)}
+                onClick={(event) => {
+                  guardWorkspaceNavigation(event, locale);
+                  if (event.defaultPrevented) return;
+                  setPanel(null);
+                  setSetup(setup === action ? null : action);
+                }}
               >
                 {t(en, bn)}
               </Button>
@@ -290,7 +324,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                              setPanel({
+                              openPanel({
                                 action: "GENERATE",
                                 initial: {
                                   routine_id: r.id,
@@ -306,7 +340,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                              setPanel({
+                              openPanel({
                                 action: "RETIRE",
                                 initial: { routine_id: r.id },
                               })
@@ -322,7 +356,7 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
                       size="sm"
                       variant="outline"
                       onClick={() =>
-                        setPanel({
+                        openPanel({
                           action: actions[data.section],
                           initial: {
                             ...r,
