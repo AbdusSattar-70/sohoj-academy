@@ -136,6 +136,15 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
     icon: "accounting",
   },
   {
+    id: "attendance-workspace",
+    title: "Attendance",
+    eyebrow: "Daily work",
+    href: "/dashboard/attendance",
+    navGroup: "Daily work",
+    permission: "workforce.self.view",
+    icon: "staff",
+  },
+  {
     id: "my-work",
     title: "My work & attendance",
     eyebrow: "Workspace",

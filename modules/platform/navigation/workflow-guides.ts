@@ -4,7 +4,7 @@ export type WorkflowGuideData = {
   steps: [string, string][];
   next?: string[];
 };
-export const workflowGuides: Record<string, WorkflowGuideData> = {
+const coreGuides: Record<string, WorkflowGuideData> = {
   admissions: {
     en: "Complete one admission case",
     bn: "একটি ভর্তি সম্পন্ন করুন",
@@ -194,7 +194,7 @@ export const workflowGuides: Record<string, WorkflowGuideData> = {
   },
 };
 
-Object.assign(workflowGuides, {
+const extendedGuides: Record<string, WorkflowGuideData> = {
   dashboard: {
     en: "Choose today's next action",
     bn: "আজকের পরের কাজ নির্বাচন করুন",
@@ -344,9 +344,23 @@ Object.assign(workflowGuides, {
     ],
     next: ["staff"],
   },
-});
+};
 
-Object.assign(workflowGuides, {
+const operatingGuides: Record<string, WorkflowGuideData> = {
+  "attendance-workspace": {
+    en: "Choose the attendance record",
+    bn: "উপস্থিতির রেকর্ড নির্বাচন করুন",
+    steps: [
+      [
+        "My attendance shows your own days and hours; authorized management records staff attendance.",
+        "আমার উপস্থিতিতে নিজের দিন ও ঘণ্টা দেখুন; অনুমোদিত ব্যবস্থাপক স্টাফ উপস্থিতি রেকর্ড করেন।",
+      ],
+      [
+        "For students, open a dated class and its class report; generate sessions from a saved routine first if there are none.",
+        "শিক্ষার্থীর জন্য তারিখভিত্তিক ক্লাস ও class report খুলুন; ক্লাস না থাকলে সংরক্ষিত রুটিন থেকে আগে sessions তৈরি করুন।",
+      ],
+    ],
+  },
   referrals: {
     en: "Referral policy and actual rewards",
     bn: "রেফারাল নিয়ম ও প্রকৃত বোনাস",
@@ -524,4 +538,10 @@ Object.assign(workflowGuides, {
       ],
     ],
   },
-});
+};
+
+export const workflowGuides: Record<string, WorkflowGuideData> = {
+  ...coreGuides,
+  ...extendedGuides,
+  ...operatingGuides,
+};

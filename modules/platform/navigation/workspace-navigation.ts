@@ -35,6 +35,7 @@ export const navigationGroups: Record<string, string> = {
   "action-center": "Daily work",
   "teacher-dashboard": "Daily work",
   "my-work": "Daily work",
+  "attendance-workspace": "Daily work",
   admissions: "Academics",
   "academic-operations": "Academics",
   assessments: "Academics",
@@ -70,6 +71,7 @@ export const navigationOrder = [
   "dashboard",
   "teacher-dashboard",
   "my-work",
+  "attendance-workspace",
   "action-center",
   "admissions",
   "academic-operations",
@@ -113,6 +115,7 @@ export const navigationWords: Record<string, [string, string]> = {
   dashboard: ["Overview", "সারসংক্ষেপ"],
   "action-center": ["Action centre", "করণীয় ও পর্যালোচনা"],
   "teacher-dashboard": ["My classes", "আমার ক্লাস"],
+  "attendance-workspace": ["Attendance", "উপস্থিতি"],
   "my-work": ["My work & earnings", "আমার কাজ ও পাওনা"],
   admissions: ["Admissions", "ভর্তি"],
   "academic-operations": [
