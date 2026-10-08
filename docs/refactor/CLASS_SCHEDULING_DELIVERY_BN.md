@@ -35,3 +35,37 @@ Teacher বদল, room বদল ও reschedule একটি session-এর act
 ## নিরাপত্তা ও history
 
 সব mutation verified account, academy scope, permission, request identity, revision ও audit-এর মাধ্যমে। Client preview নিরাপত্তা boundary নয়। Database Save-এ আবার resource ও conflict যাচাই হবে এবং concurrent scheduling serialize হবে। History delete নয়। Attendance date-এ কার্যকর enrollment roster ব্যবহৃত হবে; transfer ভবিষ্যৎ placement বদলাবে, আগের attendance নয়।
+
+## সম্পন্ন কাজ এবং operator-এর সরাসরি পথ
+
+- **Programme offerings → Teaching days**: default weekday tick দিন; দিন/সপ্তাহ system হিসাব করবে। এটি routine নয়।
+- **Batches → Manage batches → Days & time**: offering-এর দিন প্রস্তাব হিসেবে আসবে। একই সময় অথবা দিনভেদে আলাদা সময় দিন। তালিকায় সময় এবং occupied/capacity দেখা যাবে।
+- **Weekly availability**: Teacher/Room নির্বাচন, প্রযোজ্য দিন tick, বাংলাদেশ সময় দিন। Edit-এ weekday/time/status বদলানো যাবে। সংলগ্ন windows একসঙ্গে cover করবে; gap cover করবে না। তৈরি ভবিষ্যৎ class-এর coverage সরিয়ে ফেলা যাবে না।
+- **Weekly routine**: এক subject slot তৈরি করুন। উদাহরণ: Physics রবি ৭–৮; Mathematics রবি ৮–৯ আলাদা routine row। একই batch-এর adjacent slots চলবে; overlapping slots চলবে না। Batch-এর default দিন/সময় form-এ প্রস্তাব হবে; subject slot অনুযায়ী বদলাবেন। **Next period** দিয়ে পরের bounded সময় তৈরি করুন। **Edit future classes** দিয়ে ভবিষ্যৎ তারিখ থেকে teacher/room/weekday/time বদলান। Checkbox-এ cancellation/replacement নিশ্চিত করতে হবে; ব্যর্থ হলে পুরোনো ক্লাসই থাকবে। **Stop** শুধু আরও generation বন্ধ করে—পুরোনো generated sessions নিজে থেকে বাতিল করে না।
+- **Class calendar**: Today/Next 7/Next 30 days অথবা নিজস্ব তারিখসীমা। Status filter ও pagination থাকবে। বন্ধের দিন দেখা যাবে। **Open class** দিয়ে সেই class-এর কাজ খুলুন।
+- **Class operation**: single class, পরিবর্তন, substitute, room change, reschedule, cancel এবং cancelled class-এর linked makeup। Manager submitted কাজ আগে দেখবেন।
+- **Class → Attendance & class work**: teacher নিজের assigned class-এ form খুলবেন। All present দিয়ে শুরু করে ব্যতিক্রম বদলাতে পারেন। প্রত্যেক enrolled student-এর attendance, optional note, teaching report, homework/due date এবং assessment type/note দিন। **Draft** অথবা **Submit for admin review** নির্বাচন করে Save করুন। Actual সময় নিজে নিশ্চিত করে দিন—planned সময় স্বয়ংক্রিয়ভাবে actual ধরে নেওয়া হবে না। ভবিষ্যৎ দিনের attendance বা ভবিষ্যৎ actual end গ্রহণ হবে না।
+- **Admin → Open class**: attendance ও রিপোর্ট দেখে Approve/Return। Correction reason teacher-এর class-এ দেখাবে। Returned report শিক্ষক নিজের dashboard-এ পাবেন। Approved report আর edit হবে না। এক শিক্ষক একই actual সময়ে দুটি approved teaching record রাখতে পারবেন না।
+- **Teaching hours**: মাসের শুরু থেকে আজ default range। কেবল APPROVED actual সময়; cancelled/draft/submitted কাজ বাদ। এক ঘণ্টা ত্রিশ মিনিট → ১.৫ ঘণ্টা। এটি salary statement নয়।
+- **Batch → Students / transfer**: আগে তৈরি active Student identity-কে তারিখসহ batch-এ দিন। একই offering-এর অন্য batch-এ transfer করুন অথবা enrollment close করুন। Effective date-এর আগের roster/attendance থাকবে। Close date থেকে roster-এ থাকবে না। Transfer/close ভবিষ্যৎ দিন দিয়ে এখনই seat খালি করা যাবে না—কার্যকর দিনে করুন। নতুন student identity ভর্তি workflow থেকেই তৈরি হবে; এই পাতায় দ্বিতীয় generic person-create নেই।
+
+## বর্তমান সীমা—অসম্পূর্ণ কাজকে সম্পন্ন বলা যাবে না
+
+এই branch-এ সম্পূর্ণ নতুন-student admission desk, invoice/payment/receipt, grading/question bank এবং salary calculation এখনও আলাদা implementation কাজ। Dated enrollment, batch-seat capacity ও attendance integration-এর controlled RPC এখন প্রস্তুত; ভবিষ্যৎ admission confirmation একই contract reuse করবে। Homework/assessment এখানে session note/type/due date; পূর্ণ assignment submission, question generation বা marks register নয়। Staff উপস্থিতির আলাদা register এখানে তৈরি হয়নি। Website design অপরিবর্তিত।
+
+Schedule পরিবর্তনের email-এর transactional queue আগে থেকেই আছে। Queue হওয়া মানে inbox delivery নয়। Provider configuration ও `/api/internal/academic-notifications` worker schedule প্রয়োজন; Auth account-setup email configuration ক্লাসের email worker-এর বিকল্প নয়। এই কাজ করতে গিয়ে live invitation বা email পাঠানো হয়নি।
+
+Existing batch seats-এ enrollment date আগে ছিল না: নতুন migration historical roster backfill-এ offering-এর start date ব্যবহার করে। নতুন placement-এ explicit effective date থাকবে। Backfill-এ অনুমান করা তারিখ staff যাচাই করবেন; পুরোনো attendance বা payment history এই branch-এ fabrication করা হয়নি।
+
+## ভুল availability message দেখলে
+
+একই নামের শিক্ষক হলে `SA-STF-…` ID মিলিয়ে দেখুন। Window এবং class একই স্থায়ী teacher record-এর হতে হবে; নাম মিললেই এক ব্যক্তি ধরে নেওয়া হবে না।
+
+নতুন branch pull এবং migration push-এর পর **Check dates & availability** বোতাম থাকবে। না থাকলে পুরোনো build চলছে: dev server বন্ধ করে পুনরায় চালু করুন। Check ফলাফলে নাম, date/time এবং সেই weekday-এর active windows দেখবেন। Teacher এবং Room-এর windows পৃথক। নির্বাচিত teacher-এর অন্য দিনের availability এই দিনের class cover করবে না। প্রয়োজন হলে ওই resource-এর window Edit করুন অথবা নিশ্চিত availability checkbox ব্যবহার করুন।
+
+## যাচাই
+
+Production build/TypeScript, targeted lint এবং isolated SQL lifecycle checks চালানো হয়েছে: adjacent windows, gap/inactive/wrong weekday rejection, overlap/capacity/block guards, teacher-only roster, complete attendance before submission, no teacher self-approval, retry without duplicate, approved actual hours, dated transfer history, holiday skipping, routine continuation, failed replacement rollback এবং future replacement without changing approved history। Hosted database push, browser visual acceptance এবং live email delivery করা হয়নি।
+
+
+Scheduling form-এর উপরে **Missing classroom? Create here** দিয়ে নতুন room তৈরি ও নির্বাচন করতে পারবেন। মূল scheduling input থাকবে। Teacher identity account-request verification থেকেই আসে; generic teacher-create দিয়ে duplicate ব্যক্তি হবে না। নতুন শিক্ষক হলে access request verify এবং subject qualification প্রস্তুত করতে হবে।

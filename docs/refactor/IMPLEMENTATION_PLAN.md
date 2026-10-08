@@ -46,3 +46,8 @@ Unified Academics navigation and reviewed staff/referrer signup now precede admi
 
 ## Latest direction: simple academic operation
 Keep one Academics sidebar entry with separate routes for academic settings, programme preparation and daily class operation. No eager all-settings payload on the class page, and no register queries on the start/settings menu. Each screen gives its next action. Implement this before extending attendance or routine lifecycle; their planned features must not turn into additional always-open forms on the daily desk.
+
+
+## Class scheduling delivery completed
+
+Migrations 20–25 implement the scheduling/roster/report work described in CLASS_SCHEDULING_DELIVERY_BN.md, including atomic future routine replacement and approved actual hours. The next separate milestone remains the one-page admission/invoice/payment/receipt workflow, reusing dated enrollment and capacity commands; then full assessment/question-bank and compensation modules. Do not duplicate person or enrollment models or restore the retired deep-accounting architecture.

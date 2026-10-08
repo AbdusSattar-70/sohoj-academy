@@ -63,3 +63,14 @@ Current routes supersede the earlier all-in-one tabbed workspace: `/dashboard/ac
 Teacher qualification and dated unavailability controls are implemented by migrations 14–15. Student attendance and routine edit/inactive remain pending; the latest direction prioritizes simple navigation before those extensions. Saving no longer invalidates the entire dashboard layout. Public catalogue edits invalidate the public pages while editors explicitly refresh their own register. See [Bangla navigation guide](ACADEMIC_NAVIGATION_AND_LOADING_BN.md).
 
 Focused navigation verification: production build, TypeScript, targeted ESLint and schema/RPC parity checks passed. Isolated SQL checks covered task-only payloads, 25-row pagination, teacher-only session visibility and denied teacher/anonymous settings reads; existing programme/class/notification fixtures also passed. Hosted browser performance and live email delivery were not measured.
+
+
+## Scheduling and class delivery — migrations 20–25
+
+The older attendance/routine-pending statements above are superseded by this section. [Current Bangla class guide](CLASS_SCHEDULING_DELIVERY_BN.md) is authoritative for this delivery.
+
+Implemented: read-only date/resource/conflict preview; combined contiguous weekly windows; programme weekday defaults; day-specific batch time defaults; multi-day availability with edit/revision/future-coverage guards; separate paginated Routine and Calendar routes; next-period generation; explicit atomic future replacement with rollback and historical preservation; class reschedule/substitute/room/cancel/makeup; dated batch enrollment/transfer/close; teacher attendance/draft/report/homework/assessment notes; independent admin review; verified actual teaching-hours summary; teacher first-page agenda and returned work.
+
+Public CRM design is unchanged. One-page new-student admission, payments/receipts, full assessments/question bank, staff presence and payroll calculation remain outside this academic delivery. Enrollment integration is a controlled contract available to the upcoming admission workflow; do not describe the admission placeholder as complete.
+
+Validation: production build and TypeScript passed; changed-component lint and isolated SQL lifecycle/permission/retry tests passed. No live database reset, hosted migration, browser acceptance or real email was performed.
