@@ -1,5 +1,6 @@
 "use client";
 
+import { CentralSearch } from "./central-search";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -12,7 +13,13 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { getErpRoute } from "@/modules/platform/navigation/erp-route-registry";
 
-export function ErpHeader({ canHelp = true }: { canHelp?: boolean }) {
+export function ErpHeader({
+  canHelp = true,
+  permissions = [],
+}: {
+  canHelp?: boolean;
+  permissions?: string[];
+}) {
   const pathname = usePathname();
   const current = getErpRoute(pathname);
   const { locale } = useLanguage();
@@ -31,14 +38,15 @@ export function ErpHeader({ canHelp = true }: { canHelp?: boolean }) {
               )
             : "Sohoj Academy ERP"}
         </p>
-        <h1 className="truncate text-sm font-semibold sm:text-base">
+        <p className="truncate text-sm font-semibold sm:text-base">
           {current
             ? navigationLabel(current.id, current.title, locale)
             : locale === "bn"
               ? "কর্মক্ষেত্র"
               : "Workspace"}
-        </h1>
+        </p>
       </div>
+      <CentralSearch permissions={permissions} />
       {canHelp && (
         <Link
           prefetch={false}

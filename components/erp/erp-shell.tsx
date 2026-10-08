@@ -42,7 +42,10 @@ export function ErpShell({
     <SidebarProvider>
       <ErpSidebar context={context} navigation={navigation} />
       <SidebarInset className="min-w-0 bg-muted/20">
-        <ErpHeader canHelp={context.permissions.includes("dashboard.view")} />
+        <ErpHeader
+          permissions={context.permissions}
+          canHelp={context.permissions.includes("dashboard.view")}
+        />
         <main
           id="erp-main"
           className="[&_button[data-slot=button]]:min-h-11 [&_a[data-slot=button]]:min-h-11 mx-auto w-full max-w-[1600px] flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-7"

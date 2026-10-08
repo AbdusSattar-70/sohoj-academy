@@ -11,7 +11,6 @@ import { usePathname } from "next/navigation";
 import {
   Activity,
   ChevronDown,
-  Search,
   BookOpenCheck,
   ClipboardCheck,
   LayoutDashboard,
@@ -79,24 +78,10 @@ export function ErpSidebar({
   const pathname = usePathname();
   const { locale } = useLanguage();
   const { setOpenMobile } = useSidebar();
-  const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const label = (id: string, title: string) =>
     navigationLabel(id, title, locale);
-  const visible = navigation
-    .map((g) => ({
-      ...g,
-      items: g.items.filter((i) => {
-        const text = label(i.id, i.title);
-        return (
-          !search ||
-          (text + " " + i.title)
-            .toLocaleLowerCase()
-            .includes(search.toLocaleLowerCase())
-        );
-      }),
-    }))
-    .filter((g) => g.items.length);
+  const visible = navigation;
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -131,23 +116,12 @@ export function ErpSidebar({
             {locale === "bn" ? "মেনু" : "Navigation"}
           </span>
         </div>
-        <label className="flex items-center gap-2 rounded-lg border px-2 group-data-[collapsible=icon]:hidden">
-          <Search className="size-4" aria-hidden="true" />
-          <input
-            aria-label={locale === "bn" ? "মেনু খুঁজুন" : "Find a page"}
-            placeholder={locale === "bn" ? "মেনু খুঁজুন…" : "Find a page…"}
-            className="min-h-10 min-w-0 w-full bg-transparent text-sm outline-none"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </label>
       </SidebarHeader>
 
       <SidebarContent className="py-2">
         {visible.map((group, index) => {
           const activeGroup = group.items.some((i) => isActive(pathname, i.id));
-          const open =
-            !!search || (expanded[group.title] ?? (activeGroup || index === 0));
+          const open = expanded[group.title] ?? (activeGroup || index === 0);
           return (
             <SidebarGroup key={group.title}>
               <SidebarGroupLabel asChild>
