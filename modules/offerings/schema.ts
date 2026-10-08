@@ -3,8 +3,11 @@ import { z } from "zod";
 const id = z.string().uuid("Select a valid option.");
 export const createOfferingSchema = z.object({
   branchId: id,
-  academicYearId: id,
-  classId: id,
+  operationKind: z.enum(["SCHOOL", "COACHING", "TRAINING"]),
+  teachingStartsOn: z.union([z.iso.date(), z.literal("")]),
+  teachingEndsOn: z.union([z.iso.date(), z.literal("")]),
+  academicYearId: z.union([id, z.literal("")]),
+  classId: z.union([id, z.literal("")]),
   programId: id,
   groupId: z.union([id, z.literal("")]),
   code: z

@@ -65,6 +65,13 @@ declare rid uuid;teacher uuid;branch uuid;y public.academic_years;class_id uuid;
 
  rejected:=false;begin perform public.academic_schedule_command(jsonb_build_object('action','CANCEL','session_id',past_session,'request_id',gen_random_uuid(),'reason','Reject cancellation of approved teaching'));exception when others then rejected:=true;end;if not rejected then raise exception 'Approved evidence silently cancelled.';end if;
  if (public.academic_calendar(today,today+7)->>'total')::int<>2 then raise exception 'Calendar did not retain original/replacement.';end if;
- if has_table_privilege('authenticated','public.academic_availability','INSERT') or has_function_privilege('anon','public.academic_schedule_command(jsonb)','EXECUTE') then raise exception 'Academic write boundary exposed.';end if;
+ rejected:=false;begin perform public.academic_schedule_command(jsonb_build_object('action','RESCHEDULE','session_id',replaced,'starts_on',day,'start_time','07:00','end_time','09:00','room_id',room,'request_id',gen_random_uuid(),'reason','Attempt unavailable replacement'));exception when others then rejected:=true;end;
+ if not rejected or (select status from public.class_sessions where id=replaced)<>'SCHEDULED' then raise exception 'Failed replacement did not roll back original cancellation';end if;
+ perform public.academic_schedule_command(jsonb_build_object('action','CANCEL','session_id',replaced,'request_id',gen_random_uuid(),'reason','Teacher absent for planned occurrence'));
+ payload:=jsonb_build_object('action','MAKEUP','session_id',replaced,'starts_on',day,'start_time','08:00','end_time','10:00','room_id',room,'request_id',gen_random_uuid(),'reason','Make up the cancelled occurrence');result:=public.academic_schedule_command(payload);perform public.academic_schedule_command(payload);
+ if not exists(select 1 from public.class_sessions where id=(result->>'id')::uuid and replacement_for_id=replaced and change_kind='MAKEUP') then raise exception 'Makeup class lost linkage';end if;
+ perform public.academic_schedule_command(jsonb_build_object('action','RETIRE','routine_id',routine,'request_id',gen_random_uuid(),'reason','Replace future subject planning'));
+ if not exists(select 1 from public.class_sessions where id=(result->>'id')::uuid and status='SCHEDULED') then raise exception 'Retiring routine removed existing occurrence';end if;
+ if has_table_privilege('authenticated' ,'public.academic_availability','INSERT') or has_function_privilege('anon','public.academic_schedule_command(jsonb)','EXECUTE') then raise exception 'Academic write boundary exposed.';end if;
 end $test$;
 rollback;

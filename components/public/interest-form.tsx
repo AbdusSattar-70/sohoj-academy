@@ -28,7 +28,7 @@ type OpenOfferingOption = {
   id: string;
   code: string;
   name: string;
-  classId: string;
+  classId: string | null;
   programId: string;
   subjectIds: string[];
   schedule: string | null;

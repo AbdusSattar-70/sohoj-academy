@@ -39,8 +39,11 @@ export async function createProgrammeOffering(
   const { data, error } = await db.rpc("create_programme_offering", {
     p_input: {
       branch_id: value.branchId,
-      academic_year_id: value.academicYearId,
-      class_id: value.classId,
+      operation_kind: value.operationKind,
+      teaching_starts_on: value.teachingStartsOn || null,
+      teaching_ends_on: value.teachingEndsOn || null,
+      academic_year_id: value.academicYearId || null,
+      class_id: value.classId || null,
       program_id: value.programId,
       group_id: value.groupId || null,
       code: value.code,
@@ -79,8 +82,11 @@ export async function updateProgrammeOffering(
       offering_id: value.offeringId,
       request_id: value.requestId,
       branch_id: value.branchId,
-      academic_year_id: value.academicYearId,
-      class_id: value.classId,
+      operation_kind: value.operationKind,
+      teaching_starts_on: value.teachingStartsOn || null,
+      teaching_ends_on: value.teachingEndsOn || null,
+      academic_year_id: value.academicYearId || null,
+      class_id: value.classId || null,
       program_id: value.programId,
       group_id: value.groupId || null,
       code: value.code,
@@ -209,4 +215,3 @@ export async function updateProgrammeOfferingPublicControls(
   revalidatePath("/interest");
   return { ok: true, reference: result.offering_id };
 }
-

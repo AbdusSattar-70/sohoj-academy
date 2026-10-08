@@ -9,7 +9,6 @@ import { ErpFormField, ErpFormStatus } from "@/components/erp/form-field";
 import {
   commandSchema,
   type AdmissionCommand,
-  type AdmissionWorkspace,
   type AdmissionCommandFormData,
 } from "../schema";
 import { runAdmissionCommand } from "../actions";
@@ -114,7 +113,9 @@ export function AdmissionCommandForm({
             const classMatched = data.offerings.filter(
               (o) =>
                 o.feeReady !== false &&
-                (!nextProspect?.classId || o.classId === nextProspect.classId),
+                (!nextProspect?.classId ||
+                  !o.classId ||
+                  o.classId === nextProspect.classId),
             );
             const preferred =
               nextProspect?.interestedOfferingId &&
@@ -167,6 +168,7 @@ export function AdmissionCommandForm({
                     (o) =>
                       o.feeReady !== false &&
                       (!nextProspect?.classId ||
+                        !o.classId ||
                         o.classId === nextProspect.classId),
                   );
                   const preferred =
@@ -245,7 +247,9 @@ export function AdmissionCommandForm({
           const chosen = data.offerings.find((o) => o.id === offeringId);
           if (
             chosen &&
-            ((prospect.classId && prospect.classId !== chosen.classId) ||
+            ((prospect.classId &&
+              chosen.classId &&
+              prospect.classId !== chosen.classId) ||
               (prospect.interestedOfferingId &&
                 prospect.interestedOfferingId !== chosen.id)) &&
             !values.confirmPlacementCorrection
@@ -302,6 +306,7 @@ export function AdmissionCommandForm({
                   (o) =>
                     o.feeReady !== false &&
                     (!nextProspect?.classId ||
+                      !o.classId ||
                       o.classId === nextProspect.classId),
                 );
                 const preferred =
@@ -390,7 +395,10 @@ export function AdmissionCommandForm({
                   return "Offerings exist, but none has an effective published Fee Plan. Open Finance → Fee Plans to publish charges.";
                 }
                 const classMatched = data.offerings.filter(
-                  (o) => !prospect.classId || o.classId === prospect.classId,
+                  (o) =>
+                    !prospect.classId ||
+                    !o.classId ||
+                    o.classId === prospect.classId,
                 );
                 if (!classMatched.length) {
                   return "No offering matches the recorded class. Select the intended active offering below and confirm the placement correction.";
@@ -430,7 +438,9 @@ export function AdmissionCommandForm({
                 const chosen = data.offerings.find((o) => o.id === offeringId);
                 const differs =
                   chosen &&
-                  ((prospect.classId && prospect.classId !== chosen.classId) ||
+                  ((prospect.classId &&
+                    chosen.classId &&
+                    prospect.classId !== chosen.classId) ||
                     (prospect.interestedOfferingId &&
                       prospect.interestedOfferingId !== chosen.id));
                 return differs ? (

@@ -100,7 +100,7 @@ export const workspaceSchema = z.object({
   offerings: z.array(
     option.extend({
       code: z.string(),
-      classId: uuid,
+      classId: uuid.nullable(),
       className: z.string(),
       yearName: z.string(),
       branchName: z.string().nullable(),
@@ -113,7 +113,7 @@ export const workspaceSchema = z.object({
       code: z.string(),
       offeringId: uuid,
       offeringName: z.string(),
-      classId: uuid,
+      classId: uuid.nullable(),
       className: z.string(),
       yearName: z.string(),
       branchName: z.string().nullable(),

@@ -12,9 +12,12 @@ type ReadonlyTable<T> = {
 type Offering = {
   id: string;
   organization_id: string;
+  operation_kind: "SCHOOL" | "COACHING" | "TRAINING";
+  teaching_starts_on: string | null;
+  teaching_ends_on: string | null;
   branch_id: string;
-  academic_year_id: string;
-  class_id: string;
+  academic_year_id: string | null;
+  class_id: string | null;
   program_id: string;
   group_id: string | null;
   code: string;

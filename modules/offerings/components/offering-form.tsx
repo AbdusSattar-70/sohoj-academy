@@ -57,8 +57,11 @@ export function OfferingForm({
           offeringId: initialOffering.id,
           requestId: crypto.randomUUID(),
           branchId: initialOffering.branch_id,
-          academicYearId: initialOffering.academic_year_id,
-          classId: initialOffering.class_id,
+          operationKind: initialOffering.operation_kind,
+          teachingStartsOn: initialOffering.teaching_starts_on ?? "",
+          teachingEndsOn: initialOffering.teaching_ends_on ?? "",
+          academicYearId: initialOffering.academic_year_id ?? "",
+          classId: initialOffering.class_id ?? "",
           programId: initialOffering.program_id,
           groupId: initialOffering.group_id ?? "",
           code: initialOffering.code,
@@ -67,6 +70,9 @@ export function OfferingForm({
         }
       : {
           branchId: "",
+          operationKind: "COACHING",
+          teachingStartsOn: "",
+          teachingEndsOn: "",
           academicYearId: "",
           classId: "",
           programId: "",
@@ -76,6 +82,7 @@ export function OfferingForm({
           reason: "",
         },
   });
+  const operationKind = useWatch({ control, name: "operationKind" });
   const programId = useWatch({ control, name: "programId" });
   const programmeName =
     data.programs.find((p) => p.id === programId)?.name ?? "Programme name";
@@ -106,6 +113,28 @@ export function OfferingForm({
     },
   ] as const;
   const submit = handleSubmit((input) => {
+    if (
+      operationKind !== "TRAINING" &&
+      (!input.academicYearId || !input.classId)
+    ) {
+      setMessage({
+        ok: false,
+        text: "Select the class and academic year for School or Coaching.",
+      });
+      return;
+    }
+    if (
+      operationKind === "TRAINING" &&
+      (!input.teachingStartsOn ||
+        !input.teachingEndsOn ||
+        input.teachingEndsOn < input.teachingStartsOn)
+    ) {
+      setMessage({
+        ok: false,
+        text: "Set the training course start and end dates.",
+      });
+      return;
+    }
     setMessage(null);
     startTransition(async () => {
       const result = isEditing
@@ -148,6 +177,43 @@ export function OfferingForm({
   });
   return (
     <form onSubmit={submit} noValidate className="space-y-5">
+      <label className="block space-y-2">
+        Learning context
+        <select
+          className={controlClass}
+          disabled={contextLocked}
+          {...register("operationKind")}
+        >
+          <option value="SCHOOL">School</option>
+          <option value="COACHING">Coaching</option>
+          <option value="TRAINING">Preparation &amp; Training</option>
+        </select>
+      </label>
+      {operationKind === "TRAINING" && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label>
+            Course starts
+            <input
+              required
+              type="date"
+              className={controlClass}
+              {...register("teachingStartsOn")}
+            />
+          </label>
+          <label>
+            Course ends
+            <input
+              required
+              type="date"
+              className={controlClass}
+              {...register("teachingEndsOn")}
+            />
+          </label>
+          <p className="sm:col-span-2 text-sm text-muted-foreground">
+            Class and academic year are optional for a training course.
+          </p>
+        </div>
+      )}
       {isEditing && (
         <>
           <input type="hidden" {...register("offeringId")} />
@@ -160,7 +226,10 @@ export function OfferingForm({
             key={choice.key}
             id={"offering-" + (initialOffering?.id ?? "new") + "-" + choice.key}
             label={choice.label}
-            required
+            required={
+              operationKind !== "TRAINING" ||
+              (choice.key !== "classId" && choice.key !== "academicYearId")
+            }
             hint={
               contextLocked
                 ? "Academic context is locked after an offering becomes active."
@@ -282,7 +351,8 @@ export function OfferingForm({
           <Button
             type="button"
             variant="outline"
-            disabled={pending} loading={pending}
+            disabled={pending}
+            loading={pending}
             onClick={onCancel}
           >
             Cancel
