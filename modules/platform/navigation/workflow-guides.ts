@@ -5,7 +5,20 @@ export type WorkflowGuideData = {
   next?: string[];
 };
 const coreGuides: Record<string, WorkflowGuideData> = {
- "website-management": { en: "Manage public programme content", bn: "প্রোগ্রামের প্রকাশ্য তথ্য পরিচালনা", steps: [["Choose Edit public content on a programme row; update showcase copy, visibility and application intake.", "প্রোগ্রামের row-তে প্রকাশ্য তথ্য সম্পাদনা খুলে description, দৃশ্যমানতা ও আবেদন গ্রহণ বদলান।"], ["Classes, subjects and years belong to Academic settings. This page does not edit fees, batches or verified student records.", "শ্রেণি, বিষয় ও বছর Academic settings-এ। এই পেজে fees, batches বা যাচাইকৃত student record সম্পাদনা নয়।"]] },
+  "website-management": {
+    en: "Manage public programme content",
+    bn: "প্রোগ্রামের প্রকাশ্য তথ্য পরিচালনা",
+    steps: [
+      [
+        "Choose Edit public content on a programme row; update showcase copy, visibility and application intake.",
+        "প্রোগ্রামের row-তে প্রকাশ্য তথ্য সম্পাদনা খুলে description, দৃশ্যমানতা ও আবেদন গ্রহণ বদলান।",
+      ],
+      [
+        "Classes, subjects and years belong to Academic settings. This page does not edit fees, batches or verified student records.",
+        "শ্রেণি, বিষয় ও বছর Academic settings-এ। এই পেজে fees, batches বা যাচাইকৃত student record সম্পাদনা নয়।",
+      ],
+    ],
+  },
   admissions: {
     en: "Complete one admission case",
     bn: "একটি ভর্তি সম্পন্ন করুন",
@@ -349,12 +362,12 @@ const extendedGuides: Record<string, WorkflowGuideData> = {
 
 const operatingGuides: Record<string, WorkflowGuideData> = {
   "attendance-workspace": {
-    en: "Choose the attendance record",
-    bn: "উপস্থিতির রেকর্ড নির্বাচন করুন",
+    en: "Record one person and one date",
+    bn: "একজন ও একটি তারিখের উপস্থিতি নিন",
     steps: [
       [
-        "My attendance shows your own days and hours; authorized management records staff attendance.",
-        "আমার উপস্থিতিতে নিজের দিন ও ঘণ্টা দেখুন; অনুমোদিত ব্যবস্থাপক স্টাফ উপস্থিতি রেকর্ড করেন।",
+        "Admin can choose themselves or another staff member, select today or a previous date, then save status and actual times. A month is needed only for reports.",
+        "Admin নিজেকে বা স্টাফকে নির্বাচন করে আজ বা আগের দিন, অবস্থা ও প্রকৃত সময় সংরক্ষণ করেন। মাস নির্বাচন শুধু রিপোর্টের জন্য।",
       ],
       [
         "For students, open a dated class and its class report; generate sessions from a saved routine first if there are none.",

@@ -6,6 +6,10 @@ Current work is on `feature/sohoj_final`. Read [workspace ownership and end-to-e
 
 The repository contains migrations 01–55. Use the actual files as the install inventory; older documentation counts are not current. This usability delivery adds no migration and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
 
+## Staff attendance refinement
+
+[Single-day staff attendance](STAFF_ATTENDANCE_WORKFLOW.md) is now entered directly at `/dashboard/attendance`, with today/preselected past date, person, status and clock times. Admin can record themselves or another active staff member. Existing attendance loads for correction; monthly selection is report-only. No migration/reset is required.
+
 ## Page ownership
 
 - `/dashboard/crm/manage`: public programme showcase, visibility and application controls. No class/year/subject master forms.

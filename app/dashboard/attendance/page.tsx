@@ -1,11 +1,27 @@
 import Link from "next/link";
+import { z } from "zod";
+import { getWorkData } from "@/modules/workforce/queries";
+import { DailyAttendanceForm } from "@/modules/workforce/daily-attendance-form";
+import { bangladeshDate } from "@/modules/workforce/daily-attendance";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/erp/page-header";
 import { LocalizedText } from "@/components/shared/localized-text";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
-export default async function AttendancePage() {
+export default async function AttendancePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ person?: string; date?: string }>;
+}) {
   const context = await requirePermission("workforce.self.view");
   const manage = context.permissions.includes("workforce.manage");
+  const query = await searchParams,
+    today = bangladeshDate();
+  const person = z.string().uuid().safeParse(query.person);
+  const day = z.iso.date().safeParse(query.date);
+  const date = day.success && day.data <= today ? day.data : today;
+  const data = manage
+    ? await getWorkData(date, person.success ? person.data : undefined)
+    : null;
   return (
     <div className="space-y-5">
       <PageHeader
@@ -13,58 +29,61 @@ export default async function AttendancePage() {
         title={<LocalizedText en="Attendance" bn="উপস্থিতি" />}
         description={
           <LocalizedText
-            en="Choose whose attendance you need. Staff presence and student class attendance are different records."
-            bn="কার উপস্থিতি দরকার নির্বাচন করুন। স্টাফের উপস্থিতি ও শিক্ষার্থীর ক্লাসের উপস্থিতি আলাদা রেকর্ড।"
+            en="Record yourself or a staff member for today or a previous date. Student class attendance is separate."
+            bn="নিজের বা স্টাফের আজকের বা আগের দিনের উপস্থিতি নিন। শিক্ষার্থীর ক্লাসের উপস্থিতি আলাদা।"
           />
         }
       />
-      <section className="space-y-3 rounded-xl border p-5">
-        <h2 className="font-semibold">
-          <LocalizedText en="My attendance" bn="আমার উপস্থিতি" />
-        </h2>
-        <p>
-          <LocalizedText
-            en={
-              manage
-                ? "Open your attendance, then choose Record staff attendance to record your own day."
-                : "See your recorded days and hours. Authorized management records or corrects staff attendance."
-            }
-            bn={
-              manage
-                ? "নিজের উপস্থিতি খুলে স্টাফ উপস্থিতি রেকর্ড করুন button থেকে নিজের দিন রেকর্ড করুন।"
-                : "রেকর্ড করা দিন ও ঘণ্টা দেখুন। অনুমোদিত ব্যবস্থাপক স্টাফ উপস্থিতি রেকর্ড বা সংশোধন করেন।"
-            }
-          />
-        </p>
-        <Button asChild>
-          <Link prefetch={false} href="/dashboard/my-work?tab=attendance">
-            <LocalizedText en="Open my attendance" bn="আমার উপস্থিতি খুলুন" />
-          </Link>
-        </Button>
-      </section>
-      {manage && (
+      {data ? (
+        <DailyAttendanceForm
+          people={data.people}
+          initialStaffId={
+            data.people.some((p) => p.id === data.staffId) ? data.staffId : null
+          }
+          initialDate={date}
+          today={today}
+        />
+      ) : (
         <section className="space-y-3 rounded-xl border p-5">
           <h2 className="font-semibold">
-            <LocalizedText en="Staff attendance" bn="স্টাফ উপস্থিতি" />
+            <LocalizedText en="My attendance" bn="আমার উপস্থিতি" />
           </h2>
           <p>
             <LocalizedText
-              en="Select a staff member, choose Record staff attendance, then save date, status and actual times."
-              bn="স্টাফ নির্বাচন করে উপস্থিতি রেকর্ড করার button খুলুন; তারিখ, অবস্থা ও প্রকৃত সময় সংরক্ষণ করুন।"
+              en="View your recorded attendance. Authorized management records or corrects staff attendance."
+              bn="নিজের রেকর্ড করা উপস্থিতি দেখুন। অনুমোদিত ব্যবস্থাপক উপস্থিতি রেকর্ড বা সংশোধন করেন।"
             />
           </p>
           <Button asChild>
+            <Link prefetch={false} href="/dashboard/my-work?tab=attendance">
+              <LocalizedText en="View my attendance" bn="আমার উপস্থিতি দেখুন" />
+            </Link>
+          </Button>
+        </section>
+      )}
+      {manage && (
+        <details className="rounded-xl border p-4">
+          <summary className="cursor-pointer min-h-11 font-medium">
+            <LocalizedText en="Attendance reports" bn="উপস্থিতির রিপোর্ট" />
+          </summary>
+          <p className="py-3">
+            <LocalizedText
+              en="Month selection is only for viewing reports, not recording a day."
+              bn="মাস নির্বাচন শুধু রিপোর্ট দেখার জন্য; একটি দিনের উপস্থিতি নিতে লাগে না।"
+            />
+          </p>
+          <Button asChild variant="outline">
             <Link
               prefetch={false}
               href="/dashboard/staff/operations?tab=attendance"
             >
               <LocalizedText
-                en="Record / correct staff attendance"
-                bn="স্টাফ উপস্থিতি রেকর্ড / সংশোধন"
+                en="View staff attendance reports"
+                bn="স্টাফ উপস্থিতির রিপোর্ট দেখুন"
               />
             </Link>
           </Button>
-        </section>
+        </details>
       )}
       {context.permissions.includes("academics.view") && (
         <section className="space-y-3 rounded-xl border p-5">

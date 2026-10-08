@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/erp/status-badge";
 import { workforceAction } from "./actions";
 import type { WorkData } from "./queries";
+import { bangladeshDate } from "./daily-attendance";
+import { guardWorkspaceNavigation } from "@/modules/platform/navigation/navigation-guard";
 const cls = "mt-1 w-full rounded-lg border bg-background p-3";
 export function WorkWorkspace({
   data,
@@ -22,11 +24,7 @@ export function WorkWorkspace({
   const { locale } = useLanguage();
   const t = (en: string, bn: string) => (locale === "bn" ? bn : en);
   const router = useRouter();
-  const [form, setForm] = useState<"attendance" | "terms" | null>(null);
-  const [editing, setEditing] = useState<WorkData["records"][number] | null>(
-    null,
-  );
-  const [status, setStatus] = useState("PRESENT");
+  const [form, setForm] = useState<"terms" | null>(null);
   const [message, setMessage] = useState("");
   const [pending, start] = useTransition();
   const request = useRef({ signature: "", id: "" });
@@ -38,12 +36,8 @@ export function WorkWorkspace({
     const values: Record<string, unknown> = Object.fromEntries(
       new FormData(e.currentTarget),
     );
-    values.action = form === "attendance" ? "RECORD_ATTENDANCE" : "SAVE_TERMS";
+    values.action = "SAVE_TERMS";
     values.staff_id = data.staffId;
-    if (form === "attendance" && status === "PRESENT") {
-      for (const key of ["started_at", "ended_at"])
-        values[key] = `${values[key]}:00+06:00`;
-    }
     const signature = JSON.stringify(values);
     if (request.current.signature !== signature)
       request.current = { signature, id: crypto.randomUUID() };
@@ -53,18 +47,10 @@ export function WorkWorkspace({
       setMessage(r.message);
       if (r.ok) {
         setForm(null);
-        setEditing(null);
         request.current = { signature: "", id: "" };
         router.refresh();
       }
     });
-  }
-  function localTime(value: string | null) {
-    return value
-      ? new Date(new Date(value).getTime() + 6 * 3600000)
-          .toISOString()
-          .slice(0, 16)
-      : "";
   }
   return (
     <div className="space-y-5">
@@ -212,23 +198,21 @@ export function WorkWorkspace({
           )}
           {canRecordAttendance && (
             <div className="flex gap-3">
+              <Button asChild variant="outline">
+                <Link
+                  prefetch={false}
+                  href={`/dashboard/attendance?person=${data.staffId}&date=${bangladeshDate()}`}
+                >
+                  {t("Record attendance", "উপস্থিতি নিন")}
+                </Link>
+              </Button>
               <button
                 disabled={pending}
                 className="rounded-lg border p-3"
-                onClick={() => {
-                  setForm(form === "attendance" ? null : "attendance");
-                  setEditing(null);
-                  setStatus("PRESENT");
-                }}
-              >
-                {t("Record staff attendance", "স্টাফ উপস্থিতি রেকর্ড করুন")}
-              </button>
-              <button
-                disabled={pending}
-                className="rounded-lg border p-3"
-                onClick={() => {
-                  setForm(form === "terms" ? null : "terms");
-                  setEditing(null);
+                onClick={(event) => {
+                  guardWorkspaceNavigation(event, locale);
+                  if (!event.defaultPrevented)
+                    setForm(form === "terms" ? null : "terms");
                 }}
               >
                 {t("Edit compensation terms", "পারিশ্রমিকের শর্ত সম্পাদনা")}
@@ -237,7 +221,7 @@ export function WorkWorkspace({
           )}
           {form && (
             <form
-              key={`${form}:${editing?.id ?? "new"}`}
+              key="terms"
               onSubmit={submit}
               data-editor
               data-dirty="false"
@@ -249,139 +233,65 @@ export function WorkWorkspace({
             >
               <fieldset disabled={pending} className="contents">
                 <h3 className="font-semibold sm:col-span-2">
-                  {form === "attendance"
-                    ? t("Actual attendance evidence", "প্রকৃত উপস্থিতির রেকর্ড")
-                    : t("Agreed terms", "সম্মত পারিশ্রমিকের শর্ত")}
+                  {t("Agreed terms", "সম্মত পারিশ্রমিকের শর্ত")}
                 </h3>
-                {form === "attendance" ? (
-                  <>
-                    <label>
-                      {t("Work date", "কাজের তারিখ")}
-                      <input
-                        type="date"
-                        name="work_date"
-                        required
-                        defaultValue={editing?.work_date ?? data.month}
-                        className={cls}
-                      />
-                    </label>
-                    <label>
-                      {t("Status", "অবস্থা")}
-                      <select
-                        name="status"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className={cls}
-                      >
-                        {["PRESENT", "ABSENT", "LEAVE", "HOLIDAY"].map((v) => (
+                <>
+                  <label>
+                    {t("Model", "ধরন")}
+                    <select
+                      name="model"
+                      className={cls}
+                      defaultValue={data.terms?.model ?? "REVENUE_SHARE"}
+                    >
+                      {["FIXED", "HOURLY", "REVENUE_SHARE", "HYBRID"].map(
+                        (v) => (
                           <option key={v}>{v}</option>
-                        ))}
-                      </select>
-                    </label>
-                    {status === "PRESENT" && (
-                      <>
-                        <label>
-                          {t(
-                            "Started (Bangladesh time)",
-                            "শুরু (বাংলাদেশ সময়)",
-                          )}
-                          <input
-                            className={cls}
-                            type="datetime-local"
-                            name="started_at"
-                            required
-                            defaultValue={localTime(
-                              editing?.started_at ?? null,
-                            )}
-                          />
-                        </label>
-                        <label>
-                          {t("Ended (Bangladesh time)", "শেষ (বাংলাদেশ সময়)")}
-                          <input
-                            className={cls}
-                            type="datetime-local"
-                            name="ended_at"
-                            required
-                            defaultValue={localTime(editing?.ended_at ?? null)}
-                          />
-                        </label>
-                        <label>
-                          {t("Break minutes", "বিরতি মিনিট")}
-                          <input
-                            className={cls}
-                            name="break_minutes"
-                            type="number"
-                            min="0"
-                            max="1440"
-                            defaultValue={editing?.break_minutes ?? 0}
-                            required
-                          />
-                        </label>
-                      </>
-                    )}
-                    {status !== "PRESENT" && (
-                      <input type="hidden" name="break_minutes" value="0" />
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <label>
-                      {t("Model", "ধরন")}
-                      <select
-                        name="model"
-                        className={cls}
-                        defaultValue={data.terms?.model ?? "REVENUE_SHARE"}
-                      >
-                        {["FIXED", "HOURLY", "REVENUE_SHARE", "HYBRID"].map(
-                          (v) => (
-                            <option key={v}>{v}</option>
-                          ),
-                        )}
-                      </select>
-                    </label>
-                    {[
-                      [
-                        "monthly_base",
-                        t("Monthly base (BDT)", "মাসিক মূল বেতন (টাকা)"),
-                        data.terms?.monthly_base ?? 0,
-                      ],
-                      [
-                        "hourly_rate",
-                        t("Hourly rate (BDT)", "প্রতি ঘণ্টা (টাকা)"),
-                        data.terms?.hourly_rate ?? 0,
-                      ],
-                      [
-                        "pay_day",
-                        t("Pay day (1–28)", "বেতন দিন (১–২৮)"),
-                        data.terms?.pay_day ?? 10,
-                      ],
-                    ].map(([name, label, value]) => (
-                      <label key={String(name)}>
-                        {label}
-                        <input
-                          name={String(name)}
-                          className={cls}
-                          type="number"
-                          min={name === "pay_day" ? 1 : 0}
-                          max={name === "pay_day" ? 28 : undefined}
-                          step={name === "pay_day" ? 1 : "0.01"}
-                          defaultValue={value}
-                          required
-                        />
-                      </label>
-                    ))}
-                    <label>
-                      {t("Effective from", "কার্যকর তারিখ")}
+                        ),
+                      )}
+                    </select>
+                  </label>
+                  {[
+                    [
+                      "monthly_base",
+                      t("Monthly base (BDT)", "মাসিক মূল বেতন (টাকা)"),
+                      data.terms?.monthly_base ?? 0,
+                    ],
+                    [
+                      "hourly_rate",
+                      t("Hourly rate (BDT)", "প্রতি ঘণ্টা (টাকা)"),
+                      data.terms?.hourly_rate ?? 0,
+                    ],
+                    [
+                      "pay_day",
+                      t("Pay day (1–28)", "বেতন দিন (১–২৮)"),
+                      data.terms?.pay_day ?? 10,
+                    ],
+                  ].map(([name, label, value]) => (
+                    <label key={String(name)}>
+                      {label}
                       <input
+                        name={String(name)}
                         className={cls}
-                        type="date"
-                        name="effective_from"
-                        defaultValue={data.terms?.effective_from ?? data.month}
+                        type="number"
+                        min={name === "pay_day" ? 1 : 0}
+                        max={name === "pay_day" ? 28 : undefined}
+                        step={name === "pay_day" ? 1 : "0.01"}
+                        defaultValue={value}
                         required
                       />
                     </label>
-                  </>
-                )}
+                  ))}
+                  <label>
+                    {t("Effective from", "কার্যকর তারিখ")}
+                    <input
+                      className={cls}
+                      type="date"
+                      name="effective_from"
+                      defaultValue={data.terms?.effective_from ?? data.month}
+                      required
+                    />
+                  </label>
+                </>
                 <label className="sm:col-span-2">
                   {t(
                     "Reason / correction explanation",
@@ -404,7 +314,10 @@ export function WorkWorkspace({
                     type="button"
                     variant="outline"
                     disabled={pending}
-                    onClick={() => setForm(null)}
+                    onClick={(event) => {
+                      guardWorkspaceNavigation(event, locale);
+                      if (!event.defaultPrevented) setForm(null);
+                    }}
                   >
                     {t("Cancel", "বাতিল")}
                   </Button>
@@ -460,17 +373,15 @@ export function WorkWorkspace({
                     <td>{r.hours}</td>
                     <td>{r.reason}</td>
                     <td>
-                      {admin && (
-                        <button
-                          disabled={pending}
-                          onClick={() => {
-                            setEditing(r);
-                            setForm("attendance");
-                            setStatus(r.status);
-                          }}
-                        >
-                          {t("Correct", "সংশোধন")}
-                        </button>
+                      {canRecordAttendance && (
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            prefetch={false}
+                            href={`/dashboard/attendance?person=${data.staffId}&date=${r.work_date}`}
+                          >
+                            {t("Correct", "সংশোধন")}
+                          </Link>
+                        </Button>
                       )}
                     </td>
                   </tr>

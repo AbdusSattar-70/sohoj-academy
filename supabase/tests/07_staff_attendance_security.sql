@@ -31,6 +31,19 @@ begin
  if (select count(*) from public.staff_attendance_records where staff_id=sid)<>1 then raise exception 'Attendance retry duplicated records.';end if;
  perform public.workforce_command(jsonb_build_object('action','SAVE_TERMS','staff_id',sid,'request_id','97000000-0000-0000-0000-000000000002','model','HOURLY','monthly_base',0,'hourly_rate',100,'pay_day',10,'effective_from',day,'reason','Agreed hourly compensation terms'));
 end $test$;
+do $test$
+declare sid uuid;payload jsonb;w jsonb;day date:=(now() at time zone 'Asia/Dhaka')::date-2;
+begin
+ select id into sid from public.staff where profile_id=auth.uid();
+ if sid is null then raise exception 'Bootstrap admin must have their own staff identity.';end if;
+ payload:=jsonb_build_object('action','RECORD_ATTENDANCE','staff_id',sid,'request_id','97000000-0000-0000-0000-000000000003','work_date',day,'status','PRESENT','started_at',day::text||'T08:00:00+06:00','ended_at',day::text||'T10:00:00+06:00','break_minutes',0,'reason','Recorded own verified admin attendance');
+ perform public.workforce_command(payload);perform public.workforce_command(payload);
+ w:=public.staff_work_workspace(day);
+ if (w->>'staffId')::uuid<>sid or (w->>'presentDays')::integer<>1 or (w->>'hours')::numeric<>2 then raise exception 'Admin cannot record/read own attendance.';end if;
+ perform public.workforce_command(jsonb_build_object('action','RECORD_ATTENDANCE','staff_id',sid,'request_id','97000000-0000-0000-0000-000000000004','work_date',day,'status','LEAVE','break_minutes',0,'reason','Corrected own attendance to verified leave'));
+ if (select count(*) from public.staff_attendance_records where staff_id=sid and work_date=day)<>1 then raise exception 'Correction duplicated daily attendance.';end if;
+ if exists(select 1 from public.staff_attendance_records where staff_id=sid and work_date=day and (started_at is not null or ended_at is not null)) then raise exception 'Leave must not keep work hours.';end if;
+end $test$;
 select set_config('request.jwt.claim.sub','92000000-0000-0000-0000-000000000002',true);
 do $test$
 begin
