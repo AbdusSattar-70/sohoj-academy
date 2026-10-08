@@ -1,17 +1,18 @@
 "use client";
-import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
 import { useState, useTransition } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  classLogCommandSchema,
-  type ClassLogCommand,
-  type ClassLogWorkspace,
-} from "./schema";
+import { useLanguage } from "@/components/providers/language-provider";
 import { runClassLogCommand } from "./actions";
-const cls =
-  "min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm";
+import type { ClassLogCommand, ClassLogWorkspace } from "./schema";
+const cls = "mt-1 min-h-11 w-full rounded-lg border bg-background p-3";
+const local = (s: string | null | undefined) =>
+  s
+    ? new Date(s)
+        .toLocaleString("sv-SE", { timeZone: "Asia/Dhaka" })
+        .replace(" ", "T")
+        .slice(0, 16)
+    : "";
 export function ClassLogForm({
   sessionId,
   workspace,
@@ -19,185 +20,250 @@ export function ClassLogForm({
   sessionId: string;
   workspace: ClassLogWorkspace;
 }) {
-  const last = workspace.logs[0];
-  const hasSavedDraft = last?.status === "DRAFT";
-  const initialProgress = workspace.units.map((_, unit_index) => {
-    const saved = last?.unit_progress.find((x) => x.unit_index === unit_index);
-    return {
-      unit_index,
-      status: saved?.status ?? ("COVERED" as const),
-      note: saved?.note ?? "",
-    };
-  });
-  const form = useForm<ClassLogCommand>({
-    resolver: zodResolver(classLogCommandSchema),
-    mode: "onChange",
-    defaultValues: {
-      action: "SAVE_DRAFT",
-      request_id: crypto.randomUUID(),
-      session_id: sessionId,
-      reason: hasSavedDraft ? last.reason : "",
-      class_summary: last?.class_summary ?? "",
-      unfinished_reason: last?.unfinished_reason ?? "",
-      homework: last?.homework ?? "",
-      next_session_plan: last?.next_session_plan ?? "",
-      unit_progress: initialProgress,
-    },
-  });
-  const fields = useFieldArray({
-    control: form.control,
-    name: "unit_progress",
-  });
-  const [pending, start] = useTransition();
-  const [message, setMessage] = useState("");
-  const submit = (action: "SAVE_DRAFT" | "SUBMIT") =>
-    form.handleSubmit((values) =>
-      start(async () => {
-        const result = await runClassLogCommand({
-          ...values,
-          action,
-          request_id: crypto.randomUUID(),
-        });
-        setMessage(result.message);
-        if (result.ok) window.location.reload();
-      }),
-    )();
+  const { locale } = useLanguage(),
+    t = (en: string, bn: string) => (locale === "bn" ? bn : en),
+    router = useRouter(),
+    last = workspace.logs[0],
+    [open, setOpen] = useState(false),
+    [pending, start] = useTransition(),
+    [uncertain, setUncertain] = useState(false),
+    [attempt, setAttempt] = useState<ClassLogCommand | null>(null),
+    [message, setMessage] = useState(""),
+    [progress, setProgress] = useState(
+      workspace.units.map((_, unit_index) => ({
+        unit_index,
+        status:
+          last?.unit_progress.find((x) => x.unit_index === unit_index)
+            ?.status ??
+          ("NOT_COVERED" as "COVERED" | "PARTIAL" | "NOT_COVERED"),
+        note:
+          last?.unit_progress.find((x) => x.unit_index === unit_index)?.note ??
+          "",
+      })),
+    );
+  function send(p: ClassLogCommand) {
+    start(async () => {
+      try {
+        const r = await runClassLogCommand(p);
+        setMessage(r.message);
+        if (r.ok) {
+          setOpen(false);
+          setAttempt(null);
+          setUncertain(false);
+          router.refresh();
+        } else {
+          const unknown = /unconfirmed|network|fetch failed|timeout/i.test(
+            r.message,
+          );
+          setUncertain(unknown);
+          if (!unknown) setAttempt(null);
+        }
+      } catch {
+        setUncertain(true);
+        setMessage(
+          t(
+            "Result unconfirmed; retry the same request.",
+            "ফল নিশ্চিত নয়; একই অনুরোধ আবার পাঠান।",
+          ),
+        );
+      }
+    });
+  }
   return (
-    <ActionPanel title="Record / edit class log"><form
-      onSubmit={(e) => {
-        e.preventDefault();
-        void submit("SAVE_DRAFT");
-      }}
-      className="space-y-5 rounded-2xl border bg-card p-5"
-    >
-      <div>
-        <h2 className="font-semibold">Actual class log</h2>
-        <p className="text-sm text-muted-foreground">
-          {last?.status === "SUBMITTED"
-            ? `Start correction revision ${(last.revision ?? 0) + 1}. Submitted records stay unchanged.`
-            : "Record what was taught. Planned targets remain separate; partial coverage does not silently complete the curriculum."}
-        </p>
-      </div>
-      {workspace.units.length > 0 && (
-        <fieldset className="space-y-3">
-          <legend className="text-sm font-semibold">
-            Pinned curriculum coverage
-          </legend>
-          {fields.fields.map((field, index) => (
-            <div
-              key={field.id}
-              className="grid gap-2 rounded-xl border p-3 sm:grid-cols-[1fr_180px]"
-            >
-              <div className="text-sm">
-                <strong>{workspace.units[index]?.title}</strong>
-                <span className="block text-xs text-muted-foreground">
-                  Target {workspace.units[index]?.target_date}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <select
-                  className={cls}
-                  {...form.register(`unit_progress.${index}.status`)}
-                >
-                  <option value="COVERED">Covered</option>
-                  <option value="PARTIAL">Partially covered</option>
-                  <option value="NOT_COVERED">Not covered</option>
-                </select>
-                <input
-                  className={cls}
-                  placeholder="Short note (optional)"
-                  {...form.register(`unit_progress.${index}.note`)}
-                />
-              </div>
-            </div>
-          ))}
-        </fieldset>
-      )}
-      {workspace.units.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No curriculum version was pinned to this session. Record the class
-          summary below; planned curriculum remains unmodified.
+    <section className="space-y-4 rounded-xl border p-5">
+      <h2 className="font-semibold">
+        {t("Actual teaching report", "বাস্তব পাঠদানের রিপোর্ট")}
+      </h2>
+      <p className="text-sm">
+        {t(
+          "Save actual start/end times and what was taught. Submit the saved draft; admin reviews it. Scheduled time and academy staff attendance are separate.",
+          "বাস্তব শুরুর/শেষের সময় ও কী পড়িয়েছেন লিখে খসড়া রাখুন। খসড়া জমা দিলে প্রশাসক যাচাই করবেন। পরিকল্পিত সময় ও স্টাফের উপস্থিতি আলাদা।",
+        )}
+      </p>
+      {message && (
+        <p role="status" className="rounded-lg border p-3">
+          {message}
         </p>
       )}
-      <label className="block text-sm font-medium">
-        What was taught?{" "}
-        <textarea
-          className={`${cls} mt-1 min-h-24 py-2`}
-          {...form.register("class_summary")}
-        />
-        {form.formState.errors.class_summary && (
-          <span className="text-xs text-destructive">
-            {form.formState.errors.class_summary.message}
-          </span>
-        )}
-      </label>
-      <label className="block text-sm font-medium">
-        Why was planned content left incomplete?{" "}
-        <span className="font-normal text-muted-foreground">
-          Required when a curriculum unit is partial or not covered.
-        </span>
-        <textarea
-          className={`${cls} mt-1 min-h-20 py-2`}
-          {...form.register("unfinished_reason")}
-        />
-        {form.formState.errors.unfinished_reason && (
-          <span className="text-xs text-destructive">
-            {form.formState.errors.unfinished_reason.message}
-          </span>
-        )}
-      </label>
-      <label className="block text-sm font-medium">
-        Homework / practice{" "}
-        <textarea
-          className={`${cls} mt-1 min-h-20 py-2`}
-          {...form.register("homework")}
-        />
-      </label>
-      <label className="block text-sm font-medium">
-        Plan for next class{" "}
-        <textarea
-          className={`${cls} mt-1 min-h-20 py-2`}
-          {...form.register("next_session_plan")}
-        />
-      </label>
-      <label className="block text-sm font-medium">
-        Reason for this record{" "}
-        <input className={`${cls} mt-1`} {...form.register("reason")} />
-        {form.formState.errors.reason && (
-          <span className="text-xs text-destructive">
-            {form.formState.errors.reason.message}
-          </span>
-        )}
-      </label>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="submit"
-          disabled={!form.formState.isValid || !form.formState.isDirty || pending}
-        >
-          {pending ? "Saving…" : "Save draft"}
-        </Button>
+      {last?.status === "SUBMITTED" ? (
+        <p>{t("Awaiting admin review.", "প্রশাসকের যাচাই বাকি।")}</p>
+      ) : (
         <Button
           type="button"
+          disabled={pending || uncertain}
           variant="outline"
-          disabled={
-            !hasSavedDraft ||
-            !form.formState.isValid ||
-            form.formState.isDirty ||
-            pending
-          }
-          onClick={() => void submit("SUBMIT")}
+          onClick={() => setOpen((o) => !o)}
         >
-          {pending ? "Submitting…" : "Submit saved class log"}
+          {t(
+            last ? "Edit / correction report" : "Record teaching",
+            last ? "সম্পাদনা / সংশোধিত রিপোর্ট" : "পাঠদান লিখুন",
+          )}
         </Button>
-      </div>
-      {form.formState.isDirty && hasSavedDraft && (
-        <p className="text-xs text-muted-foreground">
-          Save changes before submitting. Submission sends the saved draft.
-        </p>
       )}
-      <p role="status" className="text-sm">
-        {message}
-      </p>
-    </form></ActionPanel>
+      {open && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const f = new FormData(e.currentTarget);
+            const p: ClassLogCommand = {
+              action: "SAVE_DRAFT",
+              request_id: crypto.randomUUID(),
+              session_id: sessionId,
+              reason:
+                locale === "bn"
+                  ? "বাস্তব পাঠদান ও সময় যাচাই করে লিখেছি"
+                  : "Recorded verified actual teaching and times",
+              actual_starts_at: String(f.get("start")) + ":00+06:00",
+              actual_ends_at: String(f.get("end")) + ":00+06:00",
+              class_summary: String(f.get("summary")),
+              unfinished_reason: String(f.get("unfinished") ?? ""),
+              homework: String(f.get("homework") ?? ""),
+              next_session_plan: String(f.get("next") ?? ""),
+              unit_progress: progress,
+            };
+            setAttempt(p);
+            send(p);
+          }}
+          className="space-y-4"
+        >
+          <fieldset
+            disabled={pending || uncertain}
+            className="grid gap-4 sm:grid-cols-2"
+          >
+            <label>
+              {t(
+                "Actual start · Bangladesh time",
+                "বাস্তব শুরু · বাংলাদেশ সময়",
+              )}
+              <input
+                name="start"
+                type="datetime-local"
+                required
+                defaultValue={local(last?.actual_starts_at)}
+                className={cls}
+              />
+            </label>
+            <label>
+              {t("Actual end", "বাস্তব শেষ")}
+              <input
+                name="end"
+                type="datetime-local"
+                required
+                defaultValue={local(last?.actual_ends_at)}
+                className={cls}
+              />
+            </label>
+            {workspace.units.map((u, i) => (
+              <label key={i}>
+                {u.title}
+                <select
+                  className={cls}
+                  value={progress[i].status}
+                  onChange={(e) =>
+                    setProgress((p) =>
+                      p.map((x, n) =>
+                        n === i
+                          ? { ...x, status: e.target.value as typeof x.status }
+                          : x,
+                      ),
+                    )
+                  }
+                >
+                  <option value="NOT_COVERED">
+                    {t("Not covered", "পড়ানো হয়নি")}
+                  </option>
+                  <option value="PARTIAL">{t("Partial", "আংশিক")}</option>
+                  <option value="COVERED">{t("Covered", "পড়ানো হয়েছে")}</option>
+                </select>
+              </label>
+            ))}
+            <label className="sm:col-span-2">
+              {t("What was taught?", "কী পড়িয়েছেন?")}
+              <textarea
+                name="summary"
+                required
+                minLength={2}
+                maxLength={4000}
+                defaultValue={last?.class_summary}
+                className={cls}
+              />
+            </label>
+            <label>
+              {t("Reason for incomplete topics", "অসম্পূর্ণ পাঠের কারণ")}
+              <textarea
+                name="unfinished"
+                required={progress.some((x) => x.status !== "COVERED")}
+                maxLength={2000}
+                defaultValue={last?.unfinished_reason}
+                className={cls}
+              />
+            </label>
+            <label>
+              {t("Homework / practice", "বাড়ির কাজ / অনুশীলন")}
+              <textarea
+                name="homework"
+                maxLength={2000}
+                defaultValue={last?.homework}
+                className={cls}
+              />
+            </label>
+            <label>
+              {t("Next class plan", "পরবর্তী ক্লাসের পরিকল্পনা")}
+              <textarea
+                name="next"
+                maxLength={2000}
+                defaultValue={last?.next_session_plan}
+                className={cls}
+              />
+            </label>
+          </fieldset>
+          {uncertain ? (
+            <Button
+              type="button"
+              loading={pending}
+              disabled={pending}
+              onClick={() => attempt && send(attempt)}
+            >
+              {t("Confirm previous request", "আগের অনুরোধ নিশ্চিত করুন")}
+            </Button>
+          ) : (
+            <Button loading={pending} disabled={pending} type="submit">
+              {t("Save draft", "খসড়া রাখুন")}
+            </Button>
+          )}
+        </form>
+      )}
+      {last?.status === "DRAFT" && !open && (
+        <Button
+          loading={pending}
+          disabled={pending}
+          onClick={() => {
+            const p: ClassLogCommand = {
+              action: "SUBMIT",
+              request_id: crypto.randomUUID(),
+              session_id: sessionId,
+              reason: t(
+                "Submitted saved teaching evidence for admin review",
+                "সংরক্ষিত পাঠদানের রিপোর্ট যাচাইয়ের জন্য জমা দিলাম",
+              ),
+              unit_progress: [],
+              class_summary: "",
+              unfinished_reason: "",
+              homework: "",
+              next_session_plan: "",
+            };
+            setAttempt(p);
+            send(p);
+          }}
+        >
+          {t("Submit saved report", "সংরক্ষিত রিপোর্ট জমা দিন")}
+        </Button>
+      )}
+      {uncertain && !open && (
+        <Button disabled={pending} onClick={() => attempt && send(attempt)}>
+          {t("Confirm previous request", "আগের অনুরোধ নিশ্চিত করুন")}
+        </Button>
+      )}
+    </section>
   );
 }

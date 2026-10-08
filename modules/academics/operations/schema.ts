@@ -221,7 +221,12 @@ export type SessionWorkspace = z.infer<typeof sessionWorkspaceSchema>;
 
 export const classLogCommandSchema = z
   .object({
-    action: z.enum(["SAVE_DRAFT", "SUBMIT"]),
+    action: z.enum(["SAVE_DRAFT", "SUBMIT", "DECIDE"]),
+    actual_starts_at: z.string().optional(),
+    actual_ends_at: z.string().optional(),
+    class_log_id: id.optional(),
+    decision: z.enum(["APPROVED", "REJECTED"]).optional(),
+    review_note: z.string().min(5).max(1000).optional(),
     request_id: id,
     session_id: id,
     reason: z.string().trim().min(5).max(500),
@@ -233,13 +238,32 @@ export const classLogCommandSchema = z
           note: z.string().max(500),
         }),
       )
-      .max(200),
-    class_summary: z.string().trim().min(2).max(4000),
-    unfinished_reason: z.string().max(2000),
-    homework: z.string().max(2000),
-    next_session_plan: z.string().max(2000),
+      .max(200)
+      .default([]),
+    class_summary: z.string().trim().max(4000).default(""),
+    unfinished_reason: z.string().max(2000).default(""),
+    homework: z.string().max(2000).default(""),
+    next_session_plan: z.string().max(2000).default(""),
   })
   .superRefine((v, ctx) => {
+    if (
+      v.action === "SAVE_DRAFT" &&
+      (!v.actual_starts_at || !v.actual_ends_at || v.class_summary.length < 2)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["actual_starts_at"],
+        message: "Enter actual teaching times and a class summary.",
+      });
+    if (
+      v.action === "DECIDE" &&
+      (!v.class_log_id || !v.decision || !v.review_note)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["decision"],
+        message: "Select report, decision and review note.",
+      });
     if (
       v.unit_progress.some((x) => x.status !== "COVERED") &&
       !v.unfinished_reason.trim()
@@ -260,7 +284,11 @@ export const classLogWorkspaceSchema = z.object({
       session_id: id,
       revision: z.number(),
       previous_log_id: id.nullable(),
-      status: z.enum(["DRAFT", "SUBMITTED"]),
+      status: z.enum(["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"]),
+      actual_starts_at: z.string().nullable(),
+      actual_ends_at: z.string().nullable(),
+      review_note: z.string().nullable(),
+      reviewer_id: id.nullable(),
       unit_progress: z.array(
         z.object({
           unit_index: z.number(),

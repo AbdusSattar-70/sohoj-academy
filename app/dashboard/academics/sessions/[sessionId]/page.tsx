@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ClassLogReview } from "@/modules/academics/operations/class-log-review";
+import { LocalizedText } from "@/components/shared/localized-text";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PageHeader } from "@/components/erp/page-header";
@@ -194,19 +196,40 @@ export default async function SessionPage({
           </p>
         </div>
         {classLogs.logs
-          .filter((log) => log.status === "SUBMITTED")
+          .filter((log) => log.status !== "DRAFT")
           .map((log) => (
             <article
               key={log.id}
               className="space-y-2 rounded-xl border bg-card p-4"
             >
               <p className="text-sm font-semibold">
-                Revision {log.revision} · Submitted{" "}
+                Revision {log.revision} · {log.status}{" "}
                 {new Date(log.submitted_at!).toLocaleString("en-GB", {
                   timeZone: s.timezone,
                 })}
               </p>
               <p className="text-sm">{log.class_summary}</p>
+              <p className="text-sm">
+                <LocalizedText
+                  en="Actual teaching hours"
+                  bn="বাস্তব পাঠদানের ঘণ্টা"
+                />
+                :{" "}
+                {log.actual_starts_at && log.actual_ends_at
+                  ? (
+                      (new Date(log.actual_ends_at).getTime() -
+                        new Date(log.actual_starts_at).getTime()) /
+                      3600000
+                    ).toFixed(2)
+                  : "—"}{" "}
+                · {log.review_note}
+              </p>
+              {log.status === "SUBMITTED" &&
+                can("academics.attendance.approve") &&
+                log.authored_by !== context.profileId && (
+                  <ClassLogReview sessionId={s.id} logId={log.id} />
+                )}
+
               {log.unit_progress.length > 0 && (
                 <ul className="list-disc pl-5 text-sm">
                   {log.unit_progress.map((entry) => (
@@ -235,13 +258,22 @@ export default async function SessionPage({
               )}
             </article>
           ))}
-        {!classLogs.logs.some((log) => log.status === "SUBMITTED") && (
+        {!classLogs.logs.some((log) => log.status !== "DRAFT") && (
           <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
             No actual teaching log has been submitted for this class.
           </p>
         )}
       </section>
-      <HomeworkFollowup sessionId={sessionId} workspace={homework} canRecord={s.status === "SCHEDULED" && began && (can("academics.attendance.record") || can("academics.sessions.manage"))} />
+      <HomeworkFollowup
+        sessionId={sessionId}
+        workspace={homework}
+        canRecord={
+          s.status === "SCHEDULED" &&
+          began &&
+          (can("academics.attendance.record") ||
+            can("academics.sessions.manage"))
+        }
+      />
       <section className="space-y-3">
         <h2 className="font-semibold">Attendance Revision History</h2>
         {data.submissions.map((a) => (
@@ -284,8 +316,13 @@ export default async function SessionPage({
       </section>
       {can("academics.sessions.manage") &&
         s.status === "SCHEDULED" &&
-        !data.submissions.some((a) =>
-          ["SUBMITTED", "APPROVED"].includes(a.status),
+        !(
+          data.submissions.some((a) =>
+            ["SUBMITTED", "APPROVED"].includes(a.status),
+          ) ||
+          classLogs.logs.some((l) =>
+            ["SUBMITTED", "APPROVED"].includes(l.status),
+          )
         ) && (
           <details className="rounded-xl border p-4">
             <summary className="cursor-pointer text-sm">

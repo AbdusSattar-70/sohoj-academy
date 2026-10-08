@@ -1,5 +1,8 @@
 "use server";
-import { runCommandAction, revalidateDashboard } from "@/modules/platform/command-action";
+import {
+  runCommandAction,
+  revalidateDashboard,
+} from "@/modules/platform/command-action";
 import { academicClient } from "./queries";
 import {
   academicCommandSchema,
@@ -44,7 +47,10 @@ export async function runClassLogCommand(input: ClassLogCommand) {
     input,
     client: academicClient,
     rpc: "class_log_command",
-    permission: ["academics.attendance.record", "academics.sessions.manage"],
+    permission:
+      input.action === "DECIDE"
+        ? "academics.attendance.approve"
+        : ["academics.attendance.record", "academics.sessions.manage"],
     revalidate: [...CLASS_LOG_PATHS],
     emptyMessage: "Class-log command returned no response.",
     revalidateExtra: () =>
