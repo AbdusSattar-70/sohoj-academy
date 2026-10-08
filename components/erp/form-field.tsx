@@ -1,3 +1,6 @@
+"use client";
+import { useLanguage } from "@/components/providers/language-provider";
+import { HelpDisclosure, type HelpText } from "./help-disclosure";
 import type { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -6,6 +9,7 @@ export function ErpFormField({
   id,
   label,
   hint,
+  help,
   required = false,
   error,
   className,
@@ -14,6 +18,7 @@ export function ErpFormField({
   id: string;
   label: string;
   hint?: string;
+  help?: HelpText;
   required?: boolean;
   error?: string | null;
   className?: string;
@@ -23,6 +28,7 @@ export function ErpFormField({
     invalid: boolean;
   }) => ReactNode;
 }) {
+  const { locale } = useLanguage();
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
@@ -30,9 +36,18 @@ export function ErpFormField({
   return (
     <div className={cn("grid gap-2", className)}>
       <div className="flex items-center justify-between gap-3">
-        <Label htmlFor={id}>{label}</Label>
+        <div className="flex items-center gap-1">
+          <Label htmlFor={id}>{label}</Label>
+          {help && <HelpDisclosure text={help} />}
+        </div>
         <span className="text-xs text-muted-foreground">
-          {required ? "Required" : "Optional"}
+          {required
+            ? locale === "bn"
+              ? "আবশ্যক"
+              : "Required"
+            : locale === "bn"
+              ? "ঐচ্ছিক"
+              : "Optional"}
         </span>
       </div>
 
@@ -73,7 +88,7 @@ export function ErpFormStatus({
         "rounded-xl border p-4 text-sm leading-6",
         message.ok
           ? "border-emerald-300 bg-emerald-50 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100"
-          : "border-destructive/40 bg-destructive/10 text-destructive"
+          : "border-destructive/40 bg-destructive/10 text-destructive",
       )}
     >
       {message.text}

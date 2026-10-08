@@ -1,3 +1,4 @@
+import { PageWorkflowGuide } from "./page-workflow-guide";
 import { MutationFeedback } from "./mutation-feedback";
 import { Suspense } from "react";
 import { WorkflowReturn } from "./workflow-return";
@@ -40,15 +41,16 @@ export function ErpShell({
     <SidebarProvider>
       <ErpSidebar context={context} navigation={navigation} />
       <SidebarInset className="min-w-0 bg-muted/20">
-        <ErpHeader />
+        <ErpHeader canHelp={context.permissions.includes("dashboard.view")} />
         <main
           id="erp-main"
-          className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-7"
+          className="[&_button[data-slot=button]]:min-h-11 [&_a[data-slot=button]]:min-h-11 mx-auto w-full max-w-[1600px] flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-7"
         >
           <Suspense>
             <WorkflowReturn />
           </Suspense>
           <MutationFeedback />
+          <PageWorkflowGuide permissions={context.permissions} />
           {children}
         </main>
       </SidebarInset>

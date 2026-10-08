@@ -1,3 +1,5 @@
+import { LocalizedText } from "@/components/shared/localized-text";
+import { workspaceHome } from "@/modules/platform/navigation/workspace-navigation";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,7 +21,8 @@ export default async function DashboardPage({
   searchParams: Promise<{ access?: string }>;
 }) {
   const context = await requirePermission("dashboard.view");
-  if (!context.roles.includes("ADMIN") && context.permissions.includes("workforce.self.view")) redirect("/dashboard/my-work");
+  const home = workspaceHome(context);
+  if (home !== "/dashboard") redirect(home);
   const overview = await getDashboardOverview(context);
   const { access } = await searchParams;
 
@@ -91,6 +94,18 @@ export default async function DashboardPage({
         </div>
       )}
 
+      {context.permissions.includes("workforce.manage") && (
+        <Link
+          className="inline-flex min-h-11 items-center rounded-lg border px-4 py-2 font-semibold hover:bg-muted"
+          href="/dashboard/staff/operations?tab=tasks"
+          prefetch={false}
+        >
+          <LocalizedText
+            en="Assign / review staff work →"
+            bn="স্টাফকে কাজ দিন / পর্যালোচনা করুন →"
+          />
+        </Link>
+      )}
       <nav aria-label="Quick actions" className="flex flex-wrap gap-3">
         {[
           [

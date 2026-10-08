@@ -27,6 +27,24 @@ export type ErpRouteDefinition = {
 
 export const erpRouteRegistry: ErpRouteDefinition[] = [
   {
+    id: "help",
+    title: "Help & workflows",
+    eyebrow: "Support",
+    href: "/dashboard/help",
+    navGroup: "Support",
+    permission: "dashboard.view",
+    icon: "help",
+  },
+  {
+    id: "account",
+    title: "My account",
+    eyebrow: "Support",
+    href: "/dashboard/account",
+    navGroup: "Support",
+    permission: "dashboard.view",
+    icon: "staff",
+  },
+  {
     id: "student-progress",
     title: "Student progress reports",
     eyebrow: "Academics",
@@ -157,7 +175,7 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
   },
   {
     id: "action-center",
-    title: "My Tasks",
+    title: "Action centre",
     eyebrow: "Workspace",
     href: "/dashboard/action-center",
     navGroup: "Workspace",

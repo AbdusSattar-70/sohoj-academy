@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/components/shared/localized-text";
 export default function DashboardLoading() {
   return (
     <div className="space-y-7" aria-busy="true" aria-live="polite">
@@ -29,7 +30,9 @@ export default function DashboardLoading() {
         </div>
       </div>
 
-      <span className="sr-only">Loading this ERP section…</span>
+      <span className="sr-only">
+        <LocalizedText en="Loading this section…" bn="এই অংশের তথ্য আসছে…" />
+      </span>
     </div>
   );
 }

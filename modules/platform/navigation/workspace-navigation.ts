@@ -1,0 +1,154 @@
+import type { ErpContext } from "@/types/erp";
+export function workspaceHome(c: ErpContext) {
+  if (
+    c.roles.includes("ADMIN") ||
+    c.permissions.some((p) =>
+      [
+        "workforce.manage",
+        "admissions.view",
+        "accounting.view",
+        "system.settings.view",
+      ].includes(p),
+    )
+  )
+    return "/dashboard";
+  if (c.roles.includes("TEACHER") && c.permissions.includes("academics.view"))
+    return "/dashboard/teacher";
+  if (c.permissions.includes("workforce.self.view"))
+    return "/dashboard/my-work";
+  if (c.permissions.includes("referrals.portal.view"))
+    return "/dashboard/referrals";
+  return "/dashboard";
+}
+export const navigationSections = [
+  "Daily work",
+  "Academics",
+  "People",
+  "Fees & expenses",
+  "Academic setup",
+  "Administration",
+  "Support",
+];
+export const navigationGroups: Record<string, string> = {
+  dashboard: "Daily work",
+  "action-center": "Daily work",
+  "teacher-dashboard": "Daily work",
+  "my-work": "Daily work",
+  admissions: "Academics",
+  "academic-operations": "Academics",
+  assessments: "Academics",
+  "question-bank": "Academics",
+  "student-progress": "Academics",
+  students: "People",
+  prospects: "People",
+  staff: "People",
+  "staff-operations": "People",
+  referrals: "People",
+  "student-accounts": "Fees & expenses",
+  receivables: "Fees & expenses",
+  "finance-overview": "Fees & expenses",
+  "operating-money": "Fees & expenses",
+  payroll: "Fees & expenses",
+  "teaching-pay": "Fees & expenses",
+  reimbursements: "Fees & expenses",
+  "academic-directory": "Academic setup",
+  "programme-offerings": "Academic setup",
+  "fee-plans": "Academic setup",
+  batches: "Academic setup",
+  "academic-planning": "Academic setup",
+  "weekly-routines": "Academic setup",
+  "teaching-plans": "Academic setup",
+  "access-security": "Administration",
+  "operating-rules": "Administration",
+  audit: "Administration",
+  "admin-review-queue": "Administration",
+  help: "Support",
+  account: "Support",
+};
+export const navigationOrder = [
+  "dashboard",
+  "teacher-dashboard",
+  "my-work",
+  "action-center",
+  "admissions",
+  "academic-operations",
+  "assessments",
+  "question-bank",
+  "student-progress",
+  "students",
+  "prospects",
+  "staff",
+  "staff-operations",
+  "referrals",
+  "student-accounts",
+  "receivables",
+  "operating-money",
+  "payroll",
+  "teaching-pay",
+  "reimbursements",
+  "finance-overview",
+  "academic-directory",
+  "programme-offerings",
+  "fee-plans",
+  "batches",
+  "academic-planning",
+  "weekly-routines",
+  "teaching-plans",
+  "access-security",
+  "operating-rules",
+  "audit",
+  "help",
+  "account",
+];
+export const navigationWords: Record<string, [string, string]> = {
+  "Daily work": ["Daily work", "দৈনন্দিন কাজ"],
+  Academics: ["Academics", "শিক্ষা কার্যক্রম"],
+  People: ["People", "শিক্ষার্থী ও স্টাফ"],
+  "Fees & expenses": ["Fees & expenses", "ফি ও খরচ"],
+  "Academic setup": ["Academic setup", "শিক্ষা প্রস্তুতি"],
+  Administration: ["Administration", "প্রশাসন"],
+  Support: ["Help & account", "সহায়তা ও অ্যাকাউন্ট"],
+  dashboard: ["Overview", "সারসংক্ষেপ"],
+  "action-center": ["Action centre", "করণীয় ও পর্যালোচনা"],
+  "teacher-dashboard": ["My classes", "আমার ক্লাস"],
+  "my-work": ["My work & earnings", "আমার কাজ ও পাওনা"],
+  admissions: ["Admissions", "ভর্তি"],
+  "academic-operations": [
+    "Class calendar & attendance",
+    "ক্লাস ক্যালেন্ডার ও উপস্থিতি",
+  ],
+  assessments: ["Tests & results", "পরীক্ষা ও ফলাফল"],
+  "question-bank": ["Questions & review", "প্রশ্ন ও পর্যালোচনা"],
+  "student-progress": ["Progress reports", "অগ্রগতি প্রতিবেদন"],
+  students: ["Students", "শিক্ষার্থী"],
+  prospects: ["Enquiries", "আগ্রহী শিক্ষার্থী"],
+  staff: ["Staff & access requests", "স্টাফ ও প্রবেশের আবেদন"],
+  "staff-operations": ["Staff work & attendance", "স্টাফের কাজ ও উপস্থিতি"],
+  referrals: ["Referral partners", "রেফারাল সহযোগী"],
+  "own-referrals": ["My referrals", "আমার রেফারাল"],
+  "student-accounts": ["Student fees & payments", "শিক্ষার্থীর ফি ও আদায়"],
+  receivables: ["Due follow-up", "বকেয়ার যোগাযোগ"],
+  "operating-money": ["Running income & expenses", "পরিচালনার আয় ও খরচ"],
+  payroll: ["Staff salary payments", "স্টাফের বেতন পরিশোধ"],
+  "teaching-pay": ["Teaching earnings & payments", "পাঠদানের আয় ও পরিশোধ"],
+  reimbursements: ["Expense claims", "খরচ ফেরতের আবেদন"],
+  "finance-overview": ["Income, expenses & profit", "আয়, খরচ ও লাভ"],
+  "academic-directory": [
+    "Classes, subjects & years",
+    "শ্রেণি, বিষয় ও শিক্ষাবর্ষ",
+  ],
+  "programme-offerings": ["Programme offerings", "প্রোগ্রাম অফারিং"],
+  "fee-plans": ["Standard fees", "নির্ধারিত ফি"],
+  batches: ["Batches", "ব্যাচ"],
+  "academic-planning": ["Rooms & availability", "কক্ষ ও ব্যবহারযোগ্য সময়"],
+  "weekly-routines": ["Weekly routines", "সাপ্তাহিক রুটিন"],
+  "teaching-plans": ["Teaching plans", "পাঠপরিকল্পনা"],
+  "access-security": ["Settings & access", "সেটিংস ও প্রবেশাধিকার"],
+  "operating-rules": ["Operating rules", "পরিচালনার নিয়ম"],
+  audit: ["Activity history", "পরিবর্তনের ইতিহাস"],
+  help: ["Help & workflows", "সহায়তা ও কাজের ধাপ"],
+  account: ["My account", "আমার অ্যাকাউন্ট"],
+};
+export function navigationLabel(id: string, fallback: string, locale: string) {
+  return navigationWords[id]?.[locale === "bn" ? 1 : 0] ?? fallback;
+}

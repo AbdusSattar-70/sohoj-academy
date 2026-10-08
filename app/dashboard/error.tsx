@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/components/providers/language-provider";
 import { useEffect } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,8 @@ export default function DashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { locale } = useLanguage();
+  const t = (en: string, bn: string) => (locale === "bn" ? bn : en);
   useEffect(() => {
     console.error("ERP route error", {
       message: error.message,
@@ -30,25 +33,30 @@ export default function DashboardError({
 
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-destructive">
-            This section could not be loaded
+            {t("This section could not be loaded", "এই অংশের তথ্য পাওয়া যায়নি")}
           </p>
           <h2 className="mt-1 text-lg font-semibold">
-            The ERP shell is still available
+            {t(
+              "You can retry or use the navigation",
+              "আবার চেষ্টা করুন অথবা মেনু ব্যবহার করুন",
+            )}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            No action is assumed to have succeeded. Retry this section. If the
-            problem continues, share the reference below with support.
+            {t(
+              "No action is assumed to have succeeded. Retry this section; if you were saving, check the existing record before repeating the action. Share the reference with support if the issue continues.",
+              "কাজ সফল হয়েছে ধরে নেওয়া হয়নি। আবার চেষ্টা করুন; সংরক্ষণের সময় সমস্যা হলে একই কাজ পুনরায় করার আগে বিদ্যমান record যাচাই করুন। সমস্যা থাকলে reference দিয়ে সহায়তা নিন।",
+            )}
           </p>
 
           {error.digest && (
             <div className="mt-4 rounded-xl bg-muted px-3 py-2 text-xs">
-              Reference: <code>{error.digest}</code>
+              {t("Reference", "রেফারেন্স")}: <code>{error.digest}</code>
             </div>
           )}
 
           <Button type="button" onClick={reset} className="mt-5 min-h-11">
             <RotateCcw className="mr-2 size-4" aria-hidden="true" />
-            Retry this section
+            {t("Retry this section", "আবার চেষ্টা করুন")}
           </Button>
         </div>
       </div>
