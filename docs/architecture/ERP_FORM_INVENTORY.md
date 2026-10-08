@@ -11,7 +11,7 @@ Forms stay mounted while hidden so invalid input survives. Successful mutations 
 | `modules/academics/homework/workspace.tsx` | Click-to-open / inline operation |
 | `modules/academics/operations/class-log-form.tsx` | Click-to-open / inline operation |
 | `modules/academics/operations/command-form.tsx` | Click-to-open / inline operation |
-| `modules/academics/questions/workspace.tsx` | Click-to-open / inline operation |
+| `modules/academics/documents/questions.tsx` | Click-to-open / inline operation |
 | `modules/admissions/components/command-form.tsx` | Primary task opened by parent action, or setup/auth/filter |
 | `modules/admissions/components/extra-charge-form.tsx` | Click-to-open / inline operation |
 | `modules/admissions/components/identity-editor.tsx` | Click-to-open / inline operation |
