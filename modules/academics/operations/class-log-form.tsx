@@ -52,9 +52,10 @@ export function ClassLogForm({
           setUncertain(false);
           router.refresh();
         } else {
-          const unknown = /unconfirmed|network|fetch failed|timeout/i.test(
-            r.message,
-          );
+          const unknown =
+            /unconfirmed|could not confirm|network|fetch failed|timeout/i.test(
+              r.message,
+            );
           setUncertain(unknown);
           if (!unknown) setAttempt(null);
         }

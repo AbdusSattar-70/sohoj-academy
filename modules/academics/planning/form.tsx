@@ -392,6 +392,16 @@ export function PlanningForm({
         {action === "ROUTINE" && (
           <>
             {placement}
+            {select(
+              "curriculum_id",
+              "Teaching plan (optional)",
+              "পাঠদান পরিকল্পনা (ঐচ্ছিক)",
+              data.choices.curricula.filter(
+                (x) =>
+                  x.batch_id === values.batch_id && x.subject_id === subject,
+              ),
+              false,
+            )}
             {dayPicker}
             {input("starts_on", "Effective from", "কার্যকর শুরু", "date")}
             {input("ends_on", "Through", "শেষ", "date")}

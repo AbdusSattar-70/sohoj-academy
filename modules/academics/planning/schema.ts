@@ -11,6 +11,8 @@ export type PlanningSection = (typeof sections)[number];
 export const choiceSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
+  batch_id: z.string().uuid().optional(),
+  subject_id: z.string().uuid().optional(),
   branch_id: z.string().uuid().optional(),
   offering_id: z.string().uuid().optional(),
   capacity: z.number().optional(),
@@ -34,6 +36,7 @@ export const planningSchema = z.object({
   page: z.number(),
   total: z.number(),
   choices: z.object({
+    curricula: z.array(choiceSchema).default([]),
     branches: z.array(choiceSchema),
     offerings: z.array(choiceSchema),
     batches: z.array(choiceSchema),

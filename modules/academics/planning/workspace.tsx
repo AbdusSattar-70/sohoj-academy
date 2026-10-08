@@ -28,7 +28,8 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
       action: string;
       initial: Record<string, unknown>;
     } | null>(null),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [setup, setSetup] = useState<string | null>(null);
   return (
     <section className="space-y-5">
       <header>
@@ -92,6 +93,43 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
           )}
         </Button>
       </div>
+      {data.section === "routines" && (
+        <div className="space-y-3 rounded-xl border p-4">
+          <p>
+            {t(
+              "Missing a room or available time? Prepare it here, then continue your routine.",
+              "কক্ষ বা ব্যবহারযোগ্য সময় নেই? এখানেই প্রস্তুত করে রুটিনে ফিরে যান।",
+            )}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              ["ROOM", "Add classroom", "শ্রেণিকক্ষ যোগ"],
+              ["AVAILABILITY", "Set availability", "সময় নির্ধারণ"],
+              ["CLOSURE", "Record holiday", "ছুটি যোগ"],
+            ].map(([action, en, bn]) => (
+              <Button
+                key={action}
+                variant="outline"
+                onClick={() => setSetup(setup === action ? null : action)}
+              >
+                {t(en, bn)}
+              </Button>
+            ))}
+          </div>
+          {setup && (
+            <PlanningForm
+              key={setup}
+              action={setup}
+              initial={{}}
+              data={data}
+              onDone={(message) => {
+                setSetup(null);
+                if (message) setNotice(message);
+              }}
+            />
+          )}
+        </div>
+      )}
       {notice && (
         <p role="status" className="rounded-lg border p-3">
           {notice}
