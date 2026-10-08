@@ -11,6 +11,7 @@ export async function searchErpRecords(
   raw: string,
 ): Promise<{ rows: SearchRecord[]; failed: boolean }> {
   const context = await requireErpContext();
+  if (context.status !== "ACTIVE") return { rows: [], failed: false };
   const q = raw
     .trim()
     .replace(/[^\p{L}\p{N}\s@+-]/gu, " ")
@@ -37,7 +38,7 @@ export async function searchErpRecords(
       href: (id) => `/dashboard/students/${id}`,
     },
     {
-      permission: "crm.view",
+      permission: "crm.prospects.view",
       table: "prospects",
       fields: "id,prospect_no,student_name,mobile",
       search: ["prospect_no", "student_name", "mobile"],
@@ -61,7 +62,7 @@ export async function searchErpRecords(
       href: () => "/dashboard/academics/offerings",
     },
     {
-      permission: "finance.billing.view",
+      permission: "finance.view",
       table: "invoices",
       fields: "id,invoice_no",
       search: ["invoice_no"],
