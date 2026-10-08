@@ -1,3 +1,4 @@
+import { savedFeedbackMessage } from "./feedback-message";
 /** Only known same-origin working pages may be a workflow return destination. */
 export function workflowReturnPath(value: string | null) {
   if (!value || /[\\\x00-\x1f]/.test(value) || /%0[ad]|%5c/i.test(value))
@@ -34,10 +35,7 @@ export function finishWorkflow(router: {
     });
   window.dispatchEvent(
     new CustomEvent("erp:saved", {
-      detail:
-        document.documentElement.lang === "bn"
-          ? "সফলভাবে সংরক্ষিত হয়েছে।"
-          : "Saved successfully.",
+      detail: savedFeedbackMessage(document.documentElement.lang),
     }),
   );
   const path = workflowReturnPath(

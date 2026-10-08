@@ -4,6 +4,8 @@ Branch: `feature/sohoj_final`. Each implementation/fix is committed separately. 
 
 | Item | Status |
 | --- | --- |
+| Slotted Button runtime render | Fixed single-child composition; real React/Radix render regression covers link + icon and pending button |
+| Default saved feedback locale | Recognizes both bn and provider HTML language bn-BD |
 | Explicit guide coverage for every registered work area | Implemented |
 | Semantic field help for standard ERP fields | Implemented; application-specific fields are audited below |
 | Active editor pending/dirty navigation and browser-close protection | Implemented for active mutation forms; native browser back history still depends on browser/router behavior |

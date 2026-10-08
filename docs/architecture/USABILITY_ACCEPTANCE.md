@@ -8,6 +8,7 @@ Use the same feature/sohoj_final branch. These checks do not write to the live d
 pnpm exec tsc --noEmit
 node scripts/check-workspace-navigation.cjs
 node scripts/check-workflow-return.cjs
+node scripts/check-button-slot.cjs
 pnpm build
 ```
 
@@ -35,3 +36,7 @@ The build used placeholder public Supabase configuration in the implementation e
 ## Explicit remaining boundary
 
 Native browser back/forward, live email delivery, real role/workspace enforcement, receipt totals against real transactions, and physical printer output require authenticated target-environment acceptance. Bespoke legacy English hints/errors outside the explicit label/help catalog still need individual translation. This document does not mark those checks or translations as complete.
+
+## Slotted navigation regression
+
+The shared Button now sends exactly the caller child to Radix Slot when asChild is enabled. Previously a conditional spinner expression plus the child produced an array, including a false item, causing a runtime crash despite successful TypeScript/build checks. The render regression exercises actual React/Radix modules, linked text with an icon, loading/non-loading slotted links, and an ordinary pending button. Default save feedback also recognizes the language provider’s bn-BD HTML language.

@@ -1,4 +1,5 @@
 "use client";
+import { savedFeedbackMessage } from "@/modules/platform/navigation/feedback-message";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/providers/language-provider";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ export function MutationFeedback() {
   useEffect(() => {
     const saved = (e: Event) =>
       setNotice({
-        text: (e as CustomEvent<string>).detail || "Saved successfully.",
+        text: (e as CustomEvent<string>).detail || savedFeedbackMessage(locale),
         warning: false,
       });
     const warning = (e: Event) =>
@@ -22,7 +23,7 @@ export function MutationFeedback() {
       window.removeEventListener("erp:saved", saved);
       window.removeEventListener("erp:notice", warning);
     };
-  }, []);
+  }, [locale]);
   return notice ? (
     <div
       role="status"

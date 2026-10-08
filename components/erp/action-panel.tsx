@@ -1,4 +1,5 @@
 "use client";
+import { savedFeedbackMessage } from "@/modules/platform/navigation/feedback-message";
 import { useEffect, useRef, type ReactNode } from "react";
 /** Forms remain mounted while closed so validation failures never erase input. */
 export function ActionPanel({
@@ -36,7 +37,7 @@ export function ActionPanel({
     </details>
   );
 }
-export function announceSaved(message = "Saved successfully.") {
+export function announceSaved(message?: string) {
   document
     .querySelectorAll<HTMLDetailsElement>("details[data-action-panel]")
     .forEach((el) => {
@@ -47,5 +48,9 @@ export function announceSaved(message = "Saved successfully.") {
       )
         el.open = false;
     });
-  window.dispatchEvent(new CustomEvent("erp:saved", { detail: message }));
+  window.dispatchEvent(
+    new CustomEvent("erp:saved", {
+      detail: message ?? savedFeedbackMessage(document.documentElement.lang),
+    }),
+  );
 }
