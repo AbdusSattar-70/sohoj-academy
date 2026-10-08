@@ -146,8 +146,8 @@ vm.runInNewContext(
   assert.equal(saved.started_at, "2020-01-02T07:00:00+06:00");
   assert.equal(saved.work_date, "2020-01-02");
   const page = fs.readFileSync("app/dashboard/attendance/page.tsx", "utf8");
-  assert.ok(page.includes("<DailyAttendanceForm"));
-  assert.ok(page.includes("initialDate={date}"));
+  assert.ok(page.includes("<AttendanceRegister"));
+  assert.ok(page.includes("getAttendanceRegister"));
   const form = fs.readFileSync(
     "modules/workforce/daily-attendance-form.tsx",
     "utf8",

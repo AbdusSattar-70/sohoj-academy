@@ -1,17 +1,17 @@
-# Staff attendance — one person, one day
+# Staff attendance — daily register
 
 Branch: `feature/sohoj_final`. Entry: `/dashboard/attendance`.
 
 ## Operator workflow
 
-1. Admin opens **Daily work → Attendance**. Their linked active Staff identity is selected by default; choose another staff member when needed.
+1. Admin opens **Daily work → Attendance**. A daily register shows staff identity, status, actual start/end times and net hours. Choose a date once; use Record or Correct on the required row. My attendance row locates your own record.
 2. The attendance date defaults to today in Bangladesh. Choose a previous date for late entry or correction. Actual attendance is not recorded for a future date.
 3. Choose **Present, Absent, On leave or Academy holiday**.
 4. Present requires actual **start and end clock times**. There is one attendance date, not three date/time selectors. Absent/leave/holiday need no time and retain no work hours.
 5. Optional Break / overnight details stay collapsed. For an overnight shift, select **End time is on the next day**. Record after work finishes; a future end time is rejected.
 6. Use a predefined reason, or Other with a short explanation. Save shows loading, prevents a second click and reports the result.
 7. Existing records load for the selected person/date. Saving a correction updates that daily record and keeps audit history; it does not create a second attendance. Changing person/date protects unsaved input. Lookup failure blocks save until loading succeeds.
-8. Select the next person/date without leaving the page. Use **Attendance reports** only to view monthly records; month selection is not required to create attendance.
+8. The inline editor closes after a successful save and displays confirmation. Present is green, Absent red, Leave amber and Holiday blue, with readable status labels. Missing attendance remains neutral **Not recorded**, never automatically absent. The register shows 25 staff per page; counters describe that page only. Select the next person/date without leaving the page. Use **Attendance reports** only to view monthly records; month selection is not required to create attendance.
 
 Staff and My work report buttons now open this same attendance entry with person/date preselected. Compensation terms remain separate. Student attendance stays on the dated class report; staff presence never substitutes for student attendance or approved teaching hours.
 
@@ -28,3 +28,5 @@ Admin নিজের সকাল ৮টা–১০টার কাজ রে�
 Read and write actions require an active verified context with `workforce.manage`. Reads are constrained to staff ID and one date and use authenticated RLS. The existing `workforce_command` retains actual-date/time, active Staff, overlap, uniqueness, request-id retry and audit enforcement. No service-role access or new migration is used.
 
 `node scripts/check-daily-attendance.cjs` checks Bangladesh date/clock conversion, overnight handling, no-time statuses, invalid/future inputs, read/write permissions, direct-entry controls and clock payloads. The extended SQL fixture `supabase/tests/07_staff_attendance_security.sql` verifies bootstrap admin own attendance, another staff member, retries, corrections, hours and unauthorized access. These tests do not replace hosted browser acceptance.
+
+`node scripts/check-attendance-register.cjs` renders the actual register and verifies status colours/labels, neutral missing records, pagination, default closed editors and bilingual inline editing. Directory data is retrieved through the existing permission-scoped contract; only 25 people and their selected-day attendance records are sent to the browser. This is not yet a database-paged directory RPC.

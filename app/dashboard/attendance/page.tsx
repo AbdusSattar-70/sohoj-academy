@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { z } from "zod";
-import { getWorkData } from "@/modules/workforce/queries";
-import { DailyAttendanceForm } from "@/modules/workforce/daily-attendance-form";
+import { getAttendanceRegister } from "@/modules/workforce/attendance-register-query";
+import { AttendanceRegister } from "@/modules/workforce/attendance-register";
 import { bangladeshDate } from "@/modules/workforce/daily-attendance";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/erp/page-header";
@@ -10,7 +10,7 @@ import { requirePermission } from "@/modules/platform/auth/erp-context";
 export default async function AttendancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ person?: string; date?: string }>;
+  searchParams: Promise<{ person?: string; date?: string; page?: string }>;
 }) {
   const context = await requirePermission("workforce.self.view");
   const manage = context.permissions.includes("workforce.manage");
@@ -20,28 +20,32 @@ export default async function AttendancePage({
   const day = z.iso.date().safeParse(query.date);
   const date = day.success && day.data <= today ? day.data : today;
   const data = manage
-    ? await getWorkData(date, person.success ? person.data : undefined)
+    ? await getAttendanceRegister(
+        date,
+        query.page,
+        person.success ? person.data : undefined,
+      )
     : null;
   return (
     <div className="space-y-5">
       <PageHeader
         eyebrow={<LocalizedText en="Daily work" bn="দৈনন্দিন কাজ" />}
-        title={<LocalizedText en="Attendance" bn="উপস্থিতি" />}
+        title={
+          <LocalizedText en="Attendance register" bn="উপস্থিতি রেজিস্টার" />
+        }
         description={
           <LocalizedText
-            en="Record yourself or a staff member for today or a previous date. Student class attendance is separate."
-            bn="নিজের বা স্টাফের আজকের বা আগের দিনের উপস্থিতি নিন। শিক্ষার্থীর ক্লাসের উপস্থিতি আলাদা।"
+            en="Choose a date, then record or correct staff attendance from the register. Green means present, red means absent. Unrecorded days stay neutral."
+            bn="তারিখ নির্বাচন করে রেজিস্টার থেকে স্টাফের উপস্থিতি নিন বা সংশোধন করুন। উপস্থিত সবুজ, অনুপস্থিত লাল। অনথিভুক্ত দিন নিরপেক্ষ থাকবে।"
           />
         }
       />
       {data ? (
-        <DailyAttendanceForm
-          people={data.people}
-          initialStaffId={
-            data.people.some((p) => p.id === data.staffId) ? data.staffId : null
-          }
-          initialDate={date}
+        <AttendanceRegister
+          key={`${data.date}:${data.page}`}
+          data={data}
           today={today}
+          ownStaffId={context.staffId}
         />
       ) : (
         <section className="space-y-3 rounded-xl border p-5">

@@ -21,11 +21,15 @@ export function DailyAttendanceForm({
   initialStaffId,
   initialDate,
   today,
+  lockedSelection = false,
+  onSaved,
 }: {
   people: WorkData["people"];
   initialStaffId: string | null;
   initialDate: string;
   today: string;
+  lockedSelection?: boolean;
+  onSaved?: (message: string) => void;
 }) {
   const { locale } = useLanguage(),
     t = (en: string, bn: string) => (locale === "bn" ? bn : en),
@@ -164,6 +168,7 @@ export function DailyAttendanceForm({
         if (form.current) form.current.dataset.dirty = "false";
         request.current = { signature: "", id: "" };
         window.dispatchEvent(new CustomEvent("erp:saved"));
+        onSaved?.(t("Attendance saved.", "উপস্থিতি সংরক্ষিত হয়েছে।"));
         router.refresh();
       } catch {
         setMessage(
@@ -192,52 +197,58 @@ export function DailyAttendanceForm({
           "নিজেকে বা স্টাফকে এবং একটি তারিখ নির্বাচন করুন। উপস্থিত হলে প্রকৃত শুরু–শেষ সময় দিন; অন্য অবস্থায় সময় লাগে না। সব সময় বাংলাদেশ সময়।",
         )}
       </p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label>
-          {t("Staff member", "স্টাফ")}
-          <select
-            className={cls}
-            value={staff}
-            disabled={pending}
-            onChange={(e) => {
-              const value = e.target.value;
-              change(e, () => setStaff(value));
-            }}
-          >
-            <option value="">
-              {t("Choose staff…", "স্টাফ নির্বাচন করুন…")}
-            </option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {p.number}
+      {lockedSelection ? (
+        <p className="font-medium">
+          {people.find((person) => person.id === staff)?.name} · {date}
+        </p>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label>
+            {t("Staff member", "স্টাফ")}
+            <select
+              className={cls}
+              value={staff}
+              disabled={pending}
+              onChange={(e) => {
+                const value = e.target.value;
+                change(e, () => setStaff(value));
+              }}
+            >
+              <option value="">
+                {t("Choose staff…", "স্টাফ নির্বাচন করুন…")}
               </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          {t("Attendance date", "উপস্থিতির তারিখ")}
-          <input
-            className={cls}
-            type="date"
-            value={date}
-            max={today}
-            disabled={pending}
-            onChange={(e) => {
-              const value = e.target.value;
-              change(e, () => setDate(value));
-            }}
-          />
-          <Button
-            className="mt-2"
-            type="button"
-            variant="outline"
-            disabled={pending || date === today}
-            onClick={(e) => change(e, () => setDate(today))}
-          >
-            {t("Today", "আজ")}
-          </Button>
-        </label>
-      </div>
+              {people.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} · {p.number}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t("Attendance date", "উপস্থিতির তারিখ")}
+            <input
+              className={cls}
+              type="date"
+              value={date}
+              max={today}
+              disabled={pending}
+              onChange={(e) => {
+                const value = e.target.value;
+                change(e, () => setDate(value));
+              }}
+            />
+            <Button
+              className="mt-2"
+              type="button"
+              variant="outline"
+              disabled={pending || date === today}
+              onClick={(e) => change(e, () => setDate(today))}
+            >
+              {t("Today", "আজ")}
+            </Button>
+          </label>
+        </div>
+      )}
       {!staff ? (
         <p role="status">
           {t(
