@@ -167,6 +167,7 @@ export async function searchErpRecords(
   }> => {
     if (
       !context.permissions.includes("finance.view") ||
+      !context.permissions.includes("admissions.view") ||
       !/^RCT[- ]?[0-9]*$/i.test(q)
     )
       return { rows: [], failed: false };

@@ -125,6 +125,10 @@ vm.runInNewContext(
   assert.ok(mobile.rows.some((row) => row.href.includes("/students/3000")));
   assert.equal(calls.find((c) => c.table === "student_guardians").limit, 5);
   calls = [];
+  await sandbox.exports.searchErpRecords("RCT-000001");
+  assert.ok(!calls.some((c) => c.table === "admission_payments"));
+  context.permissions.push("admissions.view");
+  calls = [];
   const receipt = await sandbox.exports.searchErpRecords("RCT-000001");
   assert.ok(
     receipt.rows.some((row) => row.href.endsWith("/print?receipt=RCT-000001")),
