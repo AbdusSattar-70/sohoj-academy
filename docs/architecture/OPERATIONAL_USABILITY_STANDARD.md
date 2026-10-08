@@ -2,7 +2,7 @@
 
 ## Scope and findings
 
-Keep existing CRM appearance and database workflows. Simplify navigation by responsibility, preserve contextual actions that continue a case, and make consequences understandable. Sidebar labels are an interface convention, not authorization: existing server permissions, RLS and controlled RPCs remain authoritative.
+Keep existing CRM appearance and database workflows. Simplify navigation by responsibility, preserve contextual actions that continue a case, and make consequences understandable. Read [current delivery evidence](WORKSPACE_REDESIGN_DELIVERY.md) and [workspace ownership](WORKSPACE_REDESIGN_WORKFLOW_BN.md). Sidebar labels are an interface convention, not authorization: existing server permissions, RLS and controlled RPCs remain authoritative.
 
 Reviewed entry points: ERP route registry/sidebar/header/account, overview, teacher class workspace, personal work, staff operations/task register, shared ERP fields, academic document actions and route loading/recovery. This is a foundation rollout; it does not claim every legacy form or every page has been rewritten.
 
@@ -16,7 +16,7 @@ Reviewed entry points: ERP route registry/sidebar/header/account, overview, teac
 | Parent Staff and nested Staff operations both highlighted | Resolve the deepest registry match |
 | Account link duplicated | Footer is the canonical account/logout entry |
 | Overview back-links are meaningless for teachers | Back to workspace goes through role-aware landing, with no self-link on overview |
-| Role menu could prefetch many server pages | Disable sidebar prefetch; search is client-only |
+| Role menu could prefetch many server pages | Disable sidebar prefetch; bounded server record search lives in the header |
 | Large teacher session cards | Compact dated table; Today/Upcoming/Recent buttons and one Open class action |
 | Guidance hidden outside the workflow | Collapsible bilingual page guides, optional tap/focus/hover help, visible action consequences for question/report submissions |
 | Inconsistent request feedback | Reuse shared loading buttons and persistent saved/notice banner; logout errors leave user on page |
@@ -25,7 +25,7 @@ Reviewed entry points: ERP route registry/sidebar/header/account, overview, teac
 
 Each permitted route has one primary sidebar destination. Menus are filtered by assigned permission before rendering. Hiding a link is never a security control. Administrators retain academic setup, staff assignment/review, admissions, fees and administration. Teachers land on My classes and use My work for their own tasks/attendance/earnings. Other self-service staff land on My work; staff with operational permissions retain overview. Referrer-only accounts retain their own portal and footer account entry. Combined roles never bypass permissions.
 
-Support routes are added to the registry. Review queue remains reachable from Action centre and contextual workflows, rather than a second review menu. Expand the active group; other groups can collapse. Search labels in the chosen language or English. On mobile, choose a destination then close the drawer. Show name, staff ID and roles once in the account footer.
+Support routes are added to the registry. Review queue remains reachable from Action centre and contextual workflows, rather than a second review menu. Expand the active group; other groups can collapse. Use central header search in the chosen language or English; the sidebar has no search field. On mobile, choose a destination then close the drawer. Show name, staff ID and roles once in the account footer.
 
 ## Interaction contract
 

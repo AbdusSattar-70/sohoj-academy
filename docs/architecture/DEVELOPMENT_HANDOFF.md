@@ -1,123 +1,45 @@
-> **Operational usability:** role-aware grouped/sidebar search, teacher compact class views, separate personal/staff work tabs and shared contextual guides are defined in [Operational usability standard](OPERATIONAL_USABILITY_STANDARD.md). Existing permissions/RPCs stay authoritative. This delivery needs no new migration.
+# Development handoff — feature/sohoj_final
 
-> **Questions and progress on `feature/sohoj_final`:** migrations 54–55 replace generator authoring with teacher-initiated routine-based Google Docs submission and independent admin finalization. Progress reports use approved attendance, results and teaching/homework evidence, saved snapshots and printable final reports. See [Workflow and বাংলা নির্দেশনা](QUESTIONS_AND_PROGRESS_WORKFLOW.md). Apply forward migrations without resetting the database. Google Docs copying/sharing remains an explicit administrator task.
+## Start here
 
-> **Current academic delivery on `feature/sohoj_final`:** migrations 47–53 add teaching dates/days, batch windows, classrooms, weekly resource availability and closures, holiday-aware routine generation, linked session changes, actual teaching review and approved-hour compensation weighting. Training courses have optional class/year and explicit duration throughout admission and enrollment. Planning, curriculum, routine and daily calendar are separate, bounded workspaces. Read [Academic workflow](ACADEMIC_ROUTINE_WORKFLOW.md) and [বাংলা পরিচালনা নির্দেশিকা](ACADEMIC_OPERATION_GUIDE_BN.md). The branch and migration counts in older sections below are historical, not the current install inventory. Apply forward migrations; no database reset is required for this delivery.
+Current work is on `feature/sohoj_final`. Read [workspace ownership and end-to-end workflow](WORKSPACE_REDESIGN_WORKFLOW_BN.md), [delivery evidence](WORKSPACE_REDESIGN_DELIVERY.md), [operational usability standard](OPERATIONAL_USABILITY_STANDARD.md), and [local acceptance](REDESIGN_LOCAL_ACCEPTANCE.md).
 
-> **Current finance scope (feature/sohoj_final):** [Simple academy finance](SIMPLE_ACADEMY_FINANCE.md) supersedes the advanced accounting/asset roadmap below. Daily student fees, staff earnings, running income/expenses and operating profit remain; advanced accounting screens are retired. Existing protected posting records remain internal.
+The repository contains migrations 01–55. Use the actual files as the install inventory; older documentation counts are not current. This usability delivery adds no migration and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
 
-# Development handoff
+## Page ownership
 
-The current branch is `feature/redesign_refactor`. This is a fresh-install schema, not an upgrade replay. Read [Workflow](REDESIGN_REFACTOR_WORKFLOW.md), [Database schema](DATABASE_SCHEMA.md), [Fresh setup](FRESH_DATABASE_SETUP.md), and [Interaction standard](ERP_INTERACTION_WORKFLOW_STANDARD.md).
+- `/dashboard/crm/manage`: public programme showcase, visibility and application controls. No class/year/subject master forms.
+- `/dashboard/academics/settings`: academic and reusable registration lists. Academic links, setup readiness and post-save revalidation use this destination.
+- `/dashboard/crm/prospects`: unverified public applications and follow-up. Public preferences are not final placement.
+- `/dashboard/academics/planning`: selected room, availability, closure, qualification or teaching-plan section; bounded records.
+- `/dashboard/academics/routine`: recurring subject timetable and date-range generation. `/dashboard/academics/operations` and session details record dated class work.
+- `/dashboard/admissions`: intake/register; `/dashboard/admissions/[id]`: one case with prerequisite steps, referral, physical consent, fees, finalization, collection and receipt links.
+- Header search replaces sidebar search. Record searches use verified server context, permissions and authenticated RLS. Teacher search is constrained to assigned sessions; referrer-only users do not receive the global person directory.
 
-There are 15 ordered migrations, 92 application tables and 126 functions. Files 01–13 are the clean baseline; 14 is a forward upgrade for already installed projects. Historical concatenated migrations, dynamic function patches, parallel wrapper RPCs, obsolete public application tables, uploaded-consent storage contracts, public content version queues and generic setting registries are removed. Previous implementations are not archived in this branch.
+Website management currently manages offering showcase content, not a general homepage/about/FAQ CMS. Keep the existing public appearance, fonts and colours. Do not label academic lists as website content.
 
-Admin-authorized financial posting, compensation, student transfers and duplicate correction run directly with permission checks and audit evidence. Teacher academic review remains. Public submissions are unverified preferences; direct staff admissions never fabricate a Prospect. Migration 45 supplies reusable academic directory choices; setup reviews these and creates actual offerings, fees and batches.
+## Domain rules
 
-The UI uses domain modules, controlled RPC writes and permission-scoped reads. Keep existing public visual styling. Do not add client service-role access or bypass prerequisites to mask errors.
+Direct staff intake does not fabricate a Prospect. Student, guardian, staff and referral identities retain their domain contracts; do not rebuild duplicate person models. Physical paper consent needs no scan upload. Failed input is preserved. A saved invoice is not payment; record actual collection and print the resulting receipt. Approved evidence and issued financial history cannot be silently rewritten.
 
-Validation completed during cleanup: all 13 migrations applied in isolated PostgreSQL-compatible PGlite; the three rollback-only SQL fixtures passed; Next route generation and TypeScript passed. This does not establish hosted Supabase Auth/Storage behavior, production build success or browser acceptance. Follow the local acceptance checklist before deployment.
+Teaching qualifications, effective availability, room capacity, closures and overlapping bookings are independent validations. Planned time, staff presence, student attendance and approved actual teaching hours are separate. Single-session changes preserve the weekly plan and original history.
 
-## Current refinement
+Teachers initiate Google Docs questions from scheduled teaching scope; administrators review and attach academy final document links. Google Docs copying and sharing are explicit human actions, not silently automated. Progress reports use approved evidence. Read [questions/progress](QUESTIONS_AND_PROGRESS_WORKFLOW.md) and [academic routine](ACADEMIC_ROUTINE_WORKFLOW.md).
 
-Read [Admission/referral/print contract](ADMISSION_REFERRAL_PRINT_REFINEMENT.md) and [Form inventory](ERP_FORM_INVENTORY.md). Referrers have scoped accounts, first-month net-collection acquisition evidence and corrected settlement limits. Collection-time discount/scholarship and payment are one transaction. Staff edit is inline; secondary forms open on demand with pending feedback and preserved invalid input.
+Simple fees, staff/referrer earnings, running income/expenses and operating profit are the operator-facing finance scope. Read [simple finance](SIMPLE_ACADEMY_FINANCE.md) and [Bangla finance guide](FINANCE_OPERATOR_GUIDE_BN.md). Do not revive advanced accounting or assets navigation.
 
-The server shares a request-scoped Supabase client, verifies cookie identity with getUser, and bounds each fetch at 20 seconds without automatically retrying financial writes. Refresh failure must prompt record inspection before retrying a mutation. A Next development Performance.measure warning cannot be assumed fixed without reproducing it locally.
+## Security and interactions
 
-Current verification: all 14 files applied in isolated PGlite; four rollback fixtures passed, including actual refund payout, corrected acquisition balances, immutable/balanced accounting and own-referrer permission checks. TypeScript passed. Actual React print components were rendered and visually inspected: two-page blank admission, one-page example invoice and one-page Bangla acknowledgement. Hosted Auth/email delivery, browser navigation and physical letterhead alignment still require local acceptance. No live database was reset or migrated.
+Server permissions, controlled RPCs and RLS are authoritative. Requested signup roles do not grant access. Invitations use server-only credentials; never send a service key to a client. Read [account configuration](ACCOUNT_SETUP_CONFIGURATION.md).
 
-## Staff access and audit usability
+Common fields use visible native associated labels, bilingual guidance and optional help. Forms show pending/error/success, preserve invalid values and guard dirty/busy navigation. Explicit close and admission-step actions must honor the same guard. Canonical help is `/dashboard/help`; its former Prospect/scan instructions have been replaced.
 
-Read [Secure account setup](ACCOUNT_SETUP_CONFIGURATION.md). Staff requests are verified inside the Staff page; the previous Settings request route redirects there. Setup/recovery uses a shared server-only secret-key client with credential checks and professional locale-specific feedback. Wrong live credentials still require the project administrator to correct the environment and restart/redeploy.
+## Evidence and limits
 
-Migration 15 adds audit search, bounded pagination and permission-scoped Bangladesh-day operational totals. Correlation and raw change payloads stay in immutable records, not the operator table. Five isolated SQL fixtures now pass, including paged search/no overlap and protected totals.
+Changed source passed TypeScript/lint; source-integrity, navigation, guide-render, bounded-search, slotted-button and safe-return checks passed. Production build passed with placeholder configuration. Isolated PostgreSQL-compatible fixtures cover routine/session/admission/documents/progress and simple finance/security.
 
-## Staff onboarding and own compensation statements
+These checks do not establish hosted Supabase Auth/email, production PostgREST relationship loading, authenticated role/workspace navigation, mobile behaviour or physical printer alignment. They must be tested in the actual environment. Do not call all 14 acceptance stages complete on the basis of isolated checks. [Delivery evidence](WORKSPACE_REDESIGN_DELIVERY.md) records the remaining limits.
 
-Apply migration 16 to existing installations without resetting data. See [Referral accounts and staff onboarding](REFERRAL_ACCOUNT_AND_STAFF_ONBOARDING.md). Staff onboarding is request-only; completed account setup appears in request history. Teachers and referrers have own-only financial statements. Manual Staff creation is removed from the UI and revoked at the RPC boundary. Existing ambiguous identities require review; they are never automatically merged.
+## Commit discipline
 
-## Paperless finance and workforce branch
-
-Branch `feature/finance_accounting_management` extends migration 16. Read [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md) before further work. Migration 17 provides actual staff attendance and agreed compensation terms; migration 18 provides assigned work and administrative completion acceptance. My work is the first workspace for non-admin staff, with own-only attendance, tasks and approved finance summaries. Migration 19 now supplies fixed/hourly payroll posting and payslips. Migration 20 supplies daily cash/statement evidence; migration 21 supplies monthly accounts and period controls. Advanced reporting, assets and the other documented gaps remain. Do not confuse configured salary or estimates with posted liabilities.
-
-Accounting action forms now open inline. Client-owned request IDs survive unchanged retries; the server does not generate a new key for every accounting attempt. Validation retains inputs, pending saves prevent closing the form, and signed adjustments can be entered. Uncertain outcomes require checking the record before changing inputs.
-
-## Monthly payroll and payslips
-
-Migration 19 implements fixed/hourly salary preview, once-only posting, immutable snapshots, own payslips and partial cash/advance settlement. Read the monthly payroll section of [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md). Fixed/hourly teaching contracts are excluded from the teaching pool; hybrid participation is explicit. A staff advance creation reference to the removed organization_id column is fixed. Current-month payroll remains provisional, and statutory deductions/historical contract restoration/posted payroll correction are separate remaining work.
-
-## Daily close evidence
-
-Migration 20 adds cash denomination counts, statement comparison, explained variance, investigation notes, recount-based resolution, reopen and stale detection after later ledger postings. No ledger amount is overwritten and no accounting period is locked by this workflow. Handover receiver acknowledgement and assigned tills remain separate work. See the daily close section of [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md).
-
-## Monthly accounts and period lock
-
-Migration 21 supplies monthly P&L, balance sheet, trial balance, cash movement, CSV/print and audited close/reopen. Posting guards enforce closed months on journal headers and lines. Fixed payroll expense is dated at month end; payments retain actual payment dates. Month-end cash/bank/mobile verification and balanced reports are required before close. Read the period-control section of [Paperless finance and workforce](PAPERLESS_FINANCE_AND_WORKFORCE.md).
-
-### Next committed delivery: purchases and supplier expense workflow
-
-Migration `22_purchase_drafts_receipt_and_expense_posting.sql` and `/dashboard/finance/purchases` add a paginated/searchable purchase register. On-demand draft creation/edit/cancellation, inline supplier creation, verified full receipt, paid-now expense or supplier payable, and partial supplier payment reuse the current ledger engine. Drafts do not post; finalized evidence cannot be overwritten. Stable request identities, revision checks, active-account permission boundaries and normalized supplier invoice uniqueness protect posting.
-
-SQL fixture `12_purchasing_receipt_supplier_settlement.sql` checks retry safety, stale revision rejection, receipt journals, partial-payment balance, overpayment rejection, duplicate invoice rollback, paid-now treatment, edit/cancel and outsider denial. No live database reset or mutation is part of this delivery.
-
-Next: private expense-document evidence and supplier/category maintenance; then procurement returns/corrections and staff reimbursements. Asset register/capitalization/depreciation follows as a distinct workflow. Monthly period locks already apply to the expense/payable journal calls.
-
-Migration 23 adds supplier/category maintenance under Purchases → Suppliers & categories. Edit, mark inactive and reactivate preserve history; stale changes and duplicate active supplier names/category codes are rejected. SQL fixture 13 exercises these controls. Private evidence is the next delivery.
-
-Migration 24 adds private finance-evidence Storage bucket, upload tickets, immutable attachment metadata and scoped read/insert policies. Purchase rows provide document upload and authenticated short-lived download. RPCs never grant staff/student outsiders access. SQL fixture 14 verifies ticket completion, immutability and storage policy boundaries against a mocked managed Storage catalog. Production Storage HTTP/browser verification remains necessary; no service role environment variable is needed for this feature.
-
-Migration 25 and SQL fixture 15 implement purchase credit notes/overstated expense reductions, payable credits explicitly distinguished from cash settlements, supplier refund receivables and later actual refund collection. Original charges are preserved. Purchases expose these actions in expandable rows; reports and daily close read the compensating journals.
-
-Migration 26 adds own-scope reimbursement drafts, private receipt attachment, submission, finance correction/verification/posting and actual partial/full payment. Route `/dashboard/finance/reimbursements` and SQL fixture 16 cover teacher own claims and prohibited self-posting. Documents now permit workforce users only for their authorized claim records; other purchase/expense documents remain finance-only.
-
-Migration 27 preserves the existing claim migration and allows newly verified global staff identities to claim before a campus assignment exists. Non-null campus assignments must still belong to the academy. The teacher fixture includes the required signup mobile field.
-
-Migration 28 implements `/dashboard/finance/assets`: draft acquisition, capitalized cash/payable posting, reclassification of an existing unadjusted purchase without double payment, staff custody acknowledgement, maintenance history, in-order complete-month straight-line depreciation and actual-proceeds disposal. Month close requires due depreciation; shared asset-register/exclusive close locks and period guards protect posting. Posted asset financial terms remain immutable; edit name/tag and use inactive/reactivate for operational changes. Asset documents use private evidence. SQL fixture 17 covers acquisition, retry-safe depreciation, own custody, denied teacher lifecycle changes, vendor installments and disposal book value. Read the documented first-month convention and remaining extensions before release.
-
-Migration 29 rejects PostgreSQL numeric NaN in ledger, expenses/payables, purchases, reimbursements, asset values and supplier corrections/refunds. Fixture 18 checks direct-RPC and journal attempts, independently of browser validation. This prevents invalid amounts from corrupting balances or breaking typed financial screens.
-
-## Cash handover receipts
-
-Migration 30 adds `/dashboard/finance/handovers` with authenticated recipient-only Received/Disputed evidence, immutable history, retry protection and 25-row pages. Admin sees all handovers; staff see only those addressed to their identity. Receipt never rewrites counts or ledger balances. Read the cash handover section of PAPERLESS_FINANCE_AND_WORKFORCE.md for whole-count limitations and remaining till/opening-float work.
-
-## Counter responsibility and opening float
-
-Migration 31 adds `/dashboard/finance/counters`: inline dedicated CASH account registration, name/status edits, one open duty per cashier/counter, real internal funding transfers, own receipt/dispute history and fresh reconciled duty close. Sorted account locking in the internal journal wrapper serializes controlled funding checks with journal writers; the old engine is not client callable. Remaining cash carries forward. It does not recognize new owner capital, return counter cash automatically, grant posting rights. A dedicated collection method is mapped/enabled on receipt and disabled on close; legacy collection methods stay intact. Counter posting is guarded by open received duty and cashier/reconciliation authority. Bengali operator section 21a documents the workflow and limits.
-
-## Counter top-ups and cash returns
-
-Migration 32 extends the same counter page: guarded internal top-ups, assigned cashier receipt/dispute/recount, collection suspension until receipt, and partial/full return to a main account after duty closure with fresh matching count evidence. Transfer reference uniqueness, unchanged retries, period/account locks and own-duty paginated reads protect history. New duty event order makes latest-duty selection independent of transaction-start timestamp. Counter count navigation returns to the same form/page. Bengali section 21b explains the complete workflow. No live DB migration was run.
-
-Migration 33 adds historical month-specific payroll agreement evidence and immutable signed earning corrections. Original salary remains intact; adjusted payable and own payslips include correction evidence. No implicit tax/loan deduction or paid salary reversal.
-
-Migration 34 adds `/dashboard/finance/recurring`: monthly expected expenses, editable/inactive schedules, retry-safe monthly purchase drafts and return-to-working-month after actual bill verification/payment. Expectations never create journals.
-
-Migration 35 adds `/dashboard/finance/receivables`: current aging, paginated search, due promises, recorded contacts and guardian statements. Promises do not reduce dues; matching actual net collections are required for completion. Payment navigation returns to the selected student.
-
-Migration 36 adds `/dashboard/finance/capital` for actual owner contributions and bounded contributed-capital returns. Use this before funding counters in a new installation. It creates equity, never student revenue or academy expense.
-
-Migration 37 adds `/dashboard/finance/planning`: existing cost centres, revision-checked monthly budgets, immutable split allocations, contribution reports and clearly labelled cash-runway scenario. Unallocated costs stay visible; posted ledger amounts never change.
-
-Migration 38 adds `/dashboard/finance/bank`: atomic verified CSV import, duplicate transaction protection, exact signed ledger matching and non-destructive match release. No inferred payment or journal is created. Gateway/API verification remains an external integration.
-
-Migration 39 adds `/dashboard/finance/cash-flow`: reconciled operating/investing/financing/unclassified cash reporting and audited classification correction. Ambiguous sources remain visible; internal transfers do not inflate flows.
-
-Finance extension 40: fiscal year preview/close/reopen at `/dashboard/finance/year-end`, nominal transfer and reversal, monthly write guards, preserved operational P&L. SQL fixture 29 checks arithmetic, retries, closed-year guard and reversal. Current delivery status: `FINANCE_DELIVERY_STATUS.md`.
-
-Finance extension 41: supplier account statements at `/dashboard/finance/suppliers`; bounded directory/payables, separate advances/refund receivables, scoped read and print. Fixture 30 verifies settlement arithmetic and outsider denial.
-
-Finance extension 42: physical consumable stock at `/dashboard/finance/stock`, receipt/use/count evidence, edit/inactivation and low-stock attention. Fixture 31 covers retry, stale evidence, negative stock denial, unit stability, unchanged journals and outsider denial.
-
-Owner scope update 2026-10-03: digital admission consent excluded. Preserve paper-signature/file-reference workflow; it is not pending work. Finance extension 43 adds `/dashboard/finance/procurement`: order commitments, partial receipts, exact invoice amount matching, price variance evidence, inline supplier payments and commitment closure. Fixture 32 checks no pre-receipt journal, partial/final quantities, duplicate request/invoice rollback, stale/over-receipt denial, price-variance requirement and outsider scope.
-
-Finance extension 44: paginated counter duty and opening-receipt history within the counter page. Dates, 25-row pages, preserved return-to-duty-page navigation and active staff own-scope; bounded nested receipts in operational snapshot. Fixture 33 covers 28 duties, date filtering, receipt pagination and cross-cashier/public denial.
-
-## Master development demo seed
-
-An explicit development-only `supabase/seeds/development_demo.sql` now creates academic masters, two public offerings, fee plans, three batches, six unverified Prospects, five staff-direct admission cases, three student identities and paid/part-paid/unpaid ledger examples. Pending staff access requests do not create Auth accounts. Execute this optional script manually in a disposable development project SQL Editor after bootstrap. Repeated runs preserve the demo through an audit completion marker; no data/password reset is performed. Enrollment respects the configured payment policy. Fresh resets use `--no-seed` until bootstrap. See [Instant demo setup](../testing/INSTANT_DEMO_SETUP.md).
-
-Verified all master migrations and seed in isolated PostgreSQL-compatible PGlite, including missing-admin rejection, amounts due and duplicate-free repeat execution. Hosted Supabase and browser execution remain local acceptance steps.
-
-## Production reference seed
-
-Migration 45 and automatic `supabase/seed.sql` now add reusable directories only, without overwriting edits or deactivations. Fictional examples are excluded from automatic seeding. See [reference data](../testing/REUSABLE_REFERENCE_DATA.md).
+One focused implementation/fix, verify, commit, then continue. Publish source per file and verify the Git blob checksum; reject truncated tool output. Run source integrity before build. Do not reset a live database or introduce a competing fee/admission workflow to mask a bug.
