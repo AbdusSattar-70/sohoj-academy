@@ -88,7 +88,7 @@ export function TaskRegister({
           />
         </h2>
         {admin && (
-          <Button
+          <Button loading={pending}
             disabled={pending}
             variant="outline"
             onClick={() => open("CREATE", null)}
@@ -304,7 +304,7 @@ export function TaskRegister({
               <Button loading={pending} disabled={pending}>
                 {t("Confirm", "নিশ্চিত করুন")}
               </Button>
-              <Button
+              <Button loading={pending}
                 type="button"
                 variant="outline"
                 disabled={pending}
@@ -375,7 +375,7 @@ export function TaskRegister({
                   {r.staff_id === data.ownStaffId &&
                     ["OPEN", "IN_PROGRESS"].includes(r.status) && (
                       <>
-                        <Button
+                        <Button loading={pending}
                           variant="outline"
                           disabled={pending}
                           className="block underline"
@@ -383,7 +383,7 @@ export function TaskRegister({
                         >
                           {t("Update progress", "অগ্রগতি জানান")}
                         </Button>
-                        <Button
+                        <Button loading={pending}
                           variant="outline"
                           disabled={pending}
                           className="block underline"
@@ -394,7 +394,7 @@ export function TaskRegister({
                       </>
                     )}
                   {admin && ["OPEN", "IN_PROGRESS"].includes(r.status) && (
-                    <Button
+                    <Button loading={pending}
                       variant="outline"
                       disabled={pending}
                       className="block underline"
@@ -405,7 +405,7 @@ export function TaskRegister({
                   )}
                   {admin && r.status === "SUBMITTED" && (
                     <>
-                      <Button
+                      <Button loading={pending}
                         variant="outline"
                         disabled={pending}
                         className="block underline"
@@ -413,7 +413,7 @@ export function TaskRegister({
                       >
                         {t("Accept completion", "সম্পন্ন কাজ গ্রহণ")}
                       </Button>
-                      <Button
+                      <Button loading={pending}
                         variant="outline"
                         disabled={pending}
                         className="block underline"
@@ -424,7 +424,7 @@ export function TaskRegister({
                     </>
                   )}
                   {admin && !["COMPLETED", "CANCELLED"].includes(r.status) && (
-                    <Button
+                    <Button loading={pending}
                       variant="outline"
                       disabled={pending}
                       className="block underline"

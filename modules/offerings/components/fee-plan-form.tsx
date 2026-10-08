@@ -428,7 +428,7 @@ export function FeePlanForm({
             )}
           </ErpFormField>
           <div className="flex flex-wrap items-center gap-4">
-            <Button type="submit" disabled={!isDirty || !isValid || pending}>
+            <Button loading={pending} type="submit" disabled={!isDirty || !isValid || pending}>
               {pending ? "Saving…" : "Save Fee Plan"}
             </Button>
             <ErpFormStatus message={message} />

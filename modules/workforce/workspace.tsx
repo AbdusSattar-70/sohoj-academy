@@ -390,7 +390,7 @@ export function WorkWorkspace({
                   <Button loading={pending} disabled={pending}>
                     {t("Save", "সংরক্ষণ করুন")}
                   </Button>
-                  <Button
+                  <Button loading={pending}
                     type="button"
                     variant="outline"
                     disabled={pending}

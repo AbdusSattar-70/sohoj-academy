@@ -89,7 +89,7 @@ export function ClassLogForm({
       {last?.status === "SUBMITTED" ? (
         <p>{t("Awaiting admin review.", "প্রশাসকের যাচাই বাকি।")}</p>
       ) : (
-        <Button
+        <Button loading={pending}
           type="button"
           disabled={pending || uncertain}
           variant="outline"
@@ -270,7 +270,7 @@ export function ClassLogForm({
         </Button>
       )}
       {uncertain && !open && (
-        <Button disabled={pending} onClick={() => attempt && send(attempt)}>
+        <Button loading={pending} disabled={pending} onClick={() => attempt && send(attempt)}>
           {t("Confirm previous request", "আগের অনুরোধ নিশ্চিত করুন")}
         </Button>
       )}

@@ -349,7 +349,7 @@ export function OfferingForm({
         </div>
         <ErpFormStatus message={message} />
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={!isDirty || !isValid || pending}>
+          <Button loading={pending} type="submit" disabled={!isDirty || !isValid || pending}>
             {pending
               ? "Saving…"
               : isEditing

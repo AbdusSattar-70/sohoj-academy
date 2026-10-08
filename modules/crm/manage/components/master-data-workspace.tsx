@@ -430,36 +430,62 @@ function MasterRecordForm({
   });
 
   return (
-    <form onSubmit={submit} className="mt-6 space-y-4 border-t pt-6" noValidate>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-semibold">
-          {isEdit ? "Edit record" : "Create record"}
-        </h3>
-        {
-          <button
-            type="button"
-            className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
-            onClick={() => {
-              reset(emptyDefaults(entity));
-              onCancelEdit();
-            }}
-          >
-            Close editor
-          </button>
-        }
-      </div>
+    <form
+      data-editor
+      data-busy={pending ? "true" : "false"}
+      onSubmit={submit}
+      className="mt-6 space-y-4 border-t pt-6"
+      noValidate
+    >
+      <fieldset disabled={pending} className="contents">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="font-semibold">
+            {isEdit ? "Edit record" : "Create record"}
+          </h3>
+          {
+            <button
+              type="button"
+              className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
+              onClick={() => {
+                reset(emptyDefaults(entity));
+                onCancelEdit();
+              }}
+            >
+              Close editor
+            </button>
+          }
+        </div>
 
-      <input type="hidden" {...register("entity")} />
-      <input type="hidden" {...register("id")} />
+        <input type="hidden" {...register("entity")} />
+        <input type="hidden" {...register("id")} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {entity !== "academic_year" && entity !== "school" && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {entity !== "academic_year" && entity !== "school" && (
+            <ErpFormField
+              id={`${entity}-code`}
+              label="Code"
+              required
+              hint="Stable identifier used in integrations and uniqueness checks."
+              error={errors.code?.message}
+            >
+              {({ id, describedBy, invalid }) => (
+                <input
+                  id={id}
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  className={controlClass}
+                  disabled={pending}
+                  {...register("code")}
+                />
+              )}
+            </ErpFormField>
+          )}
+
           <ErpFormField
-            id={`${entity}-code`}
-            label="Code"
+            id={`${entity}-name`}
+            label="Name"
             required
-            hint="Stable identifier used in integrations and uniqueness checks."
-            error={errors.code?.message}
+            error={errors.name?.message}
           >
             {({ id, describedBy, invalid }) => (
               <input
@@ -468,197 +494,183 @@ function MasterRecordForm({
                 aria-invalid={invalid}
                 className={controlClass}
                 disabled={pending}
-                {...register("code")}
+                {...register("name")}
               />
             )}
           </ErpFormField>
-        )}
 
-        <ErpFormField
-          id={`${entity}-name`}
-          label="Name"
-          required
-          error={errors.name?.message}
-        >
-          {({ id, describedBy, invalid }) => (
-            <input
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              className={controlClass}
-              disabled={pending}
-              {...register("name")}
-            />
+          {entity === "academic_year" && (
+            <>
+              <ErpFormField
+                id={`${entity}-starts`}
+                label="Starts on"
+                required
+                error={errors.startsOn?.message}
+              >
+                {({ id, describedBy, invalid }) => (
+                  <input
+                    id={id}
+                    type="date"
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    className={controlClass}
+                    disabled={pending}
+                    {...register("startsOn")}
+                  />
+                )}
+              </ErpFormField>
+              <ErpFormField
+                id={`${entity}-ends`}
+                label="Ends on"
+                required
+                error={errors.endsOn?.message}
+              >
+                {({ id, describedBy, invalid }) => (
+                  <input
+                    id={id}
+                    type="date"
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    className={controlClass}
+                    disabled={pending}
+                    {...register("endsOn")}
+                  />
+                )}
+              </ErpFormField>
+            </>
           )}
-        </ErpFormField>
 
-        {entity === "academic_year" && (
-          <>
+          {entity === "class" && (
             <ErpFormField
-              id={`${entity}-starts`}
-              label="Starts on"
-              required
-              error={errors.startsOn?.message}
+              id={`${entity}-sort`}
+              label="Sort order"
+              hint="Lower numbers appear first in forms."
+              error={errors.sortOrder?.message}
             >
               {({ id, describedBy, invalid }) => (
                 <input
                   id={id}
-                  type="date"
+                  type="number"
+                  min={0}
+                  max={9999}
                   aria-describedby={describedBy}
                   aria-invalid={invalid}
                   className={controlClass}
                   disabled={pending}
-                  {...register("startsOn")}
+                  {...register("sortOrder", { valueAsNumber: true })}
                 />
               )}
             </ErpFormField>
+          )}
+
+          {entity === "program" && (
             <ErpFormField
-              id={`${entity}-ends`}
-              label="Ends on"
-              required
-              error={errors.endsOn?.message}
+              id={`${entity}-description`}
+              label="Description"
+              className="sm:col-span-2"
+              error={errors.description?.message}
             >
               {({ id, describedBy, invalid }) => (
-                <input
+                <textarea
                   id={id}
-                  type="date"
+                  rows={3}
                   aria-describedby={describedBy}
                   aria-invalid={invalid}
-                  className={controlClass}
+                  className={`${controlClass} min-h-[5rem] py-2`}
                   disabled={pending}
-                  {...register("endsOn")}
+                  {...register("description")}
                 />
               )}
             </ErpFormField>
-          </>
-        )}
+          )}
 
-        {entity === "class" && (
-          <ErpFormField
-            id={`${entity}-sort`}
-            label="Sort order"
-            hint="Lower numbers appear first in forms."
-            error={errors.sortOrder?.message}
-          >
-            {({ id, describedBy, invalid }) => (
-              <input
-                id={id}
-                type="number"
-                min={0}
-                max={9999}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                className={controlClass}
-                disabled={pending}
-                {...register("sortOrder", { valueAsNumber: true })}
-              />
-            )}
-          </ErpFormField>
-        )}
+          {entity === "school" && (
+            <>
+              <ErpFormField
+                id={`${entity}-area`}
+                label="Area"
+                hint="Optional location grouping."
+                error={errors.areaId?.message}
+              >
+                {({ id, describedBy, invalid }) => (
+                  <select
+                    id={id}
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    className={controlClass}
+                    disabled={pending}
+                    {...register("areaId")}
+                  >
+                    <option value="">No area</option>
+                    {areas.map((area) => (
+                      <option key={area.id} value={area.id}>
+                        {area.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </ErpFormField>
+              <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-3 text-sm font-medium sm:mt-8">
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border-input"
+                  disabled={pending}
+                  {...register("isVerified")}
+                />
+                Verified school directory entry
+              </label>
+            </>
+          )}
 
-        {entity === "program" && (
+          <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-3 text-sm font-medium">
+            <input
+              type="checkbox"
+              className="size-4 rounded border-input"
+              disabled={pending}
+              {...register("isActive")}
+            />
+            {entity === "academic_year"
+              ? "Active academic year"
+              : "Active for new applications"}
+          </label>
+
           <ErpFormField
-            id={`${entity}-description`}
-            label="Description"
+            id={`${entity}-reason`}
+            label="Reason"
+            required
             className="sm:col-span-2"
-            error={errors.description?.message}
+            hint="Recorded in the audit trail."
+            error={errors.reason?.message}
           >
             {({ id, describedBy, invalid }) => (
-              <textarea
+              <input
                 id={id}
-                rows={3}
                 aria-describedby={describedBy}
                 aria-invalid={invalid}
-                className={`${controlClass} min-h-[5rem] py-2`}
+                className={controlClass}
                 disabled={pending}
-                {...register("description")}
+                placeholder="e.g. Opening 2026 academic year"
+                {...register("reason")}
               />
             )}
           </ErpFormField>
-        )}
+        </div>
 
-        {entity === "school" && (
-          <>
-            <ErpFormField
-              id={`${entity}-area`}
-              label="Area"
-              hint="Optional location grouping."
-              error={errors.areaId?.message}
-            >
-              {({ id, describedBy, invalid }) => (
-                <select
-                  id={id}
-                  aria-describedby={describedBy}
-                  aria-invalid={invalid}
-                  className={controlClass}
-                  disabled={pending}
-                  {...register("areaId")}
-                >
-                  <option value="">No area</option>
-                  {areas.map((area) => (
-                    <option key={area.id} value={area.id}>
-                      {area.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </ErpFormField>
-            <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-3 text-sm font-medium sm:mt-8">
-              <input
-                type="checkbox"
-                className="size-4 rounded border-input"
-                disabled={pending}
-                {...register("isVerified")}
-              />
-              Verified school directory entry
-            </label>
-          </>
-        )}
-
-        <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-3 text-sm font-medium">
-          <input
-            type="checkbox"
-            className="size-4 rounded border-input"
-            disabled={pending}
-            {...register("isActive")}
-          />
-          {entity === "academic_year"
-            ? "Active academic year"
-            : "Active for new applications"}
-        </label>
-
-        <ErpFormField
-          id={`${entity}-reason`}
-          label="Reason"
-          required
-          className="sm:col-span-2"
-          hint="Recorded in the audit trail."
-          error={errors.reason?.message}
-        >
-          {({ id, describedBy, invalid }) => (
-            <input
-              id={id}
-              aria-describedby={describedBy}
-              aria-invalid={invalid}
-              className={controlClass}
-              disabled={pending}
-              placeholder="e.g. Opening 2026 academic year"
-              {...register("reason")}
-            />
-          )}
-        </ErpFormField>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={!isDirty || !isValid || pending}>
-          {pending ? "Saving\u2026" : isEdit ? "Save changes" : "Create record"}
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          Records are deactivated, not deleted, so historical admissions stay
-          readable.
-        </p>
-      </div>
-      <ErpFormStatus message={message} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button loading={pending} type="submit" disabled={!isDirty || !isValid || pending}>
+            {pending
+              ? "Saving\u2026"
+              : isEdit
+                ? "Save changes"
+                : "Create record"}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Records are deactivated, not deleted, so historical admissions stay
+            readable.
+          </p>
+        </div>
+        <ErpFormStatus message={message} />
+      </fieldset>
     </form>
   );
 }

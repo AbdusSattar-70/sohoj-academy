@@ -545,7 +545,7 @@ export function PlanningForm({
               {t("Save", "সংরক্ষণ")}
             </Button>
           )}
-          <Button
+          <Button loading={pending}
             variant="outline"
             type="button"
             disabled={pending || uncertain}
