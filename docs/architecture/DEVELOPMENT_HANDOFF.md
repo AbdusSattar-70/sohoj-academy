@@ -4,7 +4,7 @@
 
 Current work is on `feature/sohoj_final`. Read [workspace ownership and end-to-end workflow](WORKSPACE_REDESIGN_WORKFLOW_BN.md), [delivery evidence](WORKSPACE_REDESIGN_DELIVERY.md), [operational usability standard](OPERATIONAL_USABILITY_STANDARD.md), and [local acceptance](REDESIGN_LOCAL_ACCEPTANCE.md).
 
-The repository contains migrations 01–55. Use the actual files as the install inventory; older documentation counts are not current. This usability delivery adds no migration and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
+The repository contains migrations 01–59. Use the actual files as the install inventory; older documentation counts are not current. The current timetable delivery adds migration 59 and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
 
 ## Staff attendance refinement
 
@@ -56,3 +56,8 @@ Teacher sessions now use a single start → student attendance → dated topics 
 ## Advisory subject qualification
 
 Migration 58 and the planning forms make subject qualification advisory for scheduling. Active teachers remain selectable across subjects; the current planning admin's own active Staff identity is included. Subject changes preserve teacher selection. Availability, branch/resource scope, programme/subject eligibility, capacity, closures, conflicts and recording/review permissions remain enforced. Database fixture 39 covers unqualified teacher and admin self routine/session generation as well as retained availability, identity, conflict and authorization checks.
+
+
+## Optional scheduling availability
+
+Migration 59 treats programme/batch days and windows as timetable defaults. Without effective active availability records, teacher/room scheduling is unrestricted; explicit effective availability remains enforced. Actual dated sessions retain programme dates, subject/campus scope, active identities, closures, capacity and conflict checks. Routine metadata no longer validates a whole year's availability before the first classes can be scheduled. Generation skips recorded room/teacher closures and supports skipping elapsed class times. Planning records include the last generated session date for bounded extensions.

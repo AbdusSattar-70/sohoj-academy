@@ -29,8 +29,8 @@ const instructions: Record<PlanningData["section"], [string, string]> = {
     "বিদ্যমান ব্যাচের দিন ও সময় দিন। সাপ্তাহিক রুটিনে প্রতিটি বিষয়ের ক্লাস আলাদা বরাদ্দ হবে।",
   ],
   rooms: [
-    "Add the room, branch and seat capacity, then set its available hours. A room being available does not mean it is unbooked.",
-    "কক্ষ, শাখা ও আসনসংখ্যা দিন; এরপর ব্যবহারযোগ্য সময় দিন। ব্যবহারযোগ্য কক্ষ আগে থেকে বুক থাকতে পারে।",
+    "Add the room, branch and seat capacity. Set availability only if hours need restrictions. Existing bookings are always checked.",
+    "কক্ষ, শাখা ও আসনসংখ্যা দিন। নির্দিষ্ট সময়সীমা থাকলেই availability দিন। আগের booking সবসময় যাচাই হবে।",
   ],
   availability: [
     "Choose Teacher or Room and set weekdays and local start/end times. This permits scheduling within the window; it does not create classes.",
