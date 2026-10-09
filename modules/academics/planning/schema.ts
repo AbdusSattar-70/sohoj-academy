@@ -18,6 +18,7 @@ export const choiceSchema = z.object({
   offering_id: z.string().uuid().optional(),
   capacity: z.number().optional(),
   subjects: z.array(z.string()).optional(),
+  is_self: z.boolean().optional(),
   offerings: z.array(z.string()).optional(),
   days: z.array(z.number()).optional(),
   operation_kind: z.enum(["SCHOOL", "COACHING", "TRAINING"]).optional(),

@@ -51,3 +51,8 @@ One focused implementation/fix, verify, commit, then continue. Publish source pe
 ## Guided teacher class workspace
 
 Teacher sessions now use a single start → student attendance → dated topics → homework → finish → review/submit workspace. Migration 56 adds durable class clocks and an atomic submission coordinator around existing attendance/class-log review engines. Clock duration alone is not verified/paid workload. Exam question drafts link to a published assessment so ordinary class preparation cannot satisfy exam readiness. Read [the Bengali operator workflow](TEACHER_CLASS_WORKSPACE_BN.md) before extending this path. Existing report corrections and independent review remain available; no second attendance or compensation model was introduced.
+
+
+## Advisory subject qualification
+
+Migration 58 and the planning forms make subject qualification advisory for scheduling. Active teachers remain selectable across subjects; the current planning admin's own active Staff identity is included. Subject changes preserve teacher selection. Availability, branch/resource scope, programme/subject eligibility, capacity, closures, conflicts and recording/review permissions remain enforced. Database fixture 39 covers unqualified teacher and admin self routine/session generation as well as retained availability, identity, conflict and authorization checks.

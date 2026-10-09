@@ -125,7 +125,7 @@ export function PlanningForm({
       }));
     }
     if (key === "subject_id" && action === "ROUTINE")
-      setValues((v) => ({ ...v, teacher_id: "", curriculum_id: "" }));
+      setValues((v) => ({ ...v, curriculum_id: "" }));
   }
   function input(
     key: string,
@@ -184,6 +184,15 @@ export function PlanningForm({
   const batch = data.choices.batches.find((b) => b.id === values.batch_id),
     subject = String(values.subject_id ?? ""),
     resource = String(values.resource_kind ?? "ROOM");
+  const teacherOptions = data.choices.teachers.map((x) => ({
+    ...x,
+    name:
+      x.name +
+      (x.is_self ? t(" · You", " · আপনি") : "") +
+      (x.subjects?.includes(subject)
+        ? t(" · Teaches this subject", " · বিষয়টি পড়ান")
+        : ""),
+  }));
   const placement = (
     <>
       {select("batch_id", "Batch", "ব্যাচ", data.choices.batches)}
@@ -197,12 +206,13 @@ export function PlanningForm({
             s.offerings.includes(batch?.offering_id ?? ""),
         ),
       )}
-      {select(
-        "teacher_id",
-        "Qualified teacher",
-        "যোগ্য শিক্ষক",
-        data.choices.teachers.filter((x) => x.subjects?.includes(subject)),
-      )}
+      {select("teacher_id", "Teacher", "শিক্ষক", teacherOptions)}
+      <p className="text-sm text-muted-foreground">
+        {t(
+          "Subject qualifications are recommendations, not restrictions. Admin can assign any listed active teacher or their own Staff identity. Availability and conflicts are still checked.",
+          "বিষয়ের যোগ্যতা পরামর্শ, বাধা নয়। Admin তালিকার যেকোনো সক্রিয় শিক্ষক বা নিজের স্টাফ পরিচয় নির্বাচন করতে পারেন। Availability ও conflict যাচাই হবে।",
+        )}
+      </p>
       {select(
         "room_id",
         "Classroom",
@@ -504,9 +514,7 @@ export function PlanningForm({
                 "teacher_id",
                 "Teacher / substitute",
                 "শিক্ষক / বিকল্প",
-                data.choices.teachers.filter((x) =>
-                  x.subjects?.includes(subject),
-                ),
+                teacherOptions,
               )}
               {select(
                 "room_id",

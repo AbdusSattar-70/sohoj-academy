@@ -142,9 +142,9 @@ const today = new Intl.DateTimeFormat("en-CA", {
   tree = render("ROUTINE", { subject_id: "physics", teacher_id: "teacher-a" });
   choice(tree, "math").props.onChange({ target: { value: "math" } });
   tree = render("ROUTINE");
-  assert.equal(choice(tree, "teacher-a").props.value, "");
+  assert.equal(choice(tree, "teacher-a").props.value, "teacher-a");
   console.log(
-    "PASS: actual qualification form retains teacher when subject changes, submits default dates, preserves edited dates and still revalidates routine teacher selection",
+    "PASS: actual qualification form retains teacher when subject changes, submits default dates, preserves edited dates and retains routine teacher when subject changes",
   );
 })().catch((error) => {
   console.error(error);

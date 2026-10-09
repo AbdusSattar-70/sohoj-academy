@@ -41,8 +41,8 @@ const instructions: Record<PlanningData["section"], [string, string]> = {
     "একাডেমির ছুটি বা শিক্ষক/কক্ষের বন্ধ সময় দিন। নতুন ক্লাস তৈরিতে বন্ধ দিন বাদ যায়; বিদ্যমান ক্লাস পৃথকভাবে পরিবর্তন করতে হবে।",
   ],
   routines: [
-    "Create a weekly routine with batch, subject, qualified teacher, room and time. After saving, use Generate classes on its row, then open the class calendar for attendance.",
-    "ব্যাচ, বিষয়, যোগ্য শিক্ষক, কক্ষ ও সময় দিয়ে সাপ্তাহিক রুটিন তৈরি করুন। সংরক্ষণের পর ওই row থেকে তারিখভিত্তিক ক্লাস তৈরি করুন; উপস্থিতির জন্য ক্লাস ক্যালেন্ডার খুলুন।",
+    "Create a weekly routine with batch, subject, active teacher (or yourself), room and time. After saving, use Generate classes on its row, then open the class calendar for attendance.",
+    "ব্যাচ, বিষয়, সক্রিয় শিক্ষক (বা নিজেকে), কক্ষ ও সময় দিয়ে সাপ্তাহিক রুটিন তৈরি করুন। সংরক্ষণের পর ওই row থেকে তারিখভিত্তিক ক্লাস তৈরি করুন; উপস্থিতির জন্য ক্লাস ক্যালেন্ডার খুলুন।",
   ],
 };
 function generationDates(row: Record<string, unknown>) {

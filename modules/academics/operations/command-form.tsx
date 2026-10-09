@@ -1,5 +1,5 @@
 "use client";
-import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
+import { ActionPanel } from "@/components/erp/action-panel";
 import { useId, useRef, useState, useTransition, type FormEvent } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -122,10 +122,7 @@ export function AcademicForm({
             ].map((field) => {
               let options = field.options;
               if (data) {
-                if (field.key === "teacher_id")
-                  options = data.teachers.filter((t) =>
-                    t.subjects.includes(subjectId ?? ""),
-                  );
+                if (field.key === "teacher_id") options = data.teachers;
                 if (field.key === "room_id")
                   options = data.rooms.filter(
                     (r) =>

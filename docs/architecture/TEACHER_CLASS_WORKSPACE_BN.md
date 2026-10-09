@@ -5,7 +5,7 @@ Branch: `feature/sohoj_final`। Database migration: `56_guided_teacher_class_wo
 ## আগে Admin কী প্রস্তুত করবেন
 
 ১. Teacher-এর account যাচাই করে একই Staff পরিচয়ের সঙ্গে যুক্ত করবেন। Attendance record permission দেবেন; Teacher নিজের রিপোর্ট নিজে approve করতে পারবেন না।
-২. Academic settings-এ বিষয় শেখানোর যোগ্যতা, Teacher ও classroom availability ঠিক করবেন।
+২. Academic settings-এ Teacher ও classroom availability ঠিক করবেন। বিষয় শেখানোর যোগ্যতা optional recommendation; routine তৈরির বাধ্যতামূলক শর্ত নয়।
 ৩. Programme, batch, ভর্তি ও enrollment প্রস্তুত করবেন। Classroom-এর আসন ও routine-এর সময় conflict যাচাই হবে।
 ৪. Weekly routine থেকে নির্দিষ্ট তারিখের session তৈরি করবেন। Teacher, বিষয়, batch, room এবং planned scope সঠিক থাকতে হবে।
 ৫. Curriculum-এ topic-এর target date থাকলে সংশ্লিষ্ট দিনের topic দেখাবে। শুধু scope দেওয়া থাকলে Teacher সেই scope নিশ্চিত করবেন; পুরো curriculum সম্পন্ন ধরে নেওয়া হবে না।
@@ -72,3 +72,10 @@ Class page-এর **যাচাই, উপস্থিতির ইতিহা
 ## বাস্তব যাচাইয়ের সীমা
 
 Database fixture clock persistence, duplicate-request safety, date guard, attendance prerequisite, combined submission, exam linkage এবং permission checks যাচাই করে। Component render checks ও production build আলাদাভাবে চালানো হয়। Hosted Supabase/browser/email acceptance এই isolated tests দিয়ে দাবি করা হয় না।
+
+
+## Admin-এর স্বাধীন teacher assignment
+
+Migration `58_advisory_teacher_qualification.sql`-এর পরে routine, single class এবং substitute assignment-এ subject qualification বাধ্যতামূলক নয়। Dropdown-এ active teaching-role staff এবং বর্তমানে কাজ করা Admin-এর নিজের active Staff identity থাকবে। নিজের নামের পাশে “আপনি” এবং relevant subject record থাকলে “বিষয়টি পড়ান” দেখা যাবে। Subject পরিবর্তন করলে নির্বাচিত Teacher মুছে যাবে না।
+
+নিজে ক্লাস নিতে চাইলে নিজের Staff identity-এর Teacher availability আগে নির্ধারণ করুন। শুধুমাত্র admin account থাকা যথেষ্ট নয়; linked active Staff পরিচয় প্রয়োজন। Qualification না থাকলেও classroom capacity, campus, programme/subject validity, available time, closures এবং শিক্ষক/room/batch-এর double booking checks কার্যকর থাকবে। Assignment কাউকে নতুন login permission বা নিজে report approve করার অধিকার দেয় না।
