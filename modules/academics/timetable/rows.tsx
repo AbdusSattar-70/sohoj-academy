@@ -4,7 +4,10 @@ import { useLanguage } from "@/components/providers/language-provider";
 import type { PlanningData } from "../planning/schema";
 import { weekdays, weekdaysBn } from "../planning/form";
 import type { TimetableInput } from "./schema";
-export type EditorRow = TimetableInput["slots"][number] & { key: string };
+export type EditorRow = TimetableInput["slots"][number] & {
+  key: string;
+  days: number[];
+};
 const cls = "min-h-11 w-full rounded-lg border bg-background px-2";
 export function TimetableRows({
   rows,
@@ -13,13 +16,19 @@ export function TimetableRows({
   onChange,
   onCopy,
   onRemove,
+  onCreatePlan,
 }: {
   rows: EditorRow[];
   data: PlanningData;
   batchId: string;
-  onChange: (key: string, field: string, value: string | number) => void;
+  onChange: (
+    key: string,
+    field: string,
+    value: string | number | number[],
+  ) => void;
   onCopy: (key: string, day: number) => void;
   onRemove: (key: string) => void;
+  onCreatePlan: (key: string) => void;
 }) {
   const { locale } = useLanguage(),
     t = (en: string, bn: string) => (locale === "bn" ? bn : en),
@@ -79,19 +88,32 @@ export function TimetableRows({
                   <span className="sr-only">
                     {t("Day", "দিন")} {i + 1}
                   </span>
-                  <select
-                    className={cls}
-                    value={r.weekday}
-                    onChange={(e) =>
-                      onChange(r.key, "weekday", Number(e.target.value))
-                    }
-                  >
+                  <fieldset className="flex min-w-44 flex-wrap gap-2">
+                    <legend className="sr-only">
+                      {t("Class days", "ক্লাসের দিন")}
+                    </legend>
                     {weekdays.map((x, n) => (
-                      <option value={n} key={n}>
-                        {t(x, weekdaysBn[n])}
-                      </option>
+                      <label
+                        key={n}
+                        className="flex min-h-9 cursor-pointer items-center gap-1"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={r.days.includes(n)}
+                          onChange={(e) =>
+                            onChange(
+                              r.key,
+                              "days",
+                              e.target.checked
+                                ? [...r.days, n].sort()
+                                : r.days.filter((d) => d !== n),
+                            )
+                          }
+                        />
+                        {t(x.slice(0, 3), weekdaysBn[n])}
+                      </label>
                     ))}
-                  </select>
+                  </fieldset>
                 </label>
               </td>
               <td className="p-2">
@@ -162,27 +184,14 @@ export function TimetableRows({
                 )}
               </td>
               <td className="space-y-2 p-2">
-                <label>
-                  <span className="sr-only">
-                    {t("Copy class to another day", "অন্য দিনে ক্লাস কপি করুন")}{" "}
-                    {i + 1}
-                  </span>
-                  <select
-                    className={cls}
-                    value=""
-                    disabled={rows.length >= 40}
-                    onChange={(e) => onCopy(r.key, Number(e.target.value))}
-                  >
-                    <option value="">
-                      {t("Copy to day…", "অন্য দিনে কপি…")}
-                    </option>
-                    {weekdays.map((x, n) => (
-                      <option key={n} value={n}>
-                        {t(x, weekdaysBn[n])}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={rows.length >= 40}
+                  onClick={() => onCopy(r.key, r.days[0] ?? 0)}
+                >
+                  {t("Duplicate class", "ক্লাসের কপি")}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
@@ -193,8 +202,47 @@ export function TimetableRows({
                 </Button>
                 <details>
                   <summary className="cursor-pointer text-xs">
-                    {t("Planned topic (optional)", "পরিকল্পিত পাঠ (ঐচ্ছিক)")}
+                    {t(
+                      "Topics & teaching plan (optional)",
+                      "পাঠ ও পরিকল্পনা (ঐচ্ছিক)",
+                    )}
                   </summary>
+                  <label className="block">
+                    {t("Teaching plan", "পাঠ পরিকল্পনা")}
+                    <select
+                      className={cls}
+                      value={r.curriculum_id ?? ""}
+                      onChange={(e) =>
+                        onChange(r.key, "curriculum_id", e.target.value)
+                      }
+                    >
+                      <option value="">
+                        {t("No plan yet", "পরিকল্পনা নেই")}
+                      </option>
+                      {data.choices.curricula
+                        .filter(
+                          (x) =>
+                            x.batch_id === batchId &&
+                            x.subject_id === r.subject_id,
+                        )
+                        .map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.name}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!r.subject_id || !batchId}
+                    onClick={() => onCreatePlan(r.key)}
+                  >
+                    {t(
+                      "Create teaching plan here",
+                      "এখানেই পাঠ পরিকল্পনা তৈরি",
+                    )}
+                  </Button>
                   <input
                     aria-label={t("Planned topic", "পরিকল্পিত পাঠ")}
                     maxLength={2000}

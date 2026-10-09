@@ -11,27 +11,53 @@ import { TimetableRows, type EditorRow } from "./rows";
 import { TimetablePreviewPanel } from "./preview";
 import { previewTimetable, saveTimetable } from "./actions";
 import { timetableDates } from "./dates";
+import { InlineTeachingPlan } from "./teaching-plan";
+import { expandClassGroups } from "./groups";
 import type { TimetablePreview, TimetableSave } from "./schema";
 export function TimetableEditor({
   data,
   today,
+  initial,
+  onClose,
 }: {
   data: PlanningData;
   today: string;
+  initial?: Record<string, unknown>;
+  onClose?: (message?: string) => void;
 }) {
   const { locale } = useLanguage(),
     t = (en: string, bn: string) => (locale === "bn" ? bn : en),
     router = useRouter();
-  const [open, setOpen] = useState(false),
-    [batch, setBatch] = useState(""),
+  const [open, setOpen] = useState(!!initial),
+    [batch, setBatch] = useState(String(initial?.batch_id ?? "")),
     [from, setFrom] = useState(today),
-    [through, setThrough] = useState(today),
-    [rows, setRows] = useState<EditorRow[]>([]),
+    [through, setThrough] = useState(String(initial?.ends_on ?? today)),
+    [rows, setRows] = useState<EditorRow[]>(
+      initial
+        ? [
+            {
+              key: "edit",
+              weekday: Number(initial.weekday),
+              days: [Number(initial.weekday)],
+              subject_id: String(initial.subject_id),
+              teacher_id: String(initial.teacher_id),
+              room_id: String(initial.room_id),
+              start_time: String(initial.start_time).slice(0, 5),
+              end_time: String(initial.end_time).slice(0, 5),
+              planned_scope: String(initial.planned_scope ?? ""),
+              curriculum_id: initial.curriculum_version_id
+                ? String(initial.curriculum_version_id)
+                : undefined,
+            },
+          ]
+        : [],
+    ),
     [preview, setPreview] = useState<TimetablePreview | null>(null),
     [busy, setBusy] = useState(false),
     [dirty, setDirty] = useState(false),
     [notice, setNotice] = useState(""),
     [room, setRoom] = useState(false),
+    [planRow, setPlanRow] = useState<string | null>(null),
     [retry, setRetry] = useState<TimetableSave | null>(null),
     [reason, setReason] = useState("Agreed weekly timetable"),
     [other, setOther] = useState("");
@@ -44,6 +70,7 @@ export function TimetableEditor({
     return {
       key: crypto.randomUUID(),
       weekday: 0,
+      days: [0],
       subject_id: "",
       teacher_id: "",
       room_id: "",
@@ -67,6 +94,12 @@ export function TimetableEditor({
         setOpen(false);
         setDirty(false);
         setRetry(null);
+        onClose?.(
+          t(
+            `Timetable saved. ${result.class_count} classes ready.`,
+            `রুটিন সংরক্ষিত। ${result.class_count}টি ক্লাস প্রস্তুত।`,
+          ),
+        );
         router.refresh();
       } else {
         setNotice(result.message);
@@ -113,23 +146,27 @@ export function TimetableEditor({
           className="space-y-4 rounded-xl border p-4"
           onSubmit={async (e) => {
             e.preventDefault();
+            if (rows.some((r) => r.days.length === 0)) {
+              setNotice(
+                t(
+                  "Select at least one day for each class.",
+                  "প্রতি ক্লাসের জন্য অন্তত একটি দিন নির্বাচন করুন।",
+                ),
+              );
+              return;
+            }
             setBusy(true);
             setPreview(null);
             setNotice("");
             try {
               const r = await previewTimetable({
                 batch_id: batch,
+                replace_routine_id: initial?.id
+                  ? String(initial.id)
+                  : undefined,
                 starts_on: from,
                 ends_on: through,
-                slots: rows.map((r) => ({
-                  weekday: r.weekday,
-                  subject_id: r.subject_id,
-                  teacher_id: r.teacher_id,
-                  room_id: r.room_id,
-                  start_time: r.start_time,
-                  end_time: r.end_time,
-                  planned_scope: r.planned_scope,
-                })),
+                slots: expandClassGroups(rows),
                 locale,
               });
               if (r.ok) setPreview(r.preview);
@@ -146,11 +183,14 @@ export function TimetableEditor({
             }
           }}
         >
-          <fieldset disabled={busy || !!retry} className="space-y-4">
+          <fieldset
+            disabled={busy || !!retry || !!planRow}
+            className="space-y-4"
+          >
             <legend className="font-semibold">
               {t(
-                "1. Choose batch and dates · 2. Add classes · 3. Preview and save",
-                "১. ব্যাচ ও তারিখ → ২. ক্লাস যোগ → ৩. Preview ও সংরক্ষণ",
+                "1. Choose batch · 2. Tick class days · 3. Review and activate",
+                "১. ব্যাচ → ২. ক্লাসের দিন tick → ৩. যাচাই ও চালু",
               )}
             </legend>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -158,6 +198,7 @@ export function TimetableEditor({
                 {t("Batch", "ব্যাচ")}
                 <select
                   required
+                  disabled={!!initial}
                   className="min-h-11 w-full rounded-lg border bg-background p-2"
                   value={batch}
                   onChange={(e) => {
@@ -182,6 +223,11 @@ export function TimetableEditor({
                       {
                         ...fresh(),
                         weekday: w?.weekday ?? b?.days?.[0] ?? 0,
+                        days: b?.windows?.length
+                          ? [...new Set(b.windows.map((w) => w.weekday))]
+                          : b?.days?.length
+                            ? b.days
+                            : [0],
                         start_time: w?.start_time.slice(0, 5) ?? "07:00",
                         end_time: w?.end_time.slice(0, 5) ?? "09:00",
                       },
@@ -213,34 +259,57 @@ export function TimetableEditor({
                   className="min-h-11 w-full rounded-lg border bg-background p-2"
                 />
               </label>
-              <label>
-                {t("Through", "শেষ তারিখ")}
-                <input
-                  required
-                  type="date"
-                  min={from}
-                  value={through}
-                  onChange={(e) => {
-                    setThrough(e.target.value);
-                    invalidate();
-                  }}
-                  className="min-h-11 w-full rounded-lg border bg-background p-2"
-                />
-              </label>
+              <details className="rounded-lg border p-3">
+                <summary className="cursor-pointer">
+                  {t(
+                    "End date (optional to change)",
+                    "শেষ তারিখ (প্রয়োজনে পরিবর্তন)",
+                  )}{" "}
+                  · {through}
+                </summary>{" "}
+                <label>
+                  {t("Through", "শেষ তারিখ")}
+                  <input
+                    required
+                    type="date"
+                    min={from}
+                    value={through}
+                    onChange={(e) => {
+                      setThrough(e.target.value);
+                      invalidate();
+                    }}
+                    className="min-h-11 w-full rounded-lg border bg-background p-2"
+                  />
+                </label>
+              </details>
             </div>
             <p className="text-sm text-muted-foreground">
               {t(
-                "Each row is one class. Copy to another day instead of retyping. No availability setup is required unless you have recorded restrictions. Existing bookings, closures and seat capacity remain protected.",
-                "প্রতি সারি একটি ক্লাস। আবার না লিখে অন্য দিনে কপি করুন। আলাদা সময়সীমা না দিলে availability সেটআপ বাধ্যতামূলক নয়। আগের বুকিং, ছুটি ও আসনসংখ্যা যাচাই হবে।",
+                "One class row can cover several weekdays: tick its days. Add a separate row when subject, time, teacher or room differs. Preferred hours only warn; bookings, closures and seats are checked.",
+                "একটি ক্লাসের একাধিক দিন tick করুন। বিষয়, সময়, শিক্ষক বা কক্ষ আলাদা হলে অন্য সারি যোগ করুন। Preferred hours শুধু সতর্ক করবে; booking, বন্ধ সময় ও আসন যাচাই হবে।",
               )}
             </p>
             <TimetableRows
+              onCreatePlan={(key) => {
+                setPlanRow(key);
+                setRoom(false);
+              }}
               rows={rows}
               data={data}
               batchId={batch}
               onChange={(key, field, value) => {
                 setRows((r) =>
-                  r.map((x) => (x.key === key ? { ...x, [field]: value } : x)),
+                  r.map((x) =>
+                    x.key === key
+                      ? {
+                          ...x,
+                          [field]: value,
+                          ...(field === "subject_id"
+                            ? { curriculum_id: undefined }
+                            : {}),
+                        }
+                      : x,
+                  ),
                 );
                 invalidate();
               }}
@@ -287,7 +356,7 @@ export function TimetableEditor({
             {preview && (
               <TimetablePreviewPanel
                 preview={preview}
-                slots={rows}
+                slots={expandClassGroups(rows)}
                 data={data}
               />
             )}
@@ -325,27 +394,19 @@ export function TimetableEditor({
               onClick={() =>
                 save({
                   batch_id: batch,
+                  replace_routine_id: initial?.id
+                    ? String(initial.id)
+                    : undefined,
                   starts_on: from,
                   ends_on: through,
-                  slots: rows.map((r) => ({
-                    weekday: r.weekday,
-                    subject_id: r.subject_id,
-                    teacher_id: r.teacher_id,
-                    room_id: r.room_id,
-                    start_time: r.start_time,
-                    end_time: r.end_time,
-                    planned_scope: r.planned_scope,
-                  })),
+                  slots: expandClassGroups(rows),
                   locale,
                   request_id: crypto.randomUUID(),
                   reason: reason === "other" ? other : reason,
                 })
               }
             >
-              {t(
-                "Save routine and create next four weeks",
-                "রুটিন ও আগামী চার সপ্তাহের ক্লাস তৈরি করুন",
-              )}
+              {t("Activate timetable", "রুটিন চালু করুন")}
             </Button>
           </fieldset>
           {busy && (
@@ -362,7 +423,7 @@ export function TimetableEditor({
             </Button>
           )}
           <Button
-            disabled={busy || !!retry}
+            disabled={busy || !!retry || !!planRow}
             type="button"
             variant="outline"
             onClick={() => {
@@ -374,12 +435,45 @@ export function TimetableEditor({
               ) {
                 setOpen(false);
                 setDirty(false);
+                onClose?.();
               }
             }}
           >
             {t("Cancel", "বাতিল")}
           </Button>
         </form>
+      )}
+      {open && planRow && (
+        <InlineTeachingPlan
+          key={planRow}
+          batchId={batch}
+          subjectId={rows.find((r) => r.key === planRow)!.subject_id}
+          subjectName={
+            data.choices.subjects.find(
+              (s) => s.id === rows.find((r) => r.key === planRow)!.subject_id,
+            )?.name ?? ""
+          }
+          from={from}
+          through={through}
+          onDone={(id) => {
+            if (id) {
+              setRows((v) =>
+                v.map((r) =>
+                  r.key === planRow ? { ...r, curriculum_id: id } : r,
+                ),
+              );
+              invalidate();
+              setNotice(
+                t(
+                  "Teaching plan saved and selected.",
+                  "পাঠ পরিকল্পনা সংরক্ষিত ও নির্বাচিত হয়েছে।",
+                ),
+              );
+              router.refresh();
+            }
+            setPlanRow(null);
+          }}
+        />
       )}
       {open && room && (
         <PlanningForm

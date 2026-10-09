@@ -21,6 +21,7 @@ export function TimetableWorkspace({
     t = (en: string, bn: string) => (locale === "bn" ? bn : en),
     router = useRouter();
   const [panel, setPanel] = useState<Record<string, unknown> | null>(null),
+    [edit, setEdit] = useState<Record<string, unknown> | null>(null),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false),
     [retry, setRetry] = useState<Record<string, unknown> | null>(null);
@@ -53,12 +54,21 @@ export function TimetableWorkspace({
         </h1>
         <p className="mt-2 text-muted-foreground">
           {t(
-            "Choose a batch, add class rows and preview. One save creates the routine and its next four weeks of dated classes.",
-            "ব্যাচ নির্বাচন করুন, ক্লাসের সারি যোগ করে preview দেখুন। একবার সংরক্ষণে রুটিন ও আগামী চার সপ্তাহের তারিখভিত্তিক ক্লাস তৈরি হবে।",
+            "Choose batch, subject, teacher, room and time; tick all class days. Preview and activate.",
+            "ব্যাচ, বিষয়, শিক্ষক, কক্ষ ও সময় নির্বাচন করে ক্লাসের দিনগুলো tick করুন। যাচাই করে রুটিন চালু করুন।",
           )}
         </p>
       </header>
-      <TimetableEditor data={data} today={today} />
+      <TimetableEditor
+        key={String(edit?.id ?? "new")}
+        data={data}
+        today={today}
+        initial={edit ?? undefined}
+        onClose={(message) => {
+          setEdit(null);
+          if (message) setNotice(message);
+        }}
+      />
       {notice && <p role="status">{notice}</p>}
       {busy && (
         <p role="status">{t("Creating classes…", "ক্লাস তৈরি হচ্ছে…")}</p>
@@ -136,6 +146,18 @@ export function TimetableWorkspace({
                       <>
                         <Button
                           variant="outline"
+                          disabled={busy || !!retry}
+                          onClick={(e) => {
+                            guardWorkspaceNavigation(e, locale);
+                            if (e.defaultPrevented) return;
+                            setEdit(r);
+                            setPanel(null);
+                          }}
+                        >
+                          {t("Change from date", "তারিখ থেকে পরিবর্তন")}
+                        </Button>
+                        <Button
+                          variant="outline"
                           disabled={busy || !!retry || d.from > d.through}
                           onClick={() => {
                             if (
@@ -152,17 +174,14 @@ export function TimetableWorkspace({
                                 starts_on: d.from,
                                 ends_on: d.through,
                                 skip_past: true,
-                                planned_scope: "Scheduled subject teaching",
+
                                 request_id: crypto.randomUUID(),
                                 reason: "Extend agreed weekly timetable",
                                 locale,
                               });
                           }}
                         >
-                          {t(
-                            "Create next four weeks",
-                            "পরবর্তী চার সপ্তাহ তৈরি",
-                          )}
+                          {t("Prepare more classes", "আরও ক্লাস প্রস্তুত করুন")}
                         </Button>
                         <Button
                           variant="outline"

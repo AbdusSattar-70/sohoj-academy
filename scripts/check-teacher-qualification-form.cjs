@@ -108,7 +108,10 @@ const today = new Intl.DateTimeFormat("en-CA", {
       .props.value,
     today,
   );
-  assert.equal(walk(tree).find((n) => n.type === "details").props.open, false);
+  assert.equal(
+    walk(tree).find((n) => n.type === "details").props.open,
+    undefined,
+  );
   choice(tree, "teacher-a").props.onChange({ target: { value: "teacher-a" } });
   tree = render();
   choice(tree, "physics").props.onChange({ target: { value: "physics" } });
@@ -137,7 +140,10 @@ const today = new Intl.DateTimeFormat("en-CA", {
       .props.value,
     "2025-01-01",
   );
-  assert.equal(walk(tree).find((n) => n.type === "details").props.open, true);
+  assert.equal(
+    walk(tree).find((n) => n.type === "details").props.open,
+    undefined,
+  );
   states = [];
   tree = render("ROUTINE", { subject_id: "physics", teacher_id: "teacher-a" });
   choice(tree, "math").props.onChange({ target: { value: "math" } });

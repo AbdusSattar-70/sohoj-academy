@@ -64,7 +64,7 @@ export const erpRouteRegistry: ErpRouteDefinition[] = [
   },
   {
     id: "academic-planning",
-    title: "Academic planning & availability",
+    title: "Rooms & schedule preferences",
     eyebrow: "Academics",
     href: "/dashboard/academics/planning",
     navGroup: "Academics",

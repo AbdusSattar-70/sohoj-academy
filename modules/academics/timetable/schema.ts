@@ -9,11 +9,13 @@ export const timetableSlot = z.object({
   room_id: id,
   start_time: time,
   end_time: time,
+  curriculum_id: id.optional(),
   planned_scope: z.string().trim().max(2000).default(""),
 });
 export const timetableSchema = z
   .object({
     batch_id: id,
+    replace_routine_id: id.optional(),
     starts_on: day,
     ends_on: day,
     slots: z.array(timetableSlot).min(1).max(40),
@@ -45,6 +47,9 @@ export const previewSchema = z.object({
   ready: z.boolean(),
   count: z.number(),
   issues: z.array(z.object({ row: z.number(), message: z.string() })),
+  warnings: z
+    .array(z.object({ row: z.number(), message: z.string() }))
+    .default([]),
   classes: z.array(
     z.object({
       row: z.number(),

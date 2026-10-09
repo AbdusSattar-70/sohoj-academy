@@ -55,14 +55,14 @@ export default async function AcademicHelpPage() {
       <aside className="space-y-2 rounded-xl border p-4">
         <h2 className="font-semibold">
           <LocalizedText
-            en="Availability errors and changed classes"
-            bn="Availability সমস্যা ও ক্লাস পরিবর্তন"
+            en="Scheduling notices and changed classes"
+            bn="সময়সূচির সতর্কতা ও ক্লাস পরিবর্তন"
           />
         </h2>
         <p className="leading-7">
           <LocalizedText
-            en="Check the selected teacher, teaching subject, weekday, Bangladesh time and effective date. Availability is optional when no effective windows are configured. If configured, the entire session must be covered; adjacent windows can cover it, but gaps cannot. Existing room, teacher and batch bookings are also checked. Keep your input and correct the conflicting field."
-            bn="নির্বাচিত শিক্ষক, বিষয়, দিন, বাংলাদেশ সময় ও effective date যাচাই করুন। কার্যকর windows না থাকলে availability বাধ্যতামূলক নয়। Windows থাকলে Session-এর পুরো সময় তার মধ্যে থাকতে হবে। পাশাপাশি windows সময় cover করতে পারে, gap থাকলে পারবে না। শিক্ষক, কক্ষ ও ব্যাচের booking-ও যাচাই হয়। Input রেখে conflict সংশোধন করুন।"
+            en="Check the selected teacher, teaching subject, weekday, Bangladesh time and effective date. Saved availability represents preferred hours and only warns. Real room/teacher unavailability and existing bookings still prevent scheduling. Existing room, teacher and batch bookings are also checked. Keep your input and correct the conflicting field."
+            bn="নির্বাচিত শিক্ষক, বিষয়, দিন, বাংলাদেশ সময় ও effective date যাচাই করুন। সংরক্ষিত availability পছন্দের সময় হিসেবে শুধু সতর্ক করে। বাস্তব কক্ষ/শিক্ষকের বন্ধ সময় এবং আগের booking ক্লাস তৈরিতে বাধা থাকবে। শিক্ষক, কক্ষ ও ব্যাচের booking-ও যাচাই হয়। Input রেখে conflict সংশোধন করুন।"
           />
         </p>
         <p className="leading-7">

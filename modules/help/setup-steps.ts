@@ -51,8 +51,8 @@ export const setupSteps: WorkflowStep[] = [
       "৫. শিক্ষক ও কক্ষের ব্যবহারযোগ্য সময়",
     ],
     body: [
-      "Add a classroom with enough seats. Availability is optional: record windows only when room or teacher hours must be restricted. Configured windows, holidays and existing bookings are checked.",
-      "পর্যাপ্ত আসনের কক্ষ যোগ করুন। নির্দিষ্ট সময়সীমা থাকলেই availability দিন; বাধ্যতামূলক নয়। নির্ধারিত windows, ছুটি ও আগের booking যাচাই হয়।",
+      "Add a classroom with enough seats. Preferred hours are optional recommendations. Real holidays/unavailability and existing bookings remain enforced.",
+      "পর্যাপ্ত আসনের কক্ষ যোগ করুন। পছন্দের সময় দেওয়া ঐচ্ছিক; তা পরামর্শ। বাস্তব ছুটি/বন্ধ সময় ও আগের booking যাচাই হবে।",
     ],
     href: "/dashboard/academics/planning?section=rooms",
     permission: "academics.sessions.manage",
@@ -63,8 +63,8 @@ export const setupSteps: WorkflowStep[] = [
       "৬. রুটিন থেকে তারিখভিত্তিক ক্লাস",
     ],
     body: [
-      "Choose a batch and dates, add class rows with day/time/subject/teacher/room and preview. Save creates routines and the next four weeks of classes together. Correct conflicts without losing input; open the class calendar for attendance.",
-      "ব্যাচ ও তারিখ দিন; দিন–সময়, বিষয়, শিক্ষক ও কক্ষ দিয়ে সারি যোগ করে preview দেখুন। একবার সংরক্ষণে রুটিন ও আগামী চার সপ্তাহের ক্লাস তৈরি হবে। Conflict হলে input থাকবে। উপস্থিতির জন্য ক্লাস ক্যালেন্ডার খুলুন।",
+      "Choose batch, subject, teacher, room and time; tick multiple weekdays on one class row. Review and activate. Optionally create a dated teaching plan here. Open the class calendar for attendance.",
+      "ব্যাচ, বিষয়, শিক্ষক, কক্ষ ও সময় দিন; একই ক্লাসের সব দিন tick করুন। যাচাই করে চালু করুন। চাইলে এখানেই তারিখভিত্তিক পাঠ পরিকল্পনা তৈরি করুন। উপস্থিতির জন্য ক্লাস ক্যালেন্ডার খুলুন।",
     ],
     href: "/dashboard/academics/routine",
     permission: "academics.sessions.manage",

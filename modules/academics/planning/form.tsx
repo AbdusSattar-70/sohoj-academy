@@ -56,6 +56,14 @@ export function PlanningForm({
             ends_on: "",
           }
         : {}),
+      ...(action === "AVAILABILITY"
+        ? {
+            starts_on: new Intl.DateTimeFormat("en-CA", {
+              timeZone: "Asia/Dhaka",
+            }).format(new Date()),
+            ends_on: "2099-12-31",
+          }
+        : {}),
       ...initial,
     }),
     [days, setDays] = useState<number[]>(
@@ -407,8 +415,23 @@ export function PlanningForm({
                 )}
               {action === "CLOSURE" &&
                 input("name", "Closure / absence reason", "ছুটি / বন্ধের কারণ")}
-              {input("starts_on", "Effective from", "কার্যকর শুরু", "date")}
-              {input("ends_on", "Through", "শেষ", "date")}
+              {action === "CLOSURE" ? (
+                <>
+                  {input("starts_on", "Unavailable from", "বন্ধ শুরু", "date")}
+                  {input("ends_on", "Through", "শেষ", "date")}
+                </>
+              ) : (
+                <details className="sm:col-span-2 rounded-lg border p-3">
+                  <summary className="cursor-pointer">
+                    {t(
+                      "Limit preference to dates (optional)",
+                      "পছন্দের সময় নির্দিষ্ট তারিখে সীমিত করুন (ঐচ্ছিক)",
+                    )}
+                  </summary>
+                  {input("starts_on", "From", "শুরু", "date")}
+                  {input("ends_on", "Through", "শেষ", "date")}
+                </details>
+              )}
               {action === "AVAILABILITY" && (
                 <>
                   {select(
@@ -437,14 +460,11 @@ export function PlanningForm({
               )}
               <p className="sm:col-span-2 text-sm text-muted-foreground">
                 {t(
-                  "Assigning a subject permits this teacher to teach it; it does not schedule a class. Dates default to today with no expiry. Change them only for earlier or time-limited authorization.",
-                  "বিষয় বরাদ্দ করলে শিক্ষক বিষয়টি পড়াতে পারবেন; এতে ক্লাস তৈরি হয় না। আজ থেকে কার্যকর, মেয়াদ শেষ নেই। আগের তারিখ বা নির্দিষ্ট মেয়াদ প্রয়োজন হলে তারিখ বদলান।",
+                  "This records teaching subjects as a recommendation, not a scheduling restriction. No dates are required in ordinary use. Open advanced dates only for historical or time-limited assignments.",
+                  "এটি পাঠদানের বিষয়ের পরিচিতি; ক্লাস বরাদ্দে বাধা নয়। সাধারণ ব্যবহারে তারিখ দিতে হবে না। অতীত বা সীমিত মেয়াদের জন্য advanced তারিখ খুলুন।",
                 )}
               </p>
-              <details
-                className="sm:col-span-2 rounded-lg border p-3"
-                open={Boolean(initial.id || initial.ends_on)}
-              >
+              <details className="sm:col-span-2 rounded-lg border p-3">
                 <summary className="min-h-9 cursor-pointer font-medium">
                   {t(
                     "Effective dates (optional to change)",

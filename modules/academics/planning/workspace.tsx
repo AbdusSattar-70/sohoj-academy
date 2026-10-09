@@ -8,10 +8,13 @@ import { guardWorkspaceNavigation } from "@/modules/platform/navigation/navigati
 import { sections, type PlanningData } from "./schema";
 const titles = {
   qualifications: ["Teacher subject qualifications", "শিক্ষকের পাঠদানের বিষয়"],
-  offerings: ["Programme teaching plan", "প্রোগ্রামের পাঠদান পরিকল্পনা"],
+  offerings: [
+    "Programme dates & default days",
+    "প্রোগ্রামের তারিখ ও সাধারণ দিন",
+  ],
   batches: ["Batch days & times", "ব্যাচের দিন ও সময়"],
   rooms: ["Classrooms", "শ্রেণিকক্ষ"],
-  availability: ["Teacher / room availability", "শিক্ষক / কক্ষের সময়"],
+  availability: ["Preferred hours (optional)", "পছন্দের সময় (ঐচ্ছিক)"],
   closures: ["Holidays & unavailability", "ছুটি ও অনুপস্থিতি"],
   routines: ["Weekly subject routine", "সাপ্তাহিক বিষয়ের রুটিন"],
 };
@@ -33,8 +36,8 @@ const instructions: Record<PlanningData["section"], [string, string]> = {
     "কক্ষ, শাখা ও আসনসংখ্যা দিন। নির্দিষ্ট সময়সীমা থাকলেই availability দিন। আগের booking সবসময় যাচাই হবে।",
   ],
   availability: [
-    "Choose Teacher or Room and set weekdays and local start/end times. This permits scheduling within the window; it does not create classes.",
-    "শিক্ষক বা কক্ষ নির্বাচন করে দিন ও স্থানীয় শুরু–শেষ সময় দিন। এই সময়ের মধ্যে রুটিন করা যাবে; এতে ক্লাস তৈরি হয় না।",
+    "Choose Teacher or Room and set weekdays and local start/end times. These are scheduling preferences, not mandatory restrictions. For real unavailable dates, use Holidays & unavailability.",
+    "শিক্ষক বা কক্ষ নির্বাচন করে দিন ও স্থানীয় শুরু–শেষ সময় দিন। এগুলো পছন্দের সময়, বাধ্যতামূলক সীমা নয়। বাস্তব বন্ধ তারিখের জন্য ছুটি ও অনুপস্থিতি ব্যবহার করুন।",
   ],
   closures: [
     "Record academy holidays or resource unavailability. Generated classes skip closed dates; existing sessions need their own change action.",
@@ -240,7 +243,9 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
             <tr>
               {[
                 t("Record", "রেকর্ড"),
-                t("Days / times / dates", "দিন / সময় / তারিখ"),
+                data.section === "rooms"
+                  ? t("Campus", "শাখা")
+                  : t("Days / times / dates", "দিন / সময় / তারিখ"),
                 t("Status", "অবস্থা"),
                 t("Actions", "কাজ"),
               ].map((s) => (
@@ -267,6 +272,9 @@ export function PlanningWorkspace({ data }: { data: PlanningData }) {
                   ) : null}
                 </td>
                 <td className="p-3">
+                  {data.section === "rooms" &&
+                    data.choices.branches.find((b) => b.id === r.branch_id)
+                      ?.name}
                   {r.weekday !== undefined ? (
                     <p>
                       {t(

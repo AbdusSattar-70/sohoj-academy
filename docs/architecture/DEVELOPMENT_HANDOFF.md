@@ -4,7 +4,7 @@
 
 Current work is on `feature/sohoj_final`. Read [workspace ownership and end-to-end workflow](WORKSPACE_REDESIGN_WORKFLOW_BN.md), [delivery evidence](WORKSPACE_REDESIGN_DELIVERY.md), [operational usability standard](OPERATIONAL_USABILITY_STANDARD.md), and [local acceptance](REDESIGN_LOCAL_ACCEPTANCE.md).
 
-The repository contains migrations 01–61. Use the actual files as the install inventory; older documentation counts are not current. The current timetable delivery adds migrations 59–60 and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
+The repository contains migrations 01–61. Use the actual files as the install inventory; older documentation counts are not current. The current timetable delivery adds migrations 59–61 and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
 
 ## Staff attendance refinement
 
@@ -73,3 +73,10 @@ Fixture 40 checks optional/explicit availability, holidays, read-only preview, a
 ## Simple routine redesign — backend
 
 Read [the agreed Bengali operational redesign](ACADEMIC_OPERATION_REDESIGN_BN.md). Migration 61 makes saved availability preferred hours rather than a mandatory admission/scheduling prerequisite. Explicit closures, actual bookings, capacity, campus, active identities, programme dates/subjects and access controls remain enforced. Preview returns advisory warnings separately from blocking issues. Teaching plans and recurring notes are pinned on routines and inherited by generated sessions. A permission-checked future replacement atomically retires the old reservation, records cancellation of untouched future classes and creates replacements; past/started/evidenced classes are protected, and failed replacement rolls back all changes. Database fixture 41 verifies plan links, preferred-hour warnings, actual conflict rejection, replacement history and injected failure rollback; fixtures 39–40 reflect the new advisory policy.
+
+
+## Simple routine redesign — interface
+
+The weekly editor uses multi-day checkbox groups; the database continues to store one normalized routine per weekday. Programme end dates are inherited with an optional advanced override. Preferred-hours notices and repeated blocking errors are compacted; the full dated preview is collapsed by default. Room setup stays inline; optional dated teaching plans can also be created and selected on the same page. Existing routine rows have a future-date change action; success is visible after the editor closes. Teacher subject dates and preferred-hour date limits are advanced options, while real closure dates remain visible and required. Labels distinguish programme operating dates from chapter/topic plans.
+
+Verification: fixture 41 (advisory preferred hours, plan linkage, conflict/permission checks, retry, future replacement, past preservation and injected replacement rollback); existing fixtures 39–40 and guided class workflow; actual editor handler and rendered checkbox/compact preview checks; bilingual guide rendering; source integrity; targeted ESLint; TypeScript; Next.js production build. Hosted browser/database acceptance remains to run after installing migration 61. No database reset is needed. The first save prepares 28 days; the register offers bounded continuation, not an unattended background scheduler.
