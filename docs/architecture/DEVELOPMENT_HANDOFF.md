@@ -4,7 +4,7 @@
 
 Current work is on `feature/sohoj_final`. Read [workspace ownership and end-to-end workflow](WORKSPACE_REDESIGN_WORKFLOW_BN.md), [delivery evidence](WORKSPACE_REDESIGN_DELIVERY.md), [operational usability standard](OPERATIONAL_USABILITY_STANDARD.md), and [local acceptance](REDESIGN_LOCAL_ACCEPTANCE.md).
 
-The repository contains migrations 01–60. Use the actual files as the install inventory; older documentation counts are not current. The current timetable delivery adds migrations 59–60 and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
+The repository contains migrations 01–61. Use the actual files as the install inventory; older documentation counts are not current. The current timetable delivery adds migrations 59–60 and requires no database reset or migration-history repair. Existing installed databases must apply genuinely unapplied SQL, never mark SQL applied merely to hide a mismatch.
 
 ## Staff attendance refinement
 
@@ -68,3 +68,8 @@ Migration 59 treats programme/batch days and windows as timetable defaults. With
 Migration 60 adds authenticated preview and atomic save RPCs. `/dashboard/academics/routine` now has batch/date selection, individual class rows, copy-to-day, inline classroom creation, actual 28-day preview, then one save for routines and initial sessions. Start defaults to today or a later programme start. Existing routine rows can extend from their last generated session; legacy planning routine URLs redirect to this page. Read [the Bengali timetable guide](WEEKLY_TIMETABLE_BN.md).
 
 Fixture 40 checks optional/explicit availability, holidays, read-only preview, atomic multi-row save, idempotent retries, double bookings, invalid staff, injected second-row runtime failure rollback and teacher permission denial. `scripts/check-weekly-timetable.cjs` exercises the real editor handlers for defaults, copy, preserved input/teacher, uncertain result freezing, identical retry and success closing. A full Next.js production build, source integrity, targeted ESLint, existing teacher-class database fixture and guide rendering passed. Hosted Supabase/browser acceptance still belongs to the target environment; apply 59–60 via db push, without resetting or migration-history repair.
+
+
+## Simple routine redesign — backend
+
+Read [the agreed Bengali operational redesign](ACADEMIC_OPERATION_REDESIGN_BN.md). Migration 61 makes saved availability preferred hours rather than a mandatory admission/scheduling prerequisite. Explicit closures, actual bookings, capacity, campus, active identities, programme dates/subjects and access controls remain enforced. Preview returns advisory warnings separately from blocking issues. Teaching plans and recurring notes are pinned on routines and inherited by generated sessions. A permission-checked future replacement atomically retires the old reservation, records cancellation of untouched future classes and creates replacements; past/started/evidenced classes are protected, and failed replacement rolls back all changes. Database fixture 41 verifies plan links, preferred-hour warnings, actual conflict rejection, replacement history and injected failure rollback; fixtures 39–40 reflect the new advisory policy.

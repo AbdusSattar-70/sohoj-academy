@@ -36,7 +36,7 @@ declare paid_case uuid;preview jsonb;rid uuid;teacher uuid;branch uuid;y public.
  result:=public.academic_schedule_command(payload||jsonb_build_object('teacher_id',student,'start_time','09:00','end_time','10:00','request_id',gen_random_uuid(),'reason','Assign administrator own Staff identity'));routine:=(result->>'id')::uuid;
  perform public.academic_schedule_command(jsonb_build_object('action','GENERATE','routine_id',routine,'starts_on',day,'ends_on',day,'planned_scope','Administrator teaches next class','request_id',gen_random_uuid(),'reason','Generate administrator class without teaching role'));
  if(select count(*) from public.class_sessions where batch_id=batch)<>2 then raise exception 'Teacher and admin generation failed';end if;
- rejected:=false;begin perform public.check_academic_slot(batch,subject,teacher,room,day,'07:00','08:00');exception when others then rejected:=true;end;if not rejected then raise exception 'Availability guard removed';end if;
+ perform public.check_academic_slot(batch,subject,teacher,room,day,'07:00','08:00'); -- Preferred hours are advisory; real conflicts and closures stay enforced.
  rejected:=false;begin perform public.check_academic_slot(batch,subject,gen_random_uuid(),room,day,'08:00','09:00');exception when others then rejected:=true;end;if not rejected then raise exception 'Invalid staff identity accepted';end if;
  rejected:=false;begin perform public.academic_schedule_command(payload||jsonb_build_object('request_id',gen_random_uuid()));exception when others then rejected:=true;end;if not rejected then raise exception 'Routine double booking accepted';end if;
  perform set_config('request.jwt.claim.sub',teacher_profile::text,true);
