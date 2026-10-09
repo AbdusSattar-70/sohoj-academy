@@ -61,8 +61,8 @@ export default async function AcademicHelpPage() {
         </h2>
         <p className="leading-7">
           <LocalizedText
-            en="Check the selected teacher, teaching subject, weekday, Bangladesh time and effective date. The entire session must be covered by availability; adjacent windows can cover it, but gaps cannot. Existing room, teacher and batch bookings are also checked. Keep your input and correct the conflicting field."
-            bn="নির্বাচিত শিক্ষক, বিষয়, দিন, বাংলাদেশ সময় ও effective date যাচাই করুন। Session-এর পুরো সময় availability-তে থাকতে হবে। পাশাপাশি windows সময় cover করতে পারে, gap থাকলে পারবে না। শিক্ষক, কক্ষ ও ব্যাচের booking-ও যাচাই হয়। Input রেখে conflict সংশোধন করুন।"
+            en="Check the selected teacher, teaching subject, weekday, Bangladesh time and effective date. Availability is optional when no effective windows are configured. If configured, the entire session must be covered; adjacent windows can cover it, but gaps cannot. Existing room, teacher and batch bookings are also checked. Keep your input and correct the conflicting field."
+            bn="নির্বাচিত শিক্ষক, বিষয়, দিন, বাংলাদেশ সময় ও effective date যাচাই করুন। কার্যকর windows না থাকলে availability বাধ্যতামূলক নয়। Windows থাকলে Session-এর পুরো সময় তার মধ্যে থাকতে হবে। পাশাপাশি windows সময় cover করতে পারে, gap থাকলে পারবে না। শিক্ষক, কক্ষ ও ব্যাচের booking-ও যাচাই হয়। Input রেখে conflict সংশোধন করুন।"
           />
         </p>
         <p className="leading-7">

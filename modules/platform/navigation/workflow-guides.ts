@@ -109,12 +109,12 @@ const coreGuides: Record<string, WorkflowGuideData> = {
     bn: "পরিকল্পনার পরে তারিখভিত্তিক ক্লাস তৈরি করুন",
     steps: [
       [
-        "Prepare batch times, qualified teacher, room availability and holidays; then save the weekly routine.",
-        "ব্যাচের সময়, যোগ্য শিক্ষক, কক্ষের availability ও ছুটি প্রস্তুত করে সাপ্তাহিক রুটিন সংরক্ষণ করুন।",
+        "Choose a batch and dates; add one row per subject class with day, time, active teacher and room.",
+        "ব্যাচ ও তারিখ দিন; প্রতি বিষয়ের ক্লাসের জন্য দিন, সময়, সক্রিয় শিক্ষক ও কক্ষ দিয়ে একটি সারি যোগ করুন।",
       ],
       [
-        "Generate sessions for a date range. For a single-day change, use that session's change action rather than rewriting the routine.",
-        "নির্দিষ্ট সময়ের session তৈরি করুন। এক দিনের পরিবর্তন সেই session-এর action দিয়ে করুন; পুরো রুটিন পুনরায় লিখবেন না।",
+        "Preview the next four weeks, correct highlighted rows, then save the routine and classes together. For one-day changes, open the class calendar.",
+        "আগামী চার সপ্তাহ দেখুন, সমস্যা থাকলে সারি সংশোধন করুন; তারপর রুটিন ও ক্লাস একসঙ্গে সংরক্ষণ করুন। একদিনের পরিবর্তনের জন্য ক্লাস ক্যালেন্ডার খুলুন।",
       ],
     ],
     next: ["academic-planning", "academic-operations"],

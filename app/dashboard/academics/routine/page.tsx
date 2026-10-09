@@ -1,5 +1,5 @@
 import { getPlanning, boundedPage } from "@/modules/academics/planning/queries";
-import { PlanningWorkspace } from "@/modules/academics/planning/workspace";
+import { TimetableWorkspace } from "@/modules/academics/timetable/workspace";
 export default async function Page({
   searchParams,
 }: {
@@ -7,7 +7,10 @@ export default async function Page({
 }) {
   const q = await searchParams;
   return (
-    <PlanningWorkspace
+    <TimetableWorkspace
+      today={new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Dhaka",
+      }).format(new Date())}
       data={await getPlanning("routines", boundedPage(q.page))}
     />
   );

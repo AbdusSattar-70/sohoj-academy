@@ -18,8 +18,8 @@ export const setupSteps: WorkflowStep[] = [
       "২. স্টাফ যাচাই ও পাঠদানের বিষয়",
     ],
     body: [
-      "Review access requests, match existing identity and assign only required access. Configure the verified teacher’s teaching subjects before scheduling. Requested roles never grant access.",
-      "স্টাফের আবেদন যাচাই করে existing identity মিলিয়ে প্রয়োজনীয় role দিন। একই ব্যক্তি দ্বিতীয়বার তৈরি করবেন না। এরপর শিক্ষকের অনুমোদিত বিষয় দিন; শুধু account থাকলেই সব বিষয় পড়ানোর অনুমতি হয় না।",
+      "Review access requests, match existing identity and assign only required access. Teaching subjects are optional recommendations; admin may assign any listed active teacher or themselves. Requested roles never grant access.",
+      "স্টাফের আবেদন যাচাই করে existing identity মিলিয়ে প্রয়োজনীয় role দিন। একই ব্যক্তি দ্বিতীয়বার তৈরি করবেন না। শিক্ষকের বিষয় recommendation হিসেবে দিতে পারেন; admin তালিকার সক্রিয় শিক্ষক বা নিজেকে ক্লাস দিতে পারবেন।",
     ],
     href: "/dashboard/staff",
     permission: "staff.view",
@@ -51,10 +51,10 @@ export const setupSteps: WorkflowStep[] = [
       "৫. শিক্ষক ও কক্ষের ব্যবহারযোগ্য সময়",
     ],
     body: [
-      "Add room capacity, teaching qualifications, effective dates and weekly availability. The whole session must fit the window. Holidays and existing bookings are checked separately.",
-      "কক্ষের আসন, শিক্ষকের বিষয়, কার্যকর তারিখ ও সাপ্তাহিক সময় দিন। Session-এর পুরো সময় window-এর মধ্যে থাকতে হবে। ছুটি ও আগে থেকে booking আলাদা যাচাই হয়।",
+      "Add a classroom with enough seats. Availability is optional: record windows only when room or teacher hours must be restricted. Configured windows, holidays and existing bookings are checked.",
+      "পর্যাপ্ত আসনের কক্ষ যোগ করুন। নির্দিষ্ট সময়সীমা থাকলেই availability দিন; বাধ্যতামূলক নয়। নির্ধারিত windows, ছুটি ও আগের booking যাচাই হয়।",
     ],
-    href: "/dashboard/academics/planning?section=availability",
+    href: "/dashboard/academics/planning?section=rooms",
     permission: "academics.sessions.manage",
   },
   {
@@ -63,8 +63,8 @@ export const setupSteps: WorkflowStep[] = [
       "৬. রুটিন থেকে তারিখভিত্তিক ক্লাস",
     ],
     body: [
-      "Choose batch, subject, qualified teacher, room and day/time. Save the weekly routine, then Generate classes on its row for a date range. Conflicts retain your input. Open a dated class to record attendance.",
-      "ব্যাচ, বিষয়, যোগ্য শিক্ষক, কক্ষ ও দিন–সময় দিয়ে routine সংরক্ষণ করুন। তার row থেকে date range-এর ক্লাস তৈরি করুন। Conflict হলে input থাকবে। উপস্থিতি routine-এ নয়, তারিখভিত্তিক session-এ নেবেন।",
+      "Choose a batch and dates, add class rows with day/time/subject/teacher/room and preview. Save creates routines and the next four weeks of classes together. Correct conflicts without losing input; open the class calendar for attendance.",
+      "ব্যাচ ও তারিখ দিন; দিন–সময়, বিষয়, শিক্ষক ও কক্ষ দিয়ে সারি যোগ করে preview দেখুন। একবার সংরক্ষণে রুটিন ও আগামী চার সপ্তাহের ক্লাস তৈরি হবে। Conflict হলে input থাকবে। উপস্থিতির জন্য ক্লাস ক্যালেন্ডার খুলুন।",
     ],
     href: "/dashboard/academics/routine",
     permission: "academics.sessions.manage",
