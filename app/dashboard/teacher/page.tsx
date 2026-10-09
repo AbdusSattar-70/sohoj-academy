@@ -1,3 +1,5 @@
+import { readAvailable } from "@/modules/platform/read-availability";
+import { ReadUnavailable } from "@/components/erp/retry-read";
 import Link from "next/link";
 import { getClassFlow } from "@/modules/teacher/classroom/queries";
 import { ClassPreparation } from "@/modules/teacher/classroom/preparation";
@@ -29,42 +31,44 @@ export default async function TeacherDashboardPage() {
   const from = addDays(today, -7);
   const to = addDays(today, 14);
   const [calendar, flow] = await Promise.all([
-    getCalendar(from, to, 1),
-    getClassFlow(),
+    readAvailable(() => getCalendar(from, to, 1)),
+    readAvailable(() => getClassFlow()),
   ]);
 
-  const data = {
-    branches: [],
-    batches: [],
-    subjects: [],
-    teachers: [],
-    rooms: [],
-    curricula: [],
-    routines: [],
-    sessions: calendar.rows.map((s) => ({
-      id: s.id,
-      batch: s.batch,
-      subject: s.subject,
-      teacher: s.teacher,
-      room: s.room,
-      date: s.session_date,
-      startTime: new Date(s.starts_at).toLocaleTimeString("en-GB", {
-        timeZone: "Asia/Dhaka",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      endTime: new Date(s.ends_at).toLocaleTimeString("en-GB", {
-        timeZone: "Asia/Dhaka",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      timezone: "Asia/Dhaka",
-      status: s.status,
-      scope: s.planned_scope,
-      latestStatus: s.attendance,
-      approvedRevision: s.approved_revision,
-    })),
-  };
+  const data = calendar
+    ? {
+        branches: [],
+        batches: [],
+        subjects: [],
+        teachers: [],
+        rooms: [],
+        curricula: [],
+        routines: [],
+        sessions: calendar.rows.map((s) => ({
+          id: s.id,
+          batch: s.batch,
+          subject: s.subject,
+          teacher: s.teacher,
+          room: s.room,
+          date: s.session_date,
+          startTime: new Date(s.starts_at).toLocaleTimeString("en-GB", {
+            timeZone: "Asia/Dhaka",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          endTime: new Date(s.ends_at).toLocaleTimeString("en-GB", {
+            timeZone: "Asia/Dhaka",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          timezone: "Asia/Dhaka",
+          status: s.status,
+          scope: s.planned_scope,
+          latestStatus: s.attendance,
+          approvedRevision: s.approved_revision,
+        })),
+      }
+    : null;
   return (
     <div className="space-y-7">
       <PageHeader
@@ -109,7 +113,7 @@ export default async function TeacherDashboardPage() {
           />
         </Link>
       )}
-      {calendar.total > 25 && (
+      {calendar && calendar.total > 25 && (
         <Link
           className="rounded-lg border p-3"
           href={`/dashboard/academics/operations?from=${from}&to=${to}`}
@@ -120,19 +124,33 @@ export default async function TeacherDashboardPage() {
           />
         </Link>
       )}
-      <TeacherWorkspace
-        data={data}
-        today={today}
-        staffName={context.staffName}
-        staffNo={context.staffNo}
-        canRecordAttendance={context.permissions.includes(
-          "academics.attendance.record",
-        )}
-        canManageSessions={context.permissions.includes(
-          "academics.sessions.manage",
-        )}
-      />
-      <ClassPreparation reminders={flow.reminders} />
+      {data ? (
+        <TeacherWorkspace
+          data={data}
+          today={today}
+          staffName={context.staffName}
+          staffNo={context.staffNo}
+          canRecordAttendance={context.permissions.includes(
+            "academics.attendance.record",
+          )}
+          canManageSessions={context.permissions.includes(
+            "academics.sessions.manage",
+          )}
+        />
+      ) : (
+        <ReadUnavailable
+          en="Assigned classes temporarily unavailable"
+          bn="নির্ধারিত ক্লাসের তথ্য আপাতত পাওয়া যাচ্ছে না"
+        />
+      )}
+      {flow ? (
+        <ClassPreparation reminders={flow.reminders} />
+      ) : (
+        <ReadUnavailable
+          en="Class preparation temporarily unavailable"
+          bn="ক্লাস প্রস্তুতির তথ্য আপাতত পাওয়া যাচ্ছে না"
+        />
+      )}
     </div>
   );
 }
