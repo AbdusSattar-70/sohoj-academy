@@ -22,8 +22,11 @@ function load(file) {
     if (name === "next/link")
       return {
         __esModule: true,
-        default: ({ prefetch, children, ...props }) =>
-          React.createElement("a", props, children),
+        default: ({ children, ...props }) => {
+          const { prefetch, ...anchorProps } = props;
+          void prefetch;
+          return React.createElement("a", anchorProps, children);
+        },
       };
     if (name.startsWith("@/")) {
       const stem = name.slice(2);
