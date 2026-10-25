@@ -6,7 +6,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0",
     "typecheck": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && next typegen && tsc --noEmit",
     "check": "pnpm check:source && pnpm lint && pnpm typecheck && pnpm build",
     "seed:reference": "supabase db push --include-seed",
