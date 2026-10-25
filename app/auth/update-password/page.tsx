@@ -11,12 +11,12 @@ export default function UpdatePasswordPage() {
     [ready, setReady] = useState(false),
     [pending, setPending] = useState(false);
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("error")) {
-      setMessage("This setup link is expired. Ask the admin to resend it.");
-      return;
-    }
     const db = createClient();
     void (async () => {
+      if (new URLSearchParams(window.location.search).get("error")) {
+        setMessage("This setup link is expired. Ask the admin to resend it.");
+        return;
+      }
       const hash = new URLSearchParams(window.location.hash.slice(1));
       if (hash.get("access_token") && hash.get("refresh_token")) {
         const { error } = await db.auth.setSession({
