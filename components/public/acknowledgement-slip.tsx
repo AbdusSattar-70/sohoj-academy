@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 export type AcknowledgementData={prospectNo?:string|null;studentName?:string;intentLabel?:string;details?:Record<string,string>};
 export function AcknowledgementSlip({message,bn=false}:{message:AcknowledgementData;bn?:boolean}){return <>
         <style>{`
