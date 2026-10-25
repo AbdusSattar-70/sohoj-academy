@@ -16,7 +16,6 @@ export function BatchRegister({
   canManage: boolean;
 }) {
   const router = useRouter();
-  const [notice, setNotice] = useState("");
   const [form, setForm] = useState<{
     action: "CREATE_BATCH" | "EDIT_BATCH";
     id?: string;
@@ -154,11 +153,6 @@ export function BatchRegister({
         )}
       </section>
 
-      {notice && (
-        <p role="status" className="rounded-xl border p-4 text-sm">
-          {notice}
-        </p>
-      )}
       {form && (
         <InlineWorkPanel
           key={`${form.action}:${form.id ?? "new"}`}
