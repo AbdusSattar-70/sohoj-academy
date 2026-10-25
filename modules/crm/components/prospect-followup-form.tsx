@@ -1,5 +1,5 @@
 "use client";
-import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
+import { ActionPanel } from "@/components/erp/action-panel";
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
