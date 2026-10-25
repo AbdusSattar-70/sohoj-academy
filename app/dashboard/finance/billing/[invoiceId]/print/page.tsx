@@ -2,7 +2,6 @@ import { amountInWords } from "@/lib/academy/money-in-words";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/modules/platform/auth/erp-context";
-import { getAcademySetup } from "@/modules/platform/setup/queries";
 import { getFinanceWorkspace } from "@/modules/finance/operations/queries";
 import { PrintAdmissionButton } from "@/modules/admissions/components/print-button";
 const money = (currency: string, n: number) => `${currency} ${n.toFixed(2)}`;
@@ -15,10 +14,7 @@ export default async function Statement({
 }) {
   await requirePermission("finance.view");
   const { invoiceId } = await params;
-  const [data, setup] = await Promise.all([
-    getFinanceWorkspace(),
-    getAcademySetup(),
-  ]);
+  const data = await getFinanceWorkspace();
   const i = data.invoices.find((r) => r.id === invoiceId);
   if (!i) notFound();
   const a = data.admissions.find((r) => r.id === i.admissionId);
