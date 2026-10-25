@@ -71,7 +71,7 @@ export function CollectionForm({
         <fieldset disabled={pending} className="contents">
           <p className="text-sm text-muted-foreground sm:col-span-2">
             Current due: BDT {due.toFixed(2)}. Reductions apply to this
-            invoice's unpaid tuition only, within the operating rule limits.
+            invoice&apos;s unpaid tuition only, within the operating rule limits.
           </p>
           <label className="text-sm">
             Discount / scholarship amount (BDT)
