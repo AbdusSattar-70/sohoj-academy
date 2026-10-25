@@ -7,7 +7,7 @@ function Field({label,value,wide=false,tall=false}:{label:string;value?:string|n
 function NameBoxes({label,value}:{label:string;value?:string|null}){const letters=Array.from((value??"").toUpperCase());return <div className="paper-name"><span>{label} · CAPITAL LETTERS / বড় হাতের অক্ষর</span>{letters.length>36?<div className="paper-long-name">{value}</div>:<div className="paper-boxes">{Array.from({length:36},(_,i)=><b key={i}>{letters[i]??"\u00a0"}</b>)}</div>}</div>;}
 function Section({title,children}:{title:string;children:ReactNode}){return <section className="paper-section"><h2>{title}</h2>{children}</section>;}
 function Header({title,reference,page}:{title:string;reference?:string;page?:string}){return <><div className="paper-letterhead-space" aria-label="Space for preprinted letterhead"/><header className="paper-header"><div><h1>{title}</h1><p>Reference: {reference||"________________________"}</p></div><p>{page}</p></header></>;}
-export function AdmissionPaper({data:a={},receiptOnly,academyName:_academyName,catalogue={offerings:[],subjects:[]}}:{data?:PaperData;receiptOnly?:string;academyName?:string;catalogue?:PaperCatalogue}){
+export function AdmissionPaper({data:a={},receiptOnly,catalogue={offerings:[],subjects:[]}}:{data?:PaperData;receiptOnly?:string;academyName?:string;catalogue?:PaperCatalogue}){
  const receipt=a.receipts?.find(r=>r.number===receiptOnly),x=a.additionalDetails??{};
  return <><style>{admissionPrintStyles}</style><article className="admission-paper">
  {!receiptOnly&&<section className="paper-page"><Header title="Admission application / ভর্তি আবেদন" reference={a.number} page="01 / 02"/>
