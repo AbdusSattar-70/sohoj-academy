@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import {useEffect,useRef,useState,useTransition} from "react";
+import {useCallback,useEffect,useRef,useState,useTransition} from "react";
 import {useLanguage} from "@/components/providers/language-provider";
 import {CounterRegister} from "./register";
 import {counterTransferAction} from "./transfer-actions";
@@ -12,8 +12,8 @@ export function CounterWorkspace({data,transfers,page,transfersPage,pendingOnly=
  const {locale}=useLanguage(),t=(en:string,bn:string)=>locale==="bn"?bn:en;
  const [panel,setPanel]=useState<Panel|null>(()=>{const c=data.records.find(x=>x.id===resumeReturnId);return c&&data.manager?{action:"RETURN",counter:c}:null;}),[pending,start]=useTransition(),[message,setMessage]=useState("");const retry=useRef({signature:"",id:""}),formRef=useRef<HTMLFormElement>(null);
  useEffect(()=>{if(panel)formRef.current?.scrollIntoView({behavior:"smooth",block:"start"});},[panel]);
- function draftKey(counterId:string){return `erp:counter-return:${actorId}:${counterId}`;}
- useEffect(()=>{if(panel?.action!=="RETURN"||panel.counter?.id!==resumeReturnId||!formRef.current)return;try{const raw=sessionStorage.getItem(draftKey(panel.counter!.id));if(!raw)return;const draft=JSON.parse(raw) as Record<string,unknown>;for(const key of ["amount","account_id","reference","reason"]){const field=formRef.current.elements.namedItem(key);if(typeof draft[key]==="string"&&(field instanceof HTMLInputElement||field instanceof HTMLSelectElement))field.value=draft[key] as string;}}catch{/* Storage is optional; never post a draft automatically. */}},[panel,resumeReturnId,actorId]);
+ const draftKey=useCallback((counterId:string)=>`erp:counter-return:${actorId}:${counterId}`,[actorId]);
+ useEffect(()=>{if(panel?.action!=="RETURN"||panel.counter?.id!==resumeReturnId||!formRef.current)return;try{const raw=sessionStorage.getItem(draftKey(panel.counter!.id));if(!raw)return;const draft=JSON.parse(raw) as Record<string,unknown>;for(const key of ["amount","account_id","reference","reason"]){const field=formRef.current.elements.namedItem(key);if(typeof draft[key]==="string"&&(field instanceof HTMLInputElement||field instanceof HTMLSelectElement))field.value=draft[key] as string;}}catch{/* Storage is optional; never post a draft automatically. */}},[panel,resumeReturnId,draftKey]);
  function saveReturnDraft(){if(panel?.action!=="RETURN"||!formRef.current)return;const form=new FormData(formRef.current),draft:Record<string,string>={};for(const key of ["amount","account_id","reference","reason"])draft[key]=String(form.get(key)??"");try{sessionStorage.setItem(draftKey(panel.counter!.id),JSON.stringify(draft));}catch{}}
  function choose(p:Panel){setPanel(p);setMessage("");retry.current={signature:"",id:""};}
  const balance=panel?.counter?transfers.balances.find(x=>x.id===panel.counter!.id)?.amount??0:0;
