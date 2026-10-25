@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS VM harness loads the actual TSX editor. */
 const fs = require("node:fs"),
   vm = require("node:vm"),
   ts = require("typescript"),
