@@ -18,6 +18,12 @@
 .env.production.local
 .env*
 
+# Cloudflare / Vite generated output
+/.cloudflare/
+/.wrangler/
+/.vite/
+/dist/
+
 # Vercel
 .vercel
 
