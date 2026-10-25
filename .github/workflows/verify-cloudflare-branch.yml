@@ -1,0 +1,33 @@
+name: Verify Cloudflare deployment branch
+
+on:
+  push:
+    branches:
+      - feature/cloudflare_deployment
+  pull_request:
+    branches:
+      - feature/cloudflare_deployment
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check source integrity
+        run: pnpm check:source
+      - name: Enforce zero ESLint warnings
+        run: pnpm lint
