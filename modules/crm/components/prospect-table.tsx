@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { StatusBadge } from "@/components/erp/status-badge";
 import type { ProspectListRow } from "@/modules/crm/queries";
 
@@ -58,14 +58,14 @@ export function ProspectTable({
     return matchesStatus && matchesIntent && matchesReview;
   });
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
-  const filterHref = (nextPage: number, values = { query, status, intent }) => {
+  const filterHref = useCallback((nextPage: number, values = { query, status, intent }) => {
     const params = new URLSearchParams();
     if (values.query.trim()) params.set("q", values.query.trim());
     if (values.status !== "QUEUE") params.set("status", values.status);
     if (values.intent !== "ALL") params.set("intent", values.intent);
     params.set("page", String(nextPage));
     return `/dashboard/crm/prospects?${params.toString()}`;
-  };
+  }, [query, status, intent]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -75,7 +75,7 @@ export function ProspectTable({
       }
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [query, status, intent, router]);
+  }, [filterHref, router]);
 
   const queueCount = rows.filter((row) =>
     QUEUE_STATUSES.has(row.status),
