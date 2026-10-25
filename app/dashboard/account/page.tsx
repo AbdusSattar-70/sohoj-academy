@@ -1,5 +1,5 @@
 "use client";
-import { ActionPanel, announceSaved } from "@/components/erp/action-panel";
+import { ActionPanel } from "@/components/erp/action-panel";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 export default function AccountPage() {
