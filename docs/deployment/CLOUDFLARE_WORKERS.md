@@ -110,3 +110,19 @@ References:
 - https://vinext.dev/docs/getting-started/migrating
 - https://vinext.dev/docs/deploying/cloudflare
 - https://developers.cloudflare.com/workers/ci-cd/builds/configuration/
+
+## Troubleshooting: vinext init completed, but dev/build says ERR_UNKNOWN_FILE_EXTENSION
+
+If `vite dev` or `vite build` reports `Unknown file extension ".ts" for cloudflare.config.ts`, first check `node --version`. The new Cloudflare `cf` programmatic config requires Node.js 22.18+. Our deployment branch includes an `.nvmrc` requesting Node 24 LTS. Run `nvm install` and `nvm use` if nvm is installed.
+
+Vite's native config loader and Node's module resolution also require an explicit extension on the generated import. In `vite.config.ts`, replace an existing `./cloudflare.config` import with `./cloudflare.config.ts`. Do not change the generated config's worker definitions blindly. `tsconfig.json` enables `allowImportingTsExtensions` and includes `.cloudflare/types` on this branch.
+
+If pnpm warns about blocked build scripts for `workerd`, review and approve trusted Cloudflare package scripts with `pnpm approve-builds`, followed by `pnpm install`. npm registry `ECONNRESET` errors are network/registry errors, not application compilation errors; retry failed installs after connectivity recovers.
+
+Then run `pnpm dev:vinext` and `pnpm build:vinext` again. Verify all workflows before deployment.
+
+### Initial low-cost setup advice
+
+The first initialization may have enabled Workers Response Store (requires a second Worker, R2 and a SQLite Durable Object), Cloudflare Images, prerendering and cache warming. These are optional; `vinext` supports no persistent cache and can run without an image optimizer. Consider simplifying the generated config after reviewing it, rather than paying for extra services or assuming the generator's choices are required.
+
+Sources: https://developers.cloudflare.com/cf/projects/cloudflare-config/ and https://vinext.dev/docs/guides/caching
