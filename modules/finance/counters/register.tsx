@@ -10,7 +10,12 @@ type Panel={action:"CREATE"|"EDIT"|"OPEN"|"CLOSE"|"RECEIVE";counter?:CounterData
 export function CounterRegister({data,page,resumeCloseId,onTransfer,pendingCounterIds=[],returnCounterIds,onAction,foreignPanelOpen=false}:{data:CounterData;page:number;resumeCloseId?:string;onTransfer?:(action:"TOPUP"|"RETURN",counter:CounterData["records"][number])=>void;pendingCounterIds?:string[];returnCounterIds?:string[];onAction?:()=>void;foreignPanelOpen?:boolean}){
  const {locale}=useLanguage(),t=(en:string,bn:string)=>locale==="bn"?bn:en;
  const [panel,setPanel]=useState<Panel|null>(()=>{const c=data.records.find(c=>c.id===resumeCloseId);return c&&data.manager?{action:"CLOSE",counter:c}:null;}),[message,setMessage]=useState(""),[pending,start]=useTransition();const retry=useRef({signature:"",id:""});const formRef=useRef<HTMLFormElement>(null);useEffect(()=>{if(panel)formRef.current?.scrollIntoView({behavior:"smooth",block:"start"});},[panel]);
- useEffect(()=>{if(foreignPanelOpen)setPanel(null);},[foreignPanelOpen]);
+ // React-recommended guarded state adjustment when a parent transfer panel opens.
+ const [previousForeignPanelOpen,setPreviousForeignPanelOpen]=useState(false);
+ if(previousForeignPanelOpen!==foreignPanelOpen){
+  setPreviousForeignPanelOpen(foreignPanelOpen);
+  if(foreignPanelOpen)setPanel(null);
+ }
  const choose=(p:Panel)=>{onAction?.();setPanel(p);setMessage("");retry.current={signature:"",id:""};};
  const cash=data.accounts.filter(a=>a.kind==="CASH"&&!a.registered);
  return <div className="space-y-5"><p className="text-muted-foreground">{t("Each counter uses a separate cash ledger account. Opening float is a real transfer, not income. Assign a cashier, receive the opening count, then reconcile before closing. Closing keeps the remaining cash in this counter account.","প্রতিটি কাউন্টারের নগদ হিসাব আলাদা। প্রারম্ভিক টাকা প্রকৃত হিসাব-স্থানান্তর; আয় নয়। দায়িত্ব দিন, শুরুতে গ্রহণ নিশ্চিত করুন এবং বন্ধের আগে নগদ মিলান। বন্ধের পর অবশিষ্ট নগদ ওই কাউন্টার হিসাবেই থাকবে।")}</p><div className="flex flex-wrap gap-4"><Link className="underline" href="/dashboard/help/finance#counters">{t("Guided workflow","কাজের নির্দেশিকা")}</Link>{data.manager&&<><Link className="underline" href="/dashboard/finance/daily-close">{t("Count and reconcile cash","নগদ গণনা ও মিল")}</Link><Link className="underline" href="/dashboard/finance/accounting">{t("Create a cash ledger account","নগদ হিসাব তৈরি করুন")}</Link><button disabled={pending} className="rounded-lg border p-2" onClick={()=>choose({action:"CREATE"})}>{t("Register counter","কাউন্টার নিবন্ধন")}</button></>}</div>{message&&<p role="status" className="rounded border p-3">{message}</p>}
