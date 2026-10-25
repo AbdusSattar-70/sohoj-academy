@@ -16,7 +16,6 @@ import {
   SmartSelect,
   type SmartSelectOption,
 } from "@/components/shared/smart-select";
-import Logo from "@/components/shared/logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/providers/language-provider";
