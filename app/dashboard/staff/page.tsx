@@ -4,12 +4,9 @@ import { platformClient } from "@/modules/platform/rpc-client";
 import { AccessRequestRegister } from "@/modules/platform/access/request-register";
 
 import { StaffRegister } from "@/modules/staff/components/staff-register";
-import { RecordStateButton } from "@/components/erp/record-state-button";
-import { StaffEditButton } from "@/components/erp/staff-edit-button";
 import { UsersRound } from "lucide-react";
 import { EmptyState } from "@/components/erp/empty-state";
 import { PageHeader } from "@/components/erp/page-header";
-import { StatusBadge } from "@/components/erp/status-badge";
 
 import { getStaffList } from "@/modules/staff/queries";
 import { can } from "@/types/erp";
